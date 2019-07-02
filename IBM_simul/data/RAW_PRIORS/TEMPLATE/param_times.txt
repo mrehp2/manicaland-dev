@@ -1,0 +1,20 @@
+start_time_hiv BY_COUNTRY   // Zambia's first reported HIV case was in 1984 (http://www.who.int/hiv/HIVCP_ZMB.pdf) UNAIDS puts HIV prevalence around 20% in 1990 (e..g http://aidsinfo.unaids.org/# gives 450,000-620,000 HIV+ in 1990), so before that.
+start_time_simul 1900   // Assumption - around 20 years for burn-in.
+end_time_simul 2020     // Assumption for now.
+COUNTRY_HIV_TEST_START BY_COUNTRY  // Assumption based on DHS/HSRC data
+COUNTRY_ART_START  BY_COUNTRY  // Cori 2013 supplement page 7 - the entry rates for "awaiting treatment" \tau^{3/4}_{test+background} are zero prior to 2004.
+COUNTRY_CD4_350_START BY_COUNTRY // Zambia 2011???. South Africa eligibility <200 before 12 August 2011 changes to <350 (http://www.tac.org.za/community/node/3118 and http://www.sajhivmed.org.za/index.php/sajhivmed/article/view/805/654)
+COUNTRY_CD4_500_START BY_COMMUNITY // Zambia 2014.5??? South Africa 2015.0? 
+COUNTRY_IMMEDIATE_ART_START BY_COMMUNITY // See Arms\ B\ \ C\ to\ Immediate\ ART\ Transition-\ Dates_mp.docx in Dropbox/PoPART/IBM\ Model\ Background/
+COUNTRY_VMMC_START BY_COUNTRY // Differs from Cori
+CHIPS_YEAR1_START FROM_CHIPS_FILE // This represents the start of CHiPs in the trial. Note that it MUST match time times in print_dummy_chips_data.py
+CHIPS_YEAR1_END FROM_CHIPS_FILE
+CHIPS_YEAR2_START FROM_CHIPS_FILE
+CHIPS_YEAR2_END FROM_CHIPS_FILE
+CHIPS_YEAR3_START FROM_CHIPS_FILE
+CHIPS_YEAR3_END FROM_CHIPS_FILE
+DURATION_POST_TRIAL_ROUND 48  // Number of timesteps in a post-trial round (48=1 year at present).
+NDHSROUNDS BY_COUNTRY // Number of DHS rounds. Zambia has 3 (2002, 2007, 2013), South Africa has 4 (2002, 2005, 2008, 2012). 
+DHSROUND1 BY_COUNTRY
+DHSROUND2 BY_COUNTRY
+DHSROUND3 BY_COUNTRY

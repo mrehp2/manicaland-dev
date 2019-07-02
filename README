@@ -1,0 +1,9 @@
+#########################
+# Folder structure:
+#########################
+
+IBM_simul - contains main model code, plus scripts to sample parameters, run the model (on a cluster/on a laptop), calibrate the model, and format the model output (e.g. generating graphs of HIV prevalence).
+
+Parameterization - contains scripts and data files that are used to parameterize the IBM.
+
+

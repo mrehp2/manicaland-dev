@@ -1,0 +1,1 @@
+sex_ratio 0.5073892 //  Sex ratio is 1.03 (https://en.wikipedia.org/wiki/List_of_countries_by_sex_ratio citing https://www.cia.gov/library/publications/the-world-factbook/fields/2018.html accessed 16 June 2016).

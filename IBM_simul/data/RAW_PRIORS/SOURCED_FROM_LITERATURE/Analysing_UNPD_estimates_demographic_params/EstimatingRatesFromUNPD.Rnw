@@ -1,0 +1,514 @@
+\documentclass{article}
+
+%%% Choosing the margins of the document %%%
+\usepackage{geometry}
+\geometry{a4paper, portrait, margin=1in}
+%%% Package to make sure figures are in right section %%%
+\usepackage[section]{placeins}
+%%% package for colours
+\usepackage{color}
+\usepackage{lscape}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+%%% Some options to make the R code look nicer in Sweave %%%
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=2em}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=2em}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=2em}
+\fvset{listparameters={\setlength{\topsep}{0pt}}}
+\renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+
+<<echo=FALSE>>=
+require(xtable)
+#######################
+# Colours
+#######################
+library(RColorBrewer)
+cols_by_arm <- c("darkolivegreen3","deepskyblue2","orange4")
+cols_by_country <- c("darkseagreen1","darkslategray2")
+col_by_country_lineplot = c("darkgreen","blue")
+cols_by_cluster_country <- cols_by_country[(seq(1,21)>12)+1]
+cols_by_gender <- c("powderblue","plum2")
+#c("#bababa","#bebada","#377eb8","#4daf4a","#fbb4ae")
+#c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")
+colourpalette4 <- rev(c("#ffffcc", "#a1dab4", "#41b6c4", "#225ea8","#253494"))
+colourpalette5 <- brewer.pal(5, "BuGn")
+colourpalette6 <- c("#edf8fb","#ccece6","#99d8c9","#66c2a4","#2ca25f","#225ea8")
+colourpalette7 <- c("#762a83","#af8dc3","#e7d4e8","#f7f7f7","#d9f0d3","#7fbf7b","#1b7837")
+colourpalette8 <- c("#762a83","#9970ab","#c2a5cf","#e7d4e8","#d9f0d3","#a6dba0","#5aae61","#1b7837")
+#######################
+# Miscellaneous functions:
+#######################
+nm1<-function(x) format(round(unname(x), 1), nsmall = 0)
+nm2<-function(x) format(round(unname(x), 1), nsmall = 1)
+nm3<-function(x) format(round(unname(x), 2), nsmall = 2)
+nm4<-function(x) format(round(unname(x), 3), nsmall = 3)
+
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Mortality rates}
+
+<<echo=FALSE>>=
+
+
+
+plotUNPDvsmodel <- function(data,estimate,t,title,this.ylab="Mortality rate")
+{
+	t <- seq(1952.5,2097.5,5)
+	x<- plot(t,data,xlab="Time",ylab=this.ylab,main=title,ylim=c(0,max(data)))
+	lines(t,estimate)
+	return(x)
+}
+
+modelestimate<- function(coeffs,t)
+{
+	
+	exp(coeffs[1] + coeffs[2]*t)
+}
+
+modelestimate2d<- function(coeffs,t,agegp)
+{
+	
+	exp(coeffs[1] + coeffs[2]*t + coeffs[3]*agegp)
+}
+
+
+
+
+sa.men.mortality <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/SouthAfricaMortalityMen.csv",header=T)
+sa.women.mortality <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/SouthAfricaMortalityWomen.csv",header=T)
+zam.men.mortality <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/ZambiaMortalityMen.csv",header=T)
+zam.women.mortality <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/ZambiaMortalityWomen.csv",header=T)
+
+sa.fertility <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/SouthAfricaFertility.csv",header=T)
+zam.fertility <- read.csv("~/Dropbox/PoPART/IBM\ Model\ Background/Demographic\ data/ZambiaFertility.csv",header=T)
+
+mortality.coeffs.sa.men <- array(0,dim=c(2,0))
+mortality.coeffs.sa.women <- array(0,dim=c(2,0))
+
+mortality.coeffs.zam.men <- array(0,dim=c(2,0))
+mortality.coeffs.zam.women <- array(0,dim=c(2,0))
+
+fertility.coeffs.sa <- array(0,dim=c(2,0))
+fertility.coeffs.zam <- array(0,dim=c(2,0))
+
+@
+
+
+<<MortalitySAMen1,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,10))
+{
+    t <- seq(1952.5,2097.5,5)
+    #coefficients(lm(log(sa.men.mortality[seq(1,7),i]) ~ t[seq(1,7)] ))
+    data <- sa.men.mortality[,i]
+    c<- coefficients(lm(log(data[seq(1,7)]) ~ t[seq(1,7)] ))
+    
+    #a <- rbind(a,c)
+    mortality.coeffs.sa.men <- cbind(mortality.coeffs.sa.men,c) # store coefficients
+    
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(sa.men.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+mtext("South Africa men aged 0-44", side = 3, line = 0, outer = TRUE)
+@
+
+<<MortalitySAMen2,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+
+for(i in seq(11,17))
+{
+    t <- seq(1952.5,2097.5,5)
+    #coefficients(lm(log(sa.men.mortality[seq(1,7),i]) ~ t[seq(1,7)] ))
+    data <- sa.men.mortality[,i]
+    c<- coefficients(lm(log(data[seq(1,7)]) ~ t[seq(1,7)] ))
+    
+    mortality.coeffs.sa.men <- cbind(mortality.coeffs.sa.men,c) # store coefficients
+    
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(sa.men.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+data <- sa.men.mortality[,18]
+c<- coefficients(lm(log(data) ~ t ))
+
+mortality.coeffs.sa.men <- cbind(mortality.coeffs.sa.men,c) # store coefficients
+
+estimate <- modelestimate(c,t)
+title <- "80+"
+
+plotUNPDvsmodel(data,estimate,t,title)
+
+
+mtext("South Africa men aged 45+", side = 3, line = 0, outer = TRUE)
+colnames(mortality.coeffs.sa.men) <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+")
+
+rownames(mortality.coeffs.sa.men) <- c("Intercept","Coeff")
+@
+
+<<MortalitySAWomen1,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+mortality.coeffs <- array(0,dim=c(2,0))
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,10))
+{
+    t <- seq(1952.5,2097.5,5)
+    #coefficients(lm(log(sa.women.mortality[seq(1,7),i]) ~ t[seq(1,7)] ))
+    data <- sa.women.mortality[,i]
+    c<- coefficients(lm(log(data[seq(1,7)]) ~ t[seq(1,7)] ))
+    
+    mortality.coeffs.sa.women <- cbind(mortality.coeffs.sa.women,c) # store coefficients
+        
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(sa.women.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+mtext("South Africa women aged 0-44", side = 3, line = 0, outer = TRUE)
+@
+
+<<MortalitySAWomen2,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(11,17))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- sa.women.mortality[,i]
+    c<- coefficients(lm(log(data[seq(1,7)]) ~ t[seq(1,7)] ))
+
+    mortality.coeffs.sa.women <- cbind(mortality.coeffs.sa.women,c) # store coefficients
+
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(sa.women.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+data <- sa.women.mortality[,18]
+c<- coefficients(lm(log(data) ~ t ))
+
+mortality.coeffs.sa.women <- cbind(mortality.coeffs.sa.women,c) # store coefficients
+
+estimate <- modelestimate(c,t)
+title <- "80+"
+
+plotUNPDvsmodel(data,estimate,t,title)
+
+mtext("South Africa women aged 45+", side = 3, line = 0, outer = TRUE)
+
+colnames(mortality.coeffs.sa.women) <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+")
+
+rownames(mortality.coeffs.sa.women) <- c("Intercept","Coeff")
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+<<MortalityZamMen1,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,10))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- zam.men.mortality[,i]
+    
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+    
+    #a <- rbind(a,c)
+    mortality.coeffs.zam.men <- cbind(mortality.coeffs.zam.men,c) # store coefficients
+    
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(zam.men.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+mtext("Zambia men aged 0-44", side = 3, line = 0, outer = TRUE)
+@
+
+<<MortalityZamMen2,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+
+for(i in seq(11,17))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- zam.men.mortality[,i]
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+    
+    mortality.coeffs.zam.men <- cbind(mortality.coeffs.zam.men,c) # store coefficients
+    
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(zam.men.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+data <- zam.men.mortality[,18]
+c<- coefficients(lm(log(data) ~ t ))
+
+mortality.coeffs.zam.men <- cbind(mortality.coeffs.zam.men,c) # store coefficients
+
+estimate <- modelestimate(c,t)
+title <- "80+"
+
+plotUNPDvsmodel(data,estimate,t,title)
+
+
+mtext("Zambia men aged 45+", side = 3, line = 0, outer = TRUE)
+colnames(mortality.coeffs.zam.men) <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+")
+
+rownames(mortality.coeffs.zam.men) <- c("Intercept","Coeff")
+@
+
+<<MortalityZamWomen1,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+mortality.coeffs <- array(0,dim=c(2,0))
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,10))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- zam.women.mortality[,i]
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+    
+    mortality.coeffs.zam.women <- cbind(mortality.coeffs.zam.women,c) # store coefficients
+        
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(zam.women.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+mtext("Zambia women aged 0-44", side = 3, line = 0, outer = TRUE)
+@
+
+<<MortalityZamWomen2,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(11,17))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- zam.women.mortality[,i]
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+
+    mortality.coeffs.zam.women <- cbind(mortality.coeffs.zam.women,c) # store coefficients
+
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(zam.women.mortality)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title)
+}
+data <- zam.women.mortality[,18]
+c<- coefficients(lm(log(data) ~ t ))
+
+mortality.coeffs.zam.women <- cbind(mortality.coeffs.zam.women,c) # store coefficients
+
+estimate <- modelestimate(c,t)
+title <- "80+"
+
+plotUNPDvsmodel(data,estimate,t,title)
+
+mtext("Zambia women aged 45+", side = 3, line = 0, outer = TRUE)
+
+colnames(mortality.coeffs.zam.women) <- c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+")
+
+rownames(mortality.coeffs.zam.women) <- c("Intercept","Coeff")
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalitySAMen1} 
+
+\caption{Mortality rates for men in South Africa over time by 5 year age groups. Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalitySAMen2} 
+
+\caption{Mortality rates for men in South Africa over time by 5 year age groups (cont). Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalitySAWomen1} 
+
+\caption{Mortality rates for women in South Africa over time by 5 year age groups. Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalitySAWomen2} 
+
+\caption{Mortality rates for women in South Africa over time by 5 year age groups (cont). Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalityZamMen1} 
+
+\caption{Mortality rates for men in Zambia over time by 5 year age groups. Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalityZamMen2} 
+
+\caption{Mortality rates for men in Zambia over time by 5 year age groups (cont). Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalityZamWomen1} 
+
+\caption{Mortality rates for women in Zambia over time by 5 year age groups. Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-MortalityZamWomen2} 
+
+\caption{Mortality rates for women in Zambia over time by 5 year age groups (cont). Circles show UNPD estimates (including HIV mortality), lines show estimate based on a log-linear model for each age group.}
+\label{MortalitySAmen1}
+\end{figure}
+
+
+\clearpage
+
+\begin{landscape}
+<<results=tex,echo=FALSE>>=
+
+print(xtable(mortality.coeffs.sa.men,digits=2,caption="Parameters for South Africa men mortality"),size="\\small")
+print(xtable(mortality.coeffs.sa.women,digits=2,caption="Parameters for South Africa women mortality"),size="\\small")
+
+print(xtable(mortality.coeffs.zam.men,digits=2,caption="Parameters for Zambia men mortality"),size="\\small")
+print(xtable(mortality.coeffs.zam.women,digits=2,caption="Parameters for Zambia women mortality"),size="\\small")
+
+@
+
+
+\end{landscape}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<<>>=
+# Writing out mortality rates:
+write.table(rbind(mortality.coeffs.sa.men,mortality.coeffs.sa.women),file="SouthAfrica_mortalityByAgeCoefficients.txt",row.names=FALSE,col.names=FALSE)
+write.table(rbind(mortality.coeffs.zam.men,mortality.coeffs.zam.women),file="Zambia_mortalityByAgeCoefficients.txt",row.names=FALSE,col.names=FALSE)
+
+@
+
+\clearpage
+
+\section*{Fertility rates}
+
+
+<<FertilitySA,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+fertility.coeffs.sa  <- array(0,dim=c(2,0))
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,8))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- sa.fertility[,i]
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+    
+    fertility.coeffs.sa <- cbind(fertility.coeffs.sa,c) # store coefficients
+        
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(sa.fertility)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title,"Fertility rate")
+}
+mtext("South Africa fertility by age", side = 3, line = 0, outer = TRUE)
+@
+
+<<FertilityZam,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+fertility.coeffs.zam  <- array(0,dim=c(2,0))
+
+par(mfrow=c(3,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(i in seq(2,8))
+{
+    t <- seq(1952.5,2097.5,5)
+    data <- zam.fertility[,i]
+    c<- coefficients(lm(log(data[c(seq(1,7),seq(18,30))]) ~ t[c(seq(1,7),seq(18,30))] ))
+    
+    fertility.coeffs.zam <- cbind(fertility.coeffs.zam,c) # store coefficients
+        
+    estimate <- modelestimate(c,t)
+    title <- gsub(".","-",gsub("X","",labels(zam.fertility)[[2]][i]),fixed=TRUE)
+    
+    plotUNPDvsmodel(data,estimate,t,title,"Fertility rate")
+}
+mtext("Zambia fertility by age", side = 3, line = 0, outer = TRUE)
+@
+
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-FertilitySA} 
+
+\caption{Fertility rates for women in South Africa over time by 5 year age groups. Circles show UNPD estimates (which are adjusted for the effects of HIV), lines show estimate based on a log-linear model for each age group.}
+\label{FertilitySA}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-FertilityZam} 
+
+\caption{Fertility rates for women in Zambia over time by 5 year age groups. Circles show UNPD estimates (which are adjusted for the effects of HIV), lines show estimate based on a log-linear model for each age group.}
+\label{FertilityZam}
+\end{figure}
+
+
+
+\clearpage
+\section*{Experiments}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXPERIMENT: Trying to see if a 2d function fits OK: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<<TestSAmortality2d,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+sa.men.mortality.df <- array(0,dim=c(0,3))
+for(i in seq(1,30))
+{
+	for(j in seq(5,17))
+	{
+		sa.men.mortality.df <- rbind(sa.men.mortality.df,c(sa.men.mortality[i,j],t[i],j))
+}
+}
+c<- coefficients(lm(log(sa.men.mortality.df[,1]) ~ sa.men.mortality.df[,2] + sa.men.mortality.df[,3]))
+
+
+par(mfrow=c(4,3),mar=c(4,4,2,1),oma=c(2,0.5,2,0))
+for(j in seq(5,16))
+{
+	estimate <- modelestimate2d(c,t,j)
+	data <- sa.men.mortality[,j]
+	title <- gsub(".","-",gsub("X","",labels(sa.men.mortality)[[2]][j]),fixed=TRUE)
+	plotUNPDvsmodel(data,estimate,t,title,"Fertility rate")
+}
+@
+
+\begin{figure}
+\includegraphics[width=16cm,height=16cm]{EstimatingRatesFromUNPD-TestSAmortality2d} 
+
+\caption{Experiment for SA men to see if we can fit a 2d function - ie a single regression by age group and time for each gender and country -  well for mortality. For now I think we should stick with the different regressions for each age group.}
+\label{FertilityZam}
+\end{figure}
+
+\section*{Discussion}
+
+For mortality rates we need to have some way of discounting HIV mortality. I think that fitting a function separately to each age group  - and ignoring the periods when HIV mortality is high - gives an OK fit. It seems to me that we can't fit a 2d model by age and time (assuming independence between the 2) as well. As mortality is something in the background, validated against age distribution at different time points, I think we can ignore the parametric complexity and just input them as fixed quantities.
+
+For fertility it is not clear that any function will fit this well. For now we can use the UNPD numbers directly.
+
+\end{document}

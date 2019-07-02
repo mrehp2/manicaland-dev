@@ -1,0 +1,62 @@
+p_child_circ BY_COMMUNITY // Pre-unblinding projections had this parameter on a BY_COUNTRY basis
+eff_circ_vmmc 0.6 // Cori 2014 Table S7
+eff_circ_tmc 0.0 // Based on analysis of PC0.
+rr_circ_unhealed 0.33 // Cori 2014 Table S7 parameter s_heal. This represents susceptibility during wound healing period. Cori also has an increase in infectivity.
+t0_pmtct 1990.0 // Currently an unused parameter - the function mtct_transmission() is never called.
+t50_pmtct 2000.0 // Currently an unused parameter - the function mtct_transmission() is never called.
+average_log_viral_load 4.0 // Currently an unused parameter - the only time it is now used is in the function mtct_transmission(), which is never called.
+average_annual_hazard [0.05-0.3] // Fraser PNAS 2007 found beta = 0.317 per annum. Boily LID 2009 per act 0.0001 to 0.0014. Assume 50-200 acts per year. Then run in R: nsample=20000 n = sample(25:150,nsample,replace=TRUE) p = runif(nsample,0.0001,0.0014) c(quantile(1 - (1-p)^n,0.05),quantile(1 - (1-p)^n,0.95)). Hollingsworth 2008 had 10.6 (7.61-13.3). Donnell Lancet 2010 found transmission rate 2.24 per 100 person-years among people not on ART (so censoring CD4<200). 
+RRacute_trans 5.3 // Bellan Plos Med 2015.
+RRmale_to_female_trans [1.0-3.0] // [1.0-3.95] Lower limit is that they are equal. Upper limit from Boily LID 2009 table 2 highest upper limit (ie from high income countries). 
+RRCD4 1.0 1.0 1.0 2.34 // Cori 2014 Table S7 was 1.0,1.0,1.0,2.34. Could also use Boily LID 2009 estimate 7.3. Previous limits were 1.0 1.0 [1.0-1.5] [2.0-4.0] but changed in July 2018
+SPVL_beta_k 1.02 // Christophe slack hiv channel 30/06/2016: "function from Fraser et al PNAS 2007: beta(v) = beta_max * v^beta_k / (v^beta_k + beta_50^beta_k) where v is the set-point viral load (not log of it). The parameters I get are beta_max = 0.317 per annum, beta_k = 1.02, beta_50 = 13,938 copies per ml. I would argue from first principles that beta_max should be treated as a free parameter in our model."
+SPVL_beta_50 13938 // This is an arbitrary baseline for comparison.
+ART_VS_INITIAL 0.5 // *** CHECK *** Viral suppression during initial period (assume 12 months). Data from ATHENA suggests VS achieved in around 2 months, and becomes_vs_after_earlyart parameter is currently ~0.75 becomes VS eventually so may be 2/12 * (not fully suppressed - take worst case 0) + 10/12 *0.75* (fully suppressed = 0.9) = 0.75 
+ART_VS_EFFECT 1.0 // HPTN-052 update 2015.
+ART_VU_EFFECT 0.3 // Assume transmissibility is roughly halved by being virally unsuppressed. HPTN-052 had 93% effectiveness (including VS+VU+others) so if 80% are VS then something like 50% in the rest would be OK. From e.g. Quinn a 10-fold drop in viral load would be equivalent to a 2-fold drop (from say 30,000 to 3,000 which seems reasonable) in infectiousness so 0.5.
+Dur_acute_range 0.08 0.25 // Duration of acute phase, 1 month - 3 months; Cori 2014 Table S4, Hollingsworth 2008 J. Infect Dis.
+p_initial_cd4_gt500_spvl0 0.864 // table 2, Cori AIDS 2015 - note rounding to ensure sums to 1. 
+p_initial_cd4_350_500_spvl0 0.113 // table 2, Cori AIDS 2015
+p_initial_cd4_200_350_spvl0 0.023 // table 2, Cori AIDS 2015
+p_initial_cd4_lt200_spvl0 0.00 // table 2, Cori AIDS 2015
+p_initial_cd4_gt500_spvl1 0.78 // table 2, Cori AIDS 2015
+p_initial_cd4_350_500_spvl1 0.19 // table 2, Cori AIDS 2015
+p_initial_cd4_200_350_spvl1 0.03 // table 2, Cori AIDS 2015
+p_initial_cd4_lt200_spvl1 0.00 // table 2, Cori AIDS 2015
+p_initial_cd4_gt500_spvl2 0.74 // table 2, Cori AIDS 2015
+p_initial_cd4_350_500_spvl2 0.21 // table 2, Cori AIDS 2015
+p_initial_cd4_200_350_spvl2 0.05 // table 2, Cori AIDS 2015
+p_initial_cd4_lt200_spvl2 0.00 // table 2, Cori AIDS 2015
+p_initial_cd4_gt500_spvl3 0.71 // table 2, Cori AIDS 2015
+p_initial_cd4_350_500_spvl3 0.25 // table 2, Cori AIDS 2015
+p_initial_cd4_200_350_spvl3 0.04 // table 2, Cori AIDS 2015
+p_initial_cd4_lt200_spvl3 0.00 // table 2, Cori AIDS 2015
+initial_SPVL_mu 4.74 // Mean SPVL in seeded infections, N(4.74,0.61**2), from figure 2 of Bonhoeffer 2015 PLOS Pathogens
+initial_SPVL_sigma 0.61 // s.d. of SPVL in seeded infections, N(4.74,0.61**2), from figure 2 of Bonhoeffer 2015 PLOS Pathogens
+SPVL_sigma_M 0.0 // *Set this to zero (and sigma_E to be the same as initial_SPVL_sigma) to remove SPVL inheritance (was 0.1). * seroconverter->SPVL_num_G = infector->SPVL_num_G + gsl_ran_gaussian(rng, param->SPVL_sigma_M). CF slack 'hiv' channel 30/06/2016: "Guesstimates for parameters are sigma_E=0.5 and sigma_M=0.1"
+SPVL_sigma_E 0.61 // *Set this to be the same as initial_SPVL_sigma to remove SPVL inheritance.* 0.5; seroconverter->SPVL_num_E = gsl_ran_gaussian(rng, param->SPVL_sigma_E). As above - was 0.5.
+p_misclassify_cd4_0 1.0 0.0 0.0 0.0 // Probability of misclassifying CD4 category, ignore for now
+p_misclassify_cd4_1 0.0 1.0 0.0 0.0 // Probability of misclassifying CD4 category, ignore for now
+p_misclassify_cd4_2 0.0 0.0 1.0 0.0 // Probability of misclassifying CD4 category, ignore for now
+p_misclassify_cd4_3 0.0 0.0 0.0 1.0 // Probability of misclassifying CD4 category, ignore for now
+time_gt500_to_500_spvl0 5.35 // originally a range of [4.56-6.37] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_350to500_to_350_spvl0 3.66 // originally a range of [2.98-4.53] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_200to350_to_200_spvl0 7.62 // originally a range of [5.04-13.69] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_lt200_to_death_spvl0 2.30 // originally a range of [1.8-2.8] from Cori PLOS One 2014 2.30, take +/- 20%, changed to mean in Dec 18 to avoid LHS sampling
+time_gt500_to_500_spvl1 3.12 // originally a range of [2.68-3.64] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_350to500_to_350_spvl1 3.09 // originally a range of [2.65-3.64] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_200to350_to_200_spvl1 8.39 // originally a range of [5.46-15.55] from Cori PLOS One 2014 2.30, take +/- 20%, changed to mean in Dec 18 to avoid LHS sampling
+time_lt200_to_death_spvl1 2.3 // originally a range of [1.8-2.8] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_gt500_to_500_spvl2 2.35 // originally a range of [2.08-2.64] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_350to500_to_350_spvl2 2.32 // originally a range of [1.98-2.72] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_200to350_to_200_spvl2 6.57 // originally a range of [4.73-10.22] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_lt200_to_death_spvl2 2.3 // originally a range of [1.8-2.8] from Cori PLOS One 2014 2.30, take +/- 20%, changed to mean in Dec 18 to avoid LHS sampling
+time_gt500_to_500_spvl3 1.51 // originally a range of [1.28-1.76] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_350to500_to_350_spvl3 1.44 // originally a range of [1.22-1.69] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_200to350_to_200_spvl3 2.93 // originally a range of [2.12-4.19] from table 2 of Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+time_lt200_to_death_spvl3 2.3 // originally a range of [1.8-2.8] from Cori PLOS One 2014 2.30, take +/- 20%, changed to mean in Dec 18 to avoid LHS sampling
+cox_RRspvl_gt500_to_500 2.17 // originally a range of [1.89-2.49] Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+cox_RRspvl_500_to_350 1.88 // originally a range of [1.61-2.19] Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+cox_RRspvl_350_to_200 1.96 // originally a range of [1.41-2.73] Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+cox_RRspvl_200_to_death 1.63 // originally a range of [0.77-3.44] Cori AIDS 2015, changed to mean in Dec 18 to avoid LHS sampling
+factor_for_slower_progression_ART_VU 1.0 // Progression when on ART but unsuppressed. Called to draw time to next progression event via gsl_ran_exponential(rng, param->time_hiv_event[indiv->cd4][indiv->SPVL]*param->factor_for_slower_progression_ART_VU). Second term in gsl_ran_exponential(r, mu) is mean mu (ie mean time to event). Assumption, with upper value arbitrarily informed by Cori 2014 Table S4 variable sigma_k, and lower value no effect. Previous allowed to vary [1.0-2.0], fixed to 1.0 in July 2018.

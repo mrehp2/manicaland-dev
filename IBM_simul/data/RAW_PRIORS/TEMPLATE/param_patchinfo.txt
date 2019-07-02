@@ -1,0 +1,2 @@
+cluster_number (5,4) // Cluster 1 is arm B, cluster 2 is arm A.
+trial_arm (1,0)     // 0=ARM C, 1=ARM A, 2=ARM B

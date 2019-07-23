@@ -1119,6 +1119,18 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
             "temp_string and temp_string2 in store_annual_outputs()");
     }
     
+    for(r = 0; r < N_RISK; r++){
+        sprintf(temp_string2, "%li,", patch[p].n_newly_infected_total_by_risk[r]);
+        join_strings_with_check(temp_string, temp_string2, 10000,
+            "temp_string and temp_string2 in store_annual_outputs()");
+    }
+    
+    for(r = 0; r < N_RISK; r++){
+        sprintf(temp_string2, "%li,", patch[p].n_died_from_HIV_by_risk[r]);
+        join_strings_with_check(temp_string, temp_string2, 10000,
+            "temp_string and temp_string2 in store_annual_outputs()");
+    }
+    
     /* Population size and number of HIV+ and incident HIV+ by age and gender here: */
     int tempcount_pop, tempcount_inc, tempcount_prev;
     
@@ -2530,7 +2542,13 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
     for(r = 0; r < N_RISK; r++){
         fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"Prevalence_risk%s,",RISK_GP_NAMES[r]);
     }
-
+    for(r = 0; r < N_RISK; r++){
+        fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NewCasesThisYear_risk%s,",RISK_GP_NAMES[r]);
+    }
+    for(r = 0; r < N_RISK; r++){
+        fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NDied_from_HIV_risk%s,",RISK_GP_NAMES[r]);
+    }
+    
     //if (PCdata==0){
     for(a = 0; a < N_AGE; a++){
         fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
@@ -4049,10 +4067,6 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     long NNeedART_m = 0;
     long NArt_f = 0;
     long NNeedART_f = 0;/* Counts no. of eligible M/F for ART given current CD4 elig criteria. */
-    long N_calendar_ART = 0; // number initiating ART within the current year
-    
-    long NTestedLastYear = 0;
-    long N_calendar_men_VMMC = 0;
     
     long NNotOnArt_m_cd4[NCD4];
     long NNotOnArt_f_cd4[NCD4];
@@ -4072,8 +4086,6 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
         NOnArt_f_cd4[i] = 0;
     }
     
-    long npop_r[N_RISK] = {0,0,0};
-    long npos_r[N_RISK] = {0,0,0};
     int current_cd4_guidelines = art_cd4_eligibility_group(patch[p].param,(double) year);
 
     double prop_annual_acute;
@@ -4122,23 +4134,8 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     /* This if statement determines if we are just looking at PC stuff: */
     for (n_id = 0; n_id < patch[p].id_counter; n_id++){
         
-        
-        // Count the number of people (both genders) initating ART this year
-        // (they may be dead already)
-        if(
-        (patch[p].individual_population[n_id].t_start_art < year + 1.0) &&
-        (patch[p].individual_population[n_id].t_start_art > year)
-        ){
-            N_calendar_ART++;
-        }
-        
         /* Check that the person is not dead: */
         if (patch[p].individual_population[n_id].cd4 != DEAD){
-            
-            /* Count number of peole currently alive who had an HIV test in the past year. */
-            if ((year - patch[p].individual_population[n_id].time_last_hiv_test) <= 1.0){
-                NTestedLastYear++;
-            }
             
             /* Gender-specific outputs derived here: */
             if (patch[p].individual_population[n_id].gender == MALE){
@@ -4146,32 +4143,10 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
                 update_annual_outputs_gender_cd4(&(patch[p].individual_population[n_id]), &npop_m,
                     &npositive_m, &NNeedART_m, &NArt_m, npositive_m_cd4, NNotOnArt_m_cd4, 
                     NOnArt_m_cd4, current_cd4_guidelines);
-                
-                // Count the number of VMMC procedures in the current year by counting the 
-                // time at which the VMMC procedure was performed.  
-                if(
-                    (patch[p].individual_population[n_id].circ == UNCIRC_WAITING_VMMC) ||
-                    (patch[p].individual_population[n_id].circ == VMMC_HEALING) ||
-                    (patch[p].individual_population[n_id].circ == VMMC)
-                ){
-                    if(
-                    (patch[p].individual_population[n_id].t_vmmc < year + 1.0) &&
-                    (patch[p].individual_population[n_id].t_vmmc > year)
-                    ){
-                        N_calendar_men_VMMC++;
-                    }
-                }
             }else{ /* Else female */
                 update_annual_outputs_gender_cd4(&(patch[p].individual_population[n_id]), &npop_f,
                     &npositive_f, &NNeedART_f, &NArt_f, npositive_f_cd4, NNotOnArt_f_cd4,
                     NOnArt_f_cd4, current_cd4_guidelines);
-            }
-            
-            /* RiskGroup-specific outputs derived here: */
-            npop_r[(patch[p].individual_population[n_id]).sex_risk] += 1;
-            
-            if ((patch[p].individual_population[n_id]).HIV_status > 0){
-                (npos_r[(patch[p].individual_population[n_id]).sex_risk]) += 1;
             }
         }else{
             n_dead += 1;
@@ -4180,7 +4155,6 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
             }
         }
     }
-
     npop = npop_m + npop_f;
     npositive = npositive_m + npositive_f;
     
@@ -4203,7 +4177,11 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     }
     
     sprintf(temp_string,
-    "%d,%d,%i,%8.6f,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+        "%d,%d,%i,%8.6f,%8.6f,\
+        %li,%li,%li,%li,%li,\
+        %li,%li,%li,%li,%li,\
+        %li,%li,%li,%li,%li,\
+        %li,%li,%li,%li,%li,",
         i_run,
         patch[p].community_id,
         year,
@@ -4222,14 +4200,24 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
         patch[p].calendar_outputs->N_calendar_HIV_tests_popart_negative[year_idx],
         patch[p].calendar_outputs->N_calendar_CD4_tests_nonpopart[year_idx],
         patch[p].calendar_outputs->N_calendar_CD4_tests_popart[year_idx],
+        patch[p].calendar_outputs->N_calendar_CHIPS_visits[year_idx],
         NArt_m,
         NArt_f,
-        N_calendar_ART,
-        N_calendar_men_VMMC,
+        patch[p].calendar_outputs->N_calendar_started_ART[year_idx],
+        patch[p].calendar_outputs->N_calendar_VMMC[year_idx],
+        patch[p].calendar_outputs->N_calendar_dropout[year_idx],
         patch[p].OUTPUT_NDIEDFROMHIV);
     
+    for(i = 0; i < (N_AGE_UNPD + 1); i++){
+        sprintf(temp_string + strlen(temp_string), "%li,", patch[p].n_died_from_HIV[MALE][i]);
+    }
+    
+    for(i = 0; i < (N_AGE_UNPD + 1); i++){
+        sprintf(temp_string + strlen(temp_string), "%li,", patch[p].n_died_from_HIV[FEMALE][i]);
+    }
+    
     // Add number of person-years of mortality stratified by age and sex
-    // FIND MORTALITY YEARS BY (1 - FRACTION OF YEAR OF DoD).  
+    // "Mortality person-years" is a sum of (1 - "fraction of year after DoD").  
     for(i = 0; i < (N_AGE_UNPD + 1); i++){
         sprintf(temp_string + strlen(temp_string), "%8.6f,", patch[p].py_died_from_HIV[MALE][i]);
     }
@@ -4325,13 +4313,29 @@ void write_cost_effectiveness_outputs(file_struct *file_data_store, output_struc
     fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
         "AnnualPopartHIVtests_positive,AnnualPopartHIVtests_negative,");
     fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
-        "AnnualNonPopartCD4tests,AnnualPopartCD4tests,");
+        "AnnualNonPopartCD4tests,AnnualPopartCD4tests,AnnualCHIPSvisits,");
     fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
         "NOnARTM,NOnARTF,AnnualInitiatingART,");
     fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
-        "AnnualVMMC,NDied_from_HIV,");
+        "AnnualVMMC,AnnualDropout,NDied_from_HIV,");
     
     int i;
+    for(i = 0; i < N_AGE_UNPD; i++){
+        fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
+            "NDied_from_HIVM%d_%d,", AGE_GROUPS_UNPD[i], AGE_GROUPS_UNPD[i+1] - 1);
+    }
+    // Add a column for greater than 80
+    fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
+        "NDied_from_HIVM%d_over,", AGE_GROUPS_UNPD[N_AGE_UNPD]);
+    
+    for(i = 0; i < N_AGE_UNPD; i++){
+        fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
+            "NDied_from_HIVF%d_%d,", AGE_GROUPS_UNPD[i], AGE_GROUPS_UNPD[i+1] - 1);
+    }
+    // Add a column for greater than 80
+    fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
+        "NDied_from_HIVF%d_over,", AGE_GROUPS_UNPD[N_AGE_UNPD]);
+    
     for(i = 0; i < N_AGE_UNPD; i++){
         fprintf(file_data_store->COST_EFFECTIVENESS_OUTPUT_FILE[p],
             "PYDied_from_HIVM%d_%d,", AGE_GROUPS_UNPD[i], AGE_GROUPS_UNPD[i+1] - 1);

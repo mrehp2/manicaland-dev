@@ -2156,6 +2156,7 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
         fflush(stdout);
     }
     patch[p].OUTPUT_NDIEDFROMHIV++;
+    patch[p].n_died_from_HIV_by_risk[dead_person->sex_risk]++;
     
     // If cost-effectiveness output is being recorded, record the amount of time of mortality that
     // was accumulated in the current year from this individual that died an HIV-related death.  
@@ -2173,8 +2174,9 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
         // Find difference between time of death and end of year
         double py_fraction = 1.0 - (t - ((int)t));
         
-        // Add counter to the py_died_from_HIV array
+        // Add counter to the py_died_from_HIV array and n_died_from_hiv
         patch[p].py_died_from_HIV[g][age_idx] += py_fraction;
+        patch[p].n_died_from_HIV[g][age_idx] += 1;
     }
 
     if (WRITE_DEBUG_HIV_DURATION==1){

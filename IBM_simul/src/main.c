@@ -533,6 +533,7 @@ int main(int argc,char *argv[]){
                     for(g = 0; g < N_GENDER; g++){
                         for(a = 0; a < (N_AGE_UNPD + 1); a++){
                             patch[p].py_died_from_HIV[g][a] = 0.0;
+                            patch[p].n_died_from_HIV[g][a] = 0;
                         }
                     }
                 }

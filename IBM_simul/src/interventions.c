@@ -620,6 +620,9 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
     }
     indiv->NCHIPSVISITS++;
     
+    // Record that there was a chips visit this year
+    calendar_outputs->N_calendar_CHIPS_visits[year_idx]++;
+    
     /* Are we following specific individuals or patches? */
     if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
         printf("CHiPs visit for adult %ld from patch %d at time %lf with old_cascade_event %d\n",
@@ -1126,7 +1129,12 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
             //      indiv->id,indiv->circ);
             schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,
                 patch[p].n_vmmc_events, patch[p].size_vmmc_events, t);
-        
+            
+            // Count the number of VMMC procedures in the current year by counting the 
+            // time at which the VMMC procedure was performed.  
+            int year_idx = (int) floor(t) - patch[p].param->start_time_simul;
+            patch[p].calendar_outputs->N_calendar_VMMC[year_idx]++;
+            
         }else if (indiv->circ == VMMC_HEALING){
             /* If current status is healing, then finish healing. Note that this is the last event
             in the VMMC process for this individual. */

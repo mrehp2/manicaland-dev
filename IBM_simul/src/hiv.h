@@ -55,7 +55,7 @@ int art_cd4_eligibility_group(parameters *, double);
 int is_eligible_for_art(individual* , parameters *, double , patch_struct *, int );
 double get_time_emergency_start_ART(individual *, parameters *, double );
 void start_ART_process(individual* , parameters *, double , individual ***, long *, long *,
-    individual ***, long *, long *, int , file_struct *);
+    individual ***, long *, long *, int , file_struct *, calendar_outputs_struct *);
 void draw_initial_hiv_tests(parameters *, age_list_struct *, double, individual ***, 
     long *, long *);
 void draw_hiv_tests(parameters *, age_list_struct *, int , individual ***, long *, long *, int );

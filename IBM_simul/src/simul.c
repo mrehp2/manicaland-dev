@@ -81,9 +81,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     
     */
     
-    
     int p, t_step, fit_flag;
-    int icd4, i;
+    int icd4, i, r;
     
     // Reset the counters for newly infected individuals
     for(p = 0; p < NPATCHES; p++){
@@ -94,6 +93,12 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         patch[p].n_newly_infected_total_pconly = 0;
         patch[p].n_newly_infected_total_from_outside_pconly = 0;
         patch[p].n_newly_infected_total_from_acute_pconly = 0;
+        
+        for(r = 0; r < N_RISK; r++){
+            patch[p].n_newly_infected_total_by_risk[r] = 0;
+            patch[p].n_newly_infected_total_by_risk_pconly[r] = 0;
+            patch[p].n_died_from_HIV_by_risk[r] = 0;
+        }
         
         for(icd4 = 0; icd4 < NCD4; icd4++){
             patch[p].py_n_positive_on_art[icd4] = 0;
@@ -850,23 +855,33 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
         (patch[p].trial_arm == ARM_A || patch[p].trial_arm == ARM_B) && 
         (RUN_POPART == 1)
     ){
+        int RUN_CHIPS = 1;
         
-        if(get_chips_round(patch[p].param, t0, t_step) > CHIPSNOTRUNNING){
-            
-            if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
-                printf("Error -trying to start PopART before PopART sample is set up at time ");
-                printf("t=%f Exiting\n", t);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
+        if( POPART_FINISHED == 1){
+            if( (ROLL_OUT_CHIPS_INSIDE_PATCH == 0) && (t0 >= T_STOP_ROLLOUT_CHIPS_INSIDE_PATCH)){
+                RUN_CHIPS = 0;
             }
+        }
+        
+        if(RUN_CHIPS == 1){
+            if(get_chips_round(patch[p].param, t0, t_step) > CHIPSNOTRUNNING){
             
-            chips_round = get_chips_round(patch[p].param, t0, t_step);
-            
-            carry_out_chips_visits_per_timestep(t0, t_step, patch, p, chips_round, debug, output);
+                if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
+                    printf("Error -trying to start PopART before PopART sample is set up at time ");
+                    printf("t=%f Exiting\n", t);
+                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                    fflush(stdout);
+                    exit(1);
+                }
+                
+                chips_round = get_chips_round(patch[p].param, t0, t_step);
+                
+                carry_out_chips_visits_per_timestep(t0, t_step, patch, p, 
+                    chips_round, debug, output);
+            }
         }
     }
-
+    
     /* In the case of an external patch (arm C like but with PopART) assume popart-like household
     intervention adopted from end of PopART onwards. */
     if(

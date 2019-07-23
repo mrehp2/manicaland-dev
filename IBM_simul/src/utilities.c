@@ -2388,12 +2388,12 @@ void check_if_parameters_plausible(parameters *param){
             fflush(stdout);
             exit(1);
         }
-        if (param->COUNTRY_ART_START>param->CHIPS_START_YEAR[chips_round]){
-            printf("Error: param->COUNTRY_ART_START is bigger than param->CHIPS_START_YEAR[chips_round].\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+        //if (param->COUNTRY_ART_START>param->CHIPS_START_YEAR[chips_round]){
+        //    printf("Error: param->COUNTRY_ART_START is bigger than param->CHIPS_START_YEAR[chips_round].\nExiting\n");
+       //     printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+       //     fflush(stdout);
+       //     exit(1);
+       // }
         if (param->CHIPS_END_YEAR[chips_round]<2014 || param->CHIPS_END_YEAR[chips_round]>2020){
             printf("Error:param->CHIPS_END_YEAR[chips_round]=%i is outside expected range [2014,2020]\nExiting\n",param->CHIPS_END_YEAR[chips_round]);
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);

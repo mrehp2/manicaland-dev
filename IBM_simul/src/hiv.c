@@ -513,6 +513,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         
         // Increment counters
         patch[p].n_newly_infected_total++;
+        patch[p].n_newly_infected_total_by_risk[susceptible->sex_risk]++;
         
         if(susceptible->patch_no != infector->patch_no){
             patch[p].n_newly_infected_total_from_outside++;
@@ -527,6 +528,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         int age = (int) floor(time_infect - susceptible->DoB);
         if((age >= AGE_PC_MIN) && (age <= AGE_PC_MAX)){
             patch[p].n_newly_infected_total_pconly++;
+            patch[p].n_newly_infected_total_by_risk_pconly[susceptible->sex_risk]++;
             if(susceptible->patch_no != infector->patch_no){
                 patch[p].n_newly_infected_total_from_outside_pconly++;
             }
@@ -1034,10 +1036,12 @@ void draw_initial_infection(double t, individual* indiv, patch_struct *patch, in
         
         // Increment the number of newly infected
         patch[p].n_newly_infected_total++;
+        patch[p].n_newly_infected_total_by_risk[indiv->sex_risk]++;
         
         // PConly outputs
         if((t - indiv->DoB) > AGE_PC_MIN && (t - indiv->DoB) < (AGE_PC_MAX + 1)){
             patch[p].n_newly_infected_total_pconly++;
+            patch[p].n_newly_infected_total_by_risk_pconly[indiv->sex_risk]++;
         }
 
         // SPVL_infector stores the SPVL of the person doing the infecting. 
@@ -1464,7 +1468,8 @@ void carry_out_HIV_events_per_timestep(double t, patch_struct *patch, int p,
                 start_ART_process(indiv,patch[p].param, t, patch[p].cascade_events,
                     patch[p].n_cascade_events, patch[p].size_cascade_events,
                     patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression,
-                    patch[p].size_hiv_pos_progression,1, file_data_store);
+                    patch[p].size_hiv_pos_progression,1, file_data_store,
+                    patch[p].calendar_outputs);
             }else{
                 printf("ERROR: Unknown HIV event %i for ", indiv->next_HIV_event);
                 printf("id=%li in patch %d with indices %i %i %li %li. Exiting.\n",
@@ -1895,7 +1900,7 @@ processes are triggered.
 void start_ART_process(individual* indiv, parameters *param, double t, 
     individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, 
     individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression,
-    int is_emergency, file_struct *file_data_store){
+    int is_emergency, file_struct *file_data_store, calendar_outputs_struct *calendar_outputs){
     
     /* index for current time in this array: hiv_pos_progression, only used for debugging */
     int array_index_for_hiv_event = (int) round((t - param->start_time_hiv)*N_TIME_STEP_PER_YEAR);
@@ -1963,6 +1968,10 @@ void start_ART_process(individual* indiv, parameters *param, double t,
     }
     
     indiv->ART_status = EARLYART;
+    
+    // Count the number of ART initiations
+    int year_idx = (int) floor(t) - param->start_time_simul;
+    calendar_outputs->N_calendar_started_ART[year_idx]++;
     
     /* This tells us if the cd4 test is due to PopART (is_popart=1) or not (is_popart=0). */
     int is_popart = (indiv->next_cascade_event >= NCASCADEEVENTS_NONPOPART);
@@ -2977,7 +2986,6 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
             remove_from_hiv_pos_progression(indiv,  hiv_pos_progression, n_hiv_pos_progression, size_hiv_pos_progression,t, param,2);
         indiv->idx_hiv_pos_progression[0] = -1;
         indiv->idx_hiv_pos_progression[1] = -1;
-        //indiv->ART_status = EARLYART;
     }
 
     /* This tells us if the cd4 test is due to PopART (is_popart=1) or not (is_popart=0). */
@@ -3161,6 +3169,11 @@ void dropout_process(individual* indiv, parameters *param, double t, individual 
 
     indiv->ART_status = CASCADEDROPOUT;
     
+    if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){
+        int year_idx = (int) floor(t) - param->start_time_simul;
+        calendar_outputs->N_calendar_dropout[year_idx]++;
+    }
+    
     /* Need to allow CD4 progression again if they don't currently have CD4 progression event 
     (ie if they were on ART and virally suppressed). */
     /* CHANGE 8/1/15. */
@@ -3267,7 +3280,7 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
                     indiv->PANGEA_cd4atfirstART = PANGEA_get_cd4(indiv, t);
                 }
                 debug->art_vars[p].cascade_transitions[indiv->ART_status+1][EARLYART+1]++;
-                start_ART_process(indiv, patch[p].param, t, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,0, file_data_store);
+                start_ART_process(indiv, patch[p].param, t, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,0, file_data_store, patch[p].calendar_outputs);
             }
             else if ((indiv->next_cascade_event==CASCADEEVENT_VS_NONPOPART)||(indiv->next_cascade_event==CASCADEEVENT_VS_POPART)){
                 /* Only record if this is the first date of viral suppression. */

@@ -372,6 +372,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     person_template.HIV_status = UNINFECTED;
     person_template.ART_status = ARTNEG;
     person_template.t_sc = -1;                   /* Initialize at dummy value. */
+    person_template.t_vmmc = -1;                   /* Initialize at dummy value. */
     person_template.SPVL_num_G = 0;              /* Initialize at dummy value. */
     person_template.SPVL_num_E = 0;              /* Initialize at dummy value. */
     person_template.SPVL_infector = 0;           /* Initialize at dummy value. */
@@ -654,9 +655,11 @@ void init_calendar_counters(calendar_outputs_struct *calendar_outputs){
         calendar_outputs->N_calendar_CD4_tests_popart[i] = 0;
         calendar_outputs->N_calendar_HIV_tests_popart[i] = 0;
         calendar_outputs->N_calendar_HIV_tests_popart_positive[i] = 0;
-        calendar_outputs->N_calendar_HIV_tests_popart_negative[i] = 0;
-        calendar_outputs->N_calendar_started_ART_nonpopart[i] = 0;
-        calendar_outputs->N_calendar_started_ART_popart[i] = 0;
+	calendar_outputs->N_calendar_HIV_tests_popart_negative[i] = 0;
+        calendar_outputs->N_calendar_started_ART[i] = 0;
+        calendar_outputs->N_calendar_dropout[i] = 0;
+        calendar_outputs->N_calendar_CHIPS_visits[i] = 0;
+        calendar_outputs->N_calendar_VMMC[i] = 0;
     }
 }
 

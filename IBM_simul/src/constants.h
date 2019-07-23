@@ -138,6 +138,9 @@ gsl_rng * rng;
 #define MAX_N_YEARS 200 /* Maximum number of years the simulation will run for */
 
 #define T_ROLLOUT_CHIPS_EVERYWHERE 2020 /* When we want post-popart CHiPs to roll out in contaminating patches. */
+#define ROLL_OUT_CHIPS_INSIDE_PATCH 1
+#define T_STOP_ROLLOUT_CHIPS_INSIDE_PATCH 2100 /* When to stop roll out of CHiPs to inside patch */
+
 #define ALLOW_COUNTERFACTUAL_ROLLOUT 0 /* Should post-PopART rollout of CHiPs be allowed in counterfactual simulations?  Defaul is that it's switched off*/
 
 /************************************************************************/
@@ -166,7 +169,7 @@ gsl_rng * rng;
 /************************************************************************/
 
 #define MAX_POP_SIZE 500000 /* the maximum population size for memory allocation */
-#define MAX_N_PER_AGE_GROUP MAX_POP_SIZE/4   /* This is the maximum number of people in each adult age year group (ie 13, 14, 15...). The denominator is chosen to be really conservative (each age year will be <<5% of adult population)- as this is used for static memory allocation. It is also the maximum number of people who can die in each age group in a given timestep. */
+#define MAX_N_PER_AGE_GROUP MAX_POP_SIZE/6   /* This is the maximum number of people in each adult age year group (ie 13, 14, 15...). The denominator is chosen to be really conservative (each age year will be <<5% of adult population)- as this is used for static memory allocation. It is also the maximum number of people who can die in each age group in a given timestep. */
 
 //// BE CAREFUL, MAY NEED TO BE UPDATED IF VERY LONG PROJECTIONS ////
 #define AGE_ADULT 13 /* age at which individuals enter the simulation */

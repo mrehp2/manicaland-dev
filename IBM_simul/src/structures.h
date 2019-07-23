@@ -692,10 +692,16 @@ typedef struct{
     long N_calendar_HIV_tests_popart_positive[MAX_N_YEARS];
     long N_calendar_HIV_tests_popart_negative[MAX_N_YEARS];
     
-    /* Number of people who started ART (including those dead) for non-popart & popart 
-    within the current calendar year (1 Jan - 31 Dec) */
-    long N_calendar_started_ART_nonpopart[MAX_N_YEARS];
-    long N_calendar_started_ART_popart[MAX_N_YEARS];
+    /* Number of people who started ART this year */
+    long N_calendar_started_ART[MAX_N_YEARS];
+    
+    // Record number of people dropping out of the care cascade each year
+    long N_calendar_dropout[MAX_N_YEARS];
+    
+    long N_calendar_CHIPS_visits[MAX_N_YEARS];
+    
+    long N_calendar_VMMC[MAX_N_YEARS];
+    
 } calendar_outputs_struct;
 
 
@@ -721,11 +727,15 @@ typedef struct{
     long n_newly_infected_total;
     long n_newly_infected_total_from_outside;
     long n_newly_infected_total_from_acute;
-
+    long n_newly_infected_total_by_risk[N_RISK];
+    
     long n_newly_infected_total_pconly;
     long n_newly_infected_total_from_outside_pconly;
     long n_newly_infected_total_from_acute_pconly;
-
+    long n_newly_infected_total_by_risk_pconly[N_RISK];
+    
+    long n_died_from_HIV_by_risk[N_RISK];
+    
     int country_setting;
     individual ***hiv_pos_progression;
     long *n_hiv_pos_progression;
@@ -771,6 +781,7 @@ typedef struct{
     double py_n_positive_on_art[NCD4];
     double py_n_positive_not_on_art[NCD4];
     double py_died_from_HIV[N_GENDER][N_AGE_UNPD + 1];
+    long n_died_from_HIV[N_GENDER][N_AGE_UNPD + 1];
     
 } patch_struct;
 

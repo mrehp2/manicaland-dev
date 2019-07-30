@@ -1300,6 +1300,7 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         //for (i=0; i<NCHIPSROUNDS; i++){
         for (i=0; i<1; i++){ /* Change after DSMB. */
             checkreadok = fscanf(param_file,"%lg",&(param_local->p_popart_to_cascade[i]));
+	    printf("p_popart_to_cascade[%i] = %lf\n",i,param_local->p_popart_to_cascade[i]);
             check_if_cannot_read_param(checkreadok,"param_local->p_popart_to_cascade[i]");
         }
 

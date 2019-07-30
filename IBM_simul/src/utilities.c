@@ -1893,7 +1893,7 @@ void check_if_parameters_plausible(parameters *param){
     }
     for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
         if (param->p_popart_to_cascade[chips_round]<0 || param->p_popart_to_cascade[chips_round]>1){
-            printf("Error:param->p_popart_to_cascade[%i] is outside expected range [0,1]\nExiting\n",chips_round);
+            printf("Error:param->p_popart_to_cascade[%i]=%lf is outside expected range [0,1]\nExiting\n",chips_round,param->p_popart_to_cascade[chips_round]);
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);

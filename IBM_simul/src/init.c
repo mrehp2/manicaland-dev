@@ -342,7 +342,10 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     set_population_count_one_year_zero(patch[p].n_infected);
     set_population_count_one_year_zero(patch[p].n_newly_infected);
     set_population_count_one_year_zero(patch[p].n_infected_cumulative);
-
+    set_population_count_one_year_zero(patch[p].n_on_ART_VS);
+    set_population_count_one_year_zero(patch[p].n_on_ART_VU);
+    set_population_count_one_year_zero(patch[p].n_on_ART_EARLY);
+    set_population_count_one_year_zero(patch[p].n_off_ART_DROPOUT);
 
     /* age_list->age_list_by_gender[g]->youngest_age_group_index is the index of the youngest age group array in age_list->age_list_by_gender[g]->age_groups[].
      * As the population ages this index moves (so we don't have to move all the arrays). By default we start it at zero. */

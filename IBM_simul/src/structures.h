@@ -721,6 +721,13 @@ typedef struct{
     population_size_one_year_age *n_infected;
     population_size_one_year_age *n_infected_cumulative;
     population_size_one_year_age *n_newly_infected;
+
+    // Currently used for counting HIV+ women for fertility purposes.
+    population_size_one_year_age *n_on_ART_VS;     
+    population_size_one_year_age *n_on_ART_VU;    
+    population_size_one_year_age *n_on_ART_EARLY;     
+    population_size_one_year_age *n_off_ART_DROPOUT;
+    
     population_size *n_infected_wide_age_group;
     population_size *n_newly_infected_wide_age_group;
 

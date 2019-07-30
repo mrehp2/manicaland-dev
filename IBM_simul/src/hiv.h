@@ -55,7 +55,7 @@ int art_cd4_eligibility_group(parameters *, double);
 int is_eligible_for_art(individual* , parameters *, double , patch_struct *, int );
 double get_time_emergency_start_ART(individual *, parameters *, double );
 void start_ART_process(individual* , parameters *, double , individual ***, long *, long *,
-    individual ***, long *, long *, int , file_struct *, calendar_outputs_struct *);
+    individual ***, long *, long *, int , file_struct *, calendar_outputs_struct *, population_size_one_year_age *, population_size_one_year_age *);
 void draw_initial_hiv_tests(parameters *, age_list_struct *, double, individual ***, 
     long *, long *);
 void draw_hiv_tests(parameters *, age_list_struct *, int , individual ***, long *, long *, int );
@@ -73,11 +73,13 @@ void cd4_test_process(individual* , parameters *, double , individual ***, long 
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
     patch_struct *, int );
 void virally_suppressed_process(individual* , parameters *, double , individual ***, long *, 
-    long *, individual ***, long *, long *);
+    long *, individual ***, long *, long *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
 void virally_unsuppressed_process(individual* , parameters *, double , individual ***, long *,
-    long *, individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *);
+    long *, individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
 void dropout_process(individual* , parameters *, double , individual ***, long *, long *,
-    individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *);
+    individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
+    population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
+void update_ART_state_population_counters(double t, population_size_one_year_age *, population_size_one_year_age *, int , int , double , int , int );
 void carry_out_cascade_events_per_timestep(double , patch_struct *, int , all_partnerships *,
     debug_struct *, file_struct *);
 double PANGEA_get_cd4(individual* , double );

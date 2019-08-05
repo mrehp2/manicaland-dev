@@ -230,6 +230,24 @@ void set_population_count_one_year_zero(population_size_one_year_age *n_populati
     }
 }
 
+void set_population_all_strata_count_one_year_zero(population_size_one_year_age_hiv_by_stage_treatment *n_population){
+    int g,aa,r,icd4,iart;
+    n_population->youngest_age_group_index = 0;
+
+    for (r=0; r<N_RISK; r++){
+        for(g=0 ; g<N_GENDER ; g++){
+	    for (icd4=0; icd4<NCD4; icd4++){
+		for (iart=0; iart<NARTEVENTS; iart++){
+		    for (aa=0; aa<(MAX_AGE-AGE_ADULT); aa++)
+			n_population->hiv_pop_size_per_gender_age_risk[g][aa][r][icd4][iart] = 0;
+		
+		    n_population->hiv_pop_size_oldest_age_gender_risk[g][r][icd4][iart] = 0;
+		}
+	    }
+        }
+    }
+}
+    
 
 void set_population_count_stratified_zero(stratified_population_size *n_population_stratified){
     int g,ag,r;
@@ -342,10 +360,8 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     set_population_count_one_year_zero(patch[p].n_infected);
     set_population_count_one_year_zero(patch[p].n_newly_infected);
     set_population_count_one_year_zero(patch[p].n_infected_cumulative);
-    set_population_count_one_year_zero(patch[p].n_on_ART_VS);
-    set_population_count_one_year_zero(patch[p].n_on_ART_VU);
-    set_population_count_one_year_zero(patch[p].n_on_ART_EARLY);
-    set_population_count_one_year_zero(patch[p].n_off_ART_DROPOUT);
+    set_population_all_strata_count_one_year_zero(patch[p].n_infected_by_all_strata);
+
 
     /* age_list->age_list_by_gender[g]->youngest_age_group_index is the index of the youngest age group array in age_list->age_list_by_gender[g]->age_groups[].
      * As the population ages this index moves (so we don't have to move all the arrays). By default we start it at zero. */

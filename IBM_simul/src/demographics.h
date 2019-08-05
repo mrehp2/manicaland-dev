@@ -31,7 +31,7 @@ void update_population_size_new_adult(individual *, population_size *,
 void update_population_size_death(individual *, population_size *, 
     population_size_one_year_age *, population_size_one_year_age *, 
     stratified_population_size *, int, age_list_struct *,
-    population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
+    population_size_one_year_age_hiv_by_stage_treatment *);
 void initialize_first_cascade_event_for_new_individual(individual *, double, 
     parameters *, individual ***, long *, long *);
 void update_age_list_new_adult(age_list_struct *, individual *);

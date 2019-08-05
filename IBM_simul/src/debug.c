@@ -42,6 +42,8 @@ sweep_through_all_and_check_n_partners_outside_n_HIVpos_partners_and_n_HIVpos_pa
 sweep_through_all_and_check_age_and_risk_of_partners()
 blank_debugging_files()
 write_hiv_duration()
+
+check_valid_ART_transition() - checks that we are allowed to move from state A to state B (e.g. moving directly from never ART to LTART_VS is not allowed).
  */
 
 
@@ -1131,11 +1133,62 @@ void sweep_through_all_and_check_age_and_risk_of_partners (patch_struct *patch, 
  */
 
 /* Checks:
+ *  - Transitions between ART states (done)
+
  *  - Number of HIV deaths
  *  - Duration of HIV without ART by SPVL
  *  - Duration of HIV with ART
  *  - Estimation of R0 and/or doubling time
  */
+
+
+
+/* Function checks that transition between ART states is allowed. */
+void check_valid_ART_transition(int INITIAL_ART_STATE, int NEW_ART_STATE){
+        if (INITIAL_ART_STATE==LTART_VS){
+	if (!(NEW_ART_STATE==LTART_VU || NEW_ART_STATE==CASCADEDROPOUT)){
+	    printf("Error: unexpected ART transition to %i from LTART_VS. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+    else if (INITIAL_ART_STATE==LTART_VU){
+	if (!(NEW_ART_STATE==LTART_VS || NEW_ART_STATE==CASCADEDROPOUT)){
+	    printf("Error: unexpected ART transition to %i from LTART_VU. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+    else if (INITIAL_ART_STATE==EARLYART){
+	if (!(NEW_ART_STATE==LTART_VS || NEW_ART_STATE==LTART_VU || NEW_ART_STATE==CASCADEDROPOUT)){
+	    printf("Error: unexpected ART transition to %i from EARLYART. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+    else if (INITIAL_ART_STATE==CASCADEDROPOUT){
+	if (!(NEW_ART_STATE==EARLYART)){
+	    printf("Error: unexpected ART transition to %i from CASCADEDROPOUT. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+    /* ARTNAIVE = never been on ART, so next state should be early ART or CASCADEDROPOUT. */
+    else if (INITIAL_ART_STATE==ARTNAIVE){
+	if (!(NEW_ART_STATE==EARLYART||NEW_ART_STATE==CASCADEDROPOUT)){
+	    printf("Error: unexpected ART transition to %i from ARTNAIVE. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+	/* ARTNEG = never HIV tested - so only route should be if emergency ART, meaning cd4<200. */
+    else if (INITIAL_ART_STATE==ARTNEG){
+	if (!(NEW_ART_STATE==EARLYART)){
+	    printf("Error: unexpected ART transition to %i from ARTNEG. Exiting\n",NEW_ART_STATE);
+	    exit(1);
+	}
+    }
+    else{
+	printf("Error: unknown initial ART state %i in update_ART_state_population_counters(). Exiting\n",INITIAL_ART_STATE);
+	exit(1);
+    }
+
+}
 
 
 

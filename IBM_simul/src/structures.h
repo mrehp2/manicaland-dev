@@ -497,6 +497,24 @@ typedef struct {
 } population_size;
 
 
+// Currently used for counting HIV+ women for fertility purposes.
+typedef struct {
+    /* Population size of HIV+ population per gender, one-year age, risk group, CD4 group and ART status. */
+    long hiv_pop_size_per_gender_age_risk[N_GENDER][MAX_AGE-AGE_ADULT][N_RISK][NCD4][NARTEVENTS];
+    int youngest_age_group_index;
+    /* We keep the oldest age group separate (this is anyone age MAX_AGE or over). */
+    long hiv_pop_size_oldest_age_gender_risk[N_GENDER][N_RISK][NCD4][NARTEVENTS];
+} population_size_one_year_age_hiv_by_stage_treatment;
+  
+
+///*****************************population_size_one_year_age *n_on_ART_VS;     
+//    population_size_one_year_age *n_on_ART_VU;    
+//    population_size_one_year_age *n_on_ART_EARLY;     
+//    population_size_one_year_age *n_off_ART_DROPOUT;
+
+    
+
+
 typedef struct {
     /* Population size per gender, age and risk group */
     population_size pop_per_patch[NPATCHES];
@@ -722,11 +740,8 @@ typedef struct{
     population_size_one_year_age *n_infected_cumulative;
     population_size_one_year_age *n_newly_infected;
 
-    // Currently used for counting HIV+ women for fertility purposes.
-    population_size_one_year_age *n_on_ART_VS;     
-    population_size_one_year_age *n_on_ART_VU;    
-    population_size_one_year_age *n_on_ART_EARLY;     
-    population_size_one_year_age *n_off_ART_DROPOUT;
+    /* Counts number of HIV+ by gender, risk, one-year age group, CD4 stage (not by acute though) and ART status. */
+    population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata;
     
     population_size *n_infected_wide_age_group;
     population_size *n_newly_infected_wide_age_group;

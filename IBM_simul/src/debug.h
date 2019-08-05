@@ -47,6 +47,8 @@ void sweep_through_all_and_check_n_partners_outside_n_HIVpos_partners_and_n_HIVp
 void sweep_through_all_and_check_age_and_risk_of_partners (patch_struct *, all_partnerships *,
     int , int , debug_struct *);
 
+void check_valid_ART_transition(int , int );
+
 void blank_debugging_files(file_struct *);
 void write_hiv_duration(individual *, double , file_struct *);
 void write_hiv_duration_km(individual *, double , file_struct *, int );

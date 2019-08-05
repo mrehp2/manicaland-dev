@@ -27,7 +27,7 @@
 
 
 int get_spvl_cat(double );
-void draw_inital_SPVL(individual *, parameters *);
+void draw_initial_SPVL(individual *, parameters *);
 void inherit_spvl(individual *, individual *, parameters *);
 double get_mean_time_hiv_progression(parameters *, individual *);
 double get_RR_SPVL(double , parameters *);
@@ -55,7 +55,7 @@ int art_cd4_eligibility_group(parameters *, double);
 int is_eligible_for_art(individual* , parameters *, double , patch_struct *, int );
 double get_time_emergency_start_ART(individual *, parameters *, double );
 void start_ART_process(individual* , parameters *, double , individual ***, long *, long *,
-    individual ***, long *, long *, int , file_struct *, calendar_outputs_struct *, population_size_one_year_age *, population_size_one_year_age *);
+    individual ***, long *, long *, int , file_struct *, calendar_outputs_struct *, population_size_one_year_age_hiv_by_stage_treatment *);
 void draw_initial_hiv_tests(parameters *, age_list_struct *, double, individual ***, 
     long *, long *);
 void draw_hiv_tests(parameters *, age_list_struct *, int , individual ***, long *, long *, int );
@@ -73,13 +73,13 @@ void cd4_test_process(individual* , parameters *, double , individual ***, long 
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
     patch_struct *, int );
 void virally_suppressed_process(individual* , parameters *, double , individual ***, long *, 
-    long *, individual ***, long *, long *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
+    long *, individual ***, long *, long *, population_size_one_year_age_hiv_by_stage_treatment *);
 void virally_unsuppressed_process(individual* , parameters *, double , individual ***, long *,
-    long *, individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
+    long *, individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *, population_size_one_year_age_hiv_by_stage_treatment *);
 void dropout_process(individual* , parameters *, double , individual ***, long *, long *,
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
-    population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *);
-void update_ART_state_population_counters(double t, population_size_one_year_age *, population_size_one_year_age *, int , int , double , int , int );
+    population_size_one_year_age_hiv_by_stage_treatment *);
+void update_ART_state_population_counters(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , double , int , int , int );
 void carry_out_cascade_events_per_timestep(double , patch_struct *, int , all_partnerships *,
     debug_struct *, file_struct *);
 double PANGEA_get_cd4(individual* , double );

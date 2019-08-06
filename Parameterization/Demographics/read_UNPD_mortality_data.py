@@ -52,8 +52,8 @@ import sys,os,glob
 ### Change these to use different UNPD files and/or different country.
 #COUNTRY = "South Africa"
 COUNTRY = "Zimbabwe"
-# This is the year of the UNPD WPP projections we are using - currently using WPP2017 projections.
-YEAR = 2017
+# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
+YEAR = 2019
 
 # By default we keep the UNPD medium variant for future estimates:
 projection_type = "MEDIUM VARIANT"
@@ -102,6 +102,7 @@ def find_correct_filename(filename_without_extension):
 # This function checks that header has the correct format. It also
 # returns the array index corresponding to the group 80+
 def check_mortality_header(header,f):
+
     n_age_groups = len(header)
     for i in range(n_age_groups-1):
         min_age = 5*i
@@ -110,13 +111,13 @@ def check_mortality_header(header,f):
             i_max = i
         age_range = str(min_age)+"-"+str(max_age)
         if not(age_range==header[i]):
-            print "Error: header for file ",f," not of the xpected format. Exiting",age_range,header[i]
+            print "Error: header for file ",f," not of the expected format in check_mortality_header(). Exiting",age_range,header[i]
             sys.exit(1)
             
     # Now check oldest age group:
     age_range = str(5*(n_age_groups-1))+"+"
     if not(age_range==header[n_age_groups-1]):
-        print "Error: header for file ",f," not of the xpected format. Exiting",age_range,header[n_age_groups-1]
+        print "Error: header for file ",f," not of the expected format. Exiting",age_range,header[n_age_groups-1]
         sys.exit(1)
 
 
@@ -255,19 +256,19 @@ def combine_upper_age_groups(line,i_max):
     return combined_data
 
 
-def combine_upper_age_groups_NPop(line,i_80plus,i_80to84):
+def combine_upper_age_groups_NPop(line,i_80plus,i_80to84,i_data_start):
     if (i_80plus>=0):
         try:
             NPop_80plus = float(line[i_80plus])
         except:
             # if line[i_80plus] is '...' then we need to sum over 80-84, 85-89,...100+
             NPop_80plus = sum(line[i_80to84:])
-        combined_data = line[6:i_80plus] + [NPop_80plus]
+        combined_data = line[i_data_start:i_80plus] + [NPop_80plus]
             
     # Future projections don't have an 80+ group
     else:
             
-        combined_data = line[6:i_80to84] + [sum(line[i_80to84:])]
+        combined_data = line[i_data_start:i_80to84] + [sum(line[i_80to84:])]
 
     return combined_data
 
@@ -283,18 +284,24 @@ def extract_country_data_mortality(sheet,COUNTRY,f):
 
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
-            header = line[6:]
+            try:
+                i_data_start = line.index("0-4")
+            except:
+                # If this happens, then UNPD has changed the format of their file again.
+                print "Unexpected format of Excel file",f," in extract_country_data_mortality()- please check that line 16 contains the header information",line
+
+            header = line[i_data_start:]
             # Make sure that this is of the correct format. If it is, then give the index corresponding to the age group 80+ (when combining data)
             i_max = check_mortality_header(header,f)
 
 
         # Look for the country name - this is a data row.
         if COUNTRY in line:
-            # 6th column is the year range e.g. 1950-55:
-            time_range = line[5]
-            # 7th column onwards is the mortality data in each age group.
+            # (i_data_start-1)th column is the year range e.g. 1950-55:
+            time_range = line[i_data_start-1]
+            # (i_data_start)th column onwards is the mortality data in each age group.
             # UNPD presents both estimates to present and future projections in age groups 0-4, 5-9, ... 90-94, 95+
-            mortality_data_this_time_period = line[6:]
+            mortality_data_this_time_period = line[i_data_start:]
             # Combine the highest age groups (80+)
             mortality_data[time_range] = combine_upper_age_groups(mortality_data_this_time_period,i_max)
 
@@ -314,25 +321,33 @@ def extract_country_data_NPop(sheet,COUNTRY,f):
 
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
-            header = line[6:]
+            try:
+                i_data_start = line.index("0-4")
+
+            except:
+                # If this happens, then UNPD has changed the format of their file again.
+                print "Error: Unexpected format of Excel file",f," in extract_country_data_NPop() - please check that line 16 contains the header information",line
+                sys.exit(1)
+                
+            header = line[i_data_start:]
             # Make sure that this is of the correct format. If it is, then give the indices corresponding to the age groups 80+ and 80-84 (when combining data)
             [i_80plus,i_80to84] = check_NPop_header(header,f)
 
-            # Need to adjust as we previously removed the first 6 columns:
-            i_80plus = i_80plus + 6
-            i_80to84 = i_80to84 + 6
+            # Need to adjust as we previously removed the first i_data_start columns:
+            i_80plus = i_80plus + i_data_start
+            i_80to84 = i_80to84 + i_data_start
 
 
         # Look for the country name - this is a data row.
         if COUNTRY in line:
             NPop_data_this_year = line
-            # 6th column is the year e.g. 1955:
-            year = line[5]
+            # (i_data_start-1)th column is the year e.g. 1955:
+            year = line[i_data_start-1]
 
             # UNPD presents both estimates to present and future projections in age groups 0-4, 5-9, etc. from 7th column onwards:
 
             # Combine the age 80+ age groups if needed (or use the 80+ if not):
-            NPop_data[year] = combine_upper_age_groups_NPop(NPop_data_this_year,i_80plus,i_80to84)
+            NPop_data[year] = combine_upper_age_groups_NPop(NPop_data_this_year,i_80plus,i_80to84,i_data_start)
             #print "year = ",year,"80+ pop = ",NPop_data[year][-1]
 
 

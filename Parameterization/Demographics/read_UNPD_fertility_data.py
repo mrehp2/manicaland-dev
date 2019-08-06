@@ -31,8 +31,8 @@ import sys,os,glob
 ### Change these to use different UNPD files and/or different country.
 #COUNTRY = "South Africa"
 COUNTRY = "Zimbabwe"
-# This is the year of the UNPD WPP projections we are using - currently using WPP2017 projections.
-YEAR = 2017
+# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
+YEAR = 2019
 
 # By default we keep the UNPD medium variant for future estimates:
 projection_type = "MEDIUM VARIANT"
@@ -94,7 +94,7 @@ def check_header(header,f):
 
     
     if not(header_to_compare==header):
-        print "Error: header for file ",f," not of the xpected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header
+        print "Error: header for file ",f," not of the expected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header
         sys.exit(1)
 
 
@@ -151,18 +151,25 @@ def extract_country_data_fertility(sheet,COUNTRY,f):
 
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
-            header = line[6:]
+            try:
+                i_data_start = line.index("15-19")
+            except:
+                # If this happens, then UNPD has changed the format of their file again.
+                print "Unexpected format of Excel file - please check that line 16 contains the header information",line
+
+
+            header = line[i_data_start:]
             # Make sure that the header is of the correct format. 
             i_max = check_header(header,f)
 
 
         # Look for the country name - this is a data row.
         if COUNTRY in line:
-            # 6th column is the year range e.g. 1950-55:
-            time_range = line[5]
-            # 7th column onwards is the fertility data in each age group.
+            # (i_data_start-1)th column is the year range e.g. 1950-55:
+            time_range = line[i_data_start-1]
+            # i_data_start th column onwards is the fertility data in each age group.
             # UNPD presents both estimates to present and future projections in age groups 15-19, 20-24, 45-49.
-            fertility_data[time_range] = line[6:]
+            fertility_data[time_range] = line[i_data_start:]
 
 
     return fertility_data

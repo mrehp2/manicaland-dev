@@ -2043,7 +2043,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
     int r;   /* Risk group index. */
     int icd4; /* cd4 index. */
     /* Counters for all women aged aa (n) and the number of women who are HIV+ by different ART stages (n_hivpos=all HIV+ women of given age ai. */
-    long n, n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu;
     get_unpd_time_indices(t, &y0, &f);
 
     double childhood_mortality_rate = childhood_mortality(patch[p].param, t);
@@ -2069,6 +2068,8 @@ void add_new_kids(double t, patch_struct *patch, int p){
         while (ai_hivpos>(MAX_AGE-AGE_ADULT-1))
             ai_hivpos = ai_hivpos - (MAX_AGE-AGE_ADULT);
 
+	long n, n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu;
+
 	/* First reset counters to zero: */
 	n_hivpos = 0;
 	n_hivpos_artvs = 0;
@@ -2087,7 +2088,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	    }
 	}
 
-	if (t>1970){
+	if (t>1970 && (t-floor(t)<1e-9)){
 	    printf("At time t=%lf\n",t);
 	    printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);
 	    printf("Number of women HIV+ not on ART = %li\n",n_hivpos - n_hivpos_artvs - n_hivpos_earlyart - n_hivpos_artvu);

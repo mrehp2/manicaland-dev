@@ -1421,10 +1421,11 @@ void carry_out_HIV_events_per_timestep(double t, patch_struct *patch, int p,
                         indiv->cd4, indiv->cd4 + 1, t);
                     fflush(stdout);
                 }
-                
+                update_ART_state_population_counters_cd4_change(t, patch[p].n_infected_by_all_strata, indiv->cd4, indiv->cd4+1, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->ART_status);
                 // Increase CD4 category by 1
                 indiv->cd4++;
-                
+		
+		
             // If next event is emergency ART due to low CD4
             }else if(indiv->next_HIV_event == HIVEVENT_STARTART_LOWCD4){
                 
@@ -1969,7 +1970,7 @@ void start_ART_process(individual* indiv, parameters *param, double t,
 
 
     /* Add this person to the early ART group (and remove from other groups if needed): */
-    update_ART_state_population_counters(t, n_infected_by_all_strata, indiv->ART_status, EARLYART, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, EARLYART, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
 
 
     /* Now update this person's ART status: */
@@ -3002,7 +3003,7 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
 
 
     /* Add this person to the virally suppressed group (and remove from the VU group if needed): */
-    update_ART_state_population_counters(t, n_infected_by_all_strata, indiv->ART_status, LTART_VS, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VS, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
 
     
     /* Now change their ART status flag: */
@@ -3085,7 +3086,7 @@ void virally_unsuppressed_process(individual* indiv, parameters *param, double t
     //printf("virally_unsuppressed_process is_popart= %i\n",is_popart);
 
     /* Add this person to the virally unsuppressed group (and remove from the VS group if needed): */
-    update_ART_state_population_counters(t, n_infected_by_all_strata, indiv->ART_status, LTART_VU, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VU, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
     
     /* Now update their ART status: */
     indiv->ART_status = LTART_VU;
@@ -3184,7 +3185,7 @@ void dropout_process(individual* indiv, parameters *param, double t, individual 
     }
 
     /* Add this person to the dropout group (and remove from the VS/VU/EARLY group if needed): */
-    update_ART_state_population_counters(t, n_infected_by_all_strata, indiv->ART_status, CASCADEDROPOUT, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, CASCADEDROPOUT, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
     
     /* Now update their ART status: */
     indiv->ART_status = CASCADEDROPOUT;
@@ -3233,7 +3234,7 @@ void dropout_process(individual* indiv, parameters *param, double t, individual 
  - dropped out of cascade 
    Primary use of this is for MTCT (where we want to be able to keep track of HIV+ women who are on ART, and potentially separate out the different ART stages) but I have included dropouts as it seems potentially useful.
 */
-void update_ART_state_population_counters(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_ART_STATE, int NEW_ART_STATE, double DoB, int gender, int sex_risk, int icd4){
+void update_ART_state_population_counters_ARTcascade_change(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_ART_STATE, int NEW_ART_STATE, double DoB, int gender, int sex_risk, int icd4){
 
 
     /* For debugging: check transition is allowed: */
@@ -3283,6 +3284,46 @@ void update_ART_state_population_counters(double t, population_size_one_year_age
     }
 
 }
+
+
+
+void update_ART_state_population_counters_cd4_change(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_CD4, int NEW_CD4, double DoB, int gender, int sex_risk, int iart){
+
+    if (iart==ARTDROPOUT){
+	printf("UNexpectedly using ARTDROPOUT!!!. Exiting\n");
+	exit(1);
+    }
+    
+    if ((iart!=EARLYART) && (iart!=LTART_VU) && (iart!=LTART_VS) && (iart!=CASCADEDROPOUT)){
+	return;
+    }
+
+    int aa = (int) floor(floor(t) - DoB) - AGE_ADULT;
+	    
+    if(aa < (MAX_AGE - AGE_ADULT)){
+        /* ai is the age index of the array n_infected_by_all_strata. */
+
+	int ai = n_infected_by_all_strata->youngest_age_group_index + aa;
+	while (ai>(MAX_AGE-AGE_ADULT-1))
+	    ai = ai - (MAX_AGE-AGE_ADULT);
+
+	/* Update the 'old' CD4 state: */
+	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai][sex_risk][INITIAL_CD4][iart])--;
+
+	/* Now update the 'new' ART state: */
+	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai][sex_risk][NEW_CD4][iart])++;
+
+
+    }else{
+	/* Update the 'old' ART state counter for the oldest age group: */
+	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][INITIAL_CD4][iart])--;
+	 
+	/* Update the 'new' ART state counter for the oldest age group: */
+	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][NEW_CD4][iart])++;
+    }
+
+}
+
 
 
 /* Go through the list of scheduled cascade events for this timestep (stored in hiv_pos_progression). 

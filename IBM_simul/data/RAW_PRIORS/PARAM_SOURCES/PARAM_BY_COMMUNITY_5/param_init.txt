@@ -1,1 +1,1 @@
-initial_adult_population_size 2050 // Zambia 2050, South Africa 3050. Gives roughly 50,000 in 2013.
+initial_adult_population_size 500 // Zambia 2050, South Africa 3050. Gives roughly 50,000 in 2013.

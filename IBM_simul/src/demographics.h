@@ -45,6 +45,7 @@ void age_population_by_one_year(age_list_struct *);
 void update_pop_available_partners_ageing_by_one_year(patch_struct *, int, 
     all_partnerships *, double );
 void age_population_size_one_year_age_by_one_year(population_size_one_year_age *);
+void update_n_infected_by_all_strata_ageing_by_one_year(population_size_one_year_age_hiv_by_stage_treatment *);
 void remove_dead_person_from_susceptible_in_serodiscordant_partnership(individual *, 
     individual **, long *);
 void remove_dead_person_from_list_available_partners(double, individual *,population_partners *,

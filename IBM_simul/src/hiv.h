@@ -39,7 +39,7 @@ void inform_partners_of_seroconversion_and_update_list_serodiscordant_partnershi
     individual **, long *);
 void new_infection(double, int, individual *, individual *, population_size_one_year_age *,
     population_size_one_year_age *, age_list_struct *,  parameters *, individual ***, long *,
-    long *, population_size_one_year_age *, file_struct *);
+    long *, population_size_one_year_age *,  population_size_one_year_age_hiv_by_stage_treatment *, file_struct *);
 void draw_initial_infection(double, individual* , patch_struct *, int, all_partnerships *,
     output_struct *, file_struct *);
 void next_hiv_event(individual *, individual ***, long *, long *, parameters *, double ,

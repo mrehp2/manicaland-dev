@@ -52,6 +52,8 @@ age_population_by_one_year()
     Update the age_list structure as people age by 1 year.
 age_population_size_one_year_age_by_one_year()
     Update the population
+update_n_infected_by_all_strata_ageing_by_one_year():
+    Updates structure n_infected_by_all_strata, ageing by one year.
 
  *** The following functions remove people from the lists of scheduled events/available people.
 remove_dead_person_from_susceptible_in_serodiscordant_partnership()
@@ -408,7 +410,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
         new_adult->cd4 = 2;                 /// WRONG!!!
 
 	/* Add this person to the LTART VS group - note that we aren't keeping track of the number of ART-naive people so no 'old' counter to update : */
-	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status])++;
+	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
 
 	
 	/* Assign SPVL_num_G and SPVL_num_E: */
@@ -620,18 +622,19 @@ void update_population_size_death(individual *individual, population_size *n_pop
 
 	    /* now update ART state counter: */
 	    ai_art = n_infected_by_all_strata->youngest_age_group_index + aa; 
-            while (ai_art>(MAX_AGE-AGE_ADULT-1))
-                ai_art = ai_art - (MAX_AGE-AGE_ADULT);
-	    n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[individual->gender][ai_art][individual->sex_risk][individual->cd4][individual->ART_status]--;
+	    while (ai_art>(MAX_AGE-AGE_ADULT-1))
+		ai_art = ai_art - (MAX_AGE-AGE_ADULT);
+	    n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[individual->gender][ai_art][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
 	    
-        }
-        else{
-            (n_infected->pop_size_oldest_age_group_gender_risk[individual->gender][individual->sex_risk]) -= 1;
+	}
+
+	else{
+		(n_infected->pop_size_oldest_age_group_gender_risk[individual->gender][individual->sex_risk]) -= 1;
             //printf("--- One death of HIV+ (old, gender %d risk group %d)\n",individual->gender, individual->sex_risk);
             //fflush(stdout);
 
 	    /* now update ART state counter: */
-	    n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status]--;
+		n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
 	    
 	}
     }
@@ -837,6 +840,10 @@ void update_n_population_ageing_by_one_year(patch_struct *patch, int p){
         }
     }
 }
+
+
+
+
 
 
 
@@ -1095,6 +1102,56 @@ void age_population_size_one_year_age_by_one_year(population_size_one_year_age *
     else{
         printf("Error: n_local_pop ageing process is not working!\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+}
+
+
+
+/* Function arguments: pointer to the population_size_one_year_age structure
+ * Function does: moves the pointers for each age group by 1, moves MAX_AGE-1 age people into MAX_AGE group.
+ * Function returns: nothing. */
+void update_n_infected_by_all_strata_ageing_by_one_year(population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata){
+    int g,r,icd4,iart;
+
+    /* If we have not reached the start of the array, move backwards to the previous element in the array. */
+    if ((n_infected_by_all_strata->youngest_age_group_index) >= 1){
+        for (g=0; g<N_GENDER; g++){
+            for (r=0; r<N_RISK; r++){
+		for (icd4=0; icd4<NCD4; icd4++){
+		    for (iart=0; iart<NARTEVENTS; iart++){
+			/* Merge people aged 79 (who are turning 80 now) into the 80+ year-age group: */
+			n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[g][r][icd4][iart] += n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[g][n_infected_by_all_strata->youngest_age_group_index-1][r][icd4][iart]; 
+
+			/* As everyone has aged by 1 year there are no people currently HIV+ aged 13: */
+			n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[g][n_infected_by_all_strata->youngest_age_group_index-1][r][icd4][iart] = 0;
+		    }
+		}
+	    }
+	}
+        /* Move the index for the youngest age group one back. */
+        (n_infected_by_all_strata->youngest_age_group_index)--;
+    }
+    else if ((n_infected_by_all_strata->youngest_age_group_index)==0){
+        for (g=0; g<N_GENDER; g++){
+            for (r=0; r<N_RISK; r++){       
+		for (icd4=0; icd4<NCD4; icd4++){
+		    for (iart=0; iart<NARTEVENTS; iart++){
+			/* Merge people aged 80+ into the 79 year-age group (so that the 79 group becomes the new 80+ group): */
+			n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[g][r][icd4][iart] += n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[g][MAX_AGE-AGE_ADULT-1][r][icd4][iart];
+
+			/* As everyone has aged by 1 year there are no people currently HIV+ aged 13: */
+			n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[g][MAX_AGE-AGE_ADULT-1][r][icd4][iart] = 0;
+		    }
+		}
+	    }
+	}
+        /* Move the index for the youngest age group to the right-hand end of the array: */
+        (n_infected_by_all_strata->youngest_age_group_index) = MAX_AGE-AGE_ADULT-1;
+    }
+    else{
+        printf("Error: update_n_infected_by_all_strata_ageing_by_one_year() is not working!\n");
         fflush(stdout);
         exit(1);
     }
@@ -2023,7 +2080,7 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
  * Function returns: nothing. */
 void add_new_kids(double t, patch_struct *patch, int p){
     int aa,ai;     /* index for age groups. */
-    int ai_hivpos;
+    int ai_hivpos, ai_art;
     long n_births = 0;
     double age_group_fertility_rate_per_timestep;
     /*    int i_hiv_mtct;
@@ -2068,13 +2125,23 @@ void add_new_kids(double t, patch_struct *patch, int p){
         while (ai_hivpos>(MAX_AGE-AGE_ADULT-1))
             ai_hivpos = ai_hivpos - (MAX_AGE-AGE_ADULT);
 
-	long n, n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu;
+	ai_art = aa + patch[p].n_infected->youngest_age_group_index;
+        while (ai_art>(MAX_AGE-AGE_ADULT-1))
+            ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 
+	
+	long n, n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
+	
+
+	
 	/* First reset counters to zero: */
 	n_hivpos = 0;
+	n_hivpos_unaware = 0;
+	n_hivpos_aware_neverart = 0;
 	n_hivpos_artvs = 0;
 	n_hivpos_earlyart = 0;
 	n_hivpos_artvu = 0;
+	n_hivpos_cascadedropout = 0;
 
 	/* Total number of women aged aa: */
 	n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
@@ -2082,19 +2149,26 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	for (r=0; r<N_RISK; r++){
 	    n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];
 	    for (icd4=0; icd4<NCD4; icd4++){
-		n_hivpos_artvs += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_hivpos][r][icd4][LTART_VS];
-		n_hivpos_artvu += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_hivpos][r][icd4][LTART_VU];
-		n_hivpos_earlyart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_hivpos][r][icd4][EARLYART];
+		n_hivpos_unaware += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
+		n_hivpos_aware_neverart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
+		n_hivpos_artvs += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
+		n_hivpos_artvu += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
+		n_hivpos_earlyart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
+		n_hivpos_cascadedropout += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];
+		
 	    }
 	}
 
 	if (t>1970 && (t-floor(t)<1e-9)){
 	    printf("At time t=%lf\n",t);
 	    printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);
-	    printf("Number of women HIV+ not on ART = %li\n",n_hivpos - n_hivpos_artvs - n_hivpos_earlyart - n_hivpos_artvu);
+	    printf("Number of women HIV+ total = %li\n",n_hivpos);
+	    printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
+	    printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
+	    printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
 	    printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
-	    printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart - n_hivpos_artvu);
 	    printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
+	    printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
 	}
 
 	

@@ -1494,6 +1494,7 @@ void store_timestep_outputs(patch_struct *patch, int p, double t, output_struct 
     */
     
     int aa, g, r, ai;
+    int k;
     long n_id;
     int MINAGE_COUNTED, MAX_AGE_COUNTED;
     long npop_m = 0;
@@ -1513,74 +1514,86 @@ void store_timestep_outputs(patch_struct *patch, int p, double t, output_struct 
     char temp_string[5000]; // Temporary store of data from current year.
     char temp_string2[100]; // Temp store for vars by gender/age which gets added to temp_string
     memset(temp_string2, '\0', sizeof(temp_string2));
-    
-    // If PCdata == 0, include the whole population (aged 13+)
+
+    individual *indiv; /* Temporary pointer to an existing individual structure (so no need to malloc). */
+
+
     if(PCdata == 0){
-        for(n_id = 0; n_id < patch[p].id_counter; n_id++){
-            /* Check that the person is not dead: */
-            if(patch[p].individual_population[n_id].cd4 != DEAD){
-                
-                /* Gender-specific outputs derived here: */
-                if(patch[p].individual_population[n_id].gender == MALE){
-                    
-                    /* Use a function here so easy to add extra stratifications to output: */
-                    update_outputs_gender_veryshort(&(patch[p].individual_population[n_id]), 
-                            &npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
-                            &NNotKnowStatus_m);
-                    
-                    /* Count number of men who are currently circ: */
-                    if (patch[p].individual_population[n_id].circ == VMMC || patch[p].individual_population[n_id].circ==VMMC_HEALING||patch[p].individual_population[n_id].circ==TRADITIONAL_MC){
-                        N_men_MC++;
-                    }
-                }else{
-                    update_outputs_gender_veryshort(&(patch[p].individual_population[n_id]), &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
-                }
-            }
-        }
-    }
-    // If PCdata == 1, only include people if they are eligible to be in PC at present 
-    // (defined as >18 and <45 at this timestep.
-    else if(PCdata == 1){
-        for (n_id = 0; n_id < patch[p].id_counter; n_id++){
-            
-            /* Check that the person is not dead: */
-            if(patch[p].individual_population[n_id].cd4 != DEAD && (t-patch[p].individual_population[n_id].DoB) > 18 && (t-patch[p].individual_population[n_id].DoB) < 45){
-                
-                /* Gender-specific outputs derived here: */
-                if(patch[p].individual_population[n_id].gender == MALE){
-                    /* Use a function here so easy to add extra stratifications to output: */
-                    update_outputs_gender_veryshort(&(patch[p].individual_population[n_id]), &npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, &NNotKnowStatus_m);
-                    
-                    /* Count number of men who are currently circ: */
-                    if(patch[p].individual_population[n_id].circ==VMMC||patch[p].individual_population[n_id].circ==VMMC_HEALING||patch[p].individual_population[n_id].circ==TRADITIONAL_MC){
-                        N_men_MC++;
-                    }
-                }else{
-                    update_outputs_gender_veryshort(&(patch[p].individual_population[n_id]), 
-                            &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, 
-                            &NNotKnowStatus_f);
-                }
-            }
-        }
-    // If PCdata is not 0 or 1
+        MINAGE_COUNTED = 0;
+        MAX_AGE_COUNTED = MAX_AGE-AGE_ADULT;
+    }else if(PCdata==1){
+	/* PC in PopART is 18-44. */
+        MINAGE_COUNTED = 18 - AGE_ADULT;
+        MAX_AGE_COUNTED = 45 - AGE_ADULT;
     }else{
         printf("ERROR: PCdata variable is not defined correctly (should be 0 or 1) - exiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
+
+    
+
+	for (g=0;g<N_GENDER;g++){
+	    for (aa=MINAGE_COUNTED;aa<MAX_AGE_COUNTED;aa++){
+		ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index;
+		/* Make sure never goes beyond end of array. */
+		while (ai>(MAX_AGE-AGE_ADULT-1))
+		    ai = ai - (MAX_AGE-AGE_ADULT);
+		for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai] ; k++){
+		    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];
+		    /* Gender-specific outputs derived here: */
+		    if(indiv->gender == MALE){
+			
+			/* Use a function here so easy to add extra stratifications to output: */
+			update_outputs_gender_veryshort(indiv, 
+							&npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
+							&NNotKnowStatus_m);
+                    
+			/* Count number of men who are currently circ: */
+			if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
+			    N_men_MC++;
+			}
+		    }else{
+			update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
+		    }
+		    
+		}
+
+	    }
+
+	    /* For PC we are looking at a restricted age range only (e.g. 18-44); if not PC then we include the 80+ age group: */
+	    if(PCdata == 0){
+
+		for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group ; k++){
+		    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k];
+		    /* Gender-specific outputs derived here: */
+		    if(indiv->gender == MALE){
+		    
+			/* Use a function here so easy to add extra stratifications to output: */
+			update_outputs_gender_veryshort(indiv, 
+							&npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
+							&NNotKnowStatus_m);
+                    
+			/* Count number of men who are currently circ: */
+			if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
+			    N_men_MC++;
+			}
+		    }else{
+			update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
+		    }
+		    
+		}
+	    }
+	}
+
+    
+    
     // Write variables to string `temp_string`
     sprintf(temp_string,"%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,",
         t, npop_m, npop_f, npositive_m, npositive_f, Nknowpositive_m, Nknowpositive_f, 
         NArt_m, NArt_f, NVS_m, NVS_f, NNotKnowStatus_m, NNotKnowStatus_f, N_men_MC/(1.0*npop_m));
     
-    if(PCdata == 0){
-        MINAGE_COUNTED = 0;
-        MAX_AGE_COUNTED = MAX_AGE-AGE_ADULT;
-    }else{
-        MINAGE_COUNTED = 18 - AGE_ADULT;
-        MAX_AGE_COUNTED = 45 - AGE_ADULT;
-    }
     
     for (g = 0; g < N_GENDER; g++){
         temp_cumulativeinfected = 0;

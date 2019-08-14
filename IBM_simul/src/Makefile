@@ -14,9 +14,13 @@
 # Executing instructions:
 #	./popart-simul.exe Zambia
 
-#GSLFLAGS= -lgsl -lgslcblas -lm -O3
-GSLFLAGS= -lgsl -lgslcblas -lm 
-#GSLFLAGS= -lgsl -lgslcblas -lm -pg
+# In general
+GSLFLAGS= -lgsl -lgslcblas -lm -O3 
+# For valgrind:
+#GSLFLAGS= -lgsl -lgslcblas -lm 
+
+# for Gprof:
+GSLFLAGS= -lgsl -lgslcblas -lm -pg
 LFLAGS = ${GSLFLAGS}
 
 # all the C files (*.c)
@@ -46,7 +50,7 @@ else
 endif
 
 # Compilation options and libraries to be used
-CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0
+CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
 
 # To compile
 all: ${OBJS}

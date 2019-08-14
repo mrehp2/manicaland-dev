@@ -1143,7 +1143,8 @@ void sweep_through_all_and_check_age_and_risk_of_partners (patch_struct *patch, 
 
 void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, double t){
 
-    int g, aa, ai;
+    int aa, ai;
+    int g = FEMALE; /* We are looking at women here for now. */
     int n;
     /* Pointer to individual - we are just assigning another pointer to this pointer so no need to allocate memory. */
     individual *indiv;
@@ -1170,8 +1171,8 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 
 	
      /* Loop over all the people in this group: */
-	for(n=0; n<patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]; n++){
-	    indiv = patch[p].age_list->age_list_by_gender[FEMALE]->age_group[ai][n];
+	for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]; n++){
+	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][n];
 	    /* Going through age list so only alive people here. 
 	       Only worried about HIV-positive people here. */
 	    if (indiv->HIV_status>UNINFECTED){
@@ -1194,7 +1195,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	}
 	
 	printf("*At time t=%lf\n",t);
-	printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
+	printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
 	printf("*Number of women HIV+ total = %li\n",n_hivpos);
 	printf("*Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
 	printf("*Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
@@ -1214,7 +1215,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
     n_hivpos_artvu = 0;
     n_hivpos_cascadedropout = 0;
     for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; n++){
-	indiv = patch[p].age_list->age_list_by_gender[FEMALE]->age_group[ai][n];
+	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][n];
 	/* Going through age list so only alive people here. 
 	   Only worried about HIV-positive people here. */
 	if (indiv->HIV_status>UNINFECTED){

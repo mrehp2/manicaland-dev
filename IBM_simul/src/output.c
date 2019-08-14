@@ -894,7 +894,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     long npos_r[N_RISK] = {0,0,0};
     int current_cd4_guidelines = art_cd4_eligibility_group(patch[p].param,(double) year);
 
-    double prop_annual_acute;
+    /* double prop_annual_acute;           // Not used. */
     double prophivposonart;
 
     /* Temporary store of data from current year. */
@@ -1029,6 +1029,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     /* Store number of positive people in n_infected_total: */
     *n_infected_total = npositive;
 
+    /* Code not used: 
     if (patch[p].PANGEA_N_ANNUALINFECTIONS > 0){
         
         prop_annual_acute = patch[p].PANGEA_N_ANNUALACUTEINFECTIONS/
@@ -1037,7 +1038,8 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     }else{
         prop_annual_acute = 0.0;
     }
-    
+    */    
+
     if (npositive > 0){
         prophivposonart = (NArt_m + NArt_f)/(1.0*npositive);
     }else{
@@ -1495,7 +1497,7 @@ void store_timestep_outputs(patch_struct *patch, int p, double t, output_struct 
     
     int aa, g, r, ai;
     int k;
-    long n_id;
+    //long n_id;
     int MINAGE_COUNTED, MAX_AGE_COUNTED;
     long npop_m = 0;
     long npop_f = 0;
@@ -3173,7 +3175,7 @@ void print_partnership_network(file_struct *file_data_store, char *output_file_d
 void print_partners_outside_community(char *output_file_directory, individual *individual_population, long id_counter, int year, int p){ // HERE could add an option to print only serodiscordant partners
     long n_id, gender, risk;
     int n_partners, i_partner;
-    long partner_id;
+    //long partner_id;
     int partner_patch;
 
     /* Use if we want to write to file: */
@@ -3219,7 +3221,6 @@ void print_partners_outside_community(char *output_file_directory, individual *i
             n_partners = individual_population[n_id].n_partners;
 
             for(i_partner=0;i_partner<n_partners;i_partner++){
-                partner_id = individual_population[n_id].partner_pairs[i_partner]->ptr[1-gender]->id;
                 partner_patch = individual_population[n_id].partner_pairs[i_partner]->ptr[1-gender]->patch_no;
 
                 if (partner_patch==p){
@@ -3227,6 +3228,7 @@ void print_partners_outside_community(char *output_file_directory, individual *i
                     n_partner_total_not_stratified += 0.5; /* Ensure we only count each partnership once as now we are looking overall */
                     /*if(year == 1901)
                     {
+		        partner_id = individual_population[n_id].partner_pairs[i_partner]->ptr[1-gender]->id;
                         printf("Partnership between %li and %li\n",individual_population[n_id].id, partner_id);
                         fflush(stdout);
                     }*/
@@ -3870,12 +3872,12 @@ void write_chips_data_annual(patch_struct *patch, int p, int year, int t_step, i
     }
 
 
-    int youngest_age_eligible_in_this_chips_round;
+    //int youngest_age_eligible_in_this_chips_round;
     int current_chips_round = get_chips_round(patch[p].param, year, t_step);
-    if (POPART_FINISHED==1)
-        youngest_age_eligible_in_this_chips_round = AGE_CHIPS;
-    else
-        youngest_age_eligible_in_this_chips_round = AGE_CHIPS + (year-patch[p].param->CHIPS_START_YEAR[current_chips_round]);
+    //    if (POPART_FINISHED==1)
+    //        youngest_age_eligible_in_this_chips_round = AGE_CHIPS;
+    //    else
+    //        youngest_age_eligible_in_this_chips_round = AGE_CHIPS + (year-patch[p].param->CHIPS_START_YEAR[current_chips_round]);
     //printf("time = %6.4f CHISPAGE=%i\n",year+t_step*TIME_STEP,youngest_age_eligible_in_this_chips_round);
     //fflush(stdout);
 
@@ -4101,8 +4103,8 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     
     int current_cd4_guidelines = art_cd4_eligibility_group(patch[p].param,(double) year);
 
-    double prop_annual_acute;
-    double prophivposonart;
+    //double prop_annual_acute;
+    //double prophivposonart;
 
     /* Temporary store of data from current year. */
     char temp_string[10000];
@@ -4174,6 +4176,7 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     /* Store number of positive people in n_infected_total: */
     *n_infected_total = npositive;
 
+    /* Code not used:
     if (patch[p].PANGEA_N_ANNUALINFECTIONS > 0){
         
         prop_annual_acute = patch[p].PANGEA_N_ANNUALACUTEINFECTIONS/
@@ -4182,12 +4185,15 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     }else{
         prop_annual_acute = 0.0;
     }
-    
+    */
+
+    /* Not used: 
     if (npositive > 0){
         prophivposonart = (NArt_m + NArt_f)/(1.0*npositive);
     }else{
         prophivposonart = 0.0;
     }
+    */
     
     sprintf(temp_string,
         "%d,%d,%i,%8.6f,%8.6f,\

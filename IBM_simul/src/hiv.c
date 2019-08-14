@@ -412,12 +412,13 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         // Add a multiplying factor for assortative risk mixing: high-high is twice as risky 
         // and low-low half as risky as other combinations 
         if(CHANGE_RR_BY_RISK_GROUP == 1){
-            if(temp_HIVpos_partner->sex_risk == HIGH && susceptible->sex_risk == HIGH){
-                PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= 2.0;
-            }
             if(temp_HIVpos_partner->sex_risk == LOW && susceptible->sex_risk == LOW){
                 PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= 0.5;
             }
+	    else if(temp_HIVpos_partner->sex_risk == HIGH && susceptible->sex_risk == HIGH){
+                PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= 2.0;
+            }
+            
         }
 
         // Add a multiplying factor for assortative community mizing: within community is more

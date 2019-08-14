@@ -377,8 +377,9 @@ int main(int argc,char *argv[]){
         }
     }
 
-    /* Set "partners outside community" file to just have the header (but be blank otherwise). */
-    if(WRITE_PARTNERS_OUTSIDE_COMMUNITY == 1){
+    /* Set "partners outside community" file to just have the header (but be blank otherwise). 
+       Note - this only works if NPATCHES>=2. */
+    if(WRITE_PARTNERS_OUTSIDE_COMMUNITY == 1 && NPATCHES>1){
         initialise_partners_outside_community_file(output_file_directory, 0);
     }
 
@@ -675,7 +676,8 @@ int main(int argc,char *argv[]){
                     if(
                         (p == 0) && 
                         (WRITE_PARTNERS_OUTSIDE_COMMUNITY == 1) && 
-                        (PRINT_EACH_RUN_OUTPUT == 1)
+                        (PRINT_EACH_RUN_OUTPUT == 1) &&
+			(NPATCHES>1)  /* Only possible if >=2 patches. */
                     ){
                         print_partners_outside_community(output_file_directory,
                             patch[p].individual_population, patch[p].id_counter, year + 1, p);

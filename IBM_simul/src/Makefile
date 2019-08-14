@@ -20,7 +20,9 @@ GSLFLAGS= -lgsl -lgslcblas -lm -O3
 #GSLFLAGS= -lgsl -lgslcblas -lm 
 
 # for Gprof:
-GSLFLAGS= -lgsl -lgslcblas -lm -pg
+#GSLFLAGS= -lgsl -lgslcblas -lm -pg 
+
+
 LFLAGS = ${GSLFLAGS}
 
 # all the C files (*.c)
@@ -50,7 +52,12 @@ else
 endif
 
 # Compilation options and libraries to be used
+
+# In general use this:
 CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
+
+#For gprof use this:
+#CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
 
 # To compile
 all: ${OBJS}

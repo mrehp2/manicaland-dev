@@ -456,25 +456,28 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
     
 }
     /* Adjust according to the circumcision status of the susceptible: */
-    if((susceptible->circ) == UNCIRC || (susceptible->circ) == UNCIRC_WAITING_VMMC){
+    if(susceptible->gender==FEMALE)
         total_hazard_per_timestep = total_hazard_ignore_circ * TIME_STEP;
-    }else if((susceptible->circ) == VMMC){
-        total_hazard_per_timestep = total_hazard_ignore_circ * 
+    else{
+	if((susceptible->circ) == UNCIRC || (susceptible->circ) == UNCIRC_WAITING_VMMC){
+	    total_hazard_per_timestep = total_hazard_ignore_circ * TIME_STEP;
+	}else if((susceptible->circ) == VMMC){
+	    total_hazard_per_timestep = total_hazard_ignore_circ * 
                 (1.0 - patch[p].param->eff_circ_vmmc) * TIME_STEP;
-    }else if((susceptible->circ) == TRADITIONAL_MC){
-        total_hazard_per_timestep = total_hazard_ignore_circ * 
+	}else if((susceptible->circ) == TRADITIONAL_MC){
+	    total_hazard_per_timestep = total_hazard_ignore_circ * 
                 (1.0 - patch[p].param->eff_circ_tmc) * TIME_STEP;
-    /* Increased susceptibility if in healing period: */
-    }else if((susceptible->circ) == VMMC_HEALING){
-        total_hazard_per_timestep = total_hazard_ignore_circ * 
-            patch[p].param->rr_circ_unhealed * TIME_STEP;
-    }else{
-        fprintf(stderr,"ERROR: unknown circumcision status!!! Exiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
+	    /* Increased susceptibility if in healing period: */
+	}else if((susceptible->circ) == VMMC_HEALING){
+	    total_hazard_per_timestep = total_hazard_ignore_circ * 
+		patch[p].param->rr_circ_unhealed * TIME_STEP;
+	}else{
+	    fprintf(stderr,"ERROR: unknown circumcision status!!! Exiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
     }
-
     //printf("Individual %ld is subject to infection hazard %lg\n", susceptible->id, total_hazard_per_timestep);
 
     /* Now see if transmission occurs (Bernoulli trial - could replace by gsl_ran_bernoulli(rng,total_hazard_per_timestep): */ 

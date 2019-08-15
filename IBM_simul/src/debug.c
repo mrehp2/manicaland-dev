@@ -1192,7 +1192,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 		    printf("Unknown cascade status %i\n",indiv->ART_status);
 	    }
 	}
-	if ((aa+AGE_ADULT>35) && (aa+AGE_ADULT<38)){
+	if ((aa+AGE_ADULT>55) && (aa+AGE_ADULT<58)){
 	    printf("*At time t=%lf\n",t);
 	    printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
 	    printf("*Number of women HIV+ total = %li\n",n_hivpos);

@@ -2160,7 +2160,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	}
 
 	if (t>2010 && (t-floor(t)<1e-9) && (p==0)){
-	    if ((aa+AGE_ADULT>35) && (aa+AGE_ADULT<38)){
+	    if ((aa+AGE_ADULT>55) && (aa+AGE_ADULT<58)){
 		
 		printf("At time t=%lf\n",t);
 		printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);

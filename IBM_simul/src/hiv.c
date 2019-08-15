@@ -1051,7 +1051,9 @@ void draw_initial_infection(double t, individual* indiv, patch_struct *patch, in
         // Increment the number of newly infected
         patch[p].n_newly_infected_total++;
         patch[p].n_newly_infected_total_by_risk[indiv->sex_risk]++;
-        
+
+
+	
         // PConly outputs
         if((t - indiv->DoB) > AGE_PC_MIN && (t - indiv->DoB) < (AGE_PC_MAX + 1)){
             patch[p].n_newly_infected_total_pconly++;

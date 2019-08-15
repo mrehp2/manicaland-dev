@@ -629,12 +629,12 @@ void update_population_size_death(individual *individual, population_size *n_pop
 	}
 
 	else{
-		(n_infected->pop_size_oldest_age_group_gender_risk[individual->gender][individual->sex_risk]) -= 1;
+	    (n_infected->pop_size_oldest_age_group_gender_risk[individual->gender][individual->sex_risk]) -= 1;
             //printf("--- One death of HIV+ (old, gender %d risk group %d)\n",individual->gender, individual->sex_risk);
             //fflush(stdout);
 
 	    /* now update ART state counter: */
-		n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
+	    n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
 	    
 	}
     }

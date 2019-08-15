@@ -659,7 +659,11 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
         if (patch[p].trial_arm == ARM_A){
             cumulative_outputs->N_total_CD4_tests_popart++;
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
-            indiv->ART_status = ARTNAIVE;
+
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+
+	    indiv->ART_status = ARTNAIVE;
+
             indiv->next_cascade_event = CASCADEEVENT_START_ART_POPART;
             indiv->VISITEDBYCHIPS_TO_INIT_ART = 1;
             schedule_start_of_art(indiv, param, t, cascade_events, 
@@ -674,6 +678,8 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                 fflush(stdout);
                 exit(1);
             }
+
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
             
             indiv->ART_status = ARTNAIVE;
             cumulative_outputs->N_total_CD4_tests_popart++;
@@ -697,7 +703,12 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             CD4 tests. */
             cumulative_outputs->N_total_CD4_tests_popart++;
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
-            indiv->ART_status = ARTNAIVE;
+
+
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+
+
+	    indiv->ART_status = ARTNAIVE;
             
             /* Note that we have two events happening here - time to get the CD4 test (to determine
             eligibility) and then time to retest CD4 again - we are scheduling the future CD4 test
@@ -768,7 +779,10 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                         cumulative_outputs->N_total_CD4_tests_popart++;
                         calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
                         indiv->next_cascade_event = CASCADEEVENT_START_ART_POPART;
-                        indiv->ART_status = ARTNAIVE;
+
+			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+
+			indiv->ART_status = ARTNAIVE;
                         indiv->VISITEDBYCHIPS_TO_INIT_ART = 1;
                         schedule_start_of_art(indiv, param, t, cascade_events, 
                             n_cascade_events, size_cascade_events);
@@ -780,7 +794,10 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                         */
                         cumulative_outputs->N_total_CD4_tests_popart++;
                         calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
-                        indiv->ART_status = ARTNAIVE;
+
+			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv->DoB, indiv->gender, indiv->sex_risk, indiv->cd4);
+
+			indiv->ART_status = ARTNAIVE;
                         /*
                         Note that we have two events happening here - time to get the CD4 test 
                         (to determine eligibility) and then time to retest CD4 again - we are 

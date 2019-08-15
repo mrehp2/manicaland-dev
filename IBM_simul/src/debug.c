@@ -1271,7 +1271,8 @@ void check_valid_ART_transition(int INITIAL_ART_STATE, int NEW_ART_STATE){
     }
     /* ARTNAIVE = never been on ART, so next state should be early ART or CASCADEDROPOUT. */
     else if (INITIAL_ART_STATE==ARTNAIVE){
-	if (!(NEW_ART_STATE==EARLYART||NEW_ART_STATE==CASCADEDROPOUT)){
+	/* Allow transition ARTNAIVE->ARTNAIVE as CHiPs visit will do this. */
+	if (!(NEW_ART_STATE==EARLYART||NEW_ART_STATE==CASCADEDROPOUT||NEW_ART_STATE==ARTNAIVE)){
 	    printf("Error: unexpected ART transition to %i from ARTNAIVE. Exiting\n",NEW_ART_STATE);
 	    exit(1);
 	}

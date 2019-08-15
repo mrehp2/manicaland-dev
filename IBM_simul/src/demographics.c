@@ -2159,16 +2159,19 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	    }
 	}
 
-	if (t>1970 && (t-floor(t)<1e-9)){
-	    printf("At time t=%lf\n",t);
-	    printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);
-	    printf("Number of women HIV+ total = %li\n",n_hivpos);
-	    printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
-	    printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
-	    printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
-	    printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
-	    printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
-	    printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	if (t>2010 && (t-floor(t)<1e-9) && (p==0)){
+	    if ((aa+AGE_ADULT>35) && (aa+AGE_ADULT<38)){
+		
+		printf("At time t=%lf\n",t);
+		printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);
+		printf("Number of women HIV+ total = %li\n",n_hivpos);
+		printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
+		printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
+		printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
+		printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
+		printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
+		printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	    }
 	}
 
 	

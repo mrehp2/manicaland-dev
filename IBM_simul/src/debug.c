@@ -1152,7 +1152,6 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
     /* COunters for each stage: */
     long n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
 
-    
     for (aa=0; aa<(MAX_AGE-AGE_ADULT); aa++){
                 
 	ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;
@@ -1168,7 +1167,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	n_hivpos_artvs = 0;
 	n_hivpos_artvu = 0;
 	n_hivpos_cascadedropout = 0;
-
+	
 	
      /* Loop over all the people in this group: */
 	for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]; n++){
@@ -1193,19 +1192,21 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 		    printf("Unknown cascade status %i\n",indiv->ART_status);
 	    }
 	}
-	
-	printf("*At time t=%lf\n",t);
-	printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
-	printf("*Number of women HIV+ total = %li\n",n_hivpos);
-	printf("*Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
-	printf("*Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
-	printf("*Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
-	printf("*Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
-	printf("*Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
-	printf("*Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	if ((aa+AGE_ADULT>35) && (aa+AGE_ADULT<38)){
+	    printf("*At time t=%lf\n",t);
+	    printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
+	    printf("*Number of women HIV+ total = %li\n",n_hivpos);
+	    printf("*Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
+	    printf("*Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
+	    printf("*Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
+	    printf("*Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
+	    printf("*Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
+	    printf("*Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	}
     }
 
 
+    /* Not currently used - keep in case needed. */
     /* Reset counters to zero. */
     n_hivpos = 0;
     n_hivpos_unaware = 0;
@@ -1215,7 +1216,8 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
     n_hivpos_artvu = 0;
     n_hivpos_cascadedropout = 0;
     for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; n++){
-	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][n];
+
+	indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[n];
 	/* Going through age list so only alive people here. 
 	   Only worried about HIV-positive people here. */
 	if (indiv->HIV_status>UNINFECTED){

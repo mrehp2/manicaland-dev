@@ -1264,7 +1264,8 @@ void check_valid_ART_transition(int INITIAL_ART_STATE, int NEW_ART_STATE){
 	}
     }
     else if (INITIAL_ART_STATE==CASCADEDROPOUT){
-	if (!(NEW_ART_STATE==EARLYART)){
+	/* In interventions.c CHiPs takes someone from CASCADEDROPOUT to ARTNAIVE  in function chips_visit_person(). */
+	if (!(NEW_ART_STATE==EARLYART||NEW_ART_STATE==ARTNAIVE)){
 	    printf("Error: unexpected ART transition to %i from CASCADEDROPOUT. Exiting\n",NEW_ART_STATE);
 	    exit(1);
 	}

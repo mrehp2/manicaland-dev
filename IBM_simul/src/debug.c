@@ -826,12 +826,12 @@ void check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partne
                 // is partner HIV+?
                 if(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]->HIV_status>0)
                 {
-                    if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH)
-                    {
-                        printf("seropositive partner: ");
-                        print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]);
-                        fflush(stdout);
-                    }
+                    /* if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH) */
+                    /* { */
+                    /*     printf("seropositive partner: "); */
+                    /*     print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]); */
+                    /*     fflush(stdout); */
+                    /* } */
                     isInSerodiscordantCouple = 1;
                 }
             }
@@ -1146,12 +1146,25 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
     int aa, ai;
     int g = FEMALE; /* We are looking at women here for now. */
     int n;
+    int icd4;
     /* Pointer to individual - we are just assigning another pointer to this pointer so no need to allocate memory. */
     individual *indiv;
 
     /* COunters for each stage: */
-    long n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
-
+    int n_hivpos;
+    int n_hivpos_unaware[NCD4];
+    int n_hivpos_aware_neverart[NCD4];
+    int n_hivpos_earlyart[NCD4];
+    int n_hivpos_artvs[NCD4];
+    int n_hivpos_artvu[NCD4];
+    int n_hivpos_cascadedropout[NCD4];
+    
+    char tempstring[30];
+    char outputstring[3000];
+    memset(tempstring, '\0', sizeof(tempstring));
+    memset(outputstring, '\0', sizeof(outputstring));
+    
+    sprintf(outputstring,"%lf,",t);    
     for (aa=0; aa<(MAX_AGE-AGE_ADULT); aa++){
                 
 	ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;
@@ -1161,14 +1174,17 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 
 	/* Reset counters to zero. */
 	n_hivpos = 0;
-	n_hivpos_unaware = 0;
-	n_hivpos_aware_neverart = 0;
-	n_hivpos_earlyart = 0;
-	n_hivpos_artvs = 0;
-	n_hivpos_artvu = 0;
-	n_hivpos_cascadedropout = 0;
-	
-	
+	for (icd4=0;icd4<NCD4;icd4++){
+	    n_hivpos_unaware[icd4] = 0;
+	    n_hivpos_aware_neverart[icd4] = 0;
+	    n_hivpos_earlyart[icd4] = 0;
+	    n_hivpos_artvs[icd4] = 0;
+	    n_hivpos_artvu[icd4] = 0;
+	    n_hivpos_cascadedropout[icd4] = 0;
+	}	
+
+
+
      /* Loop over all the people in this group: */
 	for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]; n++){
 	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][n];
@@ -1176,45 +1192,68 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	       Only worried about HIV-positive people here. */
 	    if (indiv->HIV_status>UNINFECTED){
 		n_hivpos += 1;
-		if (indiv->ART_status==ARTNAIVE)
-		    n_hivpos_unaware += 1;
-		else if (indiv->ART_status==ARTNEG)
-		    n_hivpos_aware_neverart += 1;
+		if (indiv->ART_status==ARTNEG)
+		    n_hivpos_unaware[indiv->cd4] += 1;
+		else if (indiv->ART_status==ARTNAIVE)
+		    n_hivpos_aware_neverart[indiv->cd4] += 1;
 		else if (indiv->ART_status==EARLYART)
-		    n_hivpos_earlyart += 1;
+		    n_hivpos_earlyart[indiv->cd4] += 1;
 		else if (indiv->ART_status==LTART_VS)
-		    n_hivpos_artvs += 1;
+		    n_hivpos_artvs[indiv->cd4] += 1;
 		else if (indiv->ART_status==LTART_VU)
-		    n_hivpos_artvu += 1;
+		    n_hivpos_artvu[indiv->cd4] += 1;
 		else if (indiv->ART_status==CASCADEDROPOUT)
-		    n_hivpos_cascadedropout += 1;
+		    n_hivpos_cascadedropout[indiv->cd4] += 1;
 		else
 		    printf("Unknown cascade status %i\n",indiv->ART_status);
 	    }
 	}
-	if ((aa+AGE_ADULT>55) && (aa+AGE_ADULT<58)){
-	    printf("*At time t=%lf\n",t);
-	    printf("*Number of women aged %i = %li\n",aa+AGE_ADULT,patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
-	    printf("*Number of women HIV+ total = %li\n",n_hivpos);
-	    printf("*Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
-	    printf("*Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
-	    printf("*Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
-	    printf("*Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
-	    printf("*Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
-	    printf("*Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
+
+		//		sprintf(tempstring,tempstring,"%i,",patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
+	    sprintf(tempstring,"%i,",n_hivpos);
+	    strcat(outputstring,tempstring);
+
+	    for (icd4=0;icd4<NCD4;icd4++){	    
+		sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
+		strcat(outputstring,tempstring);
+	    }
+	    for (icd4=0;icd4<NCD4;icd4++){	    
+		sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
+		strcat(outputstring,tempstring);
+	    }
+	    for (icd4=0;icd4<NCD4;icd4++){
+		sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
+		strcat(outputstring,tempstring);
+	    }
+	    for (icd4=0;icd4<NCD4;icd4++){
+		sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
+		strcat(outputstring,tempstring);
+	    }
+	    for (icd4=0;icd4<NCD4;icd4++){
+		sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
+		strcat(outputstring,tempstring);
+	    }
+	    for (icd4=0;icd4<NCD4;icd4++){
+		sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
+		strcat(outputstring,tempstring);
+	    }
 	}
     }
-
+    strcat(outputstring,"\n");
 
     /* Not currently used - keep in case needed. */
     /* Reset counters to zero. */
     n_hivpos = 0;
-    n_hivpos_unaware = 0;
-    n_hivpos_aware_neverart = 0;
-    n_hivpos_earlyart = 0;
-    n_hivpos_artvs = 0;
-    n_hivpos_artvu = 0;
-    n_hivpos_cascadedropout = 0;
+    for (icd4=0;icd4<NCD4;icd4++){
+	n_hivpos_artvs[icd4] = 0;
+	n_hivpos_earlyart[icd4] = 0;
+	n_hivpos_artvu[icd4] = 0;
+	n_hivpos_unaware[icd4] = 0;
+	n_hivpos_aware_neverart[icd4] = 0;
+	n_hivpos_cascadedropout[icd4] = 0;
+    }
+    
     for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; n++){
 
 	indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[n];
@@ -1222,26 +1261,83 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	   Only worried about HIV-positive people here. */
 	if (indiv->HIV_status>UNINFECTED){
 	    n_hivpos += 1;
-	    if (indiv->ART_status==ARTNAIVE)
-		n_hivpos_unaware += 1;
-	    else if (indiv->ART_status==ARTNEG)
-		n_hivpos_aware_neverart += 1;
+	    if (indiv->ART_status==ARTNEG)
+		n_hivpos_unaware[indiv->cd4] += 1;
+	    else if (indiv->ART_status==ARTNAIVE)
+		n_hivpos_aware_neverart[indiv->cd4] += 1;
 	    else if (indiv->ART_status==EARLYART)
-		n_hivpos_earlyart += 1;
+		n_hivpos_earlyart[indiv->cd4] += 1;
 	    else if (indiv->ART_status==LTART_VS)
-		n_hivpos_artvs += 1;
+		n_hivpos_artvs[indiv->cd4] += 1;
 	    else if (indiv->ART_status==LTART_VU)
-		n_hivpos_artvu += 1;
+		n_hivpos_artvu[indiv->cd4] += 1;
 	    else if (indiv->ART_status==CASCADEDROPOUT)
-		n_hivpos_cascadedropout += 1;
+		n_hivpos_cascadedropout[indiv->cd4] += 1;
 	    else
 		printf("Unknown cascade status %i\n",indiv->ART_status);
 
+	
 	}
 
     }
+
+    FILE *infile;
+    infile = fopen("Validate_count_by_age_gender_risk_cascade.csv","a");
+    fprintf(infile,"%s",outputstring);
+    fclose(infile);
 }
 
+
+void create_header_for_cascade_count_files(char *infilename, int a_min, int a_max){
+    FILE *infile;
+    
+    char tempstring[30];
+    char outputstring[3000];
+    memset(tempstring, '\0', sizeof(tempstring));
+    memset(outputstring, '\0', sizeof(outputstring));
+
+    int a,icd4;
+    sprintf(outputstring,"t,");
+
+    for (a=a_min+1; a<a_max; a++){
+
+	//		sprintf(tempstring,tempstring,"%i,",patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
+	sprintf(tempstring,"n_hivpos,");
+	strcat(outputstring,tempstring);
+
+	for (icd4=0;icd4<NCD4;icd4++){	    
+	    sprintf(tempstring,"n_hivpos_unaware[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+	for (icd4=0;icd4<NCD4;icd4++){	    
+	    sprintf(tempstring,"_hivpos_aware_neverart[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+	for (icd4=0;icd4<NCD4;icd4++){
+	    sprintf(tempstring,"n_hivpos_earlyart[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+	for (icd4=0;icd4<NCD4;icd4++){
+	    sprintf(tempstring,"n_hivpos_artvs[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+	for (icd4=0;icd4<NCD4;icd4++){
+	    sprintf(tempstring,"n_hivpos_artvu[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+	for (icd4=0;icd4<NCD4;icd4++){
+	    sprintf(tempstring,"n_hivpos_cascadedropout[%i],",icd4);
+	    strcat(outputstring,tempstring);
+	}
+    }
+
+    strcat(outputstring,"\n");
+
+    infile = fopen(infilename,"w");
+    fprintf(infile,"%s",outputstring);
+    fclose(infile);
+
+}
 
 /* Function checks that transition between ART states is allowed. */
 void check_valid_ART_transition(int INITIAL_ART_STATE, int NEW_ART_STATE){

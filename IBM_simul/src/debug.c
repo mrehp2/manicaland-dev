@@ -826,12 +826,12 @@ void check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partne
                 // is partner HIV+?
                 if(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]->HIV_status>0)
                 {
-                    if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH)
-                    {
-                        printf("seropositive partner: ");
-                        print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]);
-                        fflush(stdout);
-                    }
+                    /* if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH) */
+                    /* { */
+                    /*     printf("seropositive partner: "); */
+                    /*     print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]); */
+                    /*     fflush(stdout); */
+                    /* } */
                     isInSerodiscordantCouple = 1;
                 }
             }

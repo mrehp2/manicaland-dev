@@ -81,18 +81,18 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     //printf("Partnership formation involving individuals %ld and %ld\n",ind1->id,ind2->id);
     if((ind1->id==FOLLOW_INDIVIDUAL  && ind1->patch_no==FOLLOW_PATCH) || (ind2->id==FOLLOW_INDIVIDUAL  && ind2->patch_no==FOLLOW_PATCH))
     {
-        //if (VERBOSE_OUTPUT==1){
-        printf("-----------------------------------------------\n");
-        printf("Starting partnership formation between individuals %ld from patch %d and %ld from patch %d\n",ind1->id,ind1->patch_no,ind2->id,ind2->patch_no);
-        printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners);
-        printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners);
-        printf("----");
-        print_individual(ind1);
-        printf("----");
-        print_individual(ind2);
-        printf("----");
-        fflush(stdout);
-        //}
+        if (VERBOSE_OUTPUT==1){
+	    printf("-----------------------------------------------\n");
+	    printf("Starting partnership formation between individuals %ld from patch %d and %ld from patch %d\n",ind1->id,ind1->patch_no,ind2->id,ind2->patch_no);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners);
+	    printf("----");
+	    print_individual(ind1);
+	    printf("----");
+	    print_individual(ind2);
+	    printf("----");
+	    fflush(stdout);
+        }
     }
 
     /* filling in a new partnership which points to the two individuals ind1 and ind2 and drawing a partnership duration */
@@ -286,18 +286,18 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
 
     if((ind1->id==FOLLOW_INDIVIDUAL  && ind1->patch_no==FOLLOW_PATCH) || (ind2->id==FOLLOW_INDIVIDUAL  && ind2->patch_no==FOLLOW_PATCH))
     {
-        //if (VERBOSE_OUTPUT==1){
-        printf("Finishing partnership formation between individuals %ld from patch %d and %ld from patch %d\n",ind1->id,ind1->patch_no,ind2->id,ind2->patch_no);
-        printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners);
-        printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners);
-        printf("----");
-        print_individual(ind1);
-        printf("----");
-        print_individual(ind2);
-        printf("----");
-        printf("-----------------------------------------------\n");
-        fflush(stdout);
-        //}
+        if (VERBOSE_OUTPUT==1){
+	    printf("Finishing partnership formation between individuals %ld from patch %d and %ld from patch %d\n",ind1->id,ind1->patch_no,ind2->id,ind2->patch_no);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners);
+	    printf("----");
+	    print_individual(ind1);
+	    printf("----");
+	    print_individual(ind2);
+	    printf("----");
+	    printf("-----------------------------------------------\n");
+	    fflush(stdout);
+        }
     }
 
 }

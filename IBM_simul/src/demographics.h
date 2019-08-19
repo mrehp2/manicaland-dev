@@ -53,7 +53,7 @@ void remove_dead_person_from_list_available_partners(double, individual *,popula
 void remove_dead_persons_partners(individual *, population_partners *, 
     population_size_all_patches *, double );
 void remove_from_hiv_pos_progression(individual *, individual ***, long *, long *, 
-    double, parameters *, int);
+    double, parameters *, population_size_one_year_age_hiv_by_stage_treatment *, int);
 void remove_from_cascade_events(individual *, individual ***, long *, long *, double, parameters *);
 void remove_from_vmmc_events(individual *, individual ***, long *, long *, double , parameters *);
 void deaths_natural_causes(double, patch_struct *, int , all_partnerships *,  file_struct *);

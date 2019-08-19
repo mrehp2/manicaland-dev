@@ -1936,11 +1936,11 @@ void start_ART_process(individual* indiv, parameters *param, double t,
     if(is_emergency == 0){
         /* Note the final '2' argument means that the person is starting ART, not dying. */
         remove_from_hiv_pos_progression(indiv,  hiv_pos_progression, 
-            n_hiv_pos_progression, size_hiv_pos_progression,t, param, 2);
+	    n_hiv_pos_progression, size_hiv_pos_progression,t, param, n_infected_by_all_strata, 2);
     }else{
         /* The final '4' denotes that this is emergency ART. */
         remove_from_hiv_pos_progression(indiv,  hiv_pos_progression, 
-            n_hiv_pos_progression, size_hiv_pos_progression,t, param, 4);
+	    n_hiv_pos_progression, size_hiv_pos_progression,t, param, n_infected_by_all_strata, 4);
     }
 
     if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
@@ -3016,7 +3016,7 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
         /* Do not need to remove from hiv_pos_progression if there is no event scheduled as it would have occurred after the end of the simulation. */
         if (indiv->next_HIV_event>EVENTAFTERENDSIMUL)
             /* Note the final '2' argument means that the person is virally suppressed on ART, not dying. */
-            remove_from_hiv_pos_progression(indiv,  hiv_pos_progression, n_hiv_pos_progression, size_hiv_pos_progression,t, param,2);
+            remove_from_hiv_pos_progression(indiv,  hiv_pos_progression, n_hiv_pos_progression, size_hiv_pos_progression,t, param, n_infected_by_all_strata, 2);
         indiv->idx_hiv_pos_progression[0] = -1;
         indiv->idx_hiv_pos_progression[1] = -1;
     }
@@ -3266,25 +3266,6 @@ void update_ART_state_population_counters_ARTcascade_change(double t, population
     check_valid_ART_transition(INITIAL_ART_STATE,NEW_ART_STATE);
 
     int aa = (int) floor(floor(t) - DoB) - AGE_ADULT;
-	    
-    /* if (NEW_ART_STATE==ARTNEG){ */
-    /* 	/\* Add counter to new state - note that we aren't keeping track of the number of ART-naive people so no 'old' counter to update. *\/ */
-    /* 	if(aa < (MAX_AGE - AGE_ADULT)){ */
-    /* 	    /\* ai is the age index of the array n_infected_by_all_strata. *\/ */
-    /* 	    int ai = n_infected_by_all_strata->youngest_age_group_index + aa; */
-    /* 	    while (ai>(MAX_AGE-AGE_ADULT-1)) */
-    /* 		ai = ai - (MAX_AGE-AGE_ADULT); */
-    /* 	    /\* We're not currently keeping track of people before starting ART so just add to EARLYART group: *\/ */
-    /* 	    (n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai][sex_risk][icd4][NEW_ART_STATE+1])++; */
-    /* 	}else{ */
-    /* 	    /\* Update the 'new' ART state counter for the oldest age group: *\/ */
-    /* 	    (n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][icd4][NEW_ART_STATE+1])++; */
-    /* 	} */
-    /* 	/\* if ARTNEG then we are done, so return. *\/ */
-    /* 	return; */
-    /* } */
-
-
     
     if(aa < (MAX_AGE - AGE_ADULT)){
         /* ai_art is the age index of the array n_infected_by_all_strata. */
@@ -3319,9 +3300,6 @@ void update_ART_state_population_counters_cd4_change(double t, population_size_o
 	exit(1);
     }
     
-    if ((iart!=EARLYART) && (iart!=LTART_VU) && (iart!=LTART_VS) && (iart!=CASCADEDROPOUT)){
-	return;
-    }
 
     int aa = (int) floor(floor(t) - DoB) - AGE_ADULT;
 	    
@@ -3333,18 +3311,18 @@ void update_ART_state_population_counters_cd4_change(double t, population_size_o
 	    ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 
 	/* Update the 'old' CD4 state: */
-	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][INITIAL_CD4][iart])--;
+	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][INITIAL_CD4][iart+1])--;
 
 	/* Now update the 'new' ART state: */
-	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][NEW_CD4][iart])++;
+	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][NEW_CD4][iart+1])++;
 
 
     }else{
 	/* Update the 'old' ART state counter for the oldest age group: */
-	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][INITIAL_CD4][iart])--;
+	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][INITIAL_CD4][iart+1])--;
 	 
 	/* Update the 'new' ART state counter for the oldest age group: */
-	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][NEW_CD4][iart])++;
+	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][NEW_CD4][iart+1])++;
     }
 
 }
@@ -3400,7 +3378,7 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
             if (indiv->ART_status==LTART_VU)
                 indiv->DEBUG_cumulative_time_on_ART_VU += t - indiv->DEBUG_time_of_last_cascade_event;
             /* Note that the last argument '3' indicates that this is an AIDS-related death. */
-            remove_from_hiv_pos_progression(indiv,  patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,t, patch[p].param,3);
+            remove_from_hiv_pos_progression(indiv,  patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,t, patch[p].param, patch[p].n_infected_by_all_strata, 3);
             /* Function removes person from everything except the cascade event list: */
             individual_death_AIDS(patch[p].age_list, indiv, patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_infected, patch[p].n_population_stratified, t, patch[p].param,
                     overall_partnerships->susceptible_in_serodiscordant_partnership, overall_partnerships->n_susceptible_in_serodiscordant_partnership, overall_partnerships->pop_available_partners, overall_partnerships->n_pop_available_partners, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch, p, file_data_store);

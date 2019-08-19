@@ -1537,11 +1537,11 @@ void remove_from_hiv_pos_progression(individual *indiv, individual ***hiv_pos_pr
 		int ai_art = n_infected_by_all_strata->youngest_age_group_index + aa;
 		while (ai_art>(MAX_AGE-AGE_ADULT-1))
 		    ai_art = ai_art - (MAX_AGE-AGE_ADULT);
-		(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][indiv->ART_status])--;
+		(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][indiv->ART_status+1])--;
 	    }
 	    else{
 		/* Update for the oldest age group: */
-		(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[indiv->gender][indiv->sex_risk][indiv->cd4][indiv->ART_status])--;
+		(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[indiv->gender][indiv->sex_risk][indiv->cd4][indiv->ART_status+1])--;
 		
 	    }
             indiv->ART_status=ARTDEATH;

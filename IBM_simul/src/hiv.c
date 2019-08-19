@@ -3276,11 +3276,6 @@ void update_ART_state_population_counters_ARTcascade_change(double t, population
 
 	/* Update the 'old' ART state: */
 	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][INITIAL_ART_STATE+1])--;
-	//	if (n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][INITIAL_ART_STATE+1]<0){
-	//    printf("HERE %li %i %6.4lf \n",indiv->id, INITIAL_ART_STATE, t);
-	//    fflush(stdout);
-	//    exit(1);
-	//}
 	    
 	/* Now update the 'new' ART state: */
 	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][NEW_ART_STATE+1])++;

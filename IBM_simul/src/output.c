@@ -347,13 +347,11 @@ void print_individual(individual *indiv)
     }
     fflush(stdout);
 
-    if (indiv->n_partners>0){
-	printf("Id of partners = ");
-	for (n=0; n<indiv->n_partners; n++){
-	    printf("%8li (patch %d), ",indiv->partner_pairs[n]->ptr[1-(indiv->gender)]->id,indiv->partner_pairs[n]->ptr[1-(indiv->gender)]->patch_no);
-	}
-	printf("\n");
-	fflush(stdout);
+    if (indiv->n_partners>0) printf("Id of partners = ");
+    for (n=0; n<indiv->n_partners; n++)
+    {
+        printf("%8li (patch %d), ",indiv->partner_pairs[n]->ptr[1-(indiv->gender)]->id,indiv->partner_pairs[n]->ptr[1-(indiv->gender)]->patch_no);
+        fflush(stdout);
     }
 
     if (indiv->HIV_status==0){

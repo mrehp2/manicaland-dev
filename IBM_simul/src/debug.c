@@ -826,12 +826,12 @@ void check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partne
                 // is partner HIV+?
                 if(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]->HIV_status>0)
                 {
-                    /* if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH) */
-                    /* { */
-                    /*     printf("seropositive partner: "); */
-                    /*     print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]); */
-                    /*     fflush(stdout); */
-                    /* } */
+                    if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH)
+                    {
+                        printf("seropositive partner: ");
+                        print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]);
+                        fflush(stdout);
+                    }
                     isInSerodiscordantCouple = 1;
                 }
             }
@@ -1182,9 +1182,9 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	    n_hivpos_artvu[icd4] = 0;
 	    n_hivpos_cascadedropout[icd4] = 0;
 	}	
+	
 
-
-
+	
      /* Loop over all the people in this group: */
 	for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]; n++){
 	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][n];
@@ -1210,7 +1210,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	}
 	if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
 
-		//		sprintf(tempstring,tempstring,"%i,",patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
+	         //		sprintf(tempstring,tempstring,"%i,",patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
 	    sprintf(tempstring,"%i,",n_hivpos);
 	    strcat(outputstring,tempstring);
 
@@ -1253,7 +1253,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	n_hivpos_aware_neverart[icd4] = 0;
 	n_hivpos_cascadedropout[icd4] = 0;
     }
-    
+
     for(n=0; n<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; n++){
 
 	indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[n];
@@ -1276,7 +1276,7 @@ void count_number_by_age_gender_risk_cascade_cd4(patch_struct *patch, int p, dou
 	    else
 		printf("Unknown cascade status %i\n",indiv->ART_status);
 
-	
+	    
 	}
 
     }

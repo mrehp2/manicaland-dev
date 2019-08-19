@@ -79,7 +79,7 @@ void virally_unsuppressed_process(individual* , parameters *, double , individua
 void dropout_process(individual* , parameters *, double , individual ***, long *, long *,
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
     population_size_one_year_age_hiv_by_stage_treatment *);
-void update_ART_state_population_counters_ARTcascade_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , double , int , int , int , long);
+void update_ART_state_population_counters_ARTcascade_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , double , int , int , int );
 void update_ART_state_population_counters_cd4_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , double , int , int , int );
 void carry_out_cascade_events_per_timestep(double , patch_struct *, int , all_partnerships *,
     debug_struct *, file_struct *);

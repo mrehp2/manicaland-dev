@@ -624,10 +624,8 @@ void update_population_size_death(individual *individual, population_size *n_pop
 	    ai_art = n_infected_by_all_strata->youngest_age_group_index + aa; 
 	    while (ai_art>(MAX_AGE-AGE_ADULT-1))
 		ai_art = ai_art - (MAX_AGE-AGE_ADULT);
-	    /* Update ART cascade counter. Note that we remove ART deaths separately in remove_from_hiv_pos_progression() : */
-	    if (individual->ART_status < ARTDEATH){
-		n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[individual->gender][ai_art][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
-	    }
+	    n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[individual->gender][ai_art][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
+	    
 	}
 
 	else{
@@ -635,10 +633,8 @@ void update_population_size_death(individual *individual, population_size *n_pop
             //printf("--- One death of HIV+ (old, gender %d risk group %d)\n",individual->gender, individual->sex_risk);
             //fflush(stdout);
 
-	    /* Now update ART cascade counter. Note that we remove ART deaths separately in remove_from_hiv_pos_progression() */
-	    if (individual->ART_status < ARTDEATH){
-		n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
-	    }
+	    /* now update ART state counter: */
+	    n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[individual->gender][individual->sex_risk][individual->cd4][individual->ART_status+1]--;
 	    
 	}
     }
@@ -1482,7 +1478,7 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
  * However the same code is used when someone successfully starts ART, so have renamed to remove "dead_person".
  * The variable "reason" tells us whether this is due to non-AIDS death (reason=1), starting ART normally (reason=2), AIDS death (reason=3), or emergency ART (reason 4). */
 
-void remove_from_hiv_pos_progression(individual *indiv, individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, double t, parameters *param, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int reason){
+void remove_from_hiv_pos_progression(individual *indiv, individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, double t, parameters *param, int reason){
     if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
         if (reason==1)
             printf("Removing individual %ld from HIV pos progression due to non-AIDS death at time %6.2f\n",indiv->id,t);
@@ -1528,26 +1524,9 @@ void remove_from_hiv_pos_progression(individual *indiv, individual ***hiv_pos_pr
             exit(1);
         }
 
-        /* Update the ART_status variable to indicate that this person died from AIDS. We thus need to update the cascade counter here, because we reset ART_status after to ARTDEATH. */
-        if (reason==3){
-	    
-	    int aa = (int) floor(floor(t) - indiv->DoB) - AGE_ADULT;	    
-	    if(aa < (MAX_AGE - AGE_ADULT)){
-		/* ai_art is the age index of the array n_infected_by_all_strata. */
-		int ai_art = n_infected_by_all_strata->youngest_age_group_index + aa;
-		while (ai_art>(MAX_AGE-AGE_ADULT-1))
-		    ai_art = ai_art - (MAX_AGE-AGE_ADULT);
-		(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][indiv->ART_status])--;
-	    }
-	    else{
-		/* Update for the oldest age group: */
-		(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[indiv->gender][indiv->sex_risk][indiv->cd4][indiv->ART_status])--;
-		
-	    }
+        /* Update the ART_status variable to indicate that this person died from AIDS. */
+        if (reason==3)
             indiv->ART_status=ARTDEATH;
-	}
-
-	
         return;
     }
 
@@ -1868,7 +1847,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                         // not starting ART.
                         remove_from_hiv_pos_progression(person_dying, patch[p].hiv_pos_progression,
                             patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, t,
-			    patch[p].param, patch[p].n_infected_by_all_strata, 1);
+                            patch[p].param,1);
                     }
                     
                     if(PRINT_DEBUG_DEMOGRAPHICS == 1){
@@ -1972,7 +1951,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                 /* Note the final '1' argument means that the person is dying, not starting ART. */
                 remove_from_hiv_pos_progression(person_dying, patch[p].hiv_pos_progression,
                     patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, t,
-                    patch[p].param, patch[p].n_infected_by_all_strata, 1);
+                    patch[p].param, 1);
                 //patch[p].DEBUG_NHIVDEAD++;
             }
             
@@ -2125,27 +2104,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
     double childhood_mortality_rate = childhood_mortality(patch[p].param, t);
 
-    long n, n_hivpos;
-    //long , n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
 
-    /**********************FOR DEBUGGING CASCADE. */
-    /* COunters for each stage: */
-    int n_hivpos_unaware[NCD4];
-    int n_hivpos_aware_neverart[NCD4];
-    int n_hivpos_earlyart[NCD4];
-    int n_hivpos_artvs[NCD4];
-    int n_hivpos_artvu[NCD4];
-    int n_hivpos_cascadedropout[NCD4];
-    
-    char tempstring[30];
-    char outputstring[3000];
-    memset(tempstring, '\0', sizeof(tempstring));
-    memset(outputstring, '\0', sizeof(outputstring));
-
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	sprintf(outputstring,"%lf,",t);    
-    }
-    
     //printf("t=%6.4lf\n",t);
     for (aa=(UNPD_FERTILITY_YOUNGEST_AGE-AGE_ADULT); aa<=(UNPD_FERTILITY_OLDEST_AGE-AGE_ADULT); aa++){
         //printf("aa=%i\n",aa);
@@ -2171,30 +2130,18 @@ void add_new_kids(double t, patch_struct *patch, int p){
             ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 
 	
-
+	long n, n_hivpos, n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
 	
 
-
-	/* Reset counters to zero. */
-	n_hivpos = 0;
-	for (icd4=0;icd4<NCD4;icd4++){
-	    n_hivpos_unaware[icd4] = 0;
-	    n_hivpos_aware_neverart[icd4] = 0;
-	    n_hivpos_earlyart[icd4] = 0;
-	    n_hivpos_artvs[icd4] = 0;
-	    n_hivpos_artvu[icd4] = 0;
-	    n_hivpos_cascadedropout[icd4] = 0;
-	}	
-    
 	
 	/* First reset counters to zero: */
-	/* n_hivpos = 0; */
-	/* n_hivpos_unaware = 0; */
-	/* n_hivpos_aware_neverart = 0; */
-	/* n_hivpos_artvs = 0; */
-	/* n_hivpos_earlyart = 0; */
-	/* n_hivpos_artvu = 0; */
-	/* n_hivpos_cascadedropout = 0; */
+	n_hivpos = 0;
+	n_hivpos_unaware = 0;
+	n_hivpos_aware_neverart = 0;
+	n_hivpos_artvs = 0;
+	n_hivpos_earlyart = 0;
+	n_hivpos_artvu = 0;
+	n_hivpos_cascadedropout = 0;
 
 	/* Total number of women aged aa: */
 	n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
@@ -2202,68 +2149,30 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	for (r=0; r<N_RISK; r++){
 	    n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];
 	    for (icd4=0; icd4<NCD4; icd4++){
-		/* n_hivpos_unaware += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1]; */
-		/* n_hivpos_aware_neverart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1]; */
-		/* n_hivpos_earlyart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1]; */
-		/* n_hivpos_artvs += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1]; */
-		/* n_hivpos_artvu += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1]; */
-		/* n_hivpos_cascadedropout += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1]; */
-		n_hivpos_unaware[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
-		n_hivpos_aware_neverart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
-		n_hivpos_earlyart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
-		n_hivpos_artvs[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
-		n_hivpos_artvu[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
-		n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];
+		n_hivpos_unaware += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
+		n_hivpos_aware_neverart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
+		n_hivpos_artvs += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
+		n_hivpos_artvu += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
+		n_hivpos_earlyart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
+		n_hivpos_cascadedropout += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];
 		
 	    }
 	}
-    
-    
-	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	    if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
-		sprintf(tempstring,"%li,",n_hivpos);
-		strcat(outputstring,tempstring);
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-	    }
-	
-	}
-	/* if (t>2000 && (t-floor(t)<1e-9) && (p==0)){ */
-	/*     if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){ */
+
+	if (t>2010 && (t-floor(t)<1e-9) && (p==0)){
+	    if ((aa+AGE_ADULT>55) && (aa+AGE_ADULT<58)){
 		
-	/* 	printf("At time t=%lf\n",t); */
-	/* 	printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n); */
-	/* 	printf("Number of women HIV+ total = %li\n",n_hivpos); */
-	/* 	printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware); */
-	/* 	printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart); */
-	/* 	printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart); */
-	/* 	printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs); */
-	/* 	printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu); */
-	/* 	printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout); */
-	/*     } */
-	/* } */
+		printf("At time t=%lf\n",t);
+		printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n);
+		printf("Number of women HIV+ total = %li\n",n_hivpos);
+		printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware);
+		printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart);
+		printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart);
+		printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs);
+		printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu);
+		printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout);
+	    }
+	}
 
 	
 	/* We want to be able to include MTCT transmission of HIV.
@@ -2278,17 +2187,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
         n_births += gsl_ran_binomial (rng, age_group_fertility_rate_per_timestep, patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
 
     }
-
-
-
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	strcat(outputstring,"\n");
-	FILE *infile;
-	infile = fopen("Output_count_by_age_gender_risk_cascade.csv","a");
-	fprintf(infile,"%s",outputstring);
-	fclose(infile);
-    }
-	    
     /* Store number of new births for model validation/debugging: */
     patch[p].DEBUG_NBIRTHS = patch[p].DEBUG_NBIRTHS + n_births;
 

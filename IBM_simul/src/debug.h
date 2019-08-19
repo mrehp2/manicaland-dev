@@ -49,7 +49,7 @@ void sweep_through_all_and_check_age_and_risk_of_partners (patch_struct *, all_p
 
 void count_number_by_age_gender_risk_cascade_cd4(patch_struct *, int , double );
 void create_header_for_cascade_count_files(char *, int , int );
-    
+
 void check_valid_ART_transition(int , int );
 
 void blank_debugging_files(file_struct *);

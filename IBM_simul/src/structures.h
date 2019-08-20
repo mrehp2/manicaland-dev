@@ -83,6 +83,13 @@ struct individual{
     /* for the above the origin of time is COUNTRY_HIV_TEST_START */
     long debug_last_cascade_event_index; /* Stores the first index of idx_cascade_event for the last cascade event to happen - so can check that two cascade events do not happen to the same person in the same timestep. */
 
+    int PrEP_cascade_status; 
+    int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person. */ 
+    long idx_PrEP_cascade_event[2]; /* The indices which locate this individual in the PrEP cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
+    /* for the above the origin of time is COUNTRY_HIV_TEST_START */
+    long debug_last_PrEP_cascade_event_index; /* Stores the first index of idx_cascade_event for the last PrEP cascade event to happen - so can check that two PrEP cascade events do not happen to the same person in the same timestep. */
+
+
     int circ; /* 0 if uncircumcised, 1 if VMMC circumcised (and healed), 2 if VMMC during healing period, 3 if traditional circumcised (assumed at birth/youth). */
     double t_vmmc; /* Time at which an individual undergoes the VMMC procedure (used in cost-effectiveness) */
     long idx_vmmc_event[2];   /* The indices which locate this individual in the vmmc_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a VMMC event at some timestep dt) and the second is their location in this group. */
@@ -759,15 +766,22 @@ typedef struct{
     long n_died_from_HIV_by_risk[N_RISK];
     
     int country_setting;
-    individual ***hiv_pos_progression;
-    long *n_hiv_pos_progression;
-    long *size_hiv_pos_progression;
+
+    individual ***hiv_pos_progression;    /* ***hiv_pos_progression is the calendar (basically it is an array where each column corresponds to a timestep, and each row contains a list of all the people to whom an event will occur at that timestep. When we reach that timestep we go through the list at that timestep, and look up from the individual what will happen to them. */ 
+    long *n_hiv_pos_progression;    /* n_hiv_pos_progression is a count of the number of events that are scheduled in hiv_pos_progression at each timestep. */
+    long *size_hiv_pos_progression;    /* size_hiv_pos_progression is an array that just says what the maximum number of people/events that can occur in a single timestep in hiv_pos_progression - to ensure we don't run into memory issues. */
     individual ***cascade_events;
     long *n_cascade_events;
     long *size_cascade_events;
     individual ***vmmc_events;
     long *n_vmmc_events;
     long *size_vmmc_events;
+    /*** Manicaland-related cascades ***/
+    individual ***PrEP_cascade_events;
+    long *n_PrEP_cascade_events;
+    long *size_PrEP_cascade_events;
+    /***********************************/
+    
     chips_sample_struct *chips_sample;
     PC_sample_struct *PC_sample; /* PC sample is the group of people (including reserves) before enrolment. Some people may not make it into the cohort (as they have moved out of the relevant subgroup). */
     PC_cohort_struct *PC_cohort; /* This is the actual PC cohort - everyone in this group was visited in PC0. */

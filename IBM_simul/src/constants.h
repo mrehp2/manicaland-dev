@@ -284,6 +284,19 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define CASCADEDROPOUT 5 // Dropped out of HIV care cascade prior to ever starting ART.
 #define ARTDEATH 6 // Signals that the person needs to be removed as they die while on ART. 
 
+#define NPrEPcascadesteps 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
+
+/* Codes for indiv->PrEP_cascade_status. */
+#define NOTONPREP 0
+#define ONPREP_SEMIADHERENT 1  // Tbc - something like 'takes PrEP but not every risky act is protected. 
+#define ONPREP_ADHERENT 2      // PrEP at full efficacy.
+
+/* Codes for indiv->next_PrEP_event. */
+#define PREP_NOEVENT // Nothing ever going to happen (i.e. people with barriers not reached by intervention).
+#define PREPAGANDA 1 // Exposure to PrEP-related intervention.
+#define STARTPREP 2  // Initialise PrEP at some future timepoint.
+#define BECOMEADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.
+
 /* Used as CD4 value to identify that people are not infected with HIV.
  * Note: CD4==-2 means the person is dead.
  * 0="CD4>500", 1="CD4 350-500", 2="CD4 200-350", 3="CD4 <200". */

@@ -83,11 +83,13 @@ struct individual{
     /* for the above the origin of time is COUNTRY_HIV_TEST_START */
     long debug_last_cascade_event_index; /* Stores the first index of idx_cascade_event for the last cascade event to happen - so can check that two cascade events do not happen to the same person in the same timestep. */
 
-    int PrEP_cascade_status; 
-    int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person. */ 
-    long idx_PrEP_cascade_event[2]; /* The indices which locate this individual in the PrEP cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
-    /* for the above the origin of time is COUNTRY_HIV_TEST_START */
-    long debug_last_PrEP_cascade_event_index; /* Stores the first index of idx_cascade_event for the last PrEP cascade event to happen - so can check that two PrEP cascade events do not happen to the same person in the same timestep. */
+    int PrEP_cascade_status;
+    int PrEP_cascade_barriers[NPrEPcascadesteps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
+    int next_PrEP_background_event; /* Stores the next PrEP cascade event to occur to this person (i.e. not due to intervention). */ 
+    int next_PrEP_intervention_event; /* Stores the next PrEP cascade event to occur to this person (i.e. due to intervention). */ 
+    long idx_PrEP_background_cascade_event[2]; /* The indices which locate this individual in the PrEP cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
+    long idx_PrEP_intervention_cascade_event[2]; /* The indices which locate this individual in the PrEP intervention cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
+
 
 
     int circ; /* 0 if uncircumcised, 1 if VMMC circumcised (and healed), 2 if VMMC during healing period, 3 if traditional circumcised (assumed at birth/youth). */
@@ -776,10 +778,16 @@ typedef struct{
     individual ***vmmc_events;
     long *n_vmmc_events;
     long *size_vmmc_events;
+
+
     /*** Manicaland-related cascades ***/
-    individual ***PrEP_cascade_events;
-    long *n_PrEP_cascade_events;
-    long *size_PrEP_cascade_events;
+    individual ***PrEP_background_cascade_events;
+    long *n_PrEP_background_cascade_events;
+    long *size_PrEP_background_cascade_events;
+
+    individual ***PrEP_intervention_cascade_events;
+    long *n_PrEP_intervention_cascade_events;
+    long *size_PrEP_intervention_cascade_events;
     /***********************************/
     
     chips_sample_struct *chips_sample;

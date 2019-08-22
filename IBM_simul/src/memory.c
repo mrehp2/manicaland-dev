@@ -764,6 +764,26 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
+
+        patch[p].PrEP_intervention_sample = malloc(sizeof(PrEP_intervention_sample_struct));
+        if(patch[p].PrEP_intervention_sample==NULL)
+        {
+            printf("Unable to allocate PrEP_intervention_sample in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+        patch[p].PrEP_intervention_params = malloc(sizeof(PrEP_intervention_params_struct));
+        if(patch[p].PrEP_intervention_params==NULL)
+        {
+            printf("Unable to allocate PrEP_intervention_params in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+	
         patch[p].PC_cohort = malloc(sizeof(PC_cohort_struct));
         if(patch[p].PC_cohort==NULL)
         {
@@ -1116,7 +1136,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
 	individual ***PrEP_background_cascade_events, long *n_PrEP_background_cascade_events, long *size_PrEP_background_cascade_events, individual ***PrEP_intervention_cascade_events, long *n_PrEP_intervention_cascade_events, long *size_PrEP_intervention_cascade_events,
         long *new_deaths, long *death_dummylist,
 	population_size_one_year_age *n_infected, population_size_one_year_age *n_newly_infected, population_size_one_year_age *n_infected_cumulative, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, population_size *n_infected_wide_age_group, population_size *n_newly_infected_wide_age_group,
-        chips_sample_struct *chips_sample, cumulative_outputs_struct *cumulative_outputs, calendar_outputs_struct *calendar_outputs, long ****cross_sectional_distr_n_lifetime_partners, long ****cross_sectional_distr_n_partners_lastyear, PC_sample_struct *PC_sample, PC_cohort_struct *PC_cohort, PC_cohort_data_struct *PC_cohort_data)
+			   chips_sample_struct *chips_sample, cumulative_outputs_struct *cumulative_outputs, calendar_outputs_struct *calendar_outputs, long ****cross_sectional_distr_n_lifetime_partners, long ****cross_sectional_distr_n_partners_lastyear, PC_sample_struct *PC_sample, PC_cohort_struct *PC_cohort, PC_cohort_data_struct *PC_cohort_data, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params)
 {
 
     long i;
@@ -1184,8 +1204,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free(chips_sample);
     free(PC_sample);
     free(PC_cohort);
-
-
+    
     free_pc_cohort_data_memory(PC_cohort_data);  /* Firstly free memory inside: */
     free(PC_cohort_data);
 
@@ -1211,6 +1230,9 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free(cross_sectional_distr_n_lifetime_partners);
     free(cross_sectional_distr_n_partners_lastyear);
 
+    /* Manicaland cascade stuff: */
+    free(PrEP_intervention_sample);
+    free(PrEP_intervention_params);
 
 }
 
@@ -1285,7 +1307,8 @@ void free_patch_memory(patch_struct *patch){
                 patch[p].n_infected,
 		patch[p].n_newly_infected, patch[p].n_infected_cumulative, patch[p].n_infected_by_all_strata, patch[p].n_infected_wide_age_group, patch[p].n_newly_infected_wide_age_group,
                 patch[p].chips_sample, patch[p].cumulative_outputs, patch[p].calendar_outputs, patch[p].cross_sectional_distr_n_lifetime_partners, patch[p].cross_sectional_distr_n_partners_lastyear,
-                patch[p].PC_sample, patch[p].PC_cohort, patch[p].PC_cohort_data);
+		patch[p].PC_sample, patch[p].PC_cohort, patch[p].PC_cohort_data,
+	        patch[p].PrEP_intervention_sample, patch[p].PrEP_intervention_params);
     }
     free(patch);
 }

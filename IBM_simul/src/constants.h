@@ -197,6 +197,20 @@ gsl_rng * rng;
 #define N_PC_HIV_STRATA 3 /* This is the number of HIV-related categories we use for dividing up the PC sample - we want to include the right number of HIV-, HIV+ know status etc. */
 #define MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP 200 /* Fixes size of list_ids_in_cohort[g][ap][i_pc_category][MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP]; */
 
+
+/************************************************************************/
+/****************** Manicaland cascade constants  ***********************/
+/************************************************************************/
+#define MIN_AGE_PREP 18 /* PrEP offered to 18-24 year olds. */
+#define MAX_AGE_PREP 24
+#define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
+
+
+
+/************************************************************************/
+/*************** How age groups are structured in the IBM ***************/
+/************************************************************************/
+
 extern const int AGE_GROUPS[N_AGE]; /* lower bounds of the age groups considered for partnership formation */
 extern const int AGE_GROUPS_WITH_OLD[N_AGE+1]; /* lower bounds of the age groups considered for partnership formation */
 extern const int AGE_GROUPS_UNPD[N_AGE_UNPD+1];

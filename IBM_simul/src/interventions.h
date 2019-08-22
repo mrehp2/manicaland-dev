@@ -34,4 +34,8 @@ void schedule_vmmc_healing(individual *, parameters *, individual ***, long *, l
 void schedule_generic_vmmc_event(individual *, parameters *, individual ***, long *, long *, double, double );
 void carry_out_VMMC_events_per_timestep(int , double , patch_struct *, int );
 
+/* Manicaland functions. */
+void create_PrEP_intervention_sample(age_list_struct *, PrEP_intervention_sample_struct *, PrEP_intervention_params_struct *);
+
+
 #endif /* INTERVENTIONS_H_ */

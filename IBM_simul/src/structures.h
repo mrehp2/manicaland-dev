@@ -692,6 +692,46 @@ typedef struct{
 } PC_cohort_data_struct;
 
 
+
+typedef struct{
+    /* This structure contains the list of people who get visited by a PrEP intervention which intervenes in women in the age range MIN_AGE_PREP-MAX_AGE_PREP. Intervention can be a single timestep, or over an extended period.
+       We treat this the same as a CHiPs round - i.e. that there could be a second round of the PrEP intervention with a new sampling frame.
+       We assume that a maximum of MAX_POP_SIZE/20 in each year age group are visited as follows:
+       - WPP 2019 puts just under 5% of women aged 18+ are in the 18 age group from 2010 onwards. Given demographic changes this should (?) decline.
+       - So 2.5% of the total population (including men).
+       - Allow PrEP coverage up to 100%, and add back the factor of 2 for safety, and 5% of MAX_POP_SIZE . */
+    long list_ids_to_visit[MAX_AGE_PREP-MIN_AGE_PREP+1][MAX_POP_SIZE/20];
+    
+    /* The number of people in each age group visited a single round of the PrEP intervention. */
+    long number_getting_intervention[MAX_AGE_PREP-MIN_AGE_PREP+1];
+    
+    /* This will be the number of people we see each timestep over the intervention period PrEP_intervention_params->n_timesteps_in_intervention. We can customise hwo people are visited (everyone in a single timestep, or a gradual roll-out) as needed */
+    
+    long number_to_see_per_timestep[MAX_AGE_PREP-MIN_AGE_PREP+1][N_PREP_INTERVENTION_TIMESTEPS];
+
+    long next_person_to_see[MAX_AGE_PREP-MIN_AGE_PREP+1];
+
+} PrEP_intervention_sample_struct;
+
+
+typedef struct{
+    /* This structure contains the parameters related to the PrEP intervention:
+        - what % of people (in each age group) in a single round. 
+        - what number of people (in each age group) in a single round (note that this is normally derived, but we allow it to be */
+
+    /* Total % of eligible women aged ap who get intervention. */
+    long total_coverage[MAX_AGE_PREP-MIN_AGE_PREP+1];
+
+    long proportion_seen_per_timestep[MAX_AGE_PREP-MIN_AGE_PREP+1][N_PREP_INTERVENTION_TIMESTEPS];
+
+    int n_timesteps_in_intervention; /* Number of timesteps in intervention. Probably 1. If >1 round then we make repeat copies of this structure. */
+    
+} PrEP_intervention_params_struct;
+
+
+
+
+
 typedef struct{
     long N_total_CD4_tests_nonpopart; /* Cum. num CD4 tests done (excluding those from PopART). */
     long N_total_HIV_tests_nonpopart; /* Cum. num HIV tests done (excluding those from PopART). */
@@ -788,7 +828,15 @@ typedef struct{
     individual ***PrEP_intervention_cascade_events;
     long *n_PrEP_intervention_cascade_events;
     long *size_PrEP_intervention_cascade_events;
+
+    /* PrEP_intervention_params is the parameter input for how many/what % of women get PrEP.
+       PrEP_intervention_sample is drawn during the simulation based on PrEP_intervention_params to give the list of people who will actually receive the intervention in the given round. */
+    PrEP_intervention_sample_struct *PrEP_intervention_sample; 
+    PrEP_intervention_params_struct *PrEP_intervention_params;
+
     /***********************************/
+
+    
     
     chips_sample_struct *chips_sample;
     PC_sample_struct *PC_sample; /* PC sample is the group of people (including reserves) before enrolment. Some people may not make it into the cohort (as they have moved out of the relevant subgroup). */

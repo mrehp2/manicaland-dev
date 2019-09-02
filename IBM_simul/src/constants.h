@@ -311,7 +311,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define ONPREP_ADHERENT 2      // PrEP at full efficacy.
 
 /* Codes for indiv->next_PrEP_event. */
-#define PREP_NOEVENT // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
+
+#define PREP_NOEVENT 0 // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
 #define PREPAGANDA 1 // Exposure to PrEP-related intervention.
 #define START_PREP 2  // Initialise PrEP at some future timepoint.
 #define BECOME_PREP_FULLYADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.

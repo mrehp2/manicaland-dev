@@ -1565,94 +1565,96 @@ void schedule_generic_PrEP_event(individual *indiv, parameters *param, individua
 }
 
 
-void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patch, int p){
-    /*Carry out any event associated with VMMC in the current time step
+
+/* void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patch, int p){ */
+/*     /\*Carry out any event associated with VMMC in the current time step */
     
     
-    Arguments
-    ---------
-    t_step : int
-        Current time step (used to index the patch[p].vmmc_events and patch[p].n_vmmc_events)
-    t : double
-        Current time in years.  
-    patch : pointer to an array of patch_struct structures
-        The array of patch_struct objects that house information on patches.  See structures.h for 
-        a list of attributes that these objects have.  
-    p : int
-        Patch identifier (generally 0 or 1).  
+/*     Arguments */
+/*     --------- */
+/*     t_step : int */
+/*         Current time step (used to index the patch[p].vmmc_events and patch[p].n_vmmc_events) */
+/*     t : double */
+/*         Current time in years.   */
+/*     patch : pointer to an array of patch_struct structures */
+/*         The array of patch_struct objects that house information on patches.  See structures.h for  */
+/*         a list of attributes that these objects have.   */
+/*     p : int */
+/*         Patch identifier (generally 0 or 1).   */
     
-    Returns
-    -------
-    Nothing; carries out VMMC events on individuals for which they are scheduled.  
-    */
+/*     Returns */
+/*     ------- */
+/*     Nothing; carries out VMMC events on individuals for which they are scheduled.   */
+/*     *\/ */
     
-    /* For debugging: */
-    if(t_step < 0 || t_step >= N_TIME_STEP_PER_YEAR){
-        printf("ERROR: array index %d for vmmc event out of bounds", t_step);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+/*     /\* For debugging: *\/ */
+/*     if(t_step < 0 || t_step >= N_TIME_STEP_PER_YEAR){ */
+/*         printf("ERROR: array index %d for vmmc event out of bounds", t_step); */
+/*         printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+/*         fflush(stdout); */
+/*         exit(1); */
+/*     } */
     
-    int n_events = patch[p].n_vmmc_events[t_step];
-    individual *indiv;
-    int n;
-    //printf("Carrying out %d VMMC events at time t=%f\n",n_events,t);
+/*     int n_events = patch[p].n_vmmc_events[t_step]; */
+/*     individual *indiv; */
+/*     int n; */
+/*     //printf("Carrying out %d VMMC events at time t=%f\n",n_events,t); */
     
-    for(n = 0; n < n_events; n++){
-        indiv = patch[p].vmmc_events[t_step][n];
-        //printf("Person %ld with circ=%d is in vmmc_events.\n",indiv->id,indiv->circ);
+/*     for(n = 0; n < n_events; n++){ */
+/*         indiv = patch[p].vmmc_events[t_step][n]; */
+/*         //printf("Person %ld with circ=%d is in vmmc_events.\n",indiv->id,indiv->circ); */
         
-        /* Throw an error if this individual is female */
-        if (indiv->gender == FEMALE){
-            printf("ERROR: There is a woman %ld in vmmc_events. Exiting\n",indiv->id);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+/*         /\* Throw an error if this individual is female *\/ */
+/*         if (indiv->gender == FEMALE){ */
+/*             printf("ERROR: There is a woman %ld in vmmc_events. Exiting\n",indiv->id); */
+/*             printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+/*             fflush(stdout); */
+/*             exit(1); */
+/*         } */
         
-        /* If this individual is dead, move on to the next person.  
-        Note - we can set up a similar procedure to other lists to remove this person from this
-        list but it is not necessary. As things stand, no VMMC event happens to the dead person and
-        no new event is scheduled for them. */
-        if(indiv->cd4 == DEAD){
-            continue;
-        }
-        /* If uncircumcised but waiting for VMMC then at this timestep they get circumcised. */
-        if (indiv->circ == UNCIRC_WAITING_VMMC){
-            //printf("Person %ld with circ=%d is being scheduled for VMMC healing.\n",
-            //      indiv->id,indiv->circ);
-            schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,
-                patch[p].n_vmmc_events, patch[p].size_vmmc_events, t);
+/*         /\* If this individual is dead, move on to the next person.   */
+/*         Note - we can set up a similar procedure to other lists to remove this person from this */
+/*         list but it is not necessary. As things stand, no VMMC event happens to the dead person and */
+/*         no new event is scheduled for them. *\/ */
+/*         if(indiv->cd4 == DEAD){ */
+/*             continue; */
+/*         } */
+/*         /\* If uncircumcised but waiting for VMMC then at this timestep they get circumcised. *\/ */
+/*         if (indiv->circ == UNCIRC_WAITING_VMMC){ */
+/*             //printf("Person %ld with circ=%d is being scheduled for VMMC healing.\n", */
+/*             //      indiv->id,indiv->circ); */
+/*             schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events, */
+/*                 patch[p].n_vmmc_events, patch[p].size_vmmc_events, t); */
             
-            // Count the number of VMMC procedures in the current year by counting the 
-            // time at which the VMMC procedure was performed.  
-            int year_idx = (int) floor(t) - patch[p].param->start_time_simul;
-            patch[p].calendar_outputs->N_calendar_VMMC[year_idx]++;
+/*             // Count the number of VMMC procedures in the current year by counting the  */
+/*             // time at which the VMMC procedure was performed.   */
+/*             int year_idx = (int) floor(t) - patch[p].param->start_time_simul; */
+/*             patch[p].calendar_outputs->N_calendar_VMMC[year_idx]++; */
             
-        }else if (indiv->circ == VMMC_HEALING){
-            /* If current status is healing, then finish healing. Note that this is the last event
-            in the VMMC process for this individual. */
+/*         }else if (indiv->circ == VMMC_HEALING){ */
+/*             /\* If current status is healing, then finish healing. Note that this is the last event */
+/*             in the VMMC process for this individual. *\/ */
             
-            //printf("Person %ld with circ=%d is being scheduled to move to VMMC .\n",
-            //    indiv->id,indiv->circ);
-            finish_vmmc_healing(indiv);
-            //printf("Person %ld with circ=%d now VMMC .\n",indiv->id,indiv->circ);
-        }else{
-            printf("ERROR: not sure why this person %ld with circ=%d is in vmmc_events. Exiting\n",
-                indiv->id,indiv->circ);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-    }
+/*             //printf("Person %ld with circ=%d is being scheduled to move to VMMC .\n", */
+/*             //    indiv->id,indiv->circ); */
+/*             finish_vmmc_healing(indiv); */
+/*             //printf("Person %ld with circ=%d now VMMC .\n",indiv->id,indiv->circ); */
+/*         }else{ */
+/*             printf("ERROR: not sure why this person %ld with circ=%d is in vmmc_events. Exiting\n", */
+/*                 indiv->id,indiv->circ); */
+/*             printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+/*             fflush(stdout); */
+/*             exit(1); */
+/*         } */
+/*     } */
     
-    /* At this point we have carried out all the events stored in vmmc_events[t_step].
+/*     /\* At this point we have carried out all the events stored in vmmc_events[t_step]. */
     
-    We reuse the same array next year, so need to set n_vmmc_events[] to be zero.  Note that we do
-    not need to set the elements in vmmc_events[t_step] to be blank
-    as we overwrite any elements we use, and n_vmmc_events[] prevents us from accessing elements
-    from previous years which have not been overwritten already. */
-    patch[p].n_vmmc_events[t_step] = 0;
-}
+/*     We reuse the same array next year, so need to set n_vmmc_events[] to be zero.  Note that we do */
+/*     not need to set the elements in vmmc_events[t_step] to be blank */
+/*     as we overwrite any elements we use, and n_vmmc_events[] prevents us from accessing elements */
+/*     from previous years which have not been overwritten already. *\/ */
+/*     patch[p].n_vmmc_events[t_step] = 0; */
+/* } */
+
 

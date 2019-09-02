@@ -1207,7 +1207,7 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
     */
 
     int aa, ai, ap;
-    int i, n, n_eligible[MAX_AGE_PREP-AGE_ADULT+1];
+    int i, n, n_eligible[MAX_AGE_PREP-MIN_AGE_PREP+1];
 
     /* This is a temporary store of id numbers of people in a single age year - they are the people who are eligible for the intervention - we sample N of them. */
     long *temp_list_of_ids_for_sampling;
@@ -1262,8 +1262,8 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 	for(i=0; i<age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]; i++){
 	    /* Only HIV- can get PrEP: */
 	    if ((age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->HIV_status==UNINFECTED) && (age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->PrEP_cascade_status==NOTONPREP)){
-	    temp_list_of_ids_for_sampling[n_eligible[ap]] = age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->id;
-	    n += 1;
+		temp_list_of_ids_for_sampling[n] = age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->id;
+		n += 1;
 	    }
 	}
 
@@ -1312,16 +1312,16 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 	    printf("Issue to be aware of - may be due to rounding?\n");
 
 	    /* If missing one, arbitrarily add an extra person to last timestep. */
-	    if (PrEP_intervention_sample->number_getting_intervention[ap]==temp_cumulative_number_visited_this_timestep+1)
+	    if (PrEP_intervention_sample->number_getting_intervention[ap]==temp_cumulative_number_visited_this_timestep-1)
 		PrEP_intervention_sample->number_to_see_per_timestep[ap][PrEP_intervention_params->n_timesteps_in_intervention-1] += 1;
 
 	    /* If one too many then remove from the last timestep where there is >=1 person. */
-	    else if (PrEP_intervention_sample->number_getting_intervention[ap]==temp_cumulative_number_visited_this_timestep-1){
+	    else if (PrEP_intervention_sample->number_getting_intervention[ap]==temp_cumulative_number_visited_this_timestep+1){
 		i=PrEP_intervention_params->n_timesteps_in_intervention-1;
 		while ((i>0) && (PrEP_intervention_sample->number_to_see_per_timestep[ap][i]==0))
 		    i=i-1;
 		if (i>-1)
-		    PrEP_intervention_sample->number_to_see_per_timestep[ap][PrEP_intervention_params->n_timesteps_in_intervention-1] -= 1;
+		    PrEP_intervention_sample->number_to_see_per_timestep[ap][i] -= 1;
 	    }
 	    /* Otherwise print error report and exit. */
 	    else{

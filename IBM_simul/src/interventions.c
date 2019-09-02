@@ -77,7 +77,7 @@ void create_popart_chips_samples(age_list_struct *age_list, chips_sample_struct 
     the total number of people visited in a year adds up to the correct total.
     
     NOTE: The way we divide up the population means that we may try to visit people who died during
-    the year.  However, this should not be a big factor, and I think it may even mimic CHiPs in
+    the year.  However, this should not be a big factor, and I think it may even` mimic CHiPs in
     that people may move/die between enumeration/mapping and CHiPs visit. 
     
     Arguments
@@ -1187,8 +1187,11 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
 
 /******************** Manicaland related functions *******************/
 
-/* Function takes age_list and uses it to generate a sample of women in a given age range (18-24) who will receive PrEP. */
-void create_PrEP_intervention_sample(age_list_struct *age_list, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params){
+/* Function takes age_list and uses it to generate a sample of women in a given age range (18-24) who will receive the PrEP intervention. 
+   Function then creates a schedule for receiving the intervention.
+   Note that this is NOT starting PrEP - starting PrEP can occur independently (and some time after the intervention?). */
+
+void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params){
     
     /* We generate a list of ids of women in a single year age group ap who are eligible for PrEP intervention (by running through age_list) and then draw from this list randomly to create the people who will receive the PrEP intervention (in this round if there is >1 round). 
        In a later function schedule_PrEP_intervention() we split up each list by timestep (which we do by specifying how many women from the list will be visited in each timestep) - so we don't have any memory issues if we put all the women in one timestep.
@@ -1336,4 +1339,320 @@ void create_PrEP_intervention_sample(age_list_struct *age_list, PrEP_interventio
 
 
 
+
+
+//********************************************************
+/* Carry out any event associated with the PrEP intervention in the current time step. */
+void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch_struct *patch, int p){
+    
+    /* 
+    Arguments
+    ---------
+    t_step : int - Current time step since the beginning of the year (used to index the patch[p].vmmc_events and patch[p].n_vmmc_events) 
+    year: int - Current year.  
+    patch : pointer to an array of patch_struct structures
+        The array of patch_struct objects that house information on patches.  See structures.h for a list of attributes that these objects have.  
+    p : int - Patch identifier (generally 0 or 1).  
+
+    ----------
+    Returns:    Nothing; carries out scheduled PrEP intervention events.  
+    */
+
+    
+
+    /* t_i is number of timesteps since the beginning of the PrEP intervention.
+       When it is <0 then the intervention has not started; when it is >n_timestpes_in_intervention then the intervention has finished.
+       In the main code we use t_i to index the number of people to visit in timestep t_i.
+       Note that PrEP intervention rounds MUST last <=1 year (as this is how much memory is allocated to the PrEP intervention schedule. So t_i<=N_TIME_STEP_PER_YEAR.  */
+    long t_i = (year - patch[p].PrEP_intervention_params->year_start_intervention)*N_TIME_STEP_PER_YEAR + (t_step - patch[p].PrEP_intervention_params->timestep_start_intervention);
+
+
+    /* Don't do anything if the intervention isn't currently running: */
+    if ((t_i<0) || (t_i>patch[p].PrEP_intervention_params->n_timesteps_in_intervention*N_TIME_STEP_PER_YEAR))
+	return;
+    
+
+    int ap;
+    long i;  
+
+    double t = year + t_step*N_TIME_STEP_PER_YEAR;
+    
+    /* Now PrEP intervention reaches each sub-population (women by year age group ap) in turn: */
+    /* Go through the list of id's of people to visit, and visit them: */
+    for(ap=0; ap <(MAX_AGE_PREP-MIN_AGE_PREP+1); ap++){
+	for(i=patch[p].PrEP_intervention_sample->next_person_to_see[ap]; (i<(patch[p].PrEP_intervention_sample->next_person_to_see[ap] + patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i])); i++){
+	    /* Send the address (ie pointer) to this person. */
+	    PrEP_intervention_for_person(&(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit[ap][i]]), patch[p].PrEP_intervention_params, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, IS_PREP_INTERVENTION);
+	}
+
+	/* Update this index ready for the next timestep: */
+	patch[p].PrEP_intervention_sample->next_person_to_see[ap] +=
+                patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i];
+    }
+}
+
+
+void PrEP_intervention_for_person(individual *indiv, PrEP_intervention_params_struct *PrEP_intervention_params, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, int starts_prep_due_to_intervention){
+    /* 
+
+    
+    Arguments
+    ---------
+    individual *indiv
+
+    -------    
+    Returns: Nothing;
+    */
+
+    double t_PrEP_event;   /* Time of next PrEP event. */
+    
+    
+    /* FOr debugging: */
+    if(indiv->cd4 == DUMMYVALUE){
+        printf("Trying to carry out PrEP intervention for a non-existent person id=%ld !!! Exiting\n",indiv->id);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if(indiv->gender == MALE){
+        printf("Trying to carry out PrEP intervention for a man id=%ld !!! Exiting\n", indiv->id);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    /*  Because of the way we draw PrEP intervention visits at the beginning of the year, it is possible some people die or become HIV+ before they are visited. If this is the case then do nothing more. */
+    if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED)
+        return;
+
+
+    
+
+    /* If either:
+       (a) The person already has no barriers to PrEP, OR
+       (b) The intervention reduces those barriers sufficiently
+       THEN they immediately start PrEP, and we schedule future PrEP events
+       (stopping PrEP, becoming less adherent etc. : */
+    if (overcome_PrEP_cascade_barriers(indiv)==1){
+	double x = gsl_rng_uniform (rng);
+
+	/* Here we allow for different PrEP adherence profiles if start due to intervention or not: */
+	double p_becomes_adherent;
+	if (starts_prep_due_to_intervention==IS_PREP_INTERVENTION)
+	    p_becomes_adherent = PrEP_intervention_params->p_becomes_PrEP_adherent_intervention;
+	else
+	    /* Adherence according to non-intervention values: */
+	    p_becomes_adherent = param->p_becomes_PrEP_adherent_background;
+	/* Individual initiates PrEP and is fully adherent: */
+	
+	if (x<=p_becomes_adherent){
+	    indiv->PrEP_cascade_status = ONPREP_ADHERENT;
+	    /* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
+	    t_PrEP_event = draw_next_PrEP_event(indiv,t);
+	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_PrEP_event);
+	}
+	else{
+	    indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
+	    /* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
+	    t_PrEP_event = draw_next_PrEP_event(indiv,t);
+	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_PrEP_event);
+	    
+	}
+    }
+}
+
+
+int overcome_PrEP_cascade_barriers(individual *indiv){
+    if ((indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_MOTIVATION]>=7) &&
+	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_ACCESS]>=6) &&
+	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_UTILIZATION]>=8))
+	return 1;
+    else
+	return 0;
+
+}
+
+
+/* Decide what the next PrEP event will be for indiv.
+   Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
+double draw_next_PrEP_event(individual *indiv, double t){
+    indiv->next_PrEP_event = BECOME_PREP_SEMIADHERENT;
+    return 1.0;
+}
+
+
+/* Function adds a PrEP event to the array PrEP_events[][] for an individual `indiv` at time `t_PrEP_event`. 
+   Function is called by prep_intervention_for_person() and .... */
+void schedule_generic_PrEP_event(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t_now, double t_PrEP_event){
+
+    /*
+    Arguments
+    ---------
+    indiv : pointer to individual struct
+        Individual for which the PrEP event is to be scheduled.  
+    param : pointer to a parameters struct
+    PrEP_events : calendar of who gets a PrEP event - consists of a 2d matrix where each row is a timestep, within each row (timestep t_i) is a list of pointers to n_PrEP_events[t_i] individuals. 
+    n_PrEP_events : array of long
+    size_PrEP_events : array of long
+    t : double
+        Current time in years
+    t_event : double
+        Time in years at which the VMMC event is to take place.  
+    
+    -------
+    Returns:  Nothing.  
+    */
+
+
+        // This is the index for PrEP_events (and n_PrEP_events and size_PrEP_events) arrays
+    int idx_this_PrEP_event = (int) (round((t_PrEP_event - param->COUNTRY_T_PrEP_START) * N_TIME_STEP_PER_YEAR));
+    
+    // Ensure that we never schedule a PrEP event during the current timestep:
+    int idx_current_time = (int) (round((t_now - param->COUNTRY_T_PrEP_START) * N_TIME_STEP_PER_YEAR));
+    
+    // Make sure event is not scheduled for the current time
+    if(idx_this_PrEP_event==idx_current_time){
+        idx_this_PrEP_event += 1;
+    }
+    else if(idx_this_PrEP_event<idx_current_time){
+        printf("Error. Scheduled PrEP event in the past.");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    if(idx_this_PrEP_event<=(param->end_time_simul-param->COUNTRY_T_PrEP_START)*N_TIME_STEP_PER_YEAR){
+	
+	if (indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
+	    printf("Individual %ld is in schedule_generic_PrEP_event\n", indiv->id);
+	}
+        
+	indiv->idx_PrEP_event[0] = idx_this_PrEP_event;
+	indiv->idx_PrEP_event[1] = n_PrEP_events[idx_this_PrEP_event];
+        
+        if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
+            printf("New generic PrEP event for adult %ld generated with array indices  %ld %ld\n",
+                indiv->id, indiv->idx_PrEP_event[0], indiv->idx_PrEP_event[1]);
+            fflush(stdout);
+        }
+
+        /* Check if we've run out of memory: */
+        if (n_PrEP_events[idx_this_PrEP_event]>=(size_PrEP_events[idx_this_PrEP_event])){
+
+            /* Note that I haven't got realloc to work, but in principle we could use realloc() here to increase storage. */
+            printf("Unable to re-allocate PrEP_events[i]. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        
+        /* Add a pointer to this individual to the PrEP_events array in the correct location */
+        PrEP_events[idx_this_PrEP_event][n_PrEP_events[idx_this_PrEP_event]] = indiv;
+        n_PrEP_events[idx_this_PrEP_event]++;
+    
+    }else{ // If PrEP event lies after end of the simulation.  
+        
+        /* If next event scheduled for after the end of the simulation set to be dummy entries. */
+        indiv->idx_PrEP_event[0] = -1;
+        indiv->idx_PrEP_event[1] = -1;
+	indiv->next_PrEP_event = PREP_NOEVENT;
+        if (indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
+            printf("No PrEP event scheduled for %ld as event lies after end of the simulation.\n", indiv->id);
+        }
+    }
+}
+
+
+void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patch, int p){
+    /*Carry out any event associated with VMMC in the current time step
+    
+    
+    Arguments
+    ---------
+    t_step : int
+        Current time step (used to index the patch[p].vmmc_events and patch[p].n_vmmc_events)
+    t : double
+        Current time in years.  
+    patch : pointer to an array of patch_struct structures
+        The array of patch_struct objects that house information on patches.  See structures.h for 
+        a list of attributes that these objects have.  
+    p : int
+        Patch identifier (generally 0 or 1).  
+    
+    Returns
+    -------
+    Nothing; carries out VMMC events on individuals for which they are scheduled.  
+    */
+    
+    /* For debugging: */
+    if(t_step < 0 || t_step >= N_TIME_STEP_PER_YEAR){
+        printf("ERROR: array index %d for vmmc event out of bounds", t_step);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
+    int n_events = patch[p].n_vmmc_events[t_step];
+    individual *indiv;
+    int n;
+    //printf("Carrying out %d VMMC events at time t=%f\n",n_events,t);
+    
+    for(n = 0; n < n_events; n++){
+        indiv = patch[p].vmmc_events[t_step][n];
+        //printf("Person %ld with circ=%d is in vmmc_events.\n",indiv->id,indiv->circ);
+        
+        /* Throw an error if this individual is female */
+        if (indiv->gender == FEMALE){
+            printf("ERROR: There is a woman %ld in vmmc_events. Exiting\n",indiv->id);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        
+        /* If this individual is dead, move on to the next person.  
+        Note - we can set up a similar procedure to other lists to remove this person from this
+        list but it is not necessary. As things stand, no VMMC event happens to the dead person and
+        no new event is scheduled for them. */
+        if(indiv->cd4 == DEAD){
+            continue;
+        }
+        /* If uncircumcised but waiting for VMMC then at this timestep they get circumcised. */
+        if (indiv->circ == UNCIRC_WAITING_VMMC){
+            //printf("Person %ld with circ=%d is being scheduled for VMMC healing.\n",
+            //      indiv->id,indiv->circ);
+            schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,
+                patch[p].n_vmmc_events, patch[p].size_vmmc_events, t);
+            
+            // Count the number of VMMC procedures in the current year by counting the 
+            // time at which the VMMC procedure was performed.  
+            int year_idx = (int) floor(t) - patch[p].param->start_time_simul;
+            patch[p].calendar_outputs->N_calendar_VMMC[year_idx]++;
+            
+        }else if (indiv->circ == VMMC_HEALING){
+            /* If current status is healing, then finish healing. Note that this is the last event
+            in the VMMC process for this individual. */
+            
+            //printf("Person %ld with circ=%d is being scheduled to move to VMMC .\n",
+            //    indiv->id,indiv->circ);
+            finish_vmmc_healing(indiv);
+            //printf("Person %ld with circ=%d now VMMC .\n",indiv->id,indiv->circ);
+        }else{
+            printf("ERROR: not sure why this person %ld with circ=%d is in vmmc_events. Exiting\n",
+                indiv->id,indiv->circ);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+    }
+    
+    /* At this point we have carried out all the events stored in vmmc_events[t_step].
+    
+    We reuse the same array next year, so need to set n_vmmc_events[] to be zero.  Note that we do
+    not need to set the elements in vmmc_events[t_step] to be blank
+    as we overwrite any elements we use, and n_vmmc_events[] prevents us from accessing elements
+    from previous years which have not been overwritten already. */
+    patch[p].n_vmmc_events[t_step] = 0;
+}
 

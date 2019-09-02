@@ -205,7 +205,8 @@ gsl_rng * rng;
 #define MAX_AGE_PREP 24
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
-
+/* Put this as a constant for now - determines if in simul.c we use PrEP intervention. Eventually will be part of counterfactual. */
+#define RUN_PREP_INTERVENTION 0
 
 /************************************************************************/
 /*************** How age groups are structured in the IBM ***************/
@@ -300,16 +301,27 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 #define NPrEPcascadesteps 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
 
+/* 1=due to Manicaland PrEP intervention, 0 otherwise. Determines adherence of person starting PrEP. */
+#define NOT_PREP_INTERVENTION 0
+#define IS_PREP_INTERVENTION 1 
+
 /* Codes for indiv->PrEP_cascade_status. */
 #define NOTONPREP 0
 #define ONPREP_SEMIADHERENT 1  // Tbc - something like 'takes PrEP but not every risky act is protected. 
 #define ONPREP_ADHERENT 2      // PrEP at full efficacy.
 
 /* Codes for indiv->next_PrEP_event. */
-#define PREP_NOEVENT // Nothing ever going to happen (i.e. people with barriers not reached by intervention).
+#define PREP_NOEVENT // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
 #define PREPAGANDA 1 // Exposure to PrEP-related intervention.
-#define STARTPREP 2  // Initialise PrEP at some future timepoint.
-#define BECOMEADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.
+#define START_PREP 2  // Initialise PrEP at some future timepoint.
+#define BECOME_PREP_FULLYADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.
+#define BECOME_PREP_SEMIADHERENT 4 // Fully adherent PrEP user becomes semi-adherent.
+#define PREP_STOP_NOTNEEDED 5 // Stop PrEP (due to lower risk). 
+#define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
+
+#define INDEX_PREP_BARRIER_MOTIVATION 0 //
+#define INDEX_PREP_BARRIER_ACCESS 1 //
+#define INDEX_PREP_BARRIER_UTILIZATION 2 //
 
 /* Used as CD4 value to identify that people are not infected with HIV.
  * Note: CD4==-2 means the person is dead.

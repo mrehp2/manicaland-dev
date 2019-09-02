@@ -63,12 +63,9 @@ void blank_individual_array(individual *individual_population, int id_counter){
     blank_person_template.PrEP_cascade_status = DUMMYVALUE;
     for (i_prepbarrier=0; i_prepbarrier<NPrEPcascadesteps; i_prepbarrier++)
 	blank_person_template.PrEP_cascade_barriers[i_prepbarrier] = DUMMYVALUE;
-    blank_person_template.next_PrEP_background_event = DUMMYVALUE;
-    blank_person_template.next_PrEP_intervention_event = DUMMYVALUE;
-    blank_person_template.idx_PrEP_background_cascade_event[0] = DUMMYVALUE;
-    blank_person_template.idx_PrEP_background_cascade_event[1] = DUMMYVALUE;
-    blank_person_template.idx_PrEP_intervention_cascade_event[0] = DUMMYVALUE;
-    blank_person_template.idx_PrEP_intervention_cascade_event[1] = DUMMYVALUE;
+    blank_person_template.next_PrEP_event = DUMMYVALUE;
+    blank_person_template.idx_PrEP_event[0] = DUMMYVALUE;
+    blank_person_template.idx_PrEP_event[1] = DUMMYVALUE;
     //blank_person_template.debug_last_PrEP_cascade_event_index = DUMMYVALUE;
 
     
@@ -120,20 +117,11 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 
     /* Initialise the number of people in each group to be zero (as no PrEP at start of simulation): */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].n_PrEP_background_cascade_events[i] = 0;
+        patch[p].n_PrEP_events[i] = 0;
 
     /* Initialise the size of the arrays to the default: */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].size_PrEP_background_cascade_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
-
-    /* Initialise the number of people in each group to be zero (as no PrEP at start of simulation): */
-    for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].n_PrEP_intervention_cascade_events[i] = 0;
-
-    /* Initialise the size of the arrays to the default: */
-    for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].size_PrEP_intervention_cascade_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
-
+        patch[p].size_PrEP_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
     
     /* Initialise the number of people in each group to be zero 
      * (as no VMMC at start of simulation - note traditional MC is dealt with separately): */
@@ -638,74 +626,40 @@ void alloc_patch_memoryv2(patch_struct *patch){
 
 
 	
-	/* These is the arrays that store the background (i.e. not due to the intervention in Manicaland) PrEP cascade events: */
-        patch[p].PrEP_background_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(individual**));  // PrEP_background_cascade_events[t] is a list of pointers to individuals whose next cascade event will happen at time step param.start_time_simul+t
-	if(patch[p].PrEP_background_cascade_events==NULL){
-            printf("Unable to allocate PrEP_background_cascade_events in alloc_all_memory. Execution aborted.");
+	/* These is the arrays that store the  PrEP cascade events (independently of whether starts PrEP due to intervention or not): */
+        patch[p].PrEP_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(individual**));  // PrEP_events[t] is a list of pointers to individuals whose next cascade event will happen at time step param.start_time_simul+t
+	if(patch[p].PrEP_events==NULL){
+            printf("Unable to allocate PrEP_events in alloc_all_memory. Execution aborted.");
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
         }
         for(i=0 ; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ; i++){
-            (patch[p].PrEP_background_cascade_events)[i] = malloc(DEFAULT_N_HIV_CASCADE_PER_TIME_STEP*sizeof(individual*));
-            if((patch[p].PrEP_background_cascade_events)[i]==NULL){
-                printf("Unable to allocate PrEP_background_cascade_events[i] in alloc_all_memory. Execution aborted.");
+            (patch[p].PrEP_events)[i] = malloc(DEFAULT_N_HIV_CASCADE_PER_TIME_STEP*sizeof(individual*));
+            if((patch[p].PrEP_events)[i]==NULL){
+                printf("Unable to allocate PrEP_events[i] in alloc_all_memory. Execution aborted.");
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
                 fflush(stdout);
                 exit(1);
             }
         }
 
-        patch[p].n_PrEP_background_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
-        if(patch[p].n_PrEP_background_cascade_events==NULL){
-            printf("Unable to allocate n_PrEP_background_cascade_events in alloc_all_memory. Execution aborted.");
+        patch[p].n_PrEP_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
+        if(patch[p].n_PrEP_events==NULL){
+            printf("Unable to allocate n_PrEP_events in alloc_all_memory. Execution aborted.");
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
         }
 
-        patch[p].size_PrEP_background_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
-        if(patch[p].size_PrEP_background_cascade_events==NULL){
-            printf("Unable to allocate size_PrEP_background_cascade_events in alloc_all_memory. Execution aborted.");
+        patch[p].size_PrEP_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
+        if(patch[p].size_PrEP_events==NULL){
+            printf("Unable to allocate size_PrEP_events in alloc_all_memory. Execution aborted.");
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
         }
 
-
-	/* These is the arrays that store the Manicaland intervention PrEP cascade events: */
-        patch[p].PrEP_intervention_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(individual**));  // PrEP_intervention_cascade_events[t] is a list of pointers to individuals whose next cascade event will happen at time step param.start_time_simul+t
-	if(patch[p].PrEP_intervention_cascade_events==NULL){
-            printf("Unable to allocate PrEP_intervention_cascade_events in alloc_all_memory. Execution aborted.");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        for(i=0 ; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ; i++){
-            (patch[p].PrEP_intervention_cascade_events)[i] = malloc(DEFAULT_N_HIV_CASCADE_PER_TIME_STEP*sizeof(individual*));
-            if((patch[p].PrEP_intervention_cascade_events)[i]==NULL){
-                printf("Unable to allocate PrEP_intervention_cascade_events[i] in alloc_all_memory. Execution aborted.");
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-        }
-
-        patch[p].n_PrEP_intervention_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
-        if(patch[p].n_PrEP_intervention_cascade_events==NULL){
-            printf("Unable to allocate n_PrEP_intervention_cascade_events in alloc_all_memory. Execution aborted.");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-
-        patch[p].size_PrEP_intervention_cascade_events = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
-        if(patch[p].size_PrEP_intervention_cascade_events==NULL){
-            printf("Unable to allocate size_PrEP_intervention_cascade_events in alloc_all_memory. Execution aborted.");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
 
 
         //////
@@ -1133,7 +1087,7 @@ void alloc_partnership_memoryv2(all_partnerships *overall_partnerships){
 
 void free_all_patch_memory(parameters *param, individual *individual_population, population_size *n_population, population_size_one_year_age *n_population_oneyearagegroups, stratified_population_size *n_population_stratified, age_list_struct *age_list, child_population_struct *child_population,
         individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events,
-	individual ***PrEP_background_cascade_events, long *n_PrEP_background_cascade_events, long *size_PrEP_background_cascade_events, individual ***PrEP_intervention_cascade_events, long *n_PrEP_intervention_cascade_events, long *size_PrEP_intervention_cascade_events,
+	individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events,
         long *new_deaths, long *death_dummylist,
 	population_size_one_year_age *n_infected, population_size_one_year_age *n_newly_infected, population_size_one_year_age *n_infected_cumulative, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, population_size *n_infected_wide_age_group, population_size *n_newly_infected_wide_age_group,
 			   chips_sample_struct *chips_sample, cumulative_outputs_struct *cumulative_outputs, calendar_outputs_struct *calendar_outputs, long ****cross_sectional_distr_n_lifetime_partners, long ****cross_sectional_distr_n_partners_lastyear, PC_sample_struct *PC_sample, PC_cohort_struct *PC_cohort, PC_cohort_data_struct *PC_cohort_data, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params)
@@ -1179,16 +1133,10 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
 
     /* Free each element: */
     for(i=0 ;i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ;i++)
-        free(PrEP_background_cascade_events[i]);
-    free(PrEP_background_cascade_events);
-    free(n_PrEP_background_cascade_events);
-    free(size_PrEP_background_cascade_events);
-
-    for(i=0 ;i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ;i++)
-        free(PrEP_intervention_cascade_events[i]);
-    free(PrEP_intervention_cascade_events);
-    free(n_PrEP_intervention_cascade_events);
-    free(size_PrEP_intervention_cascade_events);
+        free(PrEP_events[i]);
+    free(PrEP_events);
+    free(n_PrEP_events);
+    free(size_PrEP_events);
 
 
     /* Didn't free vmmc events so free them here: */
@@ -1302,7 +1250,7 @@ void free_patch_memory(patch_struct *patch){
                 patch[p].size_hiv_pos_progression, patch[p].cascade_events, patch[p].n_cascade_events,
                 patch[p].size_cascade_events, patch[p].vmmc_events, patch[p].n_vmmc_events,
                 patch[p].size_vmmc_events,
-		patch[p].PrEP_background_cascade_events, patch[p].n_PrEP_background_cascade_events, patch[p].size_PrEP_background_cascade_events, patch[p].PrEP_intervention_cascade_events, patch[p].n_PrEP_intervention_cascade_events, patch[p].size_PrEP_intervention_cascade_events, 
+		patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, 
 		patch[p].new_deaths, patch[p].death_dummylist,
                 patch[p].n_infected,
 		patch[p].n_newly_infected, patch[p].n_infected_cumulative, patch[p].n_infected_by_all_strata, patch[p].n_infected_wide_age_group, patch[p].n_newly_infected_wide_age_group,

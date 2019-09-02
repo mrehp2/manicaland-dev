@@ -936,6 +936,15 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     if(t >= patch[p].param->COUNTRY_VMMC_START){
         carry_out_VMMC_events_per_timestep(t_step, t, patch, p);
     }
+
+    /*********************************************************************/
+    /* 11. Carry out PrEP intervention (if it has started)               */
+    /*********************************************************************/
+    
+    if((t >= patch[p].param->COUNTRY_VMMC_START) && (RUN_PREP_INTERVENTION==1)){
+        carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
+    }
+
     
     // Function determines if there are any things we need to fit to at the current timestep, 
     // and carries out any fitting needed.

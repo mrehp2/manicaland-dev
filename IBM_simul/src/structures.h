@@ -85,10 +85,8 @@ struct individual{
 
     int PrEP_cascade_status;
     int PrEP_cascade_barriers[NPrEPcascadesteps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
-    int next_PrEP_background_event; /* Stores the next PrEP cascade event to occur to this person (i.e. not due to intervention). */ 
-    int next_PrEP_intervention_event; /* Stores the next PrEP cascade event to occur to this person (i.e. due to intervention). */ 
-    long idx_PrEP_background_cascade_event[2]; /* The indices which locate this individual in the PrEP cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
-    long idx_PrEP_intervention_cascade_event[2]; /* The indices which locate this individual in the PrEP intervention cascade_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP cascade event at some timestep dt) and the second is their location in this group. */    
+    int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person (due to either intervention or background). */ 
+    long idx_PrEP_event[2]; /* The indices which locate this individual in the PrEP_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP event at some timestep dt) and the second is their location in this group. */    
 
 
 
@@ -465,6 +463,11 @@ typedef struct {
     chips_param_struct *chips_params;
     PC_param_struct *PC_params;
     DHS_param_struct *DHS_params;
+
+    /* PrEP-related parameters: */
+    double COUNTRY_T_PrEP_START; /* Time when PrEP first becomes available. */
+    double p_becomes_PrEP_adherent_background; /* Probability that someone starting PrEP becomes fully adherent. 1-p_becomes_PrEP_adherent_background is then the probability that someone starting PrEP becomes partly adherent. */
+    
 } parameters;
 
 
@@ -724,8 +727,15 @@ typedef struct{
 
     long proportion_seen_per_timestep[MAX_AGE_PREP-MIN_AGE_PREP+1][N_PREP_INTERVENTION_TIMESTEPS];
 
-    int n_timesteps_in_intervention; /* Number of timesteps in intervention. Probably 1. If >1 round then we make repeat copies of this structure. */
-    
+    /* We specify the intervention start date as year + timestep (rather than as a float) to avoid rounding errors. */
+    int year_start_intervention;
+    int timestep_start_intervention;
+    /* How long does the intervention last for? */
+    int n_timesteps_in_intervention;
+
+    /* Adherence: */
+    double p_becomes_PrEP_adherent_intervention;   /* Probability someone starting PrEP becomes fully adherent from Manicaland intervention. 1-p_becomes_PrEP_adherent_intervention is the probability that the person becomes semi adherent. */
+    double p_semiadherent_acts_covered; 
 } PrEP_intervention_params_struct;
 
 
@@ -821,13 +831,10 @@ typedef struct{
 
 
     /*** Manicaland-related cascades ***/
-    individual ***PrEP_background_cascade_events;
-    long *n_PrEP_background_cascade_events;
-    long *size_PrEP_background_cascade_events;
+    individual ***PrEP_events;
+    long *n_PrEP_events;
+    long *size_PrEP_events;
 
-    individual ***PrEP_intervention_cascade_events;
-    long *n_PrEP_intervention_cascade_events;
-    long *size_PrEP_intervention_cascade_events;
 
     /* PrEP_intervention_params is the parameter input for how many/what % of women get PrEP.
        PrEP_intervention_sample is drawn during the simulation based on PrEP_intervention_params to give the list of people who will actually receive the intervention in the given round. */

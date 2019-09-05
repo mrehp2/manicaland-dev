@@ -87,6 +87,7 @@ struct individual{
     int PrEP_cascade_barriers[NPrEPcascadesteps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
     int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person (due to either intervention or background). */ 
     long idx_PrEP_event[2]; /* The indices which locate this individual in the PrEP_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP event at some timestep dt) and the second is their location in this group. */    
+    int starts_PrEP_due_to_intervention; /* -1 initially. 0 if started through non-intervention process, 1 if started through intervention. Allows us to modify adherence and long-term behaviour if was part of intervention. */
 
 
 

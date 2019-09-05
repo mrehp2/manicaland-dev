@@ -90,7 +90,6 @@ struct individual{
     int starts_PrEP_due_to_intervention; /* -1 initially. 0 if started through non-intervention process, 1 if started through intervention. Allows us to modify adherence and long-term behaviour if was part of intervention. */
 
 
-
     int circ; /* 0 if uncircumcised, 1 if VMMC circumcised (and healed), 2 if VMMC during healing period, 3 if traditional circumcised (assumed at birth/youth). */
     double t_vmmc; /* Time at which an individual undergoes the VMMC procedure (used in cost-effectiveness) */
     long idx_vmmc_event[2];   /* The indices which locate this individual in the vmmc_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a VMMC event at some timestep dt) and the second is their location in this group. */

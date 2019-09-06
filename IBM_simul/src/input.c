@@ -30,16 +30,24 @@
 read_param()
     Calls each of the individual read_params() functions (below)
 read_demographic_params()
-    Read in demographic parameters from param_processed_patch$p_demographics.csv
+    - Read in demographic parameters from param_processed_patch$p_demographics.csv
+
 read_hiv_params()
-    Read in hiv-related (transmission, progression) parameters from param_processed_patch$p_HIV.csv
+    - Read in hiv-related (transmission, progression) parameters from param_processed_patch$p_HIV.csv
+
 read_partnership_params()
-    Read in partnership parameters from param_processed_patch$p_partnerships.csv
+    - Read in partnership parameters from param_processed_patch$p_partnerships.csv
+
 read_time_params()
-    Read in time-related parameters (start of epidemic, start of ART etc) from
+    - Read in time-related parameters (start of epidemic, start of ART etc) from
     param_processed_patch$p_times.csv
+
 read_cascade_params()
-    Read in HIV cascade-related parameters from param_processed_patch$p_cascade.csv
+    - Read in HIV cascade-related parameters from param_processed_patch$p_cascade.csv
+
+read_popart_params():
+    - Read in parameters related to the HIV trial (including CHiPS-related and PopART cascade parameters such as time to vmmc from CHiPs referral.
+
 read_initial_params()
     Read in initial conditions (population size, etc) from param_processed_patch1_init.csv
 
@@ -91,7 +99,8 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         read_partnership_params(patch_tag, param[p], n_runs);
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
-        
+	read_popart_params(patch_tag, param[p], n_runs);
+	
         /* Note that this MUST be called after read_cascade_params(). */
         read_chips_uptake_params(patch_tag, param[p]);
         read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
@@ -826,11 +835,6 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     
     // For rounding the time HIV starts to the nearest timestep
     double time_start_hiv_undiscretised;
-    double CHIPS_START, CHIPS_END;
-    
-    // What is wanted is not the time of the end of the last timestep in a CHiPS round but the time
-    // at the beginning of that timestep. i.e. CHIPS_END_STARTOFTIMESTEP = CHIPS_END-TIME_STEP;
-    double CHIPS_END_STARTOFTIMESTEP;
     
     // This is a temporary var so as not to keep writing allparameters+i_run
     // (or equivalently &allparameters[i_run]). 
@@ -921,46 +925,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_VMMC_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_VMMC_START");
-
-        for(i = 0; i < NCHIPSROUNDS; i++){
-            checkreadok = fscanf(param_file, "%lg", &CHIPS_START);
-            check_if_cannot_read_param(checkreadok, "CHIPS_START");
-            
-            param_local->CHIPS_START_YEAR[i] = (int) CHIPS_START;
-            param_local->CHIPS_START_TIMESTEP[i] = (int) round((CHIPS_START - 
-                param_local->CHIPS_START_YEAR[i])*N_TIME_STEP_PER_YEAR);
-
-            checkreadok = fscanf(param_file, "%lg", &CHIPS_END);
-            check_if_cannot_read_param(checkreadok, "CHIPS_END");
-            
-            // What is wanted is not the time of the end of the last timestep in a CHiPS round but
-            // the time at the beginning of that timestep. i.e. CHIPS_END_STARTOFTIMESTEP =
-            // CHIPS_END-TIME_STEP;
-            
-            CHIPS_END_STARTOFTIMESTEP = CHIPS_END - TIME_STEP;
-            param_local->CHIPS_END_YEAR[i] = (int) CHIPS_END_STARTOFTIMESTEP;
-            param_local->CHIPS_END_TIMESTEP[i] = (int) round((CHIPS_END_STARTOFTIMESTEP -
-                param_local->CHIPS_END_YEAR[i]) * N_TIME_STEP_PER_YEAR);
-            
-            /* This is derived from the above times. */
-            //printf("STart = %i %i End = %i %i\n",param_local->CHIPS_START_YEAR[i],param_local->CHIPS_START_TIMESTEP[i],param_local->CHIPS_END_YEAR[i],param_local->CHIPS_END_TIMESTEP[i]);
-            param_local->chips_params->n_timesteps_per_round[i] =
-                (param_local->CHIPS_END_YEAR[i]-param_local->CHIPS_START_YEAR[i]) *
-                N_TIME_STEP_PER_YEAR +
-                (param_local->CHIPS_END_TIMESTEP[i] - param_local->CHIPS_START_TIMESTEP[i]) + 1;
-        }
-
-        param_local->CHIPS_START_TIMESTEP_POSTTRIAL = 
-            param_local->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1] + 1;
-        
-        if(param_local->CHIPS_START_TIMESTEP_POSTTRIAL >= N_TIME_STEP_PER_YEAR){
-            param_local->CHIPS_START_TIMESTEP_POSTTRIAL =
-                param_local->CHIPS_START_TIMESTEP_POSTTRIAL - N_TIME_STEP_PER_YEAR;
-        }
-
-        checkreadok = fscanf(param_file, "%lf", &temp_int);
-        param_local->chips_params->n_timesteps_per_round_posttrial = (int) floor(temp_int);
-        check_if_cannot_read_param(checkreadok, "param_local->n_timesteps_per_round_posttrial");
+	printf("VMMC start = %lf\n",param_local->COUNTRY_VMMC_START);
 
         if( (int) (param_local->start_time_simul) != (param_local->start_time_simul) || 
             (int) (param_local->end_time_simul) != param_local->end_time_simul){
@@ -979,6 +944,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
             fflush(stdout);
             exit(1);
         }
+	
         checkreadok = fscanf(param_file, "%lg", &temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->DHS_params->NDHSROUNDS");
         param_local->DHS_params->NDHSROUNDS = (int) temp_int;
@@ -1000,9 +966,9 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 /************************************************************************************/
 void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_runs){
     FILE *param_file;
-    int icd4, iround;
+    int icd4;
     char param_file_name[LONGSTRINGLENGTH];
-    int i_run,i;
+    int i_run;
     double max_temp;  /* Local variable which allows us to get the range from the max value. */
     /* This is a local temp variable we use so we don't have to keep writing allparameters+i_run (or equivalently &allparameters[i_run]). */
     parameters *param_local;
@@ -1063,9 +1029,9 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_background_testing_rate_multiplier_male));
         check_if_cannot_read_param(checkreadok,"param_local->HIV_background_testing_rate_multiplier_male");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_CHIPS));
-        check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_CHIPS");
-        //printf("HIV rapid test sensitivity = %6.4lf\n",param_local->HIV_rapid_test_sensitivity_CHIPS);
+        checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_ANC));
+        check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_ANC");
+        printf("HIV rapid test sensitivity = %6.4lf\n",param_local->HIV_rapid_test_sensitivity_ANC);
 
 
         /* Input probabilities for the cascade events: */
@@ -1079,12 +1045,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_nonpopart));
         check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_nonpopart");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_popartYEAR1));
-        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_popartYEAR1");
-
-        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards));
-        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards");
-        //printf("param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards = %lf\n",param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards);
 
         //printf("param_local->p_collect_hiv_test_results_cd4_under200 = %lf\n",param_local->p_collect_hiv_test_results_cd4_under200);
         //checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_over200));
@@ -1128,12 +1088,7 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_earlyart_dropout_range");
         param_local->t_earlyart_dropout_range[NOTPOPART] = max_temp - param_local->t_earlyart_dropout_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_earlyart_dropout_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_earlyart_dropout_min");
 
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_earlyart_dropout_range");
-        param_local->t_earlyart_dropout_range[POPART]    = max_temp - param_local->t_earlyart_dropout_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_dies_earlyart_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_min");
@@ -1142,12 +1097,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_range");
         param_local->t_dies_earlyart_range[NOTPOPART] = max_temp - param_local->t_dies_earlyart_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_dies_earlyart_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_range");
-        param_local->t_dies_earlyart_range[POPART]    = max_temp - param_local->t_dies_earlyart_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_early_art));
         check_if_cannot_read_param(checkreadok,"param_local->t_end_early_art");
@@ -1159,12 +1108,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_cd4_retest_range");
         param_local->t_cd4_retest_range[NOTPOPART] = max_temp - param_local->t_cd4_retest_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_cd4_retest_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_cd4_retest_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_cd4_retest_range");
-        param_local->t_cd4_retest_range[POPART]    = max_temp - param_local->t_cd4_retest_min[POPART]; 
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_cd4_whenartfirstavail_min));
         check_if_cannot_read_param(checkreadok,"param_local->t_cd4_whenartfirstavail_min");
@@ -1180,64 +1123,11 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_delay_hivtest_to_cd4test_range");
         param_local->t_delay_hivtest_to_cd4test_range[NOTPOPART] = max_temp - param_local->t_delay_hivtest_to_cd4test_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_delay_hivtest_to_cd4test_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_delay_hivtest_to_cd4test_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_delay_hivtest_to_cd4test_range");
-        param_local->t_delay_hivtest_to_cd4test_range[POPART]    = max_temp - param_local->t_delay_hivtest_to_cd4test_min[POPART];
-
-        // Uniform version
-        //checkreadok = fscanf(param_file,"%lg",&(param_local->t_start_art_min[NOTPOPART]));
-        //check_if_cannot_read_param(checkreadok,"param_local->t_start_art_min");
-        //checkreadok = fscanf(param_file,"%lg",&max_temp);
-        //check_if_cannot_read_param(checkreadok,"param_local->t_start_art_range");
-        //param_local->t_start_art_range[NOTPOPART] = max_temp - param_local->t_start_art_min[NOTPOPART];
-        //checkreadok = fscanf(param_file,"%lg",&(param_local->t_start_art_min[POPART]));
-        //check_if_cannot_read_param(checkreadok,"param_local->t_start_art_min");
-        //checkreadok = fscanf(param_file,"%lg",&max_temp);
-        //check_if_cannot_read_param(checkreadok,"param_local->t_start_art_range");
-        //param_local->t_start_art_range[POPART] = max_temp - param_local->t_start_art_min[POPART];
 
         // Exponential version
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_start_art_mean_non_popart));
         check_if_cannot_read_param(checkreadok,"param_local->t_start_art_mean_non_popart");
 
-        double temp;
-
-        for(iround = 0 ; iround<NCHIPSROUNDS ; iround++)
-        {
-            /*print_here(iround);*/
-            checkreadok = fscanf(param_file,"%lg",&temp);
-            param_local->n_time_periods_art_popart_per_round[iround] = (int) temp;
-            check_if_cannot_read_param(checkreadok,"param_local->n_time_periods_art_popart_per_round");
-            /*printf("param_local->n_time_periods_art_popart_per_round[%d] is %d\n",iround,param_local->n_time_periods_art_popart_per_round[iround]);
-            fflush(stdout);*/
-        }
-        
-        for(iround = 0 ; iround < NCHIPSROUNDS; iround++){
-            for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround]; i++){
-                checkreadok = fscanf(param_file, "%lg", 
-                    &(param_local->t_start_art_mean_fast_popart[iround][i]));
-                
-                check_if_cannot_read_param(checkreadok,
-                    "param_local->t_start_art_mean_fast_popart_round1");
-            }
-            
-            for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround] ; i++){
-                checkreadok = fscanf(param_file, "%lg", 
-                    &(param_local->t_start_art_mean_slow_popart[iround][i]));
-                check_if_cannot_read_param(checkreadok,
-                    "param_local->t_start_art_mean_slow_popart_round1");
-            }
-            
-            for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround]; i++){
-                checkreadok = fscanf(param_file, "%lg",
-                    &(param_local->p_start_art_mean_fast_popart[iround][i]));
-                check_if_cannot_read_param(checkreadok, 
-                    "param_local->p_start_art_mean_fast_popart_round1");
-            }
-        }
         
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_becomevu_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_min");
@@ -1246,12 +1136,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_range");
         param_local->t_end_vs_becomevu_range[NOTPOPART] = max_temp - param_local->t_end_vs_becomevu_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_becomevu_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_range");
-        param_local->t_end_vs_becomevu_range[POPART] = max_temp - param_local->t_end_vs_becomevu_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_dropout_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_min");
@@ -1260,12 +1144,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_range");
         param_local->t_end_vs_dropout_range[NOTPOPART] = max_temp - param_local->t_end_vs_dropout_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_dropout_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_range");
-        param_local->t_end_vs_dropout_range[POPART] = max_temp -  param_local->t_end_vs_dropout_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_becomevs_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_min");
@@ -1274,12 +1152,6 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_range");
         param_local->t_end_vu_becomevs_range[NOTPOPART] = max_temp - param_local->t_end_vu_becomevs_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_becomevs_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_range");
-        param_local->t_end_vu_becomevs_range[POPART] = max_temp - param_local->t_end_vu_becomevs_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_dropout_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_min");
@@ -1288,30 +1160,11 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_range");
         param_local->t_end_vu_dropout_range[NOTPOPART] = max_temp - param_local->t_end_vu_dropout_min[NOTPOPART];  
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_dropout_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_min");
 
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_range");
-        param_local->t_end_vu_dropout_range[POPART] = max_temp - param_local->t_end_vu_dropout_min[POPART];  
-
-        /* This is the probability of getting back into the cascade during PopART for someone who 
-         * dropped out before PopART. */
-        //for (i=0; i<NCHIPSROUNDS; i++){
-        for (i=0; i<1; i++){ /* Change after DSMB. */
-            checkreadok = fscanf(param_file,"%lg",&(param_local->p_popart_to_cascade[i]));
-	    printf("p_popart_to_cascade[%i] = %lf\n",i,param_local->p_popart_to_cascade[i]);
-            check_if_cannot_read_param(checkreadok,"param_local->p_popart_to_cascade[i]");
-        }
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_circ_nonpopart));
         check_if_cannot_read_param(checkreadok,"param_local->p_circ_nonpopart");
 
-        //for (i=0; i<NCHIPSROUNDS; i++){
-        for (i=0; i<1; i++){ /* Change after DSMB. */
-            checkreadok = fscanf(param_file,"%lg",&(param_local->p_circ_popart[i]));
-            check_if_cannot_read_param(checkreadok,"param_local->p_circ_popart[i]");
-        }
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_get_vmmc_min[NOTPOPART]));
         check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_min");
@@ -1320,30 +1173,246 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_range");
         param_local->t_get_vmmc_range[NOTPOPART] = max_temp - param_local->t_get_vmmc_min[NOTPOPART];
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->t_get_vmmc_min[POPART]));
-        check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_min");
-
-        checkreadok = fscanf(param_file,"%lg",&max_temp);
-        check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_range");
-        param_local->t_get_vmmc_range[POPART] = max_temp - param_local->t_get_vmmc_min[POPART];
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->t_vmmc_healing));
         check_if_cannot_read_param(checkreadok,"param_local->t_vmmc_healing");
 
-        //      for (i=0; i<NCHIPSROUNDS; i++){
-        //          checkreadok = fscanf(param_file,"%lg",&(param_local->prop_tested_by_chips[MALE][i]));
-        //          check_if_cannot_read_param(checkreadok,"param_local->prop_tested_by_chips");
-        //      }
-        //      for (i=0; i<NCHIPSROUNDS; i++){
-        //          checkreadok = fscanf(param_file,"%lg",&(param_local->prop_tested_by_chips[FEMALE][i]));
-        //          check_if_cannot_read_param(checkreadok,"param_local->prop_tested_by_chips");
-        //      }
     }
+
     /******************* closing parameter file ********************/
     fclose(param_file);
     return;
 }
 
+
+void read_popart_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    FILE *param_file;
+    int iround;
+    char param_file_name[LONGSTRINGLENGTH];
+    int i_run,i;
+    double max_temp;  /* Local variable which allows us to get the range from the max value. */
+    /* This is a local temp variable we use so we don't have to keep writing allparameters+i_run (or equivalently &allparameters[i_run]). */
+
+    double temp_int; /* Used to convert float/double to int. */
+
+    parameters *param_local;
+    int checkreadok;
+
+    double CHIPS_START, CHIPS_END;
+    
+    // What is wanted is not the time of the end of the last timestep in a CHiPS round but the time
+    // at the beginning of that timestep. i.e. CHIPS_END_STARTOFTIMESTEP = CHIPS_END-TIME_STEP;
+    double CHIPS_END_STARTOFTIMESTEP;
+
+    
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strcat(param_file_name, "popart.csv");
+
+    /******************* opening parameter file ********************/
+    if ((param_file=fopen(param_file_name,"r"))==NULL)
+    {
+        printf("Cannot open %s\n",param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else
+    {
+        if(VERBOSE_OUTPUT==1)
+            printf("PopART trial-related parameters read from: %s:\n",param_file_name);
+    }
+
+    /* The first line of this file is a header - the text below reads in just that line and throws it away.
+     * The * instructs fscanf (all of the scanf family, in fact) to parse the data out as presented in the format string,
+     * but NOT to store it at any target address (which is good, because there is none provided in an argument list).
+     * the [^\n] means take anything except a newline, so ALL data will be consumed up to (but not including) the newline.
+     *  Finally, the final \n means "and consume (and ignore) the newline" (which we just stopped at when fulfilling the
+     *  prior format spec). */
+    fscanf(param_file, "%*[^\n]\n");
+
+
+    /******************* read parameters from each line i_run ********************/
+    for (i_run = 0; i_run<n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+
+	/* Params orginally in params_cascade.txt. */
+        for(i = 0; i < NCHIPSROUNDS; i++){
+            checkreadok = fscanf(param_file, "%lg", &CHIPS_START);
+            check_if_cannot_read_param(checkreadok, "CHIPS_START");
+            
+            param_local->CHIPS_START_YEAR[i] = (int) CHIPS_START;
+            param_local->CHIPS_START_TIMESTEP[i] = (int) round((CHIPS_START - 
+                param_local->CHIPS_START_YEAR[i])*N_TIME_STEP_PER_YEAR);
+
+            checkreadok = fscanf(param_file, "%lg", &CHIPS_END);
+            check_if_cannot_read_param(checkreadok, "CHIPS_END");
+            
+            // What is wanted is not the time of the end of the last timestep in a CHiPS round but
+            // the time at the beginning of that timestep. i.e. CHIPS_END_STARTOFTIMESTEP =
+            // CHIPS_END-TIME_STEP;
+            
+            CHIPS_END_STARTOFTIMESTEP = CHIPS_END - TIME_STEP;
+            param_local->CHIPS_END_YEAR[i] = (int) CHIPS_END_STARTOFTIMESTEP;
+            param_local->CHIPS_END_TIMESTEP[i] = (int) round((CHIPS_END_STARTOFTIMESTEP -
+                param_local->CHIPS_END_YEAR[i]) * N_TIME_STEP_PER_YEAR);
+            
+            /* This is derived from the above times. */
+            //printf("STart = %i %i End = %i %i\n",param_local->CHIPS_START_YEAR[i],param_local->CHIPS_START_TIMESTEP[i],param_local->CHIPS_END_YEAR[i],param_local->CHIPS_END_TIMESTEP[i]);
+            param_local->chips_params->n_timesteps_per_round[i] =
+                (param_local->CHIPS_END_YEAR[i]-param_local->CHIPS_START_YEAR[i]) *
+                N_TIME_STEP_PER_YEAR +
+                (param_local->CHIPS_END_TIMESTEP[i] - param_local->CHIPS_START_TIMESTEP[i]) + 1;
+        }
+
+        param_local->CHIPS_START_TIMESTEP_POSTTRIAL = 
+            param_local->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1] + 1;
+        
+        if(param_local->CHIPS_START_TIMESTEP_POSTTRIAL >= N_TIME_STEP_PER_YEAR){
+            param_local->CHIPS_START_TIMESTEP_POSTTRIAL =
+                param_local->CHIPS_START_TIMESTEP_POSTTRIAL - N_TIME_STEP_PER_YEAR;
+        }
+
+        checkreadok = fscanf(param_file, "%lf", &temp_int);
+        param_local->chips_params->n_timesteps_per_round_posttrial = (int) floor(temp_int);
+        check_if_cannot_read_param(checkreadok, "param_local->n_timesteps_per_round_posttrial");
+
+	/* Params orginally in params_cascade.txt. */
+	checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_CHIPS));
+	check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_CHIPS");
+	//printf("HIV rapid test sensitivity = %6.4lf\n",param_local->HIV_rapid_test_sensitivity_CHIPS);
+	
+	checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_popartYEAR1));
+	check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_popartYEAR1");
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards));
+	check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards");
+	printf("param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards = %lf\n",param_local->p_collect_cd4_test_results_cd4_popartYEAR2onwards);
+
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_earlyart_dropout_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_earlyart_dropout_min");
+
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_earlyart_dropout_range");
+	param_local->t_earlyart_dropout_range[POPART]    = max_temp - param_local->t_earlyart_dropout_min[POPART];
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_dies_earlyart_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_dies_earlyart_range");
+	param_local->t_dies_earlyart_range[POPART]    = max_temp - param_local->t_dies_earlyart_min[POPART];
+			
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_cd4_retest_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_cd4_retest_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_cd4_retest_range");
+	param_local->t_cd4_retest_range[POPART]    = max_temp - param_local->t_cd4_retest_min[POPART]; 
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_delay_hivtest_to_cd4test_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_delay_hivtest_to_cd4test_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_delay_hivtest_to_cd4test_range");
+	param_local->t_delay_hivtest_to_cd4test_range[POPART]    = max_temp - param_local->t_delay_hivtest_to_cd4test_min[POPART];
+
+	double temp;
+
+	for(iround = 0 ; iround<NCHIPSROUNDS ; iround++)
+	    {
+		/*print_here(iround);*/
+		checkreadok = fscanf(param_file,"%lg",&temp);
+		param_local->n_time_periods_art_popart_per_round[iround] = (int) temp;
+		check_if_cannot_read_param(checkreadok,"param_local->n_time_periods_art_popart_per_round");
+		/*printf("param_local->n_time_periods_art_popart_per_round[%d] is %d\n",iround,param_local->n_time_periods_art_popart_per_round[iround]);
+		  fflush(stdout);*/
+	    }
+        
+	for(iround = 0 ; iround < NCHIPSROUNDS; iround++){
+	    for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround]; i++){
+		checkreadok = fscanf(param_file, "%lg", 
+				     &(param_local->t_start_art_mean_fast_popart[iround][i]));
+                
+		check_if_cannot_read_param(checkreadok,
+					   "param_local->t_start_art_mean_fast_popart_round1");
+	    }
+            
+	    for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround] ; i++){
+		checkreadok = fscanf(param_file, "%lg", 
+				     &(param_local->t_start_art_mean_slow_popart[iround][i]));
+		check_if_cannot_read_param(checkreadok,
+					   "param_local->t_start_art_mean_slow_popart_round1");
+	    }
+            
+	    for(i = 0; i < param_local->n_time_periods_art_popart_per_round[iround]; i++){
+		checkreadok = fscanf(param_file, "%lg",
+				     &(param_local->p_start_art_mean_fast_popart[iround][i]));
+		check_if_cannot_read_param(checkreadok, 
+					   "param_local->p_start_art_mean_fast_popart_round1");
+	    }
+	}
+
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_becomevu_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_min");
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_becomevu_range");
+	param_local->t_end_vs_becomevu_range[POPART] = max_temp - param_local->t_end_vs_becomevu_min[POPART];
+
+    
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vs_dropout_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_min");
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vs_dropout_range");
+	param_local->t_end_vs_dropout_range[POPART] = max_temp -  param_local->t_end_vs_dropout_min[POPART];
+
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_becomevs_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_becomevs_range");
+	param_local->t_end_vu_becomevs_range[POPART] = max_temp - param_local->t_end_vu_becomevs_min[POPART];
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_end_vu_dropout_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_end_vu_dropout_range");
+	param_local->t_end_vu_dropout_range[POPART] = max_temp - param_local->t_end_vu_dropout_min[POPART];  
+
+
+	/* This is the probability of getting back into the cascade during PopART for someone who 
+	 * dropped out before PopART. */
+	//for (i=0; i<NCHIPSROUNDS; i++){
+	for (i=0; i<1; i++){ /* Change after DSMB. */
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->p_popart_to_cascade[i]));
+	    printf("p_popart_to_cascade[%i] = %lf\n",i,param_local->p_popart_to_cascade[i]);
+	    check_if_cannot_read_param(checkreadok,"param_local->p_popart_to_cascade[i]");
+	}
+
+
+	//for (i=0; i<NCHIPSROUNDS; i++){
+	for (i=0; i<1; i++){ /* Change after DSMB. */
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->p_circ_popart[i]));
+	    check_if_cannot_read_param(checkreadok,"param_local->p_circ_popart[i]");
+	}
+
+	checkreadok = fscanf(param_file,"%lg",&(param_local->t_get_vmmc_min[POPART]));
+	check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_min");
+
+	checkreadok = fscanf(param_file,"%lg",&max_temp);
+	check_if_cannot_read_param(checkreadok,"param_local->t_get_vmmc_range");
+	param_local->t_get_vmmc_range[POPART] = max_temp - param_local->t_get_vmmc_min[POPART];
+    }
+
+
+    /******************* closing parameter file ********************/
+    fclose(param_file);
+    return;
+    
+}
 
 void read_chips_uptake_params(char *patch_tag, parameters *allrunparameters){
     /* Read in CHiPs uptake parameters

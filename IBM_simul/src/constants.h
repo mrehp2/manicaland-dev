@@ -147,6 +147,17 @@ gsl_rng * rng;
 /***************************** Settings ***************************/
 /************************************************************************/
 
+/* Use to switch between PopART and Manicaland. Use "PopART" as this will enable us to model the country without PopART-related activities.
+   Future versions of the code will use SETTING to switch on/off intervention activities specific to the given SETTING. 
+*/
+#define POPART 1
+#define MANICALAND 2
+#define SETTING MANICALAND
+/* SETTING values:
+   1 - POPART
+   2 - MANICALAND
+*/
+
 /* Labels for countries (or clusters): */
 #define ZAMBIA 1
 #define SOUTH_AFRICA 2

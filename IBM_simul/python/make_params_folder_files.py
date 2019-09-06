@@ -1275,7 +1275,7 @@ if __name__=="__main__":
         except:
             utils.handle_error("Warning - file " + e + " not in " + template_dir + "." +
             "For now exiting - maybe change code later on?")
-    
+    print "TEMPLATE files = ",template_files
     # Now set up patch info:
     # Firstly look up which arm each of the 21 communities belongs to:
     community_arm_data = read_community_arm_data(params_basedir)

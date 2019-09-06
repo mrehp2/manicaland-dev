@@ -360,6 +360,7 @@ typedef struct {
     double HIV_background_testing_rate_multiplier_male; /* Decrease in annual probability of an HIV test for men (cp to women) so we can fit VS in PC24. */
 
     double HIV_rapid_test_sensitivity_CHIPS;       /* Represents the sensitivity of the rapid HIV test used by CHiPs. We might want this to be time-varying (to reflect better training/test kits used later in trial). */
+    double HIV_rapid_test_sensitivity_ANC;       /* Represents the sensitivity of the rapid HIV test used in ANC testing (for Simon's routine testing misclassification project).  */
     double p_collect_hiv_test_results_cd4_over200; /* given you've had an HIV test, probability that you get your results if you have CD4>200 */
     double p_collect_hiv_test_results_cd4_under200;
 

@@ -20,6 +20,7 @@ param_demographics.txt
 param_times.txt
 param_HIV.txt
 param_cascade.txt
+param_popart.txt
 param_partnerships.txt
 param_PC.txt
 
@@ -1028,7 +1029,7 @@ if __name__=="__main__":
     patch_info_file = "param_patchinfo.txt"
     
     filename_list = ["param_init.txt", "param_demographics.txt", "param_times.txt", 
-        "param_HIV.txt", "param_cascade.txt", "param_partnerships.txt", "param_PC.txt"]
+                     "param_HIV.txt", "param_cascade.txt", "param_popart.txt", "param_partnerships.txt", "param_PC.txt"]
     
     # sys.argv[0] is the filename so just pass the remaining command line arguments.
     processed_args = parse_command_line_arguments(sys.argv[1:])

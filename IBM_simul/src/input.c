@@ -925,7 +925,6 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_VMMC_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_VMMC_START");
-	printf("VMMC start = %lf\n",param_local->COUNTRY_VMMC_START);
 
         if( (int) (param_local->start_time_simul) != (param_local->start_time_simul) || 
             (int) (param_local->end_time_simul) != param_local->end_time_simul){

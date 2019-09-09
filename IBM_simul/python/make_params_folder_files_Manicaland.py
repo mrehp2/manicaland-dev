@@ -16,7 +16,7 @@ HPC_SYSTEMS : str
 """
 
 import glob, sys, os, filecmp, shutil
-from datetime import datetime
+from datetime import datetime,date
 from os.path import join
 import random,copy
 
@@ -654,6 +654,59 @@ def extract_timestep_from_ibm_code(ibm_code_dir):
     return n_timesteps_per_year
     
 
+def get_current_fertility_datafile(input_dir, country_sentencecase):
+    
+    WPP_fertility_files = glob.glob(input_dir+"/WPP*FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx")
+
+    years_stored_in_folder = []
+    
+    for f in WPP_fertility_files:
+        # Get the filename:
+        this_filename = f.split("/")[-1]
+        # Find the year of publication (files of the form WPP20XX_FERT..."
+        first_part_of_filename = this_filename.split("_")[0]
+        if ((len(first_part_of_filename)!=7) or (first_part_of_filename[0:3])!="WPP"):
+            print "Error for UNPD fertility file ",this_filename,". Filename not in expected format",first_part_of_filename
+            sys.exit(1)
+        try:
+            years_stored_in_folder += [int(first_part_of_filename[3:])]
+        except:
+            print "Error for UNPD fertility file ",f,". Filename not in expected format"
+            sys.exit(1)
+
+    most_recent_year = max(years_stored_in_folder)
+    # From datetime module:
+    current_year = date.today().year
+    if (most_recent_year+2<current_year):
+        print "Warning: newer UNPD WPP fertility projections may exist"
+    most_recent_WPP_file = input_dir+"/WPP"+str(most_recent_year)+"_FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx"
+
+    most_recent_fertility_file = input_dir+"/ZimbabweFertility_WPP"+str(most_recent_year)+".csv"
+    # Check that this file exists:
+    if not(os.path.isfile(most_recent_fertility_file)): 
+            utils.handle_error("Error: file " + most_recent_fertility_file + 
+                " does not exist  when calling get_current_fertility_datafile(). Exiting.")
+
+
+    # determines whether check_whether_data_file_up_to_date() prints warning (if 1) or exits (if 0).
+    print_warning_only = -1
+
+    VERBOSE_OUTPUT = 1
+    data_file_depends_on = [most_recent_WPP_file,
+        join(input_dir+"/read_UNPD_fertility_data.py")]
+    
+    check = check_whether_data_file_up_to_date(most_recent_fertility_file,data_file_depends_on,print_warning_only)
+    if (not(check==1) and print_warning_only==0):
+        print(check + " is more recent that " + most_recent_WPP_file + 
+            ". Running python to generate file")
+        os.system("python read_UNPD_fertility_data.py "+str(most_recent_year)+" Zimbabwe")
+    else:
+        if VERBOSE_OUTPUT == 1:
+            print(most_recent_fertility_file + " up to date")
+
+    return most_recent_fertility_file
+
+
 
 def copy_fertility_file(country, input_dir, output_dir):
     """
@@ -672,14 +725,17 @@ def copy_fertility_file(country, input_dir, output_dir):
     # Convert the country to sentencecase (ie first character upper case, rest lower case).
     country_sentencecase = get_country_sentencecase(country)
     
-    # This is the file we are copying:
-    fertility_data_file = join(input_dir, country_sentencecase + "Fertility.csv")
+    # Find the fertility file we are copying.
+    # Note that UNPD publishes updated datasets every 2 years, so this bit of code finds the most up-to-date file and makes sure it is within <=3 years.
+    #template_files = glob.glob(join(template_dir, "param*.txt"))
+    fertility_data_file = get_current_fertility_datafile(input_dir, country_sentencecase)
     
     # This is what we are copying to
     fertility_outfilename = join(output_dir, "param_fertility.txt")
     
     copy_file_checking_if_exists(fertility_data_file, fertility_outfilename)
-
+    print "Successfully copied"
+    sys.exit(1)
 
 def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir):
     """
@@ -811,7 +867,7 @@ if __name__=="__main__":
     # Mortality and fertility data is based on UNPD estimates (with mortality estimates removing
     # HIV mortality by fitting a curve to times outside of main impact of HIV epidemic based on
     # analysis from Sweave file - see IBM model documetation for full explanation).
-    fertility_data_dir = join(homedir,"Dropbox","PoPART","IBM Model Background","Demographic data")
+    fertility_data_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
     mortality_unpd_data_dir = fertility_data_dir
     
     mortality_sweave_code_dir = join(params_basedir, "SOURCED_FROM_LITERATURE",
@@ -844,8 +900,10 @@ if __name__=="__main__":
         
         
     # This is where we store the community parameters and the fitting_data_processed.txt file. 
-
-    community_param_dir = join(params_community_basedir,"PARAM_BY_COMMUNITY_" + str(community_number))
+    if (community_number==0):  # "0" means 'all Manicaland communities.
+        community_param_dir = join(params_community_basedir,"PARAM_ALL_COMMUNITIES")
+    else:
+        community_param_dir = join(params_community_basedir,"PARAM_BY_COMMUNITY_" + str(community_number))
         
     utils.check_directory_exists(community_param_dir)
         

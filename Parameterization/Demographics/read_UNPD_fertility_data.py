@@ -1,7 +1,7 @@
 #############################################################################
 # This script takes data from the UNPD WPP projections.
 # How to call (from command line):
-# python read_UNPD_fertility_data.py
+# python read_UNPD_fertility_data.py 2019 Zimbabwe
 # ****************************DATA REQUIREMENTS:****************************
 # You need to download theAge-specific Fertility Rates (ASFR) file from UNPD WPP website:
 # https://population.un.org/wpp/Download/Standard/Fertility/
@@ -27,12 +27,12 @@
 import xlrd
 import sys,os,glob
 
-
+# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
+YEAR = int(sys.argv[1])
+COUNTRY = sys.argv[2]
 ### Change these to use different UNPD files and/or different country.
 #COUNTRY = "South Africa"
-COUNTRY = "Zimbabwe"
-# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
-YEAR = 2019
+#COUNTRY = "Zimbabwe"
 
 # By default we keep the UNPD medium variant for future estimates:
 projection_type = "MEDIUM VARIANT"

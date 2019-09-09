@@ -150,13 +150,10 @@ gsl_rng * rng;
 /* Use to switch between PopART and Manicaland. Use "PopART" as this will enable us to model the country without PopART-related activities.
    Future versions of the code will use SETTING to switch on/off intervention activities specific to the given SETTING. 
 */
-#define POPART 1
-#define MANICALAND 2
-#define SETTING MANICALAND
-/* SETTING values:
-   1 - POPART
-   2 - MANICALAND
-*/
+#define SETTING_POPART 1
+#define SETTING_MANICALAND 2
+#define SETTING SETTING_MANICALAND
+
 
 /* Labels for countries (or clusters): */
 #define ZAMBIA 1
@@ -164,7 +161,7 @@ gsl_rng * rng;
 /* First 12 clusters in M&E reports are always Zambia, so cluster numbers 1-12 for Zambia and >12 for South Africa: */
 #define IS_ZAMBIA 12
 
-#define NPATCHES 2
+#define NPATCHES 1
 
 /* Trial arm: 0=ARM C, 1=ARM A, 2=ARM B. */
 #define ARM_A 1

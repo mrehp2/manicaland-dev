@@ -679,13 +679,20 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             "param_local->rel_rate_partnership_formation_between_patches");
 
         for(ag = 0; ag < N_AGE; ag++){
-            param_local->c_per_gender_between_patches[FEMALE][ag] =
-                param_local->rel_rate_partnership_formation_between_patches *
-                param_local->c_per_gender_within_patch[FEMALE][ag] / (NPATCHES-1);
+	    if (NPATCHES>=1){
+		param_local->c_per_gender_between_patches[FEMALE][ag] =
+		    param_local->rel_rate_partnership_formation_between_patches *
+		    param_local->c_per_gender_within_patch[FEMALE][ag] / (NPATCHES-1);
             
-            param_local->c_per_gender_between_patches[MALE][ag] =
-                param_local->rel_rate_partnership_formation_between_patches *
-                param_local->c_per_gender_within_patch[MALE][ag] / (NPATCHES-1);
+		param_local->c_per_gender_between_patches[MALE][ag] =
+		    param_local->rel_rate_partnership_formation_between_patches *
+		    param_local->c_per_gender_within_patch[MALE][ag] / (NPATCHES-1);
+	    }
+	    /* If only 1 patch, then no mixing between patches. */
+	    else{
+		param_local->c_per_gender_between_patches[FEMALE][ag] = 0;
+		param_local->c_per_gender_between_patches[MALE][ag] = 0;
+	    }
         }
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->rr_hiv_between_vs_within_patch));

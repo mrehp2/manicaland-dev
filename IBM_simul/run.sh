@@ -1,7 +1,7 @@
 #!/bin/bash
 
 seed=10
-nsamples=1
+nsamples=2
 nreps=1
 verbose=0
 community=5
@@ -31,7 +31,7 @@ rm -f $inputdirectory/param_processed_patch*.csv
 python python/make_params_folder_files_Manicaland.py $currentdir $community LAPTOP
 
 # Make the parameter files used by the IBM:
-python python/make_ibm_parameter_sample.py $inputdirectory $outputdirectory $seed $nsamples $nreps $verbose
+python python/make_ibm_parameter_sample_Manicaland.py $inputdirectory $outputdirectory $seed $nsamples $nreps $verbose
 
 # Is this a counterfactual or not?
 

@@ -1469,8 +1469,8 @@ void check_if_parameters_plausible(parameters *param){
     */
     
     
-    int g, ag, bg, icd4, jcd4, spvl, r, a_unpd, y, iquarter;
-    int ac, chips_timestep, chips_round, dhs_round;
+    int g, ag, bg, icd4, jcd4, spvl, r, a_unpd, y;
+    int dhs_round;
     double temp;
     
     for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
@@ -1802,12 +1802,6 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    if (param->HIV_rapid_test_sensitivity_CHIPS<0.5 || param->HIV_rapid_test_sensitivity_CHIPS>1){
-        printf("Error:param->HIV_rapid_test_sensitivity_CHIPS is outside expected range [0.5,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
 
     if (param->p_collect_hiv_test_results_cd4_over200<0 || param->p_collect_hiv_test_results_cd4_over200>1){
         printf("Error:param->p_collect_hiv_test_results_cd4_over200 is outside expected range [0,1]\nExiting\n");
@@ -1834,18 +1828,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->p_collect_cd4_test_results_cd4_popartYEAR1<0 || param->p_collect_cd4_test_results_cd4_popartYEAR1>1){
-        printf("Error:param->p_collect_cd4_test_results_cd4_popartYEAR1 is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->p_collect_cd4_test_results_cd4_popartYEAR2onwards<0 || param->p_collect_cd4_test_results_cd4_popartYEAR2onwards>1){
-        printf("Error:param->p_collect_cd4_test_results_cd4_popartYEAR2onwards is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+
+
 
     if (param->p_leaves_earlyart_cd4_over200_if_not_die_early<0 || param->p_leaves_earlyart_cd4_over200_if_not_die_early>1){
         printf("Error:param->p_leaves_earlyart_cd4_over200_if_not_die_early is outside expected range [0,1]\nExiting\n");
@@ -1891,14 +1875,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
-        if (param->p_popart_to_cascade[chips_round]<0 || param->p_popart_to_cascade[chips_round]>1){
-            printf("Error:param->p_popart_to_cascade[%i]=%lf is outside expected range [0,1]\nExiting\n",chips_round,param->p_popart_to_cascade[chips_round]);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-    }
+
+
     if (param->p_circ_nonpopart<0 || param->p_circ_nonpopart>1){
         printf("Error:param->p_circ_nonpopart is outside expected range [0,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -1906,77 +1884,7 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    if (param->chips_params->n_timesteps_per_round_posttrial<24 || param->chips_params->n_timesteps_per_round_posttrial>=96){
-        printf("Error:param->chips_params->n_timesteps_per_round_posttrial =%d is outside expected range [24,95] weeks (0.5-2yrs)\n. Note that if you want a CHiPs round to last 2 years or more then you must increase the size of param->chips_params->prop_tested_by_chips_per_timestep. Exiting\n",param->chips_params->n_timesteps_per_round_posttrial);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    for (g=0; g<N_GENDER;g++){
-        for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
-            if (param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]<0 || param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]>1){
-                printf("Error:param->chips_params->prop_tested_by_chips_in_round_posttrial[%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-        }
-    }
 
-    for(chips_timestep=0; chips_timestep<param->chips_params->n_timesteps_per_round_posttrial;chips_timestep++){
-        for (g=0; g<N_GENDER;g++){
-            for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
-                if (param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]<0 || param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]>1){
-                    printf("Error:param->chips_params->prop_tested_by_chips_per_timestep_posttrial[%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_timestep,param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]);
-                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                    fflush(stdout);
-                    exit(1);
-                }
-            }
-        }
-    }
-
-
-    for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
-        if (param->chips_params->n_timesteps_per_round[chips_round]<12 || param->chips_params->n_timesteps_per_round[chips_round]>=96){
-            printf("Error:param->chips_params->n_timesteps_per_round[%d] =%d is outside expected range [12,95] weeks (0.25-2yrs)\n. Note that if you want a CHiPs round to last 2 years or more then you must increase the size of param->chips_params->prop_tested_by_chips_per_timestep. Exiting\n",chips_round,param->chips_params->n_timesteps_per_round[chips_round]);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        if (param->p_circ_popart[chips_round]<0 || param->p_circ_popart[chips_round]>1){
-            printf("Error:param->p_circ_popart[%i] is outside expected range [0,1]\nExiting\n",chips_round);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-
-
-        for (g=0; g<N_GENDER;g++){
-            for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
-                //double prop_tested_by_chips_in_round[N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
-                if (param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]<0 || param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]>1){
-                    printf("Error:param->chips_params->prop_tested_by_chips_in_round[%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_round,param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]);
-                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                    fflush(stdout);
-                    exit(1);
-                }
-            }
-        }
-
-        for(chips_timestep=0; chips_timestep<param->chips_params->n_timesteps_per_round[chips_round];chips_timestep++){
-            for (g=0; g<N_GENDER;g++){
-                for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
-                    if (param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]<0 || param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]>1){
-                        printf("Error:param->chips_params->prop_tested_by_chips_per_timestep[%i][%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_timestep,chips_round,param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]);
-                        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                        fflush(stdout);
-                        exit(1);
-                    }
-                }
-            }
-        }
-    }
 
     for (ag=0; ag<N_AGE; ag++){
         if (param->initial_prop_age[ag]<0 || param->initial_prop_age[ag]>1){
@@ -2021,20 +1929,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_earlyart_dropout_min[POPART]<0 || param->t_earlyart_dropout_min[POPART]>1){
-        printf("Error:param->t_earlyart_dropout_min[POPART] is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
     if (param->t_earlyart_dropout_range[NOTPOPART]<0 || param->t_earlyart_dropout_range[NOTPOPART]>1){
         printf("Error:param->t_earlyart_dropout_range[NOTPOPART] is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_earlyart_dropout_range[POPART]<0 || param->t_earlyart_dropout_range[POPART]>1){
-        printf("Error:param->t_earlyart_dropout_range[POPART] is outside expected range [0,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2045,20 +1941,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_dies_earlyart_min[POPART]<0 || param->t_dies_earlyart_min[POPART]>1){
-        printf("Error:param->t_dies_earlyart_min[POPART] is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
     if (param->t_dies_earlyart_range[NOTPOPART]<0 || param->t_dies_earlyart_range[NOTPOPART]>1){
         printf("Error:param->t_dies_earlyart_range[NOTPOPART] is outside expected range [0,1]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_dies_earlyart_range[POPART]<0 || param->t_dies_earlyart_range[POPART]>1){
-        printf("Error:param->t_dies_earlyart_range[POPART] is outside expected range [0,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2074,25 +1958,13 @@ void check_if_parameters_plausible(parameters *param){
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
-    }
-    if (param->t_cd4_retest_min[POPART]<0 || param->t_cd4_retest_min[POPART]>10){
-        printf("Error:param->t_cd4_retest_min[POPART] is outside expected range [0,10]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+    }    
     if (param->t_cd4_retest_range[NOTPOPART]<0 || param->t_cd4_retest_range[NOTPOPART]>10){
         printf("Error:param->t_cd4_retest_range[NOTPOPART] is outside expected range [0,10]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
-    }
-    if (param->t_cd4_retest_range[POPART]<0 || param->t_cd4_retest_range[POPART]>10){
-        printf("Error:param->t_cd4_retest_range[POPART] is outside expected range [0,10]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+    }    
     if (param->t_cd4_whenartfirstavail_min<0 || param->t_cd4_whenartfirstavail_min>5){
         printf("Error:param->t_cd4_whenartfirstavail_min is outside expected range [0,5]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -2111,25 +1983,13 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_delay_hivtest_to_cd4test_min[POPART]<0 || param->t_delay_hivtest_to_cd4test_min[POPART]>5){
-        printf("Error:param->t_delay_hivtest_to_cd4test_min[POPART] is outside expected range [0,5]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
     if (param->t_delay_hivtest_to_cd4test_range[NOTPOPART]<0 || param->t_delay_hivtest_to_cd4test_range[NOTPOPART]>10){
         printf("Error:param->t_delay_hivtest_to_cd4test_range[NOTPOPART] is outside expected range [0,10]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
-    if (param->t_delay_hivtest_to_cd4test_range[POPART]<0 || param->t_delay_hivtest_to_cd4test_range[POPART]>10){
-        printf("Error:param->t_delay_hivtest_to_cd4test_range[POPART] is outside expected range [0,10]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-
+    
     // Exponential version
 
     if (param->t_start_art_mean_non_popart<0 || param->t_start_art_mean_non_popart>10){
@@ -2138,81 +1998,21 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-
-    // Biexponential version
-
-    for(chips_round=0 ; chips_round<NCHIPSROUNDS ; chips_round++){
-        if (param->n_time_periods_art_popart_per_round[chips_round]<1 || param->n_time_periods_art_popart_per_round[chips_round]>MAX_N_TIME_PERIODS_PER_ROUND){
-            printf("Error:param->p_start_art_mean_fast_popart is outside expected range [1,%d]\nExiting\n",MAX_N_TIME_PERIODS_PER_ROUND);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-    }
-    
-    int iround;
-    for(iround = 0; iround < NCHIPSROUNDS; iround++){
-        for(iquarter = 0; iquarter < param->n_time_periods_art_popart_per_round[iround]; iquarter++){
-
-            if(param->t_start_art_mean_fast_popart[iround][iquarter]<0 || param->t_start_art_mean_fast_popart[iround][iquarter]>10){
-                printf("Error:param->t_start_art_mean_fast_popart[%d][%d] is outside expected range [0,10]\nExiting\n", iround, iquarter);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-            if(param->t_start_art_mean_slow_popart[iround][iquarter]<0 || param->t_start_art_mean_slow_popart[iround][iquarter]>16){
-                printf("Error:param->t_start_art_mean_slow_popart[%d][%d] is outside expected range [0,10]\nExiting\n", iround, iquarter);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-            if(param->t_start_art_mean_slow_popart[iround][iquarter] < param->t_start_art_mean_fast_popart[iround][iquarter]){
-                printf("Error:param->t_start_art_mean_slow_popart[%d][%d] is shorter than param->t_start_art_mean_fast_popart[%d][%d] (%lg<%lg)\nExiting\n",iround, iquarter,iround, iquarter,param->t_start_art_mean_slow_popart[iround][iquarter],param->t_start_art_mean_fast_popart[iround][iquarter]);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-            if (param->p_start_art_mean_fast_popart[iround][iquarter] < 0 || param->p_start_art_mean_fast_popart[iround][iquarter] > 1){
-                printf("Error:param->p_start_art_mean_fast_popart[%d][%d] is outside expected range [0,1]\nExiting\n",iround, iquarter);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-        }
-    }
     
     if (param->t_end_vs_becomevu_min[NOTPOPART]<0 || param->t_end_vs_becomevu_min[NOTPOPART]>20){
         printf("Error:param->t_end_vs_becomevu_min[NOTPOPART] is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
-    }
-    if (param->t_end_vs_becomevu_min[POPART]<0 || param->t_end_vs_becomevu_min[POPART]>20){
-        printf("Error:param->t_end_vs_becomevu_min[POPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+    }    
     if (param->t_end_vs_becomevu_range[NOTPOPART]<0 || param->t_end_vs_becomevu_range[NOTPOPART]>20){
         printf("Error:param->t_end_vs_becomevu_range[NOTPOPART] is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
-    }
-    if (param->t_end_vs_becomevu_range[POPART]<0 || param->t_end_vs_becomevu_range[POPART]>20){
-        printf("Error:param->t_end_vs_becomevu_range[POPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+    }    
     if (param->t_end_vs_dropout_min[NOTPOPART]<0 || param->t_end_vs_dropout_min[NOTPOPART]>20){
         printf("Error:param->t_end_vs_dropout_min[NOTPOPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_end_vs_dropout_min[POPART]<0 || param->t_end_vs_dropout_min[POPART]>20){
-        printf("Error:param->t_end_vs_dropout_min[POPART] is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2223,20 +2023,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_end_vs_dropout_range[POPART]<0 || param->t_end_vs_dropout_range[POPART]>100){
-        printf("Error:param->t_end_vs_dropout_range[POPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
     if (param->t_end_vu_becomevs_min[NOTPOPART]<0 || param->t_end_vu_becomevs_min[NOTPOPART]>20){
         printf("Error:param->t_end_vu_becomevs_min[NOTPOPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_end_vu_becomevs_min[POPART]<0 || param->t_end_vu_becomevs_min[POPART]>20){
-        printf("Error:param->t_end_vu_becomevs_min[POPART] is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2247,20 +2035,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_end_vu_becomevs_range[POPART]<0 || param->t_end_vu_becomevs_range[POPART]>20){
-        printf("Error:param->t_end_vu_becomevs_range[POPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
     if (param->t_end_vu_dropout_min[NOTPOPART]<0 || param->t_end_vu_dropout_min[NOTPOPART]>20){
         printf("Error:param->t_end_vu_dropout_min[NOTPOPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_end_vu_dropout_min[POPART]<0 || param->t_end_vu_dropout_min[POPART]>20){
-        printf("Error:param->t_end_vu_dropout_min[POPART] is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2271,32 +2047,16 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->t_end_vu_dropout_range[POPART]<0 || param->t_end_vu_dropout_range[POPART]>20){
-        printf("Error:param->t_end_vu_dropout_range[POPART] is outside expected range [0,20]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+
     if (param->t_get_vmmc_min[NOTPOPART]<0 || param->t_get_vmmc_min[NOTPOPART]>100){
         printf("Error:param->t_get_vmmc_min[NOTPOPART]= %f is outside expected range [0,100]\nExiting\n",param->t_get_vmmc_min[NOTPOPART]);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
-    if (param->t_get_vmmc_min[POPART]<0 || param->t_get_vmmc_min[POPART]>100){
-        printf("Error:param->t_get_vmmc_min[POPART]=%f is outside expected range [0,100] \nExiting\n",param->t_get_vmmc_min[POPART]);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+
     if (param->t_get_vmmc_range[NOTPOPART]<0 || param->t_get_vmmc_range[NOTPOPART]>5){
         printf("Error:param->t_get_vmmc_range[NOTPOPART]=%f is outside expected range [0,5]\nExiting\n",param->t_get_vmmc_range[NOTPOPART]);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t_get_vmmc_range[POPART]<0 || param->t_get_vmmc_range[POPART]>5){
-        printf("Error:param->t_get_vmmc_range[POPART] is outside expected range [0,5]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2377,58 +2137,6 @@ void check_if_parameters_plausible(parameters *param){
     }
     if (param->COUNTRY_HIV_TEST_START>param->COUNTRY_VMMC_START){
         printf("Error: param->COUNTRY_HIV_TEST_START is bigger than param->COUNTRY_VMMC_START.\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
-        if (param->CHIPS_START_YEAR[chips_round]<2013 || param->CHIPS_START_YEAR[chips_round]>2019){
-            printf("Error:param->CHIPS_START_YEAR[chips_round]=%i is outside expected range [2013,2016]\nExiting\n",param->CHIPS_START_YEAR[chips_round]);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        //if (param->COUNTRY_ART_START>param->CHIPS_START_YEAR[chips_round]){
-        //    printf("Error: param->COUNTRY_ART_START is bigger than param->CHIPS_START_YEAR[chips_round].\nExiting\n");
-       //     printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-       //     fflush(stdout);
-       //     exit(1);
-       // }
-        if (param->CHIPS_END_YEAR[chips_round]<2014 || param->CHIPS_END_YEAR[chips_round]>2020){
-            printf("Error:param->CHIPS_END_YEAR[chips_round]=%i is outside expected range [2014,2020]\nExiting\n",param->CHIPS_END_YEAR[chips_round]);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        if (param->CHIPS_START_YEAR[chips_round]>param->CHIPS_END_YEAR[chips_round]){
-            printf("Error: param->CHIPS_START_YEAR[chips_round] is bigger than param->CHIPS_END_YEAR[chips_round].\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        if (param->CHIPS_END_YEAR[chips_round]>param->end_time_simul){
-            printf("Error: param->CHIPS_END_YEAR[chips_round] is bigger than param->end_time_simul.\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        if (param->CHIPS_START_TIMESTEP[chips_round]<0 || param->CHIPS_START_TIMESTEP[chips_round]>N_TIME_STEP_PER_YEAR){
-            printf("Error:param->CHIPS_START_TIMESTEP[chips_round] is outside expected range [0,N_TIME_STEP_PER_YEAR]\nHas timestep changed?\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        if (param->CHIPS_END_TIMESTEP[chips_round]<0 || param->CHIPS_END_TIMESTEP[chips_round]>N_TIME_STEP_PER_YEAR){
-            printf("Error:param->CHIPS_END_TIMESTEP[chips_round] is outside expected range [0,%i]\nHas timestep changed?\nExiting\n",N_TIME_STEP_PER_YEAR);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-    }
-
-
-    if (param->chips_params->n_timesteps_per_round_posttrial<24 || param->chips_params->n_timesteps_per_round_posttrial>N_TIME_STEP_PER_YEAR){
-        printf("Error:param->chips_params->n_timesteps_per_round_posttrial is outside expected range [24,%i]\n",N_TIME_STEP_PER_YEAR);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2519,5 +2227,337 @@ void check_if_parameters_plausible(parameters *param){
             fflush(stdout);
             exit(1);
         }
+    }
+}
+
+
+
+
+
+
+void check_if_popart_parameters_plausible(parameters *param){
+   /* Function goes through each PopART-related input parameter and checks it against a pre-defined range. If any parameter doesn't
+    * fit in the given range, then print an error message and exit.
+    * Note that this function can prevent you from deliberately setting crazy values for debugging, so can disable by
+    * setting CHECKPARAMS in constants.h to 0.
+    */
+    
+    
+    int g, iquarter;
+    int ac, chips_timestep, chips_round;
+    
+
+
+
+        // Biexponential version
+
+    for(chips_round=0 ; chips_round<NCHIPSROUNDS ; chips_round++){
+        if (param->n_time_periods_art_popart_per_round[chips_round]<1 || param->n_time_periods_art_popart_per_round[chips_round]>MAX_N_TIME_PERIODS_PER_ROUND){
+            printf("Error:param->p_start_art_mean_fast_popart is outside expected range [1,%d]\nExiting\n",MAX_N_TIME_PERIODS_PER_ROUND);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+    }
+    
+    int iround;
+    for(iround = 0; iround < NCHIPSROUNDS; iround++){
+        for(iquarter = 0; iquarter < param->n_time_periods_art_popart_per_round[iround]; iquarter++){
+
+            if(param->t_start_art_mean_fast_popart[iround][iquarter]<0 || param->t_start_art_mean_fast_popart[iround][iquarter]>10){
+                printf("Error:param->t_start_art_mean_fast_popart[%d][%d] is outside expected range [0,10]\nExiting\n", iround, iquarter);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+            if(param->t_start_art_mean_slow_popart[iround][iquarter]<0 || param->t_start_art_mean_slow_popart[iround][iquarter]>16){
+                printf("Error:param->t_start_art_mean_slow_popart[%d][%d] is outside expected range [0,10]\nExiting\n", iround, iquarter);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+            if(param->t_start_art_mean_slow_popart[iround][iquarter] < param->t_start_art_mean_fast_popart[iround][iquarter]){
+                printf("Error:param->t_start_art_mean_slow_popart[%d][%d] is shorter than param->t_start_art_mean_fast_popart[%d][%d] (%lg<%lg)\nExiting\n",iround, iquarter,iround, iquarter,param->t_start_art_mean_slow_popart[iround][iquarter],param->t_start_art_mean_fast_popart[iround][iquarter]);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+            if (param->p_start_art_mean_fast_popart[iround][iquarter] < 0 || param->p_start_art_mean_fast_popart[iround][iquarter] > 1){
+                printf("Error:param->p_start_art_mean_fast_popart[%d][%d] is outside expected range [0,1]\nExiting\n",iround, iquarter);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+        }
+    }
+
+
+    if (param->HIV_rapid_test_sensitivity_CHIPS<0.5 || param->HIV_rapid_test_sensitivity_CHIPS>1){
+        printf("Error:param->HIV_rapid_test_sensitivity_CHIPS is outside expected range [0.5,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
+    if (param->p_collect_cd4_test_results_cd4_popartYEAR1<0 || param->p_collect_cd4_test_results_cd4_popartYEAR1>1){
+        printf("Error:param->p_collect_cd4_test_results_cd4_popartYEAR1 is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->p_collect_cd4_test_results_cd4_popartYEAR2onwards<0 || param->p_collect_cd4_test_results_cd4_popartYEAR2onwards>1){
+        printf("Error:param->p_collect_cd4_test_results_cd4_popartYEAR2onwards is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
+        if (param->p_popart_to_cascade[chips_round]<0 || param->p_popart_to_cascade[chips_round]>1){
+            printf("Error:param->p_popart_to_cascade[%i]=%lf is outside expected range [0,1]\nExiting\n",chips_round,param->p_popart_to_cascade[chips_round]);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+    }
+
+    if (param->chips_params->n_timesteps_per_round_posttrial<24 || param->chips_params->n_timesteps_per_round_posttrial>=96){
+        printf("Error:param->chips_params->n_timesteps_per_round_posttrial =%d is outside expected range [24,95] weeks (0.5-2yrs)\n. Note that if you want a CHiPs round to last 2 years or more then you must increase the size of param->chips_params->prop_tested_by_chips_per_timestep. Exiting\n",param->chips_params->n_timesteps_per_round_posttrial);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    for (g=0; g<N_GENDER;g++){
+        for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
+            if (param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]<0 || param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]>1){
+                printf("Error:param->chips_params->prop_tested_by_chips_in_round_posttrial[%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,param->chips_params->prop_tested_by_chips_in_round_posttrial[g][ac]);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+        }
+    }
+
+    for(chips_timestep=0; chips_timestep<param->chips_params->n_timesteps_per_round_posttrial;chips_timestep++){
+        for (g=0; g<N_GENDER;g++){
+            for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
+                if (param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]<0 || param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]>1){
+                    printf("Error:param->chips_params->prop_tested_by_chips_per_timestep_posttrial[%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_timestep,param->chips_params->prop_tested_by_chips_per_timestep_posttrial[g][ac][chips_timestep]);
+                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                    fflush(stdout);
+                    exit(1);
+                }
+            }
+        }
+    }
+
+
+    for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
+        if (param->chips_params->n_timesteps_per_round[chips_round]<12 || param->chips_params->n_timesteps_per_round[chips_round]>=96){
+            printf("Error:param->chips_params->n_timesteps_per_round[%d] =%d is outside expected range [12,95] weeks (0.25-2yrs)\n. Note that if you want a CHiPs round to last 2 years or more then you must increase the size of param->chips_params->prop_tested_by_chips_per_timestep. Exiting\n",chips_round,param->chips_params->n_timesteps_per_round[chips_round]);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        if (param->p_circ_popart[chips_round]<0 || param->p_circ_popart[chips_round]>1){
+            printf("Error:param->p_circ_popart[%i] is outside expected range [0,1]\nExiting\n",chips_round);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+
+        for (g=0; g<N_GENDER;g++){
+            for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
+                //double prop_tested_by_chips_in_round[N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
+                if (param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]<0 || param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]>1){
+                    printf("Error:param->chips_params->prop_tested_by_chips_in_round[%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_round,param->chips_params->prop_tested_by_chips_in_round[g][ac][chips_round]);
+                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                    fflush(stdout);
+                    exit(1);
+                }
+            }
+        }
+
+        for(chips_timestep=0; chips_timestep<param->chips_params->n_timesteps_per_round[chips_round];chips_timestep++){
+            for (g=0; g<N_GENDER;g++){
+                for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++){
+                    if (param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]<0 || param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]>1){
+                        printf("Error:param->chips_params->prop_tested_by_chips_per_timestep[%i][%i][%i][%i] = %lf is outside expected range [0,1]\nExiting\n",g,ac,chips_timestep,chips_round,param->chips_params->prop_tested_by_chips_per_timestep[g][ac][chips_timestep][chips_round]);
+                        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                        fflush(stdout);
+                        exit(1);
+                    }
+                }
+            }
+        }
+    }
+
+
+        for (chips_round=0; chips_round<NCHIPSROUNDS; chips_round++){
+        if (param->CHIPS_START_YEAR[chips_round]<2013 || param->CHIPS_START_YEAR[chips_round]>2019){
+            printf("Error:param->CHIPS_START_YEAR[chips_round]=%i is outside expected range [2013,2016]\nExiting\n",param->CHIPS_START_YEAR[chips_round]);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        //if (param->COUNTRY_ART_START>param->CHIPS_START_YEAR[chips_round]){
+        //    printf("Error: param->COUNTRY_ART_START is bigger than param->CHIPS_START_YEAR[chips_round].\nExiting\n");
+       //     printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+       //     fflush(stdout);
+       //     exit(1);
+       // }
+        if (param->CHIPS_END_YEAR[chips_round]<2014 || param->CHIPS_END_YEAR[chips_round]>2020){
+            printf("Error:param->CHIPS_END_YEAR[chips_round]=%i is outside expected range [2014,2020]\nExiting\n",param->CHIPS_END_YEAR[chips_round]);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        if (param->CHIPS_START_YEAR[chips_round]>param->CHIPS_END_YEAR[chips_round]){
+            printf("Error: param->CHIPS_START_YEAR[chips_round] is bigger than param->CHIPS_END_YEAR[chips_round].\nExiting\n");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        if (param->CHIPS_END_YEAR[chips_round]>param->end_time_simul){
+            printf("Error: param->CHIPS_END_YEAR[chips_round] is bigger than param->end_time_simul.\nExiting\n");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        if (param->CHIPS_START_TIMESTEP[chips_round]<0 || param->CHIPS_START_TIMESTEP[chips_round]>N_TIME_STEP_PER_YEAR){
+            printf("Error:param->CHIPS_START_TIMESTEP[chips_round] is outside expected range [0,N_TIME_STEP_PER_YEAR]\nHas timestep changed?\nExiting\n");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        if (param->CHIPS_END_TIMESTEP[chips_round]<0 || param->CHIPS_END_TIMESTEP[chips_round]>N_TIME_STEP_PER_YEAR){
+            printf("Error:param->CHIPS_END_TIMESTEP[chips_round] is outside expected range [0,%i]\nHas timestep changed?\nExiting\n",N_TIME_STEP_PER_YEAR);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+    }
+
+
+    if (param->chips_params->n_timesteps_per_round_posttrial<24 || param->chips_params->n_timesteps_per_round_posttrial>N_TIME_STEP_PER_YEAR){
+        printf("Error:param->chips_params->n_timesteps_per_round_posttrial is outside expected range [24,%i]\n",N_TIME_STEP_PER_YEAR);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    if (param->t_earlyart_dropout_min[POPART]<0 || param->t_earlyart_dropout_min[POPART]>1){
+        printf("Error:param->t_earlyart_dropout_min[POPART] is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_earlyart_dropout_range[POPART]<0 || param->t_earlyart_dropout_range[POPART]>1){
+        printf("Error:param->t_earlyart_dropout_range[POPART] is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_dies_earlyart_min[POPART]<0 || param->t_dies_earlyart_min[POPART]>1){
+        printf("Error:param->t_dies_earlyart_min[POPART] is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_dies_earlyart_range[POPART]<0 || param->t_dies_earlyart_range[POPART]>1){
+        printf("Error:param->t_dies_earlyart_range[POPART] is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_cd4_retest_min[POPART]<0 || param->t_cd4_retest_min[POPART]>10){
+        printf("Error:param->t_cd4_retest_min[POPART] is outside expected range [0,10]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_cd4_retest_range[POPART]<0 || param->t_cd4_retest_range[POPART]>10){
+        printf("Error:param->t_cd4_retest_range[POPART] is outside expected range [0,10]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_delay_hivtest_to_cd4test_min[POPART]<0 || param->t_delay_hivtest_to_cd4test_min[POPART]>5){
+        printf("Error:param->t_delay_hivtest_to_cd4test_min[POPART] is outside expected range [0,5]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+        if (param->t_delay_hivtest_to_cd4test_range[POPART]<0 || param->t_delay_hivtest_to_cd4test_range[POPART]>10){
+        printf("Error:param->t_delay_hivtest_to_cd4test_range[POPART] is outside expected range [0,10]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->t_end_vs_becomevu_min[POPART]<0 || param->t_end_vs_becomevu_min[POPART]>20){
+        printf("Error:param->t_end_vs_becomevu_min[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_end_vs_becomevu_range[POPART]<0 || param->t_end_vs_becomevu_range[POPART]>20){
+        printf("Error:param->t_end_vs_becomevu_range[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_end_vs_dropout_min[POPART]<0 || param->t_end_vs_dropout_min[POPART]>20){
+        printf("Error:param->t_end_vs_dropout_min[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+        if (param->t_end_vu_becomevs_range[POPART]<0 || param->t_end_vu_becomevs_range[POPART]>20){
+        printf("Error:param->t_end_vu_becomevs_range[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_end_vs_dropout_range[POPART]<0 || param->t_end_vs_dropout_range[POPART]>100){
+        printf("Error:param->t_end_vs_dropout_range[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+        if (param->t_end_vu_becomevs_min[POPART]<0 || param->t_end_vu_becomevs_min[POPART]>20){
+        printf("Error:param->t_end_vu_becomevs_min[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+        if (param->t_end_vu_dropout_min[POPART]<0 || param->t_end_vu_dropout_min[POPART]>20){
+        printf("Error:param->t_end_vu_dropout_min[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->t_end_vu_dropout_range[POPART]<0 || param->t_end_vu_dropout_range[POPART]>20){
+        printf("Error:param->t_end_vu_dropout_range[POPART] is outside expected range [0,20]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_get_vmmc_min[POPART]<0 || param->t_get_vmmc_min[POPART]>100){
+        printf("Error:param->t_get_vmmc_min[POPART]=%f is outside expected range [0,100] \nExiting\n",param->t_get_vmmc_min[POPART]);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
+        if (param->t_get_vmmc_range[POPART]<0 || param->t_get_vmmc_range[POPART]>5){
+        printf("Error:param->t_get_vmmc_range[POPART] is outside expected range [0,5]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
     }
 }

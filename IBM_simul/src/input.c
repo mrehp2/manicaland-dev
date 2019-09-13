@@ -101,13 +101,17 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         read_partnership_params(patch_tag, param[p], n_runs);
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
-	read_popart_params(patch_tag, param[p], n_runs);
+
+	if (SETTING==SETTING_POPART){
+	    read_popart_params(patch_tag, param[p], n_runs);
 	
-        /* Note that this MUST be called after read_cascade_params(). */
-        read_chips_uptake_params(patch_tag, param[p]);
-        read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
-        read_pc_future_params(patch_tag, param[p], n_runs);
-        
+	    /* Note that this MUST be called after read_cascade_params(). */
+	    read_chips_uptake_params(patch_tag, param[p]);
+	    read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
+	    read_pc_future_params(patch_tag, param[p], n_runs);
+        }
+
+	
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
     }
@@ -683,7 +687,11 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             "param_local->rel_rate_partnership_formation_between_patches");
 
         for(ag = 0; ag < N_AGE; ag++){
-	    if (NPATCHES>=1){
+	    if (NPATCHES==1){ 	    /* If only 1 patch, then no mixing between patches. */
+		param_local->c_per_gender_between_patches[FEMALE][ag] = 0;
+		param_local->c_per_gender_between_patches[MALE][ag] = 0;
+	    }
+	    else if (NPATCHES>1){
 		param_local->c_per_gender_between_patches[FEMALE][ag] =
 		    param_local->rel_rate_partnership_formation_between_patches *
 		    param_local->c_per_gender_within_patch[FEMALE][ag] / (NPATCHES-1);
@@ -692,10 +700,12 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 		    param_local->rel_rate_partnership_formation_between_patches *
 		    param_local->c_per_gender_within_patch[MALE][ag] / (NPATCHES-1);
 	    }
-	    /* If only 1 patch, then no mixing between patches. */
 	    else{
-		param_local->c_per_gender_between_patches[FEMALE][ag] = 0;
-		param_local->c_per_gender_between_patches[MALE][ag] = 0;
+		printf("Error in value of NPATCHES. Exiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+		
 	    }
         }
 
@@ -2067,7 +2077,7 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
                 checksum += param_local->initial_prop_gender_risk[g][r];
             }
             if(fabs(checksum - 1.0) > 1e-12){
-                printf("Sum of proportions of initial population by risk is not 1 %f.\n", checksum);
+                printf("Sum of proportions of initial population by risk is not 1 %f.\n", checksum-1.0);
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
                 fflush(stdout);
                 exit(1);
@@ -2075,9 +2085,9 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
         }
         checksum = 0;
         for(ag = 0; ag < N_AGE; ag++){
-            checksum += param_local->initial_prop_age[ag];
+            checksum += param_local->initial_prop_age[ag];	    
         }
-        if(checksum != 1.0){
+        if(fabs(checksum-1.0>1e-12)){
             printf("Sum of proportions of initial population by age is not 1 = %f.\n", checksum);
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);

@@ -753,7 +753,7 @@ def copy_fertility_file(country, input_dir, output_dir):
     
     # This is what we are copying to
     fertility_outfilename = join(output_dir, "param_fertility.txt")
-    
+
     copy_file_checking_if_exists(fertility_data_file, fertility_outfilename)
 
 
@@ -967,7 +967,7 @@ if __name__=="__main__":
         community_param_dir = join(params_community_basedir,"PARAM_BY_COMMUNITY_" + str(community_number))
         
     utils.check_directory_exists(community_param_dir)
-        
+
     # Now copy the fitting data file. This isn't used for much in the IBM - mainly it ensures that we are between 0 and about 45% HIV prevalence at the start of CHiPs 
     # which is quite a weak constraint. This file (and the corresponding code in the IBM) might be removed at some point (can also be used to implement target fitting).
     # Note that we only need one file (so use the one from the first patch (ie patch=0):
@@ -975,6 +975,7 @@ if __name__=="__main__":
     copy_file_checking_if_exists(join(community_param_dir, "fitting_data_processed.txt"),join(output_dir, "fitting_data_processed.txt"))
         
     # Generate/copy special files:
+
     copy_fertility_file(country, fertility_data_dir, output_dir)
     copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir)
 
@@ -991,7 +992,7 @@ if __name__=="__main__":
     # Read in the output of the knitr analysis of PC0 data:
     partnership_data = read_partnership_data(country, pc0_partnership_dir)
 
-        
+
     # This will store the text going in each output file f:
     output_file_strings = {}
         
@@ -1005,6 +1006,7 @@ if __name__=="__main__":
                 
         output_file_strings[f] = "" # This will store the new file output.
 
+        print "Processing",f
         for l in linedata:
 
             # Pull out parameter name, the value (or range etc) and any comments on that line
@@ -1058,6 +1060,7 @@ if __name__=="__main__":
         
     for f in template_files:
         output_filename = f.replace(template_dir, output_dir)
+        print "Writing to",output_filename
         output_file = open(output_filename, "w")
         output_file.write(output_file_strings[f])
         output_file.close()

@@ -553,11 +553,13 @@ def read_community_data(files_by_community, community_param_dir):
 
 
 def read_partnership_data(country, pc0_partnership_dir):
+    print "Country=",country
     """
     This function reads in the data generated from the raw PC data by a knitr document written by 
     Anne:
     ~/Dropbox/PoPART/Data\:Stats/PC\ Data\ Downloads/15-12-2016_PC0_NEWFINAL/R/partnerships/ExtractPartnershipParamFromPC0.Rnw
-    
+
+
     
     Parameters
     ----------
@@ -578,14 +580,16 @@ def read_partnership_data(country, pc0_partnership_dir):
     
     # This will store the partnership data (the keys for this dictionary are the parameter names).
     partnership_data = {}
+
+    zim_partnership_dir = join(homedir,"TEMP_ZIM_DATA")
     
     infilename = join(pc0_partnership_dir, "R", "partnerships")
     if country == "ZAMBIA":
         infilename = join(infilename, "param_partnerships_fromPC0_Za.txt")
     elif country == "SOUTHAFRICA":
         infilename = join(infilename, "param_partnerships_fromPC0_SA.txt")
-    elif country == "SOUTHAFRICA":
-        infilename = join(infilename, "param_partnerships_Zim.txt")
+    elif country == "ZIMBABWE":
+        infilename = join(zim_partnership_dir, "param_partnerships_Zim.txt")
     else:
         utils.handle_error("Error: Unknown country " + country + "\nExiting.")
     
@@ -654,44 +658,61 @@ def extract_timestep_from_ibm_code(ibm_code_dir):
     return n_timesteps_per_year
     
 
-def get_current_fertility_datafile(input_dir, country_sentencecase):
-    
-    WPP_fertility_files = glob.glob(input_dir+"/WPP*FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx")
+def get_most_recent_WPP_year(WPP_filename):
+
+    WPP_files = glob.glob(WPP_filename)
 
     years_stored_in_folder = []
     
-    for f in WPP_fertility_files:
+    for f in WPP_files:
         # Get the filename:
         this_filename = f.split("/")[-1]
-        # Find the year of publication (files of the form WPP20XX_FERT..."
+        # Find the year of publication (files of the form WPP20XX_..."
         first_part_of_filename = this_filename.split("_")[0]
+
         if ((len(first_part_of_filename)!=7) or (first_part_of_filename[0:3])!="WPP"):
-            print "Error for UNPD fertility file ",this_filename,". Filename not in expected format",first_part_of_filename
+            print "Error for UNPD WPP file ",this_filename,". Filename not in expected format",first_part_of_filename
             sys.exit(1)
+
+
         try:
             years_stored_in_folder += [int(first_part_of_filename[3:])]
         except:
-            print "Error for UNPD fertility file ",f,". Filename not in expected format"
+            print "Error for UNPD WPP file ",f,". Filename not in expected format"
             sys.exit(1)
 
+    # Now pick the most recent year:
     most_recent_year = max(years_stored_in_folder)
-    # From datetime module:
+
+    # From datetime module - check if the most recent WPP year is within 2 years of current year.
     current_year = date.today().year
     if (most_recent_year+2<current_year):
-        print "Warning: newer UNPD WPP fertility projections may exist"
-    most_recent_WPP_file = input_dir+"/WPP"+str(most_recent_year)+"_FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx"
+        print "Warning: newer UNPD WPP projections may exist than ",most_recent_year
+        
+    return most_recent_year
 
+
+
+# Function looks for the most recent year where we have all the required UNPD WPP datafiles, and checks that this is a recent dataset (<3 years old).
+def get_current_IBM_fertility_datafile(input_dir, country_sentencecase):
+    
+
+    # This gets the year of the most recent WPP file in the directory:
+    most_recent_year = get_most_recent_WPP_year(input_dir+"/WPP*_FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx")
+
+
+    most_recent_WPP_file = input_dir+"/WPP"+str(most_recent_year)+"_FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx"
+    
     most_recent_fertility_file = input_dir+"/ZimbabweFertility_WPP"+str(most_recent_year)+".csv"
     # Check that this file exists:
     if not(os.path.isfile(most_recent_fertility_file)): 
             utils.handle_error("Error: file " + most_recent_fertility_file + 
-                " does not exist  when calling get_current_fertility_datafile(). Exiting.")
+                " does not exist  when calling get_current_IBM_fertility_datafile(). Exiting.")
 
 
     # determines whether check_whether_data_file_up_to_date() prints warning (if 1) or exits (if 0).
     print_warning_only = -1
 
-    VERBOSE_OUTPUT = 1
     data_file_depends_on = [most_recent_WPP_file,
         join(input_dir+"/read_UNPD_fertility_data.py")]
     
@@ -728,15 +749,38 @@ def copy_fertility_file(country, input_dir, output_dir):
     # Find the fertility file we are copying.
     # Note that UNPD publishes updated datasets every 2 years, so this bit of code finds the most up-to-date file and makes sure it is within <=3 years.
     #template_files = glob.glob(join(template_dir, "param*.txt"))
-    fertility_data_file = get_current_fertility_datafile(input_dir, country_sentencecase)
+    fertility_data_file = get_current_IBM_fertility_datafile(input_dir, country_sentencecase)
     
     # This is what we are copying to
     fertility_outfilename = join(output_dir, "param_fertility.txt")
     
     copy_file_checking_if_exists(fertility_data_file, fertility_outfilename)
-    print "Successfully copied"
-    sys.exit(1)
 
+
+# Function looks for the most recent year where we have all the required UNPD WPP datafiles, and checks that this is a recent dataset (<3 years old).
+def get_current_UNPD_mortality_datafile_year(input_dir, country_sentencecase):
+    
+    WPP_pop_size_file_men = input_dir+"/WPP*_POP_F07_2_POPULATION_BY_AGE_MALE.xlsx"
+    WPP_pop_size_file_women = input_dir+"/WPP*_POP_F07_3_POPULATION_BY_AGE_FEMALE.xlsx"
+    WPP_mortality_file_men = input_dir+"/WPP*_MORT_F04_2_DEATHS_BY_AGE_MALE.xlsx"
+    WPP_mortality_file_women = input_dir+"/WPP*_MORT_F04_3_DEATHS_BY_AGE_FEMALE.xlsx"
+ 
+    # This gets the year of the most recent WPP file in the directory:
+    most_recent_year_Npop_M = get_most_recent_WPP_year(WPP_pop_size_file_men)
+    most_recent_year_Npop_F = get_most_recent_WPP_year(WPP_pop_size_file_women)
+    most_recent_year_mort_M = get_most_recent_WPP_year(WPP_mortality_file_men)
+    most_recent_year_mort_F = get_most_recent_WPP_year(WPP_mortality_file_women)
+
+    if not(most_recent_year_Npop_M==most_recent_year_Npop_F==most_recent_year_mort_M==most_recent_year_mort_F):
+        print "Error: One or more missing WPP files - not all have the same date. Exiting\n"
+        sys.exit(1)
+    else: # All are the same.
+        most_recent_year = most_recent_year_mort_F
+
+
+    return most_recent_year
+
+    
 def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir):
     """
     Copies the mortality file generated using Mike's script EstimatingRatesFromUNPD.Rnw
@@ -760,29 +804,41 @@ def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_
     # mortality_sweave_code_dir =
     # "SOURCED_FROM_LITERATURE/Analysing_UNPD_estimates_demographic_params/"
     # This is the file we are copying:
+    
     mortality_data_file = join(mortality_sweave_code_dir, country_sentencecase + "_mortalityByAgeCoefficients.txt")
     
     # determines whether check_whether_data_file_up_to_date() prints warning (if 1) or exits (if 0).
     print_warning_only = -1
+
+    most_recent_year = get_current_UNPD_mortality_datafile_year(mortality_unpd_data_dir, country_sentencecase)
+
+
+    latest_WPP_pop_size_file_men = mortality_unpd_data_dir+"/WPP"+str(most_recent_year)+"_POP_F07_2_POPULATION_BY_AGE_MALE.xlsx"
+    latest_WPP_pop_size_file_women = mortality_unpd_data_dir+"/WPP"+str(most_recent_year)+"_POP_F07_3_POPULATION_BY_AGE_FEMALE.xlsx"
+    latest_WPP_mortality_file_men = mortality_unpd_data_dir+"/WPP"+str(most_recent_year)+"_MORT_F04_2_DEATHS_BY_AGE_MALE.xlsx"
+    latest_WPP_mortality_file_women = mortality_unpd_data_dir+"/WPP"+str(most_recent_year)+"_MORT_F04_3_DEATHS_BY_AGE_FEMALE.xlsx"
+
     
-    # We check if any of the above have been modified more recently than the resulting data file:
-    data_file_depends_on = [
-        join(mortality_sweave_code_dir, "EstimatingRatesFromUNPD.Rnw"),
-        join(mortality_unpd_data_dir, "SouthAfricaMortalityMen.csv"),
-        join(mortality_unpd_data_dir, "SouthAfricaMortalityWomen.csv"),
-        join(mortality_unpd_data_dir, "ZambiaMortalityMen.csv"),
-        join(mortality_unpd_data_dir, "ZambiaMortalityWomen.csv"),
-        join(mortality_unpd_data_dir, "SouthAfricaFertility.csv"),
-        join(mortality_unpd_data_dir, "ZambiaFertility.csv")]
+    # determines whether check_whether_data_file_up_to_date() prints warning (if 1) or exits (if 0).
+    print_warning_only = -1
+
+    data_file_depends_on = [latest_WPP_pop_size_file_men,
+                            latest_WPP_pop_size_file_women,
+                            latest_WPP_mortality_file_men,
+                            latest_WPP_mortality_file_women,
+                            join(mortality_unpd_data_dir+"/EstimatingRatesFromUNPDv2.Rnw"),
+                            join(mortality_unpd_data_dir+"/read_UNPD_mortality_data.py")]
     
     check = check_whether_data_file_up_to_date(mortality_data_file,data_file_depends_on,print_warning_only)
     if (not(check==1) and print_warning_only==0):
-        print(check + " is more recent that " + mortality_data_file + 
-            ". Running sweave to generate file")
+        print(check + " is more recent than"+mortality_data_file+". Running python to generate file")
+        os.system("python read_UNPD_mortality_data.py "+str(most_recent_year)+" Zimbabwe")
         utils.run_sweave("EstimatingRatesFromUNPD.Rnw",mortality_sweave_code_dir)
     else:
         if VERBOSE_OUTPUT == 1:
-            print(mortality_data_file + " up to date")
+            print("Mortality file"+most_recent_mortality_file+" up to date")
+
+    
     
     # This is what we are copying to
     mortality_outfilename = join(output_dir, "param_mortality.txt")
@@ -870,9 +926,13 @@ if __name__=="__main__":
     fertility_data_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
     mortality_unpd_data_dir = fertility_data_dir
     
-    mortality_sweave_code_dir = join(params_basedir, "SOURCED_FROM_LITERATURE",
-        "Analysing_UNPD_estimates_demographic_params")
-    
+    mortality_sweave_code_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
+
+
+    # Analysis of PC0 partnership data:
+    pc0_partnership_dir = join(homedir, "Dropbox", "PoPART", "Data:Stats", "PC Data Downloads", 
+        "15-12-2016_PC0_NEWFINAL")
+
     
     utils.check_directory_exists(params_basedir)
     utils.check_directory_exists(ibm_code_dir)
@@ -885,7 +945,7 @@ if __name__=="__main__":
     # Here we generate the list of files which will eventually be copied:
     # all param files need to be named like this for now.
     template_files = glob.glob(join(template_dir, "param*.txt"))
-    
+
     # For now we keep these in template_dir but may remove.
     exceptions = ["param_mortality.txt", "param_fertility.txt"]
     for e in exceptions:
@@ -898,7 +958,8 @@ if __name__=="__main__":
     
     country = get_country(community_number)
         
-        
+
+    
     # This is where we store the community parameters and the fitting_data_processed.txt file. 
     if (community_number==0):  # "0" means 'all Manicaland communities.
         community_param_dir = join(params_community_basedir,"PARAM_ALL_COMMUNITIES")
@@ -916,7 +977,7 @@ if __name__=="__main__":
     # Generate/copy special files:
     copy_fertility_file(country, fertility_data_dir, output_dir)
     copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir)
-        
+
         
     # Read in the country-level data:
     country_level_data = read_country_data(country, country_params_dir)
@@ -943,7 +1004,9 @@ if __name__=="__main__":
                 linedata.append('DHSROUND4 BY_COUNTRY')
                 
         output_file_strings[f] = "" # This will store the new file output.
+
         for l in linedata:
+
             # Pull out parameter name, the value (or range etc) and any comments on that line
             [paramname, paramvaluelist, comment] = utils.parse_line(l)
                 
@@ -989,6 +1052,7 @@ if __name__=="__main__":
                     output_file_strings[f] = \
                         utils.add_comment(output_file_strings[f], comment) + "\n"
                 else:
+                    print "For file ",f
                     utils.handle_error("Error: not dealing with " + typeofinput + \
                                        " at present.  Exiting.\n")
         
@@ -1001,8 +1065,7 @@ if __name__=="__main__":
     # Now check that we did remove everything from the country list (so that all the files
     # match up).
     if not(country_level_data == {}):
-        utils.handle_error("Error - country_level_data=" + country_level_data + \
-                           " should be empty. Variables do not match. Exiting")
+        print "Error - country_level_data=",country_level_data
         
     # ###########################################################################################
     # ############# Now stuff if we run on HPC:

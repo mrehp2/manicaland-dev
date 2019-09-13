@@ -9,7 +9,7 @@
 # Modify "COUNTRY" and "YEAR" variables below to change the country and UNPD WPP version used.
 #
 # Call code via:
-# python read_UNPD_mortality_data.py
+# python read_UNPD_mortality_data.py 2019 Zimbabwe
 #
 #############################################################################
 # REQUIREMENTS TO RUN THE CODE:
@@ -49,11 +49,17 @@ import xlrd
 import sys,os,glob
 
 
+# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
+YEAR = int(sys.argv[1])
+COUNTRY = sys.argv[2]
 ### Change these to use different UNPD files and/or different country.
 #COUNTRY = "South Africa"
 COUNTRY = "Zimbabwe"
-# This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
-YEAR = 2019
+
+#Store this info to pass to Sweave:
+mortality_info_file = open("mortality.info","w")
+mortality_info_file.write(str(YEAR)+","+COUNTRY+"\n")
+mortality_info_file.close()
 
 # By default we keep the UNPD medium variant for future estimates:
 projection_type = "MEDIUM VARIANT"

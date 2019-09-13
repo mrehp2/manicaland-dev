@@ -13,7 +13,7 @@ currentdir=$PWD
 ibmdir="./src/"
 # This is where we will get the params from:
 inputdirectory="./data/GENERATED_PRIORS/PARAMS_COMMUNITY$community/"
-# This is where the output of make_params_folder_files.py is:
+# This is where the output of make_params_folder_files_Manicaland.py is:
 outputdirectory="./data/SAMPLED_PARAMETERS/PARAMS_COMMUNITY$community/"
 
 # Make directory if it does not exist:
@@ -28,7 +28,7 @@ rm -f $inputdirectory/param_processed_patch*.csv
 
 # Take the RAW_PRIORS parameter ranges and convert them into things that can be read by make_ibm_parameter_sample.py.
 # This code also copies files from output of R scripts.
-python python/make_params_folder_files.py $currentdir $community LAPTOP
+python python/make_params_folder_files_Manicaland.py $currentdir $community LAPTOP
 
 # Make the parameter files used by the IBM:
 python python/make_ibm_parameter_sample.py $inputdirectory $outputdirectory $seed $nsamples $nreps $verbose

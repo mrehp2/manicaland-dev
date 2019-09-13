@@ -1,18 +1,4 @@
 sex_ratio	0.5073892 // Sex ratio is 1.03 (https://en.wikipedia.org/wiki/List_of_countries_by_sex_ratio citing https://www.cia.gov/library/publications/the-world-factbook/fields/2018.html accessed 16 June 2016).
 p_circ_nopopart 0.22
-initial_prop_13_17	0.1583 // Zambia 0.1583 South Africa 0.1339 based on WPP2015_POP_F07_1_POPULATION_BY_AGE_BOTH_SEXES.xls - use 1960 overall population estimate to work out % in each model age group. Data from http://esa.un.org/wpp/Excel-Data/population.htm (downloaded 12 May 2016). See UNPD_initial_population_distribution.xlsx for calculation
-initial_prop_18_22	0.1613 // Zambia 0.1613 South Africa 0.1420
-initial_prop_23_30	0.1885 // Zambia 0.1885 South Africa 0.1724
-initial_prop_31_40	0.1983 // Zambia 0.1983 South Africa 0.2046 
-initial_prop_41_50	0.1353  // Zambia 0.1353 South Africa 0.1498
-initial_prop_51_60	0.0828  // Zambia 0.0828 South Africa 0.1045
-initial_prop_61_and_older	0.0755  // Zambia 0.0755 South Africa 0.0928. Note in South Africa the Excel file sums to 0.9999 so add the 0.0001 to the largest age group (30-39) to make it sum to 1.
-start_time_hiv 1975  // Zambia's first reported HIV case was in 1984 (http://www.who.int/hiv/HIVCP_ZMB.pdf) UNAIDS puts HIV prevalence around 20% in 1990 (e..g http://aidsinfo.unaids.org/# gives 450,000-620,000 HIV+ in 1990), so before that.
-COUNTRY_HIV_TEST_START 2000.0  // Assumption based on DHS/HSRC data
-COUNTRY_ART_START  2004.0  // Cori 2013 supplement page 7 - the entry rates for "awaiting treatment" \tau^{3/4}_{test+background} are zero prior to 2004.
-COUNTRY_CD4_350_START 2011.0 // Zambia 2011???. South Africa eligibility <200 before 12 August 2011 changes to <350 (http://www.tac.org.za/community/node/3118 and http://www.sajhivmed.org.za/index.php/sajhivmed/article/view/805/654)
-COUNTRY_VMMC_START 2010.0 // Differs from Cori
-NDHSROUNDS 3 // Number of DHS rounds. Zambia has 3 (2002, 2007, 2013), South Africa has 4 (2002, 2005, 2008, 2012). 
-DHSROUND1 2002
-DHSROUND2 2007
-DHSROUND3 2013
+
+

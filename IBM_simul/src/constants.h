@@ -201,7 +201,7 @@ gsl_rng * rng;
 #define AGE_PC_MAX 44
 #define PC_AGE_RANGE_MAX 27  /* PC runs from 18-44 so 27 age groups. */
 
-#define MAX_N_TIMESTEPS_PER_PC_ROUND 72 /* No PC round can last >1.5 years (in fact longest from data is 66 timesteps in community 9). */
+#define MAX_N_TIMESTEPS_PER_PC_ROUND 48 /* No PC round can last >1.5 years (in fact longest from data is 66 timesteps in community 9). */
 #define N_PC_HIV_STRATA 3 /* This is the number of HIV-related categories we use for dividing up the PC sample - we want to include the right number of HIV-, HIV+ know status etc. */
 #define MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP 200 /* Fixes size of list_ids_in_cohort[g][ap][i_pc_category][MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP]; */
 

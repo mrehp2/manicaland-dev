@@ -1,13 +1,14 @@
-start_time_hiv BY_COUNTRY   // Zambia's first reported HIV case was in 1984 (http://www.who.int/hiv/HIVCP_ZMB.pdf) UNAIDS puts HIV prevalence around 20% in 1990 (e..g http://aidsinfo.unaids.org/# gives 450,000-620,000 HIV+ in 1990), so before that.
+start_time_hiv 1975   
 start_time_simul 1900   // Assumption - around 20 years for burn-in.
 end_time_simul 2020     // Assumption for now.
-COUNTRY_HIV_TEST_START BY_COUNTRY  // Assumption based on DHS/HSRC data
-COUNTRY_ART_START  BY_COUNTRY  // Cori 2013 supplement page 7 - the entry rates for "awaiting treatment" \tau^{3/4}_{test+background} are zero prior to 2004.
-COUNTRY_CD4_350_START BY_COUNTRY // Zambia 2011???. South Africa eligibility <200 before 12 August 2011 changes to <350 (http://www.tac.org.za/community/node/3118 and http://www.sajhivmed.org.za/index.php/sajhivmed/article/view/805/654)
-COUNTRY_CD4_500_START BY_COMMUNITY // Zambia 2014.5??? South Africa 2015.0? 
-COUNTRY_IMMEDIATE_ART_START BY_COMMUNITY // See Arms\ B\ \ C\ to\ Immediate\ ART\ Transition-\ Dates_mp.docx in Dropbox/PoPART/IBM\ Model\ Background/
-COUNTRY_VMMC_START BY_COUNTRY // Differs from Cori
-NDHSROUNDS BY_COUNTRY // Number of DHS rounds. Zambia has 3 (2002, 2007, 2013), South Africa has 4 (2002, 2005, 2008, 2012). 
-DHSROUND1 BY_COUNTRY
-DHSROUND2 BY_COUNTRY
-DHSROUND3 BY_COUNTRY
+COUNTRY_HIV_TEST_START 2000.0  // ***FIXME***
+COUNTRY_ART_START  2004.0  // ***FIXME***
+COUNTRY_CD4_350_START 2007.0 // **FIXME***
+COUNTRY_CD4_500_START 2011.0 // **FIXME**
+COUNTRY_IMMEDIATE_ART_START  2015.0 // **FIXME**
+COUNTRY_VMMC_START 2009.917 // e.g. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5769777/ "In December 2009, the Ministry of Health and Child Welfare (MOHCW) Zimbabwe launched the National Male Circumcision Policy for HIV Prevention as part of an integrated response and the VMMC strategy".
+COUNTRY_T_PrEP_START 2016.5 // https://www.prepwatch.org/wp-content/uploads/2018/07/Implementation_Plan_PrEP_Zim2018.pdf shows that PrEP started in Aug 2016.
+NDHSROUNDS 3 // Number of DHS rounds with HIV prevalence data. Early DHS in Zimbabwe (1988, 1994, 1999) only asked about risk, knowledge and behaviour. Later rounds had HIV prevalence.
+DHSROUND1 2006   // Report p7: Data collection took place over a seven-month period, from August 2005 to February 2006.
+DHSROUND2 2011   // Report p7: Data collection took place over a six-month period, from 29 September 2010 through late March 2011
+DHSROUND3 2015   // Report p5: Data collection took place over a 6-month period from July 6 to December 20, 2015.

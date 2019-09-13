@@ -82,7 +82,9 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
     char patch_number[10];
     
     /* Read in the information for each patch that doesn't change over time - community id, arm.*/
-    read_patch_info(file_directory, patch);
+    if (SETTING==SETTING_POPART){
+	read_patch_info(file_directory, patch);
+    }
     
     for(p = 0; p < NPATCHES; p++){
         sprintf(patch_number, "%i", p);
@@ -111,14 +113,16 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
     }
     
     // Calling outside the patch loop to avoid a valgrind error where patch[1] is not initialised.
-    copy_chips_params(param, n_runs);
-    copy_pc_params(param, n_runs);
+    if (SETTING==SETTING_POPART){
+	copy_chips_params(param, n_runs);
+	copy_pc_params(param, n_runs);
+    }
     return;
 }
 
 
 void read_patch_info(char *file_directory, patch_struct *patch){
-    /* Read in the community id and the arm for each patch
+    /* Read in the community id and the arm for each patch - for PopART only. 
     
     This function reads the file `param_processed_patchinfo.txt` within the folder `file_directory`
     and saved the community ID and trial arm within that file to the attributes `community_id` and 
@@ -933,6 +937,11 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_VMMC_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_VMMC_START");
 
+        checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_T_PrEP_START));
+        check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_T_PrEP_START");
+	printf("PrEP start = %6.4lf\n",param_local->COUNTRY_T_PrEP_START);
+	
+	
         if( (int) (param_local->start_time_simul) != (param_local->start_time_simul) || 
             (int) (param_local->end_time_simul) != param_local->end_time_simul){
             

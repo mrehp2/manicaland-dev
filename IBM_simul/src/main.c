@@ -785,15 +785,18 @@ int main(int argc,char *argv[]){
                             write_timestep_outputs(file_data_store, output, p, 0);
                             
                             /* Write Timestep_outputs PConly files (ages 18-44 only). */
-                            write_timestep_outputs(file_data_store, output, p, 1);
-                            
+			    if (SETTING==SETTING_POPART)
+				write_timestep_outputs(file_data_store, output, p, 1);
+			    
+			    
                             if(TIMESTEP_AGE == 1){
                                 
                                 /* Write Timestep_age_outputs files (all ages). */
                                 write_timestep_age_outputs(file_data_store, output, p, 0);
                             
                                 /* Write Timestep_age_outputs_PConly files (ages 18-44 only). */
-                                write_timestep_age_outputs(file_data_store, output, p, 1);
+                                if (SETTING==SETTING_POPART)
+				    write_timestep_age_outputs(file_data_store, output, p, 1);
                             }
                             
                             if(WRITE_ART_STATUS_BY_AGE_SEX == 1){

@@ -158,7 +158,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
                 store_timestep_outputs(patch, p ,t0 + (t_step + 1)*TIME_STEP, output, 0);
                 
                 /* Stores data for PC age groups only. */
-                store_timestep_outputs(patch, p , t0 + (t_step + 1)*TIME_STEP, output, 1);
+		if (SETTING==SETTING_POPART)
+		    store_timestep_outputs(patch, p , t0 + (t_step + 1)*TIME_STEP, output, 1);
                 
                 // Store age-specific timestep outputs
                 if(TIMESTEP_AGE == 1){

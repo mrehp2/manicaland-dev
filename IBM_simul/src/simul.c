@@ -125,35 +125,26 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
     for(t_step = 0; t_step < N_TIME_STEP_PER_YEAR; t_step++){
 
-        if(
-            (t0 + t_step*TIME_STEP == TIME_PC0 && WRITE_PARTNERSHIPS_AT_PC0 == 1) &&
-            (PRINT_EACH_RUN_OUTPUT == 1)
-        ){
-            sweep_through_all_and_compute_distribution_lifetime_and_lastyear_partners(patch,
-                overall_partnerships, t0, t_step, output);
+        if((t0 + t_step*TIME_STEP == TIME_PC0 && WRITE_PARTNERSHIPS_AT_PC0 == 1) && (PRINT_EACH_RUN_OUTPUT == 1)){
+            sweep_through_all_and_compute_distribution_lifetime_and_lastyear_partners(patch, overall_partnerships, t0, t_step, output);
             write_distr_n_lifetime_partners_and_n_partners_lastyear(patch, file_data_store);
         }
         
         // When CHiPs starts for the first time (round 1) we reseed the random number generator.
         // This allows us to see how stochasticity during PopART affects impact.  
-        
-        if(
-            (t0 == patch[0].param->CHIPS_START_YEAR[0]) &&
-            (t_step==patch[0].param->CHIPS_START_TIMESTEP[0])
-        ){
-            gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset);
+        if (SETTING==SETTING_POPART){
+	    if((t0 == patch[0].param->CHIPS_START_YEAR[0]) &&
+	       (t_step==patch[0].param->CHIPS_START_TIMESTEP[0])){
+		gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset);
+	    }
         }
-        
+	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
-            
-            fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
-                p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug, 
-                file_data_store, is_counterfactual);
+            fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch, p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,  file_data_store, is_counterfactual);
         }
         
-        carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
-            debug, file_data_store);
+        carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output, debug, file_data_store);
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/
@@ -209,26 +200,28 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         }
         
         // Store PC outputs that are a cross-section (prev, cascade, etc) to calibration file.
-        if(WRITE_CALIBRATION == 1){
+	if (SETTING==SETTING_POPART){
+	    if(WRITE_CALIBRATION == 1){
             
-            int pc_round;
+		int pc_round;
             
-            for(p = 0; p < NPATCHES; p++){
+		for(p = 0; p < NPATCHES; p++){
                 
-                // Store the "person-timesteps" for the given PC round
-                save_person_timesteps_pc(patch, p, output, t0, t_step);
+		    // Store the "person-timesteps" for the given PC round
+		    save_person_timesteps_pc(patch, p, output, t0, t_step);
                 
-                // Check we're at the start of a PC round.  
-                for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++){
+		    // Check we're at the start of a PC round.  
+		    for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++){
                     
-                    if(t0 == patch[p].param->PC_params->PC_MIDPOINT_YEAR[pc_round] &&
-                        t_step == patch[p].param->PC_params->PC_MIDPOINT_TIMESTEP[pc_round]){
-                        
-                        save_calibration_outputs_pc(patch, p, output, t0, t_step);
-                    }
-                }
-            }
+			if(t0 == patch[p].param->PC_params->PC_MIDPOINT_YEAR[pc_round] && t_step == patch[p].param->PC_params->PC_MIDPOINT_TIMESTEP[pc_round]){
+			    
+			    save_calibration_outputs_pc(patch, p, output, t0, t_step);
+			}
+		    }
+		}
+	    }
         }
+	
     }
     
     // At the end of the year, check that everyone who should be in a given list is in that list
@@ -420,7 +413,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* This stores the return value of fit_data() - it is 1 if there was no fitting or if the run
     passed all the fits during the year, and 0 if there was a fit criterion which was not satisfied.
     This allows us to see if a run should be terminated early or not. */
-    int fit_flag, POPART_FINISHED;
+    int fit_flag;
     
     /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
@@ -428,160 +421,164 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // Determine if the current time is within the final CHiPs round or not.  The variable
     // `POPART_FINISHED` takes value 1 after the end of the final CHiPs round. Once
     // PopART finishes assume that test-and-treat continues like the last CHiPs round.
-    if(
-        (t0 > patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) ||
-        (   (t0 == patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) && 
-            (t_step > patch[p].param->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1])
-        )
-    ){
-        POPART_FINISHED = 1;
-    }else{
-        POPART_FINISHED = 0;
+    int POPART_FINISHED;
+    if (SETTING==SETTING_POPART){
+
+	if((t0 > patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) || ((t0 == patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) && (t_step > patch[p].param->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1]))){
+	    POPART_FINISHED = 1;
+	}else{
+	    POPART_FINISHED = 0;
+	}
     }
+    else
+	POPART_FINISHED = 1;	
+
     
-    // Write chips data to file if we're in a period when CHiPs are active
-    // (and at the start of the year)
-    if(
-        t0 >= patch[p].param->CHIPS_START_YEAR[0] && 
-        t_step == 0 && 
-        PRINT_EACH_RUN_OUTPUT == 1){
-        write_chips_data_annual(patch ,p, t0, t_step, POPART_FINISHED, file_data_store);
+    if (SETTING==SETTING_POPART){
+	// Write chips data to file if we're in a period when CHiPs are active
+	// (and at the start of the year)
+	if(t0 >= patch[p].param->CHIPS_START_YEAR[0] && t_step == 0 && PRINT_EACH_RUN_OUTPUT == 1){
+	    write_chips_data_annual(patch ,p, t0, t_step, POPART_FINISHED, file_data_store);
+	}
     }
     
     /********************************************/
     /*      1. Set up PC sample                 */
     /********************************************/
     
-    if(RUN_PC == 1){
-        /* We only create a PC sample in patch 0. */
-        if(p == 0){
-            /* Only create PC sample during the PC years. */
-            if(
-                t0 >= patch[p].param->PC_params->PC_START_YEAR[0] &&
-                t0 < patch[p].param->PC_params->PC_END_YEAR[NPC_ROUNDS - 1]
-            ){
-                /* Code this way to allow multiple rounds of enrolment (PC0, PC12N, etc). */
-                pc_round = 0;
+    if (SETTING==SETTING_POPART){
+	if(RUN_PC == 1){
+	    /* We only create a PC sample in patch 0. */
+	    if(p == 0){
+		/* Only create PC sample during the PC years. */
+		if(
+		   t0 >= patch[p].param->PC_params->PC_START_YEAR[0] &&
+		   t0 < patch[p].param->PC_params->PC_END_YEAR[NPC_ROUNDS - 1]
+		   ){
+		    /* Code this way to allow multiple rounds of enrolment (PC0, PC12N, etc). */
+		    pc_round = 0;
                 
-                for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++){
-                    if(
-                        t0 == patch[p].param->PC_params->PC_START_YEAR[pc_round] &&
-                        t_step==patch[p].param->PC_params->PC_START_TIMESTEP[pc_round]
-                    ){
-                        if(pc_round < NPC_ENROLMENTS){
-                            gsl_rng_set(rng, 
-                                patch[0].param->rng_seed + rng_seed_offset + rng_seed_offset_PC);
+		    for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++){
+			if(
+			   t0 == patch[p].param->PC_params->PC_START_YEAR[pc_round] &&
+			   t_step==patch[p].param->PC_params->PC_START_TIMESTEP[pc_round]
+			   ){
+			    if(pc_round < NPC_ENROLMENTS){
+				gsl_rng_set(rng, 
+					    patch[0].param->rng_seed + rng_seed_offset + rng_seed_offset_PC);
                             
-                            if(VERBOSE_OUTPUT == 1){
-                                printf("Creating PC round %i sample with offset %i at t=%6.4f\n",
-                                    pc_round, rng_seed_offset + rng_seed_offset_PC, 
-                                    t0 + t_step*TIME_STEP);
-                                fflush(stdout);
-                            }
+				if(VERBOSE_OUTPUT == 1){
+				    printf("Creating PC round %i sample with offset %i at t=%6.4f\n",
+					   pc_round, rng_seed_offset + rng_seed_offset_PC, 
+					   t0 + t_step*TIME_STEP);
+				    fflush(stdout);
+				}
                             
-                            create_popart_pc_sample(patch, patch[p].age_list, patch[p].PC_sample,
-                                patch[p].param, pc_round, p);
+				create_popart_pc_sample(patch, patch[p].age_list, patch[p].PC_sample,
+							patch[p].param, pc_round, p);
                             
-                            gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset +
-                                patch[p].param->PC_params->PC_START_YEAR[0]);
-                        }
-                    }
-                } // for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++)
-            }
-        } // if(p == 0)
-    } // if(RUN_PC == 1)
-    
+				gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset +
+					    patch[p].param->PC_params->PC_START_YEAR[0]);
+			    }
+			}
+		    } // for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++)
+		}
+	    } // if(p == 0)
+	} // if(RUN_PC == 1)
+    }    
     /********************************************/
     /*      2. Set up CHiPs sample              */
     /********************************************/
-    
-    // Set up CHiPs sample for the given CHiPs round if needed
-    if(patch[p].trial_arm == ARM_A || patch[p].trial_arm == ARM_B){
 
-        // The code below means we can control exactly when each CHiPS round starts. 
-        // Note - the "if" statement means we only establish a sampling frame once at the start of
-        // each round
+    if (SETTING==SETTING_POPART){
+	// Set up CHiPs sample for the given CHiPs round if needed
+	if(patch[p].trial_arm == ARM_A || patch[p].trial_arm == ARM_B){
+
+	    // The code below means we can control exactly when each CHiPS round starts. 
+	    // Note - the "if" statement means we only establish a sampling frame once at the start of
+	    // each round
         
-        if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
-            //printf("Calling chips_round() at %i %i for arms A or B\n", t0, t_step);
+	    if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
+		//printf("Calling chips_round() at %i %i for arms A or B\n", t0, t_step);
             
-            chips_round = get_chips_round(patch[p].param, t0, t_step);
+		chips_round = get_chips_round(patch[p].param, t0, t_step);
 
-            if(chips_round >= 0 && chips_round < NCHIPSROUNDS){
-                chips_start_timestep = patch[p].param->CHIPS_START_TIMESTEP[chips_round];
-            }else if(chips_round == CHIPSROUNDPOSTTRIAL){
-                chips_start_timestep = patch[p].param->CHIPS_START_TIMESTEP_POSTTRIAL;
-            }else{
-                printf("ERROR: Unknown chips_round value =%d. Exiting\n",chips_round);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
+		if(chips_round >= 0 && chips_round < NCHIPSROUNDS){
+		    chips_start_timestep = patch[p].param->CHIPS_START_TIMESTEP[chips_round];
+		}else if(chips_round == CHIPSROUNDPOSTTRIAL){
+		    chips_start_timestep = patch[p].param->CHIPS_START_TIMESTEP_POSTTRIAL;
+		}else{
+		    printf("ERROR: Unknown chips_round value =%d. Exiting\n",chips_round);
+		    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		    fflush(stdout);
+		    exit(1);
+		}
             
-            if(t_step == chips_start_timestep){
-                if(VERBOSE_OUTPUT == 1){
-                    printf("PopART round carried out at time t=%f\n",t);
-                    fflush(stdout);
-                }
-                POPART_SAMPLING_FRAME_ESTABLISHED = 1;
-                create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
-                    patch[p].param, chips_round, p);
-            }
+		if(t_step == chips_start_timestep){
+		    if(VERBOSE_OUTPUT == 1){
+			printf("PopART round carried out at time t=%f\n",t);
+			fflush(stdout);
+		    }
+		    POPART_SAMPLING_FRAME_ESTABLISHED = 1;
+		    create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
+						patch[p].param, chips_round, p);
+		}
             
-            // Sets the value of VISITED_BY_CHIPS_THISROUND to be FALSE. Note that because CHiPs
-            // rounds are not one year we need this to be reset when we set up the chips sampling
-            // frame.  
-            if(WRITE_DEBUG_CHIPS_STATES == 1){
-                reset_annual_chips_visit_counter(patch[p].age_list);
-            }
-        }
-    }
+		// Sets the value of VISITED_BY_CHIPS_THISROUND to be FALSE. Note that because CHiPs
+		// rounds are not one year we need this to be reset when we set up the chips sampling
+		// frame.  
+		if(WRITE_DEBUG_CHIPS_STATES == 1){
+		    reset_annual_chips_visit_counter(patch[p].age_list);
+		}
+	    }
+	}
     
-    // In the case of an external patch (arm C like but with PopART) assume PopART-like household
-    // intervention adopted from end of PopART onwards - for non-counterfactual only.  
-    if(
-        (patch[p].trial_arm == ARM_C) && 
-        (is_counterfactual == NOT_COUNTERFACTUAL_RUN)
-    ){
-        if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
+	// In the case of an external patch (arm C like but with PopART) assume PopART-like household
+	// intervention adopted from end of PopART onwards - for non-counterfactual only.  
+	if(
+	   (patch[p].trial_arm == ARM_C) && 
+	   (is_counterfactual == NOT_COUNTERFACTUAL_RUN)
+	   ){
+	    if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
             
-            //printf("Calling chips_round() at %i %i for arm C\n", t0, t_step);
-            chips_round = CHIPSROUNDPOSTTRIAL;
+		//printf("Calling chips_round() at %i %i for arm C\n", t0, t_step);
+		chips_round = CHIPSROUNDPOSTTRIAL;
             
-            if(t_step == patch[p].param->CHIPS_START_TIMESTEP_POSTTRIAL){
-                if(VERBOSE_OUTPUT == 1){
-                    printf("PopART occurring in external (non-popart) patch at time ");
-                    printf("t = %f using post-trial data\n", t);
-                    fflush(stdout);
-                }
-                POPART_SAMPLING_FRAME_ESTABLISHED = 1;  // This shouldn't matter.
+		if(t_step == patch[p].param->CHIPS_START_TIMESTEP_POSTTRIAL){
+		    if(VERBOSE_OUTPUT == 1){
+			printf("PopART occurring in external (non-popart) patch at time ");
+			printf("t = %f using post-trial data\n", t);
+			fflush(stdout);
+		    }
+		    POPART_SAMPLING_FRAME_ESTABLISHED = 1;  // This shouldn't matter.
                 
-                create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
-                    patch[p].param, chips_round, p);
-            }
-        }
-    }
+		    create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
+						patch[p].param, chips_round, p);
+		}
+	    }
+	}
     
-    // In the case of a counterfactual run where we would like CHiPs rollout post-trial to occur
-    if(
-        (patch[p].trial_arm == ARM_C) && 
-        (is_counterfactual == IS_COUNTERFACTUAL_RUN) &&
-        (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
-    ){
-        if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
+	// In the case of a counterfactual run where we would like CHiPs rollout post-trial to occur
+	if(
+	   (patch[p].trial_arm == ARM_C) && 
+	   (is_counterfactual == IS_COUNTERFACTUAL_RUN) &&
+	   (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
+	   ){
+	    if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
             
-            if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
-                if(VERBOSE_OUTPUT == 1){
-                    printf("Post-round CHiPs rollout carried out at time t=%f\n",t);
-                    fflush(stdout);
-                }
-                chips_round = CHIPSROUNDPOSTTRIAL;
+		if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
+		    if(VERBOSE_OUTPUT == 1){
+			printf("Post-round CHiPs rollout carried out at time t=%f\n",t);
+			fflush(stdout);
+		    }
+		    chips_round = CHIPSROUNDPOSTTRIAL;
                 
-                POPART_SAMPLING_FRAME_ESTABLISHED = 1;
-                create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
-                    patch[p].param, chips_round, p);
-            }
-        }
+		    POPART_SAMPLING_FRAME_ESTABLISHED = 1;
+		    create_popart_chips_samples(patch[p].age_list, patch[p].chips_sample,
+						patch[p].param, chips_round, p);
+		}
+	    }
+	}
     }
     
     /********************************************/
@@ -852,82 +849,82 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /*************************************************************************/
     /* 9. Carry out PopART intervention (if necessary) (or post-popart TasP) */
     /*************************************************************************/
-    
-    if(
-        (patch[p].trial_arm == ARM_A || patch[p].trial_arm == ARM_B) && 
-        (RUN_POPART == 1)
-    ){
-        int RUN_CHIPS = 1;
+    if (SETTING==SETTING_POPART){    
+	if(
+	   (patch[p].trial_arm == ARM_A || patch[p].trial_arm == ARM_B) && 
+	   (RUN_POPART == 1)
+	   ){
+	    int RUN_CHIPS = 1;
         
-        if( POPART_FINISHED == 1){
-            if( (ROLL_OUT_CHIPS_INSIDE_PATCH == 0) && (t0 >= T_STOP_ROLLOUT_CHIPS_INSIDE_PATCH)){
-                RUN_CHIPS = 0;
-            }
-        }
+	    if( POPART_FINISHED == 1){
+		if( (ROLL_OUT_CHIPS_INSIDE_PATCH == 0) && (t0 >= T_STOP_ROLLOUT_CHIPS_INSIDE_PATCH)){
+		    RUN_CHIPS = 0;
+		}
+	    }
         
-        if(RUN_CHIPS == 1){
-            if(get_chips_round(patch[p].param, t0, t_step) > CHIPSNOTRUNNING){
+	    if(RUN_CHIPS == 1){
+		if(get_chips_round(patch[p].param, t0, t_step) > CHIPSNOTRUNNING){
             
-                if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
-                    printf("Error -trying to start PopART before PopART sample is set up at time ");
-                    printf("t=%f Exiting\n", t);
-                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                    fflush(stdout);
-                    exit(1);
-                }
+		    if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
+			printf("Error -trying to start PopART before PopART sample is set up at time ");
+			printf("t=%f Exiting\n", t);
+			printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+			fflush(stdout);
+			exit(1);
+		    }
                 
-                chips_round = get_chips_round(patch[p].param, t0, t_step);
+		    chips_round = get_chips_round(patch[p].param, t0, t_step);
                 
-                carry_out_chips_visits_per_timestep(t0, t_step, patch, p, 
-                    chips_round, debug, output);
-            }
-        }
-    }
+		    carry_out_chips_visits_per_timestep(t0, t_step, patch, p, 
+							chips_round, debug, output);
+		}
+	    }
+	}
     
-    /* In the case of an external patch (arm C like but with PopART) assume popart-like household
-    intervention adopted from end of PopART onwards. */
-    if(
-        (patch[p].trial_arm == ARM_C) &&
-        (is_counterfactual == NOT_COUNTERFACTUAL_RUN) && 
-        (RUN_POPART == 1)
-    ){
-        if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
-            // To indicate we are post-trial
-            chips_round = CHIPSROUNDPOSTTRIAL;
+	/* In the case of an external patch (arm C like but with PopART) assume popart-like household
+	   intervention adopted from end of PopART onwards. */
+	if(
+	   (patch[p].trial_arm == ARM_C) &&
+	   (is_counterfactual == NOT_COUNTERFACTUAL_RUN) && 
+	   (RUN_POPART == 1)
+	   ){
+	    if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
+		// To indicate we are post-trial
+		chips_round = CHIPSROUNDPOSTTRIAL;
             
-            if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
-                printf("Error -trying to start PopART before PopART sample is set up at time ");
-                printf("t=%f Exiting\n", t);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-            carry_out_chips_visits_per_timestep(t0, t_step, patch, p, chips_round, debug, output);
-        }
-    }
+		if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
+		    printf("Error -trying to start PopART before PopART sample is set up at time ");
+		    printf("t=%f Exiting\n", t);
+		    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		    fflush(stdout);
+		    exit(1);
+		}
+		carry_out_chips_visits_per_timestep(t0, t_step, patch, p, chips_round, debug, output);
+	    }
+	}
     
-    /* In the case of a counterfactual run but we would like to simulate post-trial rollout */
-    if(
-        (patch[p].trial_arm == ARM_C) &&
-        (is_counterfactual == IS_COUNTERFACTUAL_RUN) && 
-        (RUN_POPART == 1) &&
-        (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
-    ){
-        if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
-            // To indicate we are post-trial
-            chips_round = CHIPSROUNDPOSTTRIAL;
+	/* In the case of a counterfactual run but we would like to simulate post-trial rollout */
+	if(
+	   (patch[p].trial_arm == ARM_C) &&
+	   (is_counterfactual == IS_COUNTERFACTUAL_RUN) && 
+	   (RUN_POPART == 1) &&
+	   (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
+	   ){
+	    if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
+		// To indicate we are post-trial
+		chips_round = CHIPSROUNDPOSTTRIAL;
             
-            if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
-                printf("Error -trying to start PopART before PopART sample is set up at time ");
-                printf("t=%f Exiting\n", t);
-                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                fflush(stdout);
-                exit(1);
-            }
-            carry_out_chips_visits_per_timestep(t0, t_step, patch, p, chips_round, debug, output);
-        }
-    }
-    
+		if(POPART_SAMPLING_FRAME_ESTABLISHED == 0){
+		    printf("Error -trying to start PopART before PopART sample is set up at time ");
+		    printf("t=%f Exiting\n", t);
+		    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		    fflush(stdout);
+		    exit(1);
+		}
+		carry_out_chips_visits_per_timestep(t0, t_step, patch, p, chips_round, debug, output);
+	    }
+	}
+    }    
     
     /*********************************************************************/
     /* 10. Carry out VMMC (if it has started in the country in question) */

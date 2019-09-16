@@ -540,13 +540,15 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
                 patch[p].n_newly_infected_total_from_acute_pconly++;
             }
             
-            // Does this infection take place during a PC round?  
-            // If so, increment the incident infections in the PC age range.  
-            int pc_round = get_pc_round(t0, t_step, patch, 0);
+	    if (SETTING==SETTING_POPART){
+		// Does this infection take place during a PC round?  
+		// If so, increment the incident infections in the PC age range.  
+		int pc_round = get_pc_round(t0, t_step, patch, 0);
             
-            if(pc_round != -1){
-                output->PC_ROUND_INFECTIONS[p][susceptible->gender][age - AGE_PC_MIN][pc_round]++;
-            }
+		if(pc_round != -1){
+		    output->PC_ROUND_INFECTIONS[p][susceptible->gender][age - AGE_PC_MIN][pc_round]++;
+		}
+	    }
         }
 
         patch[p].DEBUG_NHIVPOS++;

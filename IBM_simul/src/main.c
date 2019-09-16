@@ -440,6 +440,9 @@ int main(int argc,char *argv[]){
                     /* Check if parameters plausible (if not, then inputs and/or param ranges may
                     be wrong so check). */
                     check_if_parameters_plausible(patch[p].param);
+		    if (SETTING==SETTING_POPART){
+			check_if_popart_parameters_plausible(patch[p].param);
+		    }
                 }else{
                     printf("The function check_if_parameters_plausible() is switched off for");
                     printf(" debugging. Please change CHECKPARAMS in constants.h to have value 1");
@@ -760,9 +763,9 @@ int main(int argc,char *argv[]){
             if(fit_flag == 1 || PRINT_ALL_RUNS == 1){
                 /* We can switch off output if calibrating (ie set PRINT_EACH_RUN_OUTPUT to 0). */
                 if(PRINT_EACH_RUN_OUTPUT == 1){
-                    /* Only write this for patch p=0 as normally only have PopART intervention in
-                    p=0. */
-                    write_chips_data_visit(patch, 0, file_data_store, output);
+                    /* For POPART only. Only write this for patch p=0 as normally only have PopART intervention in p=0. */
+		    //if (SETTING==SETTING_POPART)
+		    write_chips_data_visit(patch, 0, file_data_store, output);
                     
                     for(p = 0; p < NPATCHES; p++){
                         // Write the annual data stored in annual_outputs_string to a file
@@ -851,12 +854,16 @@ int main(int argc,char *argv[]){
                 
                 // Write the CHIPS values for the calibration file to the character array
                 // called `output->calibration_outputs_combined_string`.  
+
                 for(p = 0; p < NPATCHES; p++){
-                    store_calibration_outputs_chips(patch, p, output);
+
+		    //if (SETTING==SETTING_POPART){
+		    store_calibration_outputs_chips(patch, p, output);
                     
-                    // Combine PC "snapshot" outputs with PC "window" outputs
-                    store_calibration_outputs_pc(patch, p, output);
-                
+			// Combine PC "snapshot" outputs with PC "window" outputs
+		    store_calibration_outputs_pc(patch, p, output);
+		    //}
+		    
                 // Combine PC calibration values with calibration_outputs_combined_string
                 join_strings_with_check(
                     output->calibration_outputs_combined_string[p],

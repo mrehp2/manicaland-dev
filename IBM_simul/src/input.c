@@ -110,7 +110,10 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 	    read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
 	    read_pc_future_params(patch_tag, param[p], n_runs);
         }
-
+	else{
+	    patch[p].community_id=0;
+	    patch[p].trial_arm=ARM_A;
+	}
 	
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);

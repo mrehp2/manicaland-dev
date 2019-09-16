@@ -65,5 +65,6 @@ void make_calibration_output_filename(char *, char *, long , patch_struct *, int
 void add_commas_to_calibration_output(char *,int );
 void print_param_struct(parameters *);
 void check_if_parameters_plausible(parameters *);
+void check_if_popart_parameters_plausible(parameters *);
 
 #endif /* UTILITIES_H_ */

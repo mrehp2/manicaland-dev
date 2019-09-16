@@ -172,7 +172,7 @@ def checkvalue(paramtocheck):
     >> ['0.81', '0.6', '2.2', '0', '0', '0', '0']
     checkvalue(paramvaluelist)
     >> [1, 'Multiple numbers and/or ranges']
-    """
+   """
     
     if len(paramtocheck)==1:
         p = paramtocheck[0]
@@ -848,6 +848,63 @@ def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_
 
 
 
+def write_patchinfo(communities, output_dir, setting, community_arm_data={}):
+    """
+    Generate the file `param_patchinfo.txt` using the list of communities and the data 
+    we pulled from file `community_dictionary_withtrialarm.csv` using `read_community_arm_data()`.
+    
+    
+    Parameters
+    ----------
+    communities : 
+    output_dir : str
+    community_arm_data : dict
+    
+    
+    Returns
+    -------
+    Nothing, writes the file `param_patchinfo.txt` to the directory `output_dir`.
+    
+    
+    Example
+    -------
+    
+    
+    """
+
+    # For PopART only: Dictionary to convert from A/B/C to 1/2/0 (as used in IBM: 0=ARM C, 1=ARM A, 2=ARM B)
+
+    patchinfo_cluster_text = "cluster_number ("
+    
+    if setting in ["Zambia","SouthAfrica"]:
+        arm_numbers = {"A":"1", "B":"2", "C":"0"}
+        patchinfo_arm_text = "trial_arm ("
+    else:
+        patchinfo_arm_text = ""
+
+    for c in communities:
+        patchinfo_cluster_text += str(c)+","
+        if setting in ["Zambia","SouthAfrica"]:
+            community_arm = community_arm_data[c]
+            community_arm_number = arm_numbers[community_arm]
+            patchinfo_arm_text += community_arm_number+","
+    
+    # Remove the trailing commas from each line
+    patchinfo_cluster_text = patchinfo_cluster_text.rstrip(",")
+    if setting in ["Zambia","SouthAfrica"]:
+        patchinfo_arm_text = patchinfo_arm_text.rstrip(",")
+    
+    # Now add extra info at end of each line
+    patchinfo_cluster_text += ") \n"
+    if setting in ["Zambia","SouthAfrica"]:
+        patchinfo_arm_text += ")     // 0=ARM C, 1=ARM A, 2=ARM B"
+    
+    outfile = open(join(output_dir, "param_patchinfo.txt"),"w")
+    outfile.write(patchinfo_cluster_text + patchinfo_arm_text)
+    
+    outfile.close()
+    
+
 
 
 ####################################################################################################
@@ -881,13 +938,14 @@ if __name__=="__main__":
         GETHPCFILES = 0
     
     try:
-        community_number = int(COMMAND_LINE_ARGS[2])
+        all_communities = [int(x) for x in COMMAND_LINE_ARGS[2:]]
     except:
-        print "Error for community number.",community_numb
+        print "Error for community number.",community_number
         utils.handle_error("All arguments passed to make_params_folder_file_Manicaland.py must be integers. Exiting")
 
-    if not(community_number in [0,2,3,5,7,8,9,14,15]):
-        utils.handle_error("Community number passed to "+__file__+" must be in the set {0,2,3,5,7,8,9,14,15}. Exiting")
+    for x in all_communities:
+        if not(x in [0,2,3,5,7,8,9,14,15]):
+            utils.handle_error("Community number passed to "+__file__+" must be in the set {0,2,3,5,7,8,9,14,15}. Exiting")
     
     VERBOSE_OUTPUT = 0 # print out extra information.
     
@@ -918,7 +976,7 @@ if __name__=="__main__":
     country_params_dir = join(params_basedir, "PARAM_SOURCES")
     
     # This is where we write to. Always make the directory take the name of the patch 0 community
-    output_dir = join(".", "data", "GENERATED_PRIORS", "PARAMS_COMMUNITY"+str(community_number))
+    output_dir = join(".", "data", "GENERATED_PRIORS", "PARAMS_COMMUNITY"+str(all_communities[0]))
     
     # Mortality and fertility data is based on UNPD estimates (with mortality estimates removing
     # HIV mortality by fitting a curve to times outside of main impact of HIV epidemic based on
@@ -956,11 +1014,15 @@ if __name__=="__main__":
             "For now exiting - maybe change code later on?")
     
     
-    country = get_country(community_number)
+    country = get_country(all_communities[0])
         
 
+    # Create the file param_patchinfo.txt:
+    write_patchinfo(all_communities,output_dir,"Zimbabwe")
     
-    # This is where we store the community parameters and the fitting_data_processed.txt file. 
+    # This is where we store the community parameters and the fitting_data_processed.txt file.
+    community_number = all_communities[0]
+    
     if (community_number==0):  # "0" means 'all Manicaland communities.
         community_param_dir = join(params_community_basedir,"PARAM_ALL_COMMUNITIES")
     else:

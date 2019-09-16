@@ -111,6 +111,7 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 	    read_pc_future_params(patch_tag, param[p], n_runs);
         }
 	else{
+	    printf("Non-PopART setting -for now set community_id=0 and trial_arm=C.\n");
 	    patch[p].community_id=0;
 	    patch[p].trial_arm=ARM_A;
 	}

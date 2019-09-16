@@ -546,10 +546,9 @@ int compare_longs (const void *a, const void *b){
 void get_setting(patch_struct *patch){
    /* Convert community ID to country setting.  
     
-    Query the community_id attribute of a patch structure and set the country_setting attribute
-    according to where the community occurs (Zambia communities are <= 12; otherwise South Africa).
+    Query the SETTING (and if necessary the community_id attribute of a patch structure) and set the country_setting attribute according to whether it is POPART or not, and if so where the community occurs (Zambia communities are <= 12; otherwise South Africa).
     
-    The country settings (ZAMBIA and SOUTH_AFRICA) are integers defined within constants.h.  
+    The country settings (ZAMBIA, SOUTH_AFRICA, ZIMBABWE, etc) are integers defined within constants.h.  
     
     Arguments
     --------
@@ -557,27 +556,37 @@ void get_setting(patch_struct *patch){
     
     Returns
     -------
-    Nothing; sets country_setting attribute of the patch object to either macro ZAMBIA or
-    SOUTH_AFRICA (as defined within constants.h)
+    Nothing; sets country_setting attribute of the patch object to either macro ZAMBIA, SOUTH_AFRICA or ZIMBABWE (as defined within constants.h)
     */
     
     int p;
-    for(p = 0; p < NPATCHES; p++){
-        /* First 12 clusters are Zambia: */
-        if(patch->community_id <= 12){
+    if (SETTING==SETTING_POPART){
+	for(p = 0; p < NPATCHES; p++){
+	    /* First 12 clusters are Zambia: */
+	    if(patch->community_id <= 12){
             
-            if(VERBOSE_OUTPUT == 1){
-                printf("Setting: Zambia\n");
-            }
-            patch[p].country_setting = ZAMBIA;
-        }else{
-            if(VERBOSE_OUTPUT == 1){
-                printf("Setting: South Africa\n");
-            }
-            patch[p].country_setting = SOUTH_AFRICA;
-        }
+		if(VERBOSE_OUTPUT == 1){
+		    printf("Setting: Zambia\n");
+		}
+		patch[p].country_setting = ZAMBIA;
+	    }else{
+		if(VERBOSE_OUTPUT == 1){
+		    printf("Setting: South Africa\n");
+		}
+		patch[p].country_setting = SOUTH_AFRICA;
+	    }
+	}
     }
-
+    else if(SETTING==SETTING_MANICALAND){
+	for(p = 0; p < NPATCHES; p++){
+	    printf("Setting: Zimbabwe\n");
+	    patch[p].country_setting = ZIMBABWE;
+	}
+    }
+    else{
+	printf("Error: Unknown setting\n");
+	exit(1);
+    }
 }
 
 
@@ -751,7 +760,11 @@ void get_IBM_code_version(char *version, int stringlength){
     ------
     Nothing; appends version number to the input char array `version`
     */
-    strncpy(version, "V1.2", stringlength);
+
+    /* 1.x represents PopART code.
+       2.x represents code base generalised to include Manicaland. 
+    */
+    strncpy(version, "V2.0", stringlength);
     return;
 }
 
@@ -871,10 +884,10 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
         /* Add cluster number. Pad with a zero if needed: */
         if (patch[p].community_id<=9)
             sprintf(clusternumber,"_CL0%i",patch[p].community_id);
-        else if ((patch[p].community_id<=1000000) && (patch[p].community_id>0))
+        else if ((patch[p].community_id<100) && (patch[p].community_id>0))
             sprintf(clusternumber,"_CL%i",patch[p].community_id);
         else{
-            printf("Error - community_id is too large %i. Trial communities go from 1-21. Exiting. \n",patch[p].community_id);
+            printf("Error - community_id is too large %i. Allowed values go from 1-99. Exiting. \n",patch[p].community_id);
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
@@ -883,14 +896,18 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
         /* community_info is the _COUNTRY_ARM_CODEVERSION_ data. */
         if (patch[p].country_setting==ZAMBIA)
             strcpy(community_info,"_Za_");
-        else
+        else if (patch[p].country_setting==SOUTH_AFRICA)
             strcpy(community_info,"_SA_");
-        if (patch[p].trial_arm==ARM_A)
-            strcat(community_info,"A_");
-        else if (patch[p].trial_arm==ARM_B)
-            strcat(community_info,"B_");
-        else
-            strcat(community_info,"C_");
+	else if (patch[p].country_setting==ZIMBABWE)
+            strcpy(community_info,"_Zim_");
+	if (SETTING==SETTING_POPART){
+	    if (patch[p].trial_arm==ARM_A)
+		strcat(community_info,"A_");
+	    else if (patch[p].trial_arm==ARM_B)
+		strcat(community_info,"B_");
+	    else
+		strcat(community_info,"C_");
+	}
         strcat(community_info,version);
 
         sprintf(patchinfo,"_patch%i",p);
@@ -1210,15 +1227,23 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
 
     if (patch[p].country_setting==ZAMBIA)
         strcat(output_filename,"_Za_");
-    else
-        strcat(output_filename,"_SA_");
+    else if (patch[p].country_setting==SOUTH_AFRICA)
+	strcpy(output_filename,"_SA_");
+    else if (patch[p].country_setting==ZIMBABWE)
+	strcpy(output_filename,"_Zim_");
+    else{
+        printf("Error: Unknown country setting in make_calibration_output_filename(). exiting\n");
+	exit(1);
+    }
 
-    if (patch[p].trial_arm==ARM_A)
-        strcat(output_filename,"A_");
-    else if (patch[p].trial_arm==ARM_B)
-        strcat(output_filename,"B_");
-    else
-        strcat(output_filename,"C_");
+    if (SETTING==SETTING_POPART){
+	if (patch[p].trial_arm==ARM_A)
+	    strcat(output_filename,"A_");
+	else if (patch[p].trial_arm==ARM_B)
+	    strcat(output_filename,"B_");
+	else
+	    strcat(output_filename,"C_");
+    }
 
     strcat(output_filename,version);
 

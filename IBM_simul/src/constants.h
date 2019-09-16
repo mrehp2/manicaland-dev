@@ -158,8 +158,8 @@ gsl_rng * rng;
 /* Labels for countries (or clusters): */
 #define ZAMBIA 1
 #define SOUTH_AFRICA 2
-/* First 12 clusters in M&E reports are always Zambia, so cluster numbers 1-12 for Zambia and >12 for South Africa: */
-#define IS_ZAMBIA 12
+#define ZIMBABWE 3
+
 
 #define NPATCHES 1
 

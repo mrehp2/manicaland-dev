@@ -1545,9 +1545,11 @@ Returns
 int of negative test result (0) or positive test result (1).  
 */
 
+
+/// ***FIXME** for popart:
 int get_window_result(double time_since_sc, double t, patch_struct *patch){
     
-    if(patch->community_id <= IS_ZAMBIA){
+    if(patch->country_setting==ZAMBIA){
         if(t <= 2006){
             if(time_since_sc >= 60.0/365)
                 return 1;
@@ -1559,7 +1561,7 @@ int get_window_result(double time_since_sc, double t, patch_struct *patch){
             else
                 return 0;
         }
-    }else{
+    }else if(patch->country_setting==SOUTH_AFRICA){
         if(t <= 2010){
             if(time_since_sc >= 60.0/365)
                 return 1;
@@ -1572,6 +1574,24 @@ int get_window_result(double time_since_sc, double t, patch_struct *patch){
                 return 0;
         }
     }
+    else if(patch->country_setting==ZIMBABWE){
+        if(t <= 2006){
+            if(time_since_sc >= 60.0/365)
+                return 1;
+            else
+                return 0;
+        }else{
+            if(time_since_sc >= 30.0/365)
+                return 1;
+            else
+                return 0;
+        }
+    }
+    else{
+	printf("Unknown country setting in get_window_result(). Exiting\n");
+	exit(1);
+    }
+
 }
 
 
@@ -1797,14 +1817,11 @@ int is_eligible_for_art(individual* indiv, parameters *param, double t, patch_st
         return 0;
     }
 
-    // If Popart has started (ie CHiPs round 1 has started) and we are in arm A then any HIV+ 
-    // individual is eligible, regardless of CD4 category.  
-    if(
-        (t >= (patch[p].param->CHIPS_START_YEAR[0] +
-            patch[p].param->CHIPS_START_TIMESTEP[0]*TIME_STEP)) && 
-        (patch[p].trial_arm == ARM_A)
-    ){
-        return 1;
+    if (SETTING==SETTING_POPART){
+	// If Popart has started (ie CHiPs round 1 has started) and we are in arm A then any HIV+ individual is eligible, regardless of CD4 category.  
+	if((t >= (patch[p].param->CHIPS_START_YEAR[0] +
+		  patch[p].param->CHIPS_START_TIMESTEP[0]*TIME_STEP)) && (patch[p].trial_arm == ARM_A))
+	    return 1;
     }
     
     // Draw CD4 category
@@ -2202,8 +2219,7 @@ cascade_events : 3D array of pointers to individual structures
     
 n_cascade_events : array of pointer to long
 size_cascade_events : array of pointers to long
-country_setting : int
-    Either ZAMBIA (1) or SOUTH_AFRICA (2) (see constants.h for these definition)
+country_setting : int (ZAMBIA, SOUTH_AFRICA or ZIMBABWE - see constants.h for these definition)
 
 Returns
 -------

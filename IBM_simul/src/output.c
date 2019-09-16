@@ -4194,7 +4194,7 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
         prophivposonart = 0.0;
     }
     */
-    
+
     sprintf(temp_string,
         "%d,%d,%i,%8.6f,%8.6f,\
         %li,%li,%li,%li,%li,\

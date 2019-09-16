@@ -674,8 +674,14 @@ void output_life_expectancy(char *output_file_directory, patch_struct *patch, in
     /* Assume that country setting is same in all patches so use patch 0. */
     if (patch[0].country_setting==ZAMBIA)
         sprintf(templabel,"_Za.csv");
-    else
-        sprintf(templabel,"_SA.csv");
+    else if (patch[0].country_setting==SOUTH_AFRICA)
+        sprintf(templabel,"_Za.csv");
+    else if (patch[0].country_setting==ZIMBABWE)
+        sprintf(templabel,"_Zim.csv");
+    else{
+	printf("Error: unknown country setting in output_life_expectancy(). Exiting\n");
+	exit(1);
+    }
 
 
 

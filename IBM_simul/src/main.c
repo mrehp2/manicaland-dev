@@ -299,12 +299,12 @@ int main(int argc,char *argv[]){
         printf("Making this run a counterfactual\n");
     }
 
-    /* Get country: country_setting values are 1 for Zambia and 2 for South Africa.
-    There are constants defined in constants.h for this (ZAMBIA and SOUTH_AFRICA)
-    This variable can be modified to be the cluster id (for example) if needed.
+    /* Get country: country_setting values are 1 for Zambia, 2 for South Africa, 3 for Zimbabwe.
+    There are constants defined in constants.h for this.
+
     Note we assume that the country setting does not vary across all the parameter sets.
     If this is not the case then we need to move this into the "for i_run" loop.
-    country_setting determines demographics only (fertility+death rate). */
+    country_setting determines demographics (fertility+death rate), HIV testing and HIV test sensitivity. */
     get_setting(patch);
 
     // NEEDS FIXING WHEN UPDATING PATCH MODEL:
@@ -463,7 +463,10 @@ int main(int argc,char *argv[]){
             } // END for(p = 0; p < NPATCHES; p++)
             
             if(VERBOSE_OUTPUT == 1){
-                printf("Run number = %i, trial arm in patch 0 = %i\n", i_run, patch[0].trial_arm);
+		if (SETTING==SETTING_POPART)
+		    printf("Run number = %i, trial arm in patch 0 = %i\n", i_run, patch[0].trial_arm);
+		else
+		    printf("Run number = %i\n", i_run);
                 fflush(stdout);
             }
 

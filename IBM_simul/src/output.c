@@ -2408,90 +2408,103 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
         for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
             fprintf(TEMPFILE, "DHSRound%iNposM%i,", r, a);
         for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-            fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
+	    if (SETTING==SETTING_POPART)
+		fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
+	    else{
+	    /* For non-PopART this is the last entry, and should have a new-line rather than a comma. */
+		if(a == AGE_DHS_MAX && r == NDHSROUNDS)
+		    fprintf(TEMPFILE, "DHSRound%iNposF%i\n", r, a);
+		else
+		    fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
+	    }
+    
+
     }
     // Write headers for number visited by chips, number positive, number aware of status, 
     // number on ART, and number virally suppressed.  
-    for(r = 1; r <= NCHIPSROUNDSFORFITTING; r++){
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNtotM%i,", r, a);
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNtotF%i,", r, a);
 
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNposM%i,", r, a);
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNposF%i,", r, a);
+    if (SETTING==SETTING_POPART){
+	for(r = 1; r <= NCHIPSROUNDSFORFITTING; r++){
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNtotM%i,", r, a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNtotF%i,", r, a);
 
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE,"CHIPSRound%iNawareM%i,",r,a);
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNawareF%i,",r,a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNposM%i,", r, a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNposF%i,", r, a);
 
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNonARTM%i,", r, a);
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNonARTF%i,", r, a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE,"CHIPSRound%iNawareM%i,",r,a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNawareF%i,",r,a);
 
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++)
-            fprintf(TEMPFILE, "CHIPSRound%iNvsM%i,", r, a);
-        for(a = AGE_CHIPS; a <= MAX_AGE; a++){
-            fprintf(TEMPFILE, "CHIPSRound%iNvsF%i,", r, a);
-        }
-    }
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNonARTM%i,", r, a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNonARTF%i,", r, a);
+
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++)
+		fprintf(TEMPFILE, "CHIPSRound%iNvsM%i,", r, a);
+	    for(a = AGE_CHIPS; a <= MAX_AGE; a++){
+		fprintf(TEMPFILE, "CHIPSRound%iNvsF%i,", r, a);
+	    }
+	}
     
-    // Write PC columns to file.  
-    for(r = 0; r < NPC_ROUNDS; r++){
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNtotM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNtotF%i,", r*12, a);
+	// Write PC columns to file.  
+	for(r = 0; r < NPC_ROUNDS; r++){
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNtotM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNtotF%i,", r*12, a);
 
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNposM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNposF%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNposM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNposF%i,", r*12, a);
 
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE,"PC%iNawareM%i,",r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNawareF%i,",r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE,"PC%iNawareM%i,",r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNawareF%i,",r*12, a);
 
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNonARTM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNonARTF%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNonARTM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNonARTF%i,", r*12, a);
 
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNvsM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
-            fprintf(TEMPFILE, "PC%iNvsF%i,", r*12, a);
-        }
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNvsM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
+		fprintf(TEMPFILE, "PC%iNvsF%i,", r*12, a);
+	    }
         
-        // Incident cases
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iNincM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
-            fprintf(TEMPFILE, "PC%iNincF%i,", r*12, a);
-        }
+	    // Incident cases
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iNincM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
+		fprintf(TEMPFILE, "PC%iNincF%i,", r*12, a);
+	    }
         
-        // Incidence rate
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iIncM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
-            fprintf(TEMPFILE, "PC%iIncF%i,", r*12, a);
-        }
-        
-        // Person years
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
-            fprintf(TEMPFILE, "PC%iPYM%i,", r*12, a);
-        for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
-            /* Last entry should have a new-line rather than a comma. */
-            if(a == AGE_PC_MAX && r == NPC_ROUNDS - 1)
-                fprintf(TEMPFILE, "PC%iPYF%i\n", r*12, a);
-            else
-                fprintf(TEMPFILE, "PC%iPYF%i,", r*12, a);
-        }
+	    // Incidence rate
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iIncM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
+		fprintf(TEMPFILE, "PC%iIncF%i,", r*12, a);
+	    }
+	    
+	    // Person years
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++)
+		fprintf(TEMPFILE, "PC%iPYM%i,", r*12, a);
+	    for(a = AGE_PC_MIN; a <= AGE_PC_MAX; a++){
+		/* Last entry should have a new-line rather than a comma. */
+		if(a == AGE_PC_MAX && r == NPC_ROUNDS - 1)
+		    fprintf(TEMPFILE, "PC%iPYF%i\n", r*12, a);
+		else
+		    fprintf(TEMPFILE, "PC%iPYF%i,", r*12, a);
+	    }
+	}
     }
     fclose(TEMPFILE);
 }

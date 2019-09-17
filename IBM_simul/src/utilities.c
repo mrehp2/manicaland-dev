@@ -1228,9 +1228,9 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
     if (patch[p].country_setting==ZAMBIA)
         strcat(output_filename,"_Za_");
     else if (patch[p].country_setting==SOUTH_AFRICA)
-	strcpy(output_filename,"_SA_");
+	strcat(output_filename,"_SA_");
     else if (patch[p].country_setting==ZIMBABWE)
-	strcpy(output_filename,"_Zim_");
+	strcat(output_filename,"_Zim_");
     else{
         printf("Error: Unknown country setting in make_calibration_output_filename(). exiting\n");
 	exit(1);

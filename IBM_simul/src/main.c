@@ -767,8 +767,8 @@ int main(int argc,char *argv[]){
                 /* We can switch off output if calibrating (ie set PRINT_EACH_RUN_OUTPUT to 0). */
                 if(PRINT_EACH_RUN_OUTPUT == 1){
                     /* For POPART only. Only write this for patch p=0 as normally only have PopART intervention in p=0. */
-		    //if (SETTING==SETTING_POPART)
-		    write_chips_data_visit(patch, 0, file_data_store, output);
+		    if (SETTING==SETTING_POPART)
+			write_chips_data_visit(patch, 0, file_data_store, output);
                     
                     for(p = 0; p < NPATCHES; p++){
                         // Write the annual data stored in annual_outputs_string to a file
@@ -863,21 +863,20 @@ int main(int argc,char *argv[]){
 
                 for(p = 0; p < NPATCHES; p++){
 
-		    //if (SETTING==SETTING_POPART){
-		    store_calibration_outputs_chips(patch, p, output);
+		    if (SETTING==SETTING_POPART){
+			store_calibration_outputs_chips(patch, p, output);
                     
 			// Combine PC "snapshot" outputs with PC "window" outputs
-		    store_calibration_outputs_pc(patch, p, output);
-		    //}
+			store_calibration_outputs_pc(patch, p, output);
 		    
-                // Combine PC calibration values with calibration_outputs_combined_string
-                join_strings_with_check(
-                    output->calibration_outputs_combined_string[p],
-                    output->pc_output_string[p], SIZEOF_calibration_outputs - 1,
-                    "output->pc_output_string[p] and output->calibration_..._string[p] in main()");
-                    
-                    // Add a newline character to the output
-                    strcat(output->calibration_outputs_combined_string[p], "\n");
+		    
+			// Combine PC calibration values with calibration_outputs_combined_string
+			join_strings_with_check(output->calibration_outputs_combined_string[p], output->pc_output_string[p], SIZEOF_calibration_outputs - 1, "output->pc_output_string[p] and output->calibration_..._string[p] in main()");
+                    }
+
+		    
+		    // Add a newline character to the output
+		    strcat(output->calibration_outputs_combined_string[p], "\n");
                 }
                 
                 /* Only want to write out to disk every NRUNSPERWRITETOFILE runs. So calculate i_run
@@ -885,6 +884,7 @@ int main(int argc,char *argv[]){
                 if((i_run % NRUNSPERWRITETOFILE == 0) || (i_run == n_runs - 1)){
                 
                     for(p = 0; p < NPATCHES; p++){
+
                         write_calibration_outputs(calibration_output_filename[p],output, p);
                         
                         // Blank the string so we don't run out of memory

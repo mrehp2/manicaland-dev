@@ -81,10 +81,10 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
     char patch_tag[LONGSTRINGLENGTH];
     char patch_number[10];
     
-    /* Read in the information for each patch that doesn't change over time - community id, arm.*/
-    if (SETTING==SETTING_POPART){
-	read_patch_info(file_directory, patch);
-    }
+    /* Read in the information for each patch that doesn't change over time - community id, (if a trial) arm.*/
+
+    read_patch_info(file_directory, patch);
+    
     
     for(p = 0; p < NPATCHES; p++){
         sprintf(patch_number, "%i", p);
@@ -110,11 +110,7 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 	    read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
 	    read_pc_future_params(patch_tag, param[p], n_runs);
         }
-	else{
-	    printf("Non-PopART setting -for now set community_id=0 and trial_arm=C.\n");
-	    patch[p].community_id=0;
-	    patch[p].trial_arm=ARM_A;
-	}
+
 	
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
@@ -182,12 +178,21 @@ void read_patch_info(char *file_directory, patch_struct *patch){
         check_if_cannot_read_param(checkreadok, "patch[p]->community_id");
     }
 
-    // For each patch, read trial arm and store in the patch structure
-    for(p = 0; p < NPATCHES; p++){
-        checkreadok = fscanf(patchinfo_file, "%lf", &temp_int);
-        (patch + p)->trial_arm = (int) floor(temp_int);
-        check_if_cannot_read_param(checkreadok, "param_local->trial_arm");
+
+    /* Only do this if we are simulating a trial (e.g. PopART) with separate arms. */
+    if (SETTING==SETTING_POPART){
+	// For each patch, read trial arm and store in the patch structure
+	for(p = 0; p < NPATCHES; p++){
+	    checkreadok = fscanf(patchinfo_file, "%lf", &temp_int);
+	    (patch + p)->trial_arm = (int) floor(temp_int);
+	    check_if_cannot_read_param(checkreadok, "param_local->trial_arm");
+	}
     }
+    else{
+	for(p = 0; p < NPATCHES; p++)
+	    (patch + p)->trial_arm = ARM_A;
+    }
+    
     /******************* closing patch info file ********************/
     fclose(patchinfo_file);
     return;

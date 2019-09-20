@@ -1,4 +1,4 @@
-p_child_circ 0.06    // See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMCbackground_traditional_circ_calculation.R - calculate mean over R2-R6 Manicaland of % of men who report being circumcised.
+p_child_circ 0.06    // This is the probability of being circumcised traditionally. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMCbackground_traditional_circ_calculation.R - calculate mean over R2-R6 Manicaland of % of men who report being circumcised. 
 eff_circ_vmmc 0.6 // Cori 2014 Table S7
 eff_circ_tmc 0.0 // Based on analysis of PC0.
 rr_circ_unhealed 0.33 // Cori 2014 Table S7 parameter s_heal. This represents susceptibility during wound healing period. Cori also has an increase in infectivity.

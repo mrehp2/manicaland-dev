@@ -1,7 +1,7 @@
-time_to_background_HIVtestNOW 3 // NOT USED AT PRESENT (Sept 2016). Modified a bit based on PC0 data (see HIV testing Feb 2016.xlsx) - suggesting about 30% have tested in last year, so 3 year on average to test.
-time_to_background_HIVtest_maxval 8.0 // NOT USED AT PRESENT (Sept 2016). 
-time_to_background_HIVtest_exponent 6 // NOT USED AT PRESENT (Sept 2016). 
-time_to_background_HIVtest_midpoint 6.5 // NOT USED AT PRESENT (Sept 2016). 
+time_to_background_HIVtestNOW 3 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0.
+time_to_background_HIVtest_maxval 8.0 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0. 
+time_to_background_HIVtest_exponent 6 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0.
+time_to_background_HIVtest_midpoint 6.5 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0.
 HIV_background_testing_rate_multiplier_pre2006 [0.0-1.0] // Baseline probability of a female having an HIV test in period from when HIV tests were offered until 2006 in the background cascade
 HIV_background_testing_rate_multiplier [0.0-1.0] // Annual baseline probability of a female having an HIV test from 2006 onwards in the background cascade
 HIV_background_testing_rate_multiplier_male [0.0-1.0] // Adjustment for decreased probability of men having an HIV test in the background cascade compared to women
@@ -40,7 +40,7 @@ t_end_vu_becomevs_nonpopart_min 0.01 // **** FIX ME**** To match timescale for b
 t_end_vu_becomevs_nonpopart_max 6.0 // **** FIX ME**** To match timescale for becoming virally unsuppressed
 t_end_vu_dropout_nonpopart_min 0.01 // As for t_end_vs_dropout_nonpopart_min **** FIX ME**** 
 t_end_vu_dropout_nonpopart_max 6.0 //
-p_circ_nopopart BY_COUNTRY // 0.22 Zambia, 0.06 SA based on PC of men who have not been visited by CHiPs. table(all.data.m.SA$WhoCirc[all.data.m.SA$VisitedByCHiPs=="No"])["Govt Health Worker"]/table(all.data.m.SA$VisitedByCHiPs)["No"] = 0.0688493 for South Africa. table(all.data.m.Za$WhoCirc[all.data.m.Za$VisitedByCHiPs=="No"])["Govt Health Worker"]/table(all.data.m.Za$VisitedByCHiPs)["No"] = 0.2243758 for Zambia.
+p_circ_nopopart BY_COUNTRY // Probability of 'background' VMMC
 t_get_vmmc_nonpopart_min 0.25 // **** FIX ME**** assume 3 months-1 year
 t_get_vmmc_nonpopart_max 1.0 // 
 t_vmmc_healing 0.038 // Cori 2014 table S6 (page 12) tau_heal=26, corresponding to 2 weeks healing period. Approximate 2/52 ~ 0.038.

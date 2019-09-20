@@ -1,10 +1,10 @@
-start_time_hiv 1975   
+start_time_hiv 1975   // ***FIXME*** 
 start_time_simul 1900   // Assumption - around 20 years for burn-in.
 end_time_simul 2020     // Assumption for now.
 COUNTRY_HIV_TEST_START 2000.0  // ***FIXME***
-COUNTRY_ART_START  2004.0  // ***FIXME***
+COUNTRY_ART_START  2004.25  // From C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\UNAIDS\ZWE 2006 Zimbabwe National Hiv and Aids Strategic Plan (ZNAP).pdf The national ART roll-out plan was launched in April 2004. 
 COUNTRY_CD4_350_START 2007.0 // **FIXME***
-COUNTRY_CD4_500_START 2011.0 // **FIXME**
+COUNTRY_CD4_500_START 2014.0 // Zimbabwe_ART_guidelines2013.pdf (December 2013) stated that " the CD4 count threshold for starting ART will be raised to 500." Assume that this started Jan 2014. 
 COUNTRY_IMMEDIATE_ART_START  2015.0 // **FIXME**
 COUNTRY_VMMC_START 2009.917 // e.g. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5769777/ "In December 2009, the Ministry of Health and Child Welfare (MOHCW) Zimbabwe launched the National Male Circumcision Policy for HIV Prevention as part of an integrated response and the VMMC strategy".
 COUNTRY_T_PrEP_START 2016.5 // https://www.prepwatch.org/wp-content/uploads/2018/07/Implementation_Plan_PrEP_Zim2018.pdf shows that PrEP started in Aug 2016.

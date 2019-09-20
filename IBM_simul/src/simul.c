@@ -605,8 +605,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
         }else{
             /// The difference between this function and the draw_initial_hiv_tests() function is
             // that these are drawn up to a set time, when HIV tests are redrawn
-            draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events,
-                patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
+	    // Note - only need to call this if the first test is before 2005 - otherwise the following years if statement will capture this. 
+	    if (patch[p].param->COUNTRY_HIV_TEST_START<=2005)
+		draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
         }
     }
     // Again, this has to be called before deaths_natural_causes() or individual_AIDS_death() 

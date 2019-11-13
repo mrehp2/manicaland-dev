@@ -6,7 +6,8 @@ HIV_background_testing_rate_multiplier_pre2006 [0.0-1.0] // Baseline probability
 HIV_background_testing_rate_multiplier [0.0-1.0] // Annual baseline probability of a female having an HIV test from 2006 onwards in the background cascade
 HIV_background_testing_rate_multiplier_male [0.0-1.0] // Adjustment for decreased probability of men having an HIV test in the background cascade compared to women
 HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC.
-p_collect_hiv_test_results_cd4_over200 0.97 // FIXED This represents ONLY non-PopART testing. In SA HSRC does not ask about testing+collecting results so use Zambia. Zambia DHS 2013 table 13.12.1 and 13.12.2 (p217) has % ever tested but did not receive results to be 1.9% (women) 4.1% (men) so 3% average.
+p_collect_hiv_test_results_cd4_over200 0.97 //
+
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 
 p_collect_cd4_test_results_cd4_nonpopart [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic. 
 p_dies_earlyart_cd4_over500 0.0 // FIXED Assumption for now
@@ -31,7 +32,7 @@ t_cd4_whenartfirstavail_min 0.0 // Assumption - meam of 12 months to start ART (
 t_cd4_whenartfirstavail_max 2.0 // Assumption as above (0-2 years gives mean of 1 year).
 t_delay_hivtest_to_cd4test_nonpopart_min 0.02083333 // Time from (positive) HIV test to CD4 test. Mugglin Trop Health 2012: somewhere between same day and median of 60 days. So minimum of 1 timestep (to avoid scheduling issues)
 t_delay_hivtest_to_cd4test_nonpopart_max 0.5 // Rosen and Fox (PLOS Med 2011) have upper limit of 6 months in their review.
-t_start_art_nonpopart_mean [0.4-0.7] // **** ASSUME AS IN POPART using Zam-SA range**** Needs to be quite high to match 90-90 just before CHiPs visit.
+t_start_art_nonpopart_mean 0.14575 // E-mail from Lebby (Malebogo Tlhajoane <m.tlhajoane@gmail.com>, 01 October 2019 20:07): "Days between HIV diagnosis and ART initiation (after treat-all was introduced): Mean = 53.2, Median = 11, SD = 141.4". 53.2/365=0.14575.
 t_end_vs_becomevu_nonpopart_min 0.01 // Assumption to match timescale of Vinikoor 
 t_end_vs_becomevu_nonpopart_max 6.0 // Assumption to match timescale of Vinikoor
 t_end_vs_dropout_nonpopart_min 0.01 // CF assumption to have 5% drop out per year

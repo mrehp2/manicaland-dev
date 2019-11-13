@@ -1,4 +1,4 @@
-assortativity [0.05-0.95] // Assumption - people are quite (but not entirely) assortative. Zambia 0.90 South Africa 0.87. Cori 2014 Table S9
+assortativity [0.05-0.95] // Assumption - people are quite (but not entirely) assortative. 
 prop_compromise_from_males 0.5 // Previously [0.01-0.5] but changed to fixed in July 2018
 c_f FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
 c_m FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0

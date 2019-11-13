@@ -1,6 +1,6 @@
 ran_seed_run RANDOMSEED // This tells python that we need to stick a random integer here which will be used as a seed later on.
-initial_adult_population_size BY_COMMUNITY // Zambia 1600, South Africa 2800. Calibrated by hand to give ~50,000 in 2014 with a ~20% HIV epidemic.
-initial_prop_13_17 BY_COUNTRY // Use UNPD WPP 2019
+initial_adult_population_size BY_COMMUNITY // Currently set to 500 - make a little bigger eventually for Zimbabwe.
+initial_prop_13_17 BY_COUNTRY // DONE - Using UNPD 2019 for Zimbabwe.
 initial_prop_18_22 BY_COUNTRY 
 initial_prop_23_30 BY_COUNTRY 
 initial_prop_31_40 BY_COUNTRY 

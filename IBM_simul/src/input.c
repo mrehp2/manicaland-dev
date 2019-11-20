@@ -781,7 +781,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             param_local->max_n_part_noage[r] = (int) floor(temp_int);
             check_if_cannot_read_param(checkreadok, "param_local->max_n_part_noage");
             
-            //printf("param_local->max_n_part_noage in risk group %d is %d\n",r,param_local->max_n_part_noage[r]);
+            printf("param_local->max_n_part_noage in risk group %d is %d\n",r,param_local->max_n_part_noage[r]);
             //fflush(stdout);
         }
 
@@ -791,7 +791,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             check_if_cannot_read_param(checkreadok,
                 "param_local->breakup_scale_lambda_within_patch");
             
-            //printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
+            printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
             //fflush(stdout);
         }
         for(r = 0; r < N_RISK; r++){

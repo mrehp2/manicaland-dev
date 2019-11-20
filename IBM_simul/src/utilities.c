@@ -2231,8 +2231,8 @@ void check_if_parameters_plausible(parameters *param){
         }
     }
     for(r=0 ; r<N_RISK ; r++){
-        if (param->breakup_scale_lambda_within_patch[r]<0 || param->breakup_scale_lambda_within_patch[r]>40){
-            printf("Error:param->breakup_scale_lambda_within_patch[r=%i]=%6.4lf is outside expected range [0,40]\nExiting\n",r,param->breakup_scale_lambda_within_patch[r]);
+        if (param->breakup_scale_lambda_within_patch[r]<0 || param->breakup_scale_lambda_within_patch[r]>45){
+            printf("Error:param->breakup_scale_lambda_within_patch[r=%i]=%6.4lf is outside expected range [0,45]\nExiting\n",r,param->breakup_scale_lambda_within_patch[r]);
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);

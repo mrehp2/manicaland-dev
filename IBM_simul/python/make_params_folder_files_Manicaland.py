@@ -585,7 +585,7 @@ def read_partnership_data(country, partnership_analysis_dir):
     partnership_data = {}
 
     
-    infilename = join()
+
     if country == "ZAMBIA":
         infilename = join(popart_basedir, "R", "partnerships", "param_partnerships_fromPC0_Za.txt")
     elif country == "SOUTHAFRICA":
@@ -596,7 +596,7 @@ def read_partnership_data(country, partnership_analysis_dir):
         utils.handle_error("Error: Unknown country " + country + "\nExiting.")
 
     
-    if (country in ["ZAMBIA","SOUTHAFRICA"]:
+    if country in ["ZAMBIA","SOUTHAFRICA"]:
         partnership_analysis_source_files = [
             join(popart_basedir, "R", "DataCleaning", "Read_PC0_final_data.R"),
             join(popart_basedir, "R", "DataCleaning", "PC0.yml"),
@@ -713,7 +713,7 @@ def get_current_IBM_fertility_datafile(input_dir, country_sentencecase):
 
     most_recent_WPP_file = input_dir+"/WPP"+str(most_recent_year)+"_FERT_F07_AGE_SPECIFIC_FERTILITY.xlsx"
     
-    most_recent_fertility_file = input_dir+"/ZimbabweFertility_WPP"+str(most_recent_year)+".csv"
+    most_recent_fertility_file = input_dir+"/"+country_sentencecase+"Fertility_WPP"+str(most_recent_year)+".csv"
     # Check that this file exists:
     if not(os.path.isfile(most_recent_fertility_file)): 
             utils.handle_error("Error: file " + most_recent_fertility_file + 
@@ -730,7 +730,7 @@ def get_current_IBM_fertility_datafile(input_dir, country_sentencecase):
     if (not(check==1) and print_warning_only==0):
         print(check + " is more recent that " + most_recent_WPP_file + 
             ". Running python to generate file")
-        os.system("python read_UNPD_fertility_data.py "+str(most_recent_year)+" Zimbabwe")
+        os.system("python read_UNPD_fertility_data.py "+str(most_recent_year)+" "+country_sentencecase)
     else:
         if VERBOSE_OUTPUT == 1:
             print(most_recent_fertility_file + " up to date")
@@ -762,6 +762,7 @@ def copy_fertility_file(country, input_dir, output_dir):
     fertility_data_file = get_current_IBM_fertility_datafile(input_dir, country_sentencecase)
     
     # This is what we are copying to
+    print "Copying ",fertility_data_file
     fertility_outfilename = join(output_dir, "param_fertility.txt")
 
     copy_file_checking_if_exists(fertility_data_file, fertility_outfilename)
@@ -842,7 +843,7 @@ def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_
     check = check_whether_data_file_up_to_date(mortality_data_file,data_file_depends_on,print_warning_only)
     if (not(check==1) and print_warning_only==0):
         print(check + " is more recent than"+mortality_data_file+". Running python to generate file")
-        os.system("python read_UNPD_mortality_data.py "+str(most_recent_year)+" Zimbabwe")
+        os.system("python read_UNPD_mortality_data.py "+str(most_recent_year)+" "+country)
         utils.run_sweave("EstimatingRatesFromUNPD.Rnw",mortality_sweave_code_dir)
     else:
         if VERBOSE_OUTPUT == 1:
@@ -852,7 +853,7 @@ def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_
     
     # This is what we are copying to
     mortality_outfilename = join(output_dir, "param_mortality.txt")
-    
+    print "Copying file",mortality_data_file," to ",mortality_outfilename
     copy_file_checking_if_exists(mortality_data_file,mortality_outfilename)
 
 
@@ -1081,7 +1082,6 @@ if __name__=="__main__":
         for l in linedata:
 
             # Pull out parameter name, the value (or range etc) and any comments on that line
-            print l
             [paramname, paramvaluelist, comment] = utils.parse_line(l)
                 
             [isok, typeofinput] = checkvalue(paramvaluelist)
@@ -1140,8 +1140,13 @@ if __name__=="__main__":
     # Now check that we did remove everything from the country list (so that all the files
     # match up).
     if not(country_level_data == {}):
-        print "Error - country_level_data=",country_level_data
-        
+        print "ERROR*** - country_level_data=",country_level_data
+        sys.exit(1)
+
+    if not(community_level_data == {}):
+        print "ERROR*** - community_level_data=",community_level_data
+        sys.exit(1)
+
     # ###########################################################################################
     # ############# Now stuff if we run on HPC:
     # ###########################################################################################

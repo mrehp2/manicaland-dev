@@ -1,33 +1,33 @@
 assortativity [0.05-0.95] // Assumption - people are quite (but not entirely) assortative. 
 prop_compromise_from_males 0.5 // Previously [0.01-0.5] but changed to fixed in July 2018
-c_f FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-c_m FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
+c_f FROM_R_PARTNERSHIP_ANALYSIS
+c_m FROM_R_PARTNERSHIP_ANALYSIS
 c_multiplier [0.5-4.0] // Boosts (or reduces) the number of partnerships compared to what is reported in PC0. Add a bit of range here.  High assumption set is [0.5-4.0], low assumption set is [0.625-5.0].
-rel_rate_partnership_formation_between_patches FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-rr_hiv_between_vs_within_patch FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-relative_number_partnerships_per_risk FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_1j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_2j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_3j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_4j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_5j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_6j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_m_7j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_1j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_2j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_3j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_4j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_5j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_6j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-p_age_f_7j FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
+rel_rate_partnership_formation_between_patches FROM_R_PARTNERSHIP_ANALYSIS
+rr_hiv_between_vs_within_patch FROM_R_PARTNERSHIP_ANALYSIS
+relative_number_partnerships_per_risk FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_1j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_2j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_3j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_4j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_5j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_6j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_m_7j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_1j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_2j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_3j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_4j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_5j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_6j FROM_R_PARTNERSHIP_ANALYSIS
+p_age_f_7j FROM_R_PARTNERSHIP_ANALYSIS
 max_n_part_noage_low 1 // Assumption - over 90% of PC have 0 or 1 partners in last year.
 max_n_part_noage_med 3 // Assumption.
 max_n_part_noage_high 10 // Maximum number of partners last year in PC is 90. If each partnership lasts around a month, then 90/12=7.5 instantaneous. Allow 10 as, although 1 month is probably too long, there may be some periods with more partners.
-breakup_scale_lambda_low_within_patch FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-breakup_scale_lambda_med_within_patch FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-breakup_scale_lambda_high_within_patch FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-breakup_shape_k_low FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-breakup_shape_k_med FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
-breakup_shape_k_high FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
+breakup_scale_lambda_low_within_patch FROM_R_PARTNERSHIP_ANALYSIS
+breakup_scale_lambda_med_within_patch FROM_R_PARTNERSHIP_ANALYSIS
+breakup_scale_lambda_high_within_patch FROM_R_PARTNERSHIP_ANALYSIS
+breakup_shape_k_low FROM_R_PARTNERSHIP_ANALYSIS
+breakup_shape_k_med FROM_R_PARTNERSHIP_ANALYSIS
+breakup_shape_k_high FROM_R_PARTNERSHIP_ANALYSIS
 breakup_scale_multiplier_overall [1.0-2.0] // Assumption - a bit broader than initial 'fit to Prepopart model'
-breakup_scale_multiplier_between_vs_within_patch FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0
+breakup_scale_multiplier_between_vs_within_patch FROM_R_PARTNERSHIP_ANALYSIS

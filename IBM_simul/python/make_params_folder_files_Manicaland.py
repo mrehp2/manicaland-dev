@@ -2,12 +2,12 @@
 """
 make_params_folder_files_Manicaland.py takes data from different sources (outputs of analyses of survey or intervention data done in R; other prior values/ranges specified in a bunch of text files) and creates the param_*.txt files needed by `make_ibm_parameter_sample.py`.
 
-Usage: python make_params_folder_files_Manicaland.py [basedir] [community_number] [HPC_SYSTEMS]
+Usage: python make_params_folder_files_Manicaland.py [basedir] [site_no] [HPC_SYSTEMS]
 
 basedir : dir
     base directory (e.g. ~/MANICALAND/manicaland-dev/IBM_simul/)
 
-community_number : int
+site_no : int
     Refers to a Manicaland site 0='all R7 sites combined'; (2,3,5,7,8,9,14,15)= sites.
 
 HPC_SYSTEMS : str
@@ -130,7 +130,7 @@ def checkvalue(paramtocheck):
     paramtocheck : list
         Parameter value stored within a list (of variable length).  The elements of the list are
         usually strings of an int/float or they may be a keyword: one of RANDOMSEED, BY_COUNTRY, 
-        BY_COMMUNITY, FROM_CHIPS_R_ANALYSIS, FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0, FROM_CHIPS_FILE, 
+        BY_COMMUNITY, FROM_CHIPS_R_ANALYSIS, FROM_R_PARTNERSHIP_ANALYSIS, FROM_CHIPS_FILE, 
     
     
     Returns
@@ -184,8 +184,8 @@ def checkvalue(paramtocheck):
             return [1, "BY_COMMUNITY"]
         if (p == "FROM_CHIPS_R_ANALYSIS"):   # Specific to PopART
             return [1, "FROM_CHIPS_R_ANALYSIS"]
-        if (p == "FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0"):  # Specific to PopART
-            return [1, "FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0"]
+        if (p == "FROM_R_PARTNERSHIP_ANALYSIS"):  # Specific to PopART
+            return [1, "FROM_R_PARTNERSHIP_ANALYSIS"]
         if (p == "FROM_CHIPS_FILE"):         # Specific to PopART
             return [1, "FROM_CHIPS_FILE"]
         if is_number(p):
@@ -552,22 +552,24 @@ def read_community_data(files_by_community, community_param_dir):
 
 
 
-def read_partnership_data(country, pc0_partnership_dir):
+def read_partnership_data(country, partnership_analysis_dir):
     print "Country=",country
     """
-    This function reads in the data generated from the raw PC data by a knitr document written by 
-    Anne:
+    For PopART function reads in the data generated from the raw PC data by a knitr document written by  Anne:
     ~/Dropbox/PoPART/Data\:Stats/PC\ Data\ Downloads/15-12-2016_PC0_NEWFINAL/R/partnerships/ExtractPartnershipParamFromPC0.Rnw
 
+    """
 
-    
+    popart_basedir = join(homedir, "Dropbox", "PoPART", "Data:Stats", "PC Data Downloads", "15-12-2016_PC0_NEWFINAL")
+
+    """
+
     Parameters
     ----------
     country : str
         Country of interest
-    pc0_partnership_dir : str
+    partnership_analysis_dir : str
         Directory housing PC0 partnership data
-    
     
     Returns
     -------
@@ -575,37 +577,45 @@ def read_partnership_data(country, pc0_partnership_dir):
         Dictionary of partnership data
     
     """
+
     # Determine whether check_whether_data_file_up_to_date() prints warning (if 1) or exits (if 0).
     print_warning_only = -1
     
     # This will store the partnership data (the keys for this dictionary are the parameter names).
     partnership_data = {}
 
-    zim_partnership_dir = join(homedir,"TEMP_ZIM_DATA")
     
-    infilename = join(pc0_partnership_dir, "R", "partnerships")
+    infilename = join()
     if country == "ZAMBIA":
-        infilename = join(infilename, "param_partnerships_fromPC0_Za.txt")
+        infilename = join(popart_basedir, "R", "partnerships", "param_partnerships_fromPC0_Za.txt")
     elif country == "SOUTHAFRICA":
-        infilename = join(infilename, "param_partnerships_fromPC0_SA.txt")
+        infilename = join(popart_basedir, "R", "partnerships", "param_partnerships_fromPC0_SA.txt")
     elif country == "ZIMBABWE":
-        infilename = join(zim_partnership_dir, "param_partnerships_Zim.txt")
+        infilename = join(partnership_analysis_dir, "param_partnerships_from_R_Zim.txt")
     else:
         utils.handle_error("Error: Unknown country " + country + "\nExiting.")
+
     
-    pc0_source_files = [
-        join(pc0_partnership_dir, "R", "DataCleaning", "Read_PC0_final_data.R"),
-        join(pc0_partnership_dir, "R", "DataCleaning", "PC0.yml"),
-        join(pc0_partnership_dir, "R", "DataCleaning", "PC0_partner.yml"),
-        join(pc0_partnership_dir, "R", "DataCleaning", "RenameColMergedPC0.yml"),
-        join(pc0_partnership_dir, "R", "DataCleaning", "recipes.yml"),
-        join(pc0_partnership_dir, "RawData", "PC0.csv"),
-        join(pc0_partnership_dir, "RawData", "PC0_partner.csv"),
-        join(pc0_partnership_dir, "MergedAndCleanData", "Recoded_PC0_merged_dat.rds"), 
-        join(pc0_partnership_dir, "MergedAndCleanData", "Recoded_PC0_merged_dat.rds"), 
-        join(pc0_partnership_dir, "R","partnerships", "ExtractPartnershipParamFromPC0.Rnw")]
-    
-    #check = check_whether_data_file_up_to_date(infilename, pc0_source_files, print_warning_only)
+    if (country in ["ZAMBIA","SOUTHAFRICA"]:
+        partnership_analysis_source_files = [
+            join(popart_basedir, "R", "DataCleaning", "Read_PC0_final_data.R"),
+            join(popart_basedir, "R", "DataCleaning", "PC0.yml"),
+            join(popart_basedir, "R", "DataCleaning", "PC0_partner.yml"),
+            join(popart_basedir, "R", "DataCleaning", "RenameColMergedPC0.yml"),
+            join(popart_basedir, "R", "DataCleaning", "recipes.yml"),
+            join(popart_basedir, "RawData", "PC0.csv"),
+            join(popart_basedir, "RawData", "PC0_partner.csv"),
+            join(popart_basedir, "MergedAndCleanData", "Recoded_PC0_merged_dat.rds"), 
+            join(popart_basedir, "MergedAndCleanData", "Recoded_PC0_merged_dat.rds"), 
+            join(popart_basedir, "R","partnerships", "ExtractPartnershipParamFromPC0.Rnw")]
+        
+        #check = check_whether_data_file_up_to_date(infilename, partnership_analysis_source_files, print_warning_only)
+    elif country=="ZIMBABWE":
+        partnership_analysis_source_files = [join(partnership_analysis_dir, "Partnership_parameterization_Manicaland_20-11-2019.R")]        
+        check = check_whether_data_file_up_to_date(infilename, partnership_analysis_source_files, print_warning_only)
+
+
+
     linedata = utils.parse_file(infilename)
     for l in linedata:
         
@@ -940,7 +950,7 @@ if __name__=="__main__":
     try:
         all_communities = [int(x) for x in COMMAND_LINE_ARGS[2:]]
     except:
-        print "Error for community number.",community_number
+        print "Error for community number.",site_no
         utils.handle_error("All arguments passed to make_params_folder_file_Manicaland.py must be integers. Exiting")
 
     for x in all_communities:
@@ -988,8 +998,7 @@ if __name__=="__main__":
 
 
     # Analysis of PC0 partnership data:
-    pc0_partnership_dir = join(homedir, "Dropbox", "PoPART", "Data:Stats", "PC Data Downloads", 
-        "15-12-2016_PC0_NEWFINAL")
+    partnership_analysis_dir = join(homedir, "Dropbox (SPH Imperial College)", "Manicaland", "Cohort_analysis")
 
     
     utils.check_directory_exists(params_basedir)
@@ -1021,12 +1030,12 @@ if __name__=="__main__":
     write_patchinfo(all_communities,output_dir,"Zimbabwe")
     
     # This is where we store the community parameters and the fitting_data_processed.txt file.
-    community_number = all_communities[0]
+    site_no = all_communities[0]
     
-    if (community_number==0):  # "0" means 'all Manicaland communities.
+    if (site_no==0):  # "0" means 'all Manicaland communities.
         community_param_dir = join(params_community_basedir,"PARAM_ALL_COMMUNITIES")
     else:
-        community_param_dir = join(params_community_basedir,"PARAM_BY_COMMUNITY_" + str(community_number))
+        community_param_dir = join(params_community_basedir,"PARAM_BY_COMMUNITY_" + str(site_no))
         
     utils.check_directory_exists(community_param_dir)
 
@@ -1052,7 +1061,7 @@ if __name__=="__main__":
     community_level_data = read_community_data(files_by_community, community_param_dir)
 
     # Read in the output of the knitr analysis of PC0 data:
-    partnership_data = read_partnership_data(country, pc0_partnership_dir)
+    partnership_data = read_partnership_data(country, partnership_analysis_dir)
 
 
     # This will store the text going in each output file f:
@@ -1072,6 +1081,7 @@ if __name__=="__main__":
         for l in linedata:
 
             # Pull out parameter name, the value (or range etc) and any comments on that line
+            print l
             [paramname, paramvaluelist, comment] = utils.parse_line(l)
                 
             [isok, typeofinput] = checkvalue(paramvaluelist)
@@ -1100,7 +1110,7 @@ if __name__=="__main__":
                     if community_level_data.pop(paramname,None) == None:
                         utils.handle_error("Error - key" + paramname + "not found. Exiting")
                         
-                elif typeofinput == "FROM_R_PARTNERSHIP_ANALYSIS_OF_PC0":
+                elif typeofinput == "FROM_R_PARTNERSHIP_ANALYSIS":
                     output_file_strings[f] += paramname + " " + \
                         partnership_data[paramname].rstrip() + "\n"
                     

@@ -7,7 +7,6 @@ HIV_background_testing_rate_multiplier [0.0-1.0] // Annual baseline probability 
 HIV_background_testing_rate_multiplier_male [0.0-1.0] // Adjustment for decreased probability of men having an HIV test in the background cascade compared to women
 HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC.
 p_collect_hiv_test_results_cd4_over200 0.97 //
-
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 
 p_collect_cd4_test_results_cd4_nonpopart [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic. 
 p_dies_earlyart_cd4_over500 0.0 // FIXED Assumption for now

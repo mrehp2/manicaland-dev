@@ -20,7 +20,7 @@ p_age_f_4j FROM_R_PARTNERSHIP_ANALYSIS
 p_age_f_5j FROM_R_PARTNERSHIP_ANALYSIS
 p_age_f_6j FROM_R_PARTNERSHIP_ANALYSIS
 p_age_f_7j FROM_R_PARTNERSHIP_ANALYSIS
-max_n_part_noage_low 1 // Assumption - over 90% of PC have 0 or 1 partners in last year.
+max_n_part_noage_low 3 // Assumption - Modified in discussion with Tim to allow them to have concurrent partners. Use sensitivity analysis to understand the implications.
 max_n_part_noage_med 3 // Assumption.
 max_n_part_noage_high 10 // Maximum number of partners last year in PC is 90. If each partnership lasts around a month, then 90/12=7.5 instantaneous. Allow 10 as, although 1 month is probably too long, there may be some periods with more partners.
 breakup_scale_lambda_low_within_patch FROM_R_PARTNERSHIP_ANALYSIS

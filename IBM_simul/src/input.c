@@ -101,7 +101,8 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         read_partnership_params(patch_tag, param[p], n_runs);
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
-
+	read_mtct_params(patch_tag, param[p], n_runs);
+	
 	if (SETTING==SETTING_POPART){
 	    read_popart_params(patch_tag, param[p], n_runs);
 	
@@ -1218,6 +1219,64 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
     return;
 }
 
+
+
+
+
+/****************************************************************************/
+/**************   Mother-to-child params taken from Spectrum ****************/
+/****************************************************************************/
+void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    FILE *param_file;
+    int a_spectrum; // Age index.
+    int y; // year. 
+    char param_file_name[LONGSTRINGLENGTH];
+    int i_run;
+
+
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strcat(param_file_name, "mtct.csv");
+
+    /******************* opening parameter file ********************/
+    if ((param_file=fopen(param_file_name,"r"))==NULL)
+    {
+        printf("Cannot open %s\n",param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else
+    {
+        if(VERBOSE_OUTPUT==1)
+            printf("Cascade parameters read from: %s:\n",param_file_name);
+    }
+
+
+    i_run = 0;
+    param_local = allrunparameters + i_run;
+    for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
+        for(a_unpd = 0; a_unpd < N_AGE_UNPD_FERTILITY; a_unpd++){
+            
+            checkreadok = fscanf(param_file, "%lg", 
+                &(param_local->fertility_rate_by_age[a_unpd][y]));
+            check_if_cannot_read_param(checkreadok,
+                "param_local->fertility_rate_by_age[a_unpd][y]");
+        }
+    }
+    // Close mortality parameter file
+    fclose(param_file);
+    
+    // Copy parameters from the first simulation run across to all simulation runs
+    // allrunparameters stores a copy of parameters used for each simulation run
+    for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
+        for(a_unpd = 0; a_unpd < N_AGE_UNPD_FERTILITY; a_unpd++){
+            for(i_run = 1; i_run < n_runs; i_run++){
+                
+                allrunparameters[i_run].fertility_rate_by_age[a_unpd][y] =
+                    allrunparameters[0].fertility_rate_by_age[a_unpd][y];
+            }
+        }
+    }
+}
 
 void read_popart_params(char *patch_tag, parameters *allrunparameters, int n_runs){
     FILE *param_file;

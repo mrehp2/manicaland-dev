@@ -19,6 +19,7 @@ import glob, sys, os, filecmp, shutil
 from datetime import datetime,date
 from os.path import join
 import random,copy
+import xlrd   # For reading Excel files.
 
 import utilities as utils
 
@@ -430,6 +431,24 @@ def copy_chips_file_removing_whitespace_and_store_start_end_times(original_data_
     #return [start_time, end_time]
 
 
+##### For reading in Excel file that I made to store Spectrum MTCT output:
+
+# Given a single sheet name and the name of the xlsx file, pull out the named sheet and return as an array:
+def pull_out_sheet(infilename,sheet_to_get):
+
+    book = xlrd.open_workbook(infilename)
+    sheet_to_keep = {}
+
+    for sheet in book.sheets():
+        formatted_sheet_name = sheet.name.rstrip().upper()
+        if formatted_sheet_name==sheet_to_get:
+            return book.sheet_by_name(sheet.name)
+
+    print "Error: sheet",sheet_to_get," not found. Exiting."
+    sys.exit(1)
+
+    
+
 ###############################################################################################
 ########### Now functions that load up specific data (ie things used to generate param ranges):
 ###############################################################################################
@@ -633,6 +652,38 @@ def read_partnership_data(country, partnership_analysis_dir):
             utils.handle_error("Error in read_partnership_data() for line " + l + "\nExiting\n")
         
     return partnership_data
+
+
+
+
+# Given a mtct worksheet, pulls out the data, and save it as a PopART-IBM param file called mtct_param_filename:
+def make_mtct_params(sheet,mtct_param_filename):
+
+    outstring = ""
+    passed_header = 0 
+    years = []
+    for i in range(sheet.nrows):
+
+        # Go through spreadsheet line by line:
+        line = sheet.row_values(i)
+        if (passed_header>0):
+            outstring += " ".join([str(x) for x in line])+"\n"
+            years += [line[0]]
+        else:
+            # If some elements aren't numbers then this is probably the header.
+            if not(all(isinstance(item,float) for item in line)):
+                passed_header=1
+
+    # Add the first and last year as the first line of the file:
+    outstring = str(min(years))+" "+str(max(years))+"\n"+outstring
+                
+    outfile = open(mtct_param_filename,"w")
+    outfile.write(outstring)
+    outfile.close()
+
+
+
+
 
 
 ####################################################################################################
@@ -1050,6 +1101,19 @@ if __name__=="__main__":
 
     copy_fertility_file(country, fertility_data_dir, output_dir)
     copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir)
+
+
+    mtct_file = "~/Dropbox (SPH Imperial College)/Manicaland/Model/PMTCT/Spectrum_Manicaland_2019_MTCT.xlsx"
+    # This is the sheet we want to pull out from the Excel file: 
+    mtct_sheet_needed = "FOR IBM"
+
+    # Extract the worksheet:
+    mtct_worksheets = pull_out_sheet(mtct_file,mtct_sheet_needed)
+    # Now process it and save it in the format needed by the IBM:
+    mtct_params = make_mtct_params(mtct_worksheets,join(output_dir,"param_mtct.csv"))
+
+
+
 
         
     # Read in the country-level data:

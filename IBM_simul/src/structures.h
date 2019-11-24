@@ -215,6 +215,8 @@ typedef struct {
     double T_FIRST_MTCT_DATAPOINT;
     double T_LAST_MTCT_DATAPOINT;
     double mtct_probability[N_MAX_MTCT_TIMEPOINTS];
+    /* Proportion of births which are to HIV+ mothers: */
+    double prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
 
     /********** times **********/
     double start_time_hiv;

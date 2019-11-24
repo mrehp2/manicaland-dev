@@ -1267,14 +1267,18 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
 	
 	checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].mtct_probability[y]));
 	check_if_cannot_read_param(checkreadok, "allrunparameters[0].mtct_probability[y]");
+	checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].prop_births_to_hivpos_mothers[y]));
+	check_if_cannot_read_param(checkreadok, "allrunparameters[0].prop_births_to_hivpos_mothers[y]");
     }
 
     // Close mtct parameter file
     fclose(param_file);
 
     /* Make sure rest of array is populated with some value - assume pmtct remains same as at last timestep. */
-    for(y=t_steps; y<N_MAX_MTCT_TIMEPOINTS; y++)
+    for(y=t_steps; y<N_MAX_MTCT_TIMEPOINTS; y++){
 	allrunparameters[0].mtct_probability[y] = allrunparameters[0].mtct_probability[t_steps-1];
+	allrunparameters[0].prop_births_to_hivpos_mothers[y] = allrunparameters[0].prop_births_to_hivpos_mothers[t_steps-1];
+    }
     
     // Copy parameters from the first simulation run across to all simulation runs
     // allrunparameters stores a copy of parameters used for each simulation run
@@ -1284,7 +1288,18 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
 	allrunparameters[i_run].T_LAST_MTCT_DATAPOINT = allrunparameters[0].T_LAST_MTCT_DATAPOINT;
 	for(y=0; y<N_MAX_MTCT_TIMEPOINTS; y++){
 	    allrunparameters[i_run].mtct_probability[y] = allrunparameters[0].mtct_probability[y];
+	    allrunparameters[i_run].prop_births_to_hivpos_mothers[y] = allrunparameters[0].prop_births_to_hivpos_mothers[y];
         }
+    }
+
+
+
+
+    for(i_run=0; i_run<2; i_run++){
+	printf("%i %i\n",(int) allrunparameters[i_run].T_FIRST_MTCT_DATAPOINT, (int) allrunparameters[i_run].T_LAST_MTCT_DATAPOINT);
+	for(y=0; y<N_MAX_MTCT_TIMEPOINTS; y++){
+	    printf("%i %lf %lf\n",y,allrunparameters[i_run].mtct_probability[y],allrunparameters[i_run].prop_births_to_hivpos_mothers[y]);
+	}
     }
 
 

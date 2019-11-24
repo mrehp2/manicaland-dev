@@ -15,9 +15,9 @@
 #	./popart-simul.exe Zambia
 
 # In general
-#GSLFLAGS= -lgsl -lgslcblas -lm -O3 
+GSLFLAGS= -lgsl -lgslcblas -lm -O3 
 # For valgrind:
-GSLFLAGS= -lgsl -lgslcblas -lm 
+#GSLFLAGS= -lgsl -lgslcblas -lm 
 
 # for Gprof:
 #GSLFLAGS= -lgsl -lgslcblas -lm -pg 

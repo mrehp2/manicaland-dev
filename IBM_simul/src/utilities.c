@@ -1304,8 +1304,6 @@ void print_param_struct(parameters *param){
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
     printf("param->rr_circ_unhealed=%lg\n",param->rr_circ_unhealed);
-    printf("param->t0_pmtct=%lg\n",param->t0_pmtct);
-    printf("param->t50_pmtct=%lg\n",param->t50_pmtct);
     printf("param->average_log_viral_load=%lg\n",param->average_log_viral_load);
     printf("param->average_annual_hazard=%lg\n",param->average_annual_hazard);
     printf("param->RRacute_trans=%lg\n",param->RRacute_trans);
@@ -1539,26 +1537,6 @@ void check_if_parameters_plausible(parameters *param){
 
     if (param->rr_circ_unhealed<0 || param->rr_circ_unhealed>3){
         printf("Error: param->rr_circ_unhealed is outside expected range [0,3]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-
-    if (param->t0_pmtct<1990 || param->t0_pmtct>2015){
-        printf("Error: param->t0_pmtct is outside expected range [1990,2015]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-    if (param->t50_pmtct<1990 || param->t50_pmtct>2015){
-        printf("Error: param->t50_pmtct is outside expected range [1990,2015]\nExiting\n");
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-
-    if (param->t0_pmtct>param->t50_pmtct){
-        printf("Error: param->t0_pmtct is bigger than param->t50_pmtct.\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

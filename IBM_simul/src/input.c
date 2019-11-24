@@ -443,13 +443,6 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->rr_circ_unhealed));
         check_if_cannot_read_param(checkreadok, "param_local->rr_circ_unhealed");
-
-        checkreadok = fscanf(param_file,"%lg", &(param_local->t0_pmtct));
-        check_if_cannot_read_param(checkreadok, "param_local->t0_pmtct");
-
-        checkreadok = fscanf(param_file,"%lg", &(param_local->t50_pmtct));
-        check_if_cannot_read_param(checkreadok, "param_local->t50_pmtct");
-
         checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
         check_if_cannot_read_param(checkreadok, "param_local->average_log_viral_load");
 
@@ -1228,11 +1221,13 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
 /****************************************************************************/
 void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs){
     FILE *param_file;
-    int a_spectrum; // Age index.
-    int y; // year. 
+    int y; // year.
+    int t_steps; // Number of timesteps in the Spectrum input data.
+    double t; // Temporary store for time from datafile.
     char param_file_name[LONGSTRINGLENGTH];
     int i_run;
 
+    int checkreadok;
 
     strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
     strcat(param_file_name, "mtct.csv");
@@ -1251,31 +1246,48 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
     }
 
 
-    i_run = 0;
-    param_local = allrunparameters + i_run;
-    for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
-        for(a_unpd = 0; a_unpd < N_AGE_UNPD_FERTILITY; a_unpd++){
-            
-            checkreadok = fscanf(param_file, "%lg", 
-                &(param_local->fertility_rate_by_age[a_unpd][y]));
-            check_if_cannot_read_param(checkreadok,
-                "param_local->fertility_rate_by_age[a_unpd][y]");
-        }
+    checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].T_FIRST_MTCT_DATAPOINT));    
+    check_if_cannot_read_param(checkreadok, "allrunparameters[0].T_FIRST_MTCT_DATAPOINT");
+
+    checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].T_LAST_MTCT_DATAPOINT));    
+    check_if_cannot_read_param(checkreadok, "allrunparameters[0].T_LAST_MTCT_DATAPOINT");
+
+    t_steps = (int) (allrunparameters[0].T_LAST_MTCT_DATAPOINT - allrunparameters[0].T_FIRST_MTCT_DATAPOINT + 1);
+
+    for(y=0; y<t_steps; y++){	
+	checkreadok = fscanf(param_file, "%lg",&t);
+	check_if_cannot_read_param(checkreadok, "t for allrunparameters[0].mtct_probability[y]");
+
+	/* Check that t is an integer - if not, then the code needs modification to store the time as well as the probability (and then change the interpolation function too), so output an error message. */
+	if (ceilf(t)!=t){
+	    printf("Error: In read_mtct_params() we assume that the probabilities given are yearly. This does not seem to be correct. Please check the input file (this should be an Excel file containing output from Spectrum. Exiting. \n");
+	    exit(1);
+	}
+
+	
+	checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].mtct_probability[y]));
+	check_if_cannot_read_param(checkreadok, "allrunparameters[0].mtct_probability[y]");
     }
-    // Close mortality parameter file
+
+    // Close mtct parameter file
     fclose(param_file);
+
+    /* Make sure rest of array is populated with some value - assume pmtct remains same as at last timestep. */
+    for(y=t_steps; y<N_MAX_MTCT_TIMEPOINTS; y++)
+	allrunparameters[0].mtct_probability[y] = allrunparameters[0].mtct_probability[t_steps-1];
     
     // Copy parameters from the first simulation run across to all simulation runs
     // allrunparameters stores a copy of parameters used for each simulation run
-    for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
-        for(a_unpd = 0; a_unpd < N_AGE_UNPD_FERTILITY; a_unpd++){
-            for(i_run = 1; i_run < n_runs; i_run++){
-                
-                allrunparameters[i_run].fertility_rate_by_age[a_unpd][y] =
-                    allrunparameters[0].fertility_rate_by_age[a_unpd][y];
-            }
+
+    for(i_run=1; i_run<n_runs; i_run++){
+	allrunparameters[i_run].T_FIRST_MTCT_DATAPOINT = allrunparameters[0].T_FIRST_MTCT_DATAPOINT;
+	allrunparameters[i_run].T_LAST_MTCT_DATAPOINT = allrunparameters[0].T_LAST_MTCT_DATAPOINT;
+	for(y=0; y<N_MAX_MTCT_TIMEPOINTS; y++){
+	    allrunparameters[i_run].mtct_probability[y] = allrunparameters[0].mtct_probability[y];
         }
     }
+
+
 }
 
 void read_popart_params(char *patch_tag, parameters *allrunparameters, int n_runs){

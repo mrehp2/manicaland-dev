@@ -248,6 +248,8 @@ extern const int FIND_AGE_GROUPS[MAX_AGE-AGE_ADULT+1]; /* Convert from (age-AGE_
 #define UNPD_FERTILITY_YOUNGEST_AGE 15 // UNPD fertility estimates only given for 15-49 year olds.
 #define UNPD_FERTILITY_OLDEST_AGE 49
 
+#define N_MAX_MTCT_TIMEPOINTS 100 // Maximum number of timepoints that we can store (note - this can be increased - I just put it here as a rough guide as Spectrum doesn't seem to output more than about 50 years).
+
 extern int POPART_SAMPLING_FRAME_ESTABLISHED;
 
 /************************************************************************/

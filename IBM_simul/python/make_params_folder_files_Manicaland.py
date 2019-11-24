@@ -1110,7 +1110,7 @@ if __name__=="__main__":
     # Extract the worksheet:
     mtct_worksheets = pull_out_sheet(mtct_file,mtct_sheet_needed)
     # Now process it and save it in the format needed by the IBM:
-    mtct_params = make_mtct_params(mtct_worksheets,join(output_dir,"param_mtct.csv"))
+    mtct_params = make_mtct_params(mtct_worksheets,join(output_dir,"param_mtct.txt"))
 
 
 

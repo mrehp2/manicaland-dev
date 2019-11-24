@@ -211,7 +211,10 @@ typedef struct {
     double mortality_rate_by_gender_age_slope[N_GENDER][N_AGE_UNPD_MORTALITY];
     //double scale_fertility_param;
     double sex_ratio;     /* Proportion of new sexually active population who are male. */
-
+    /* These store data from Spectrum, from t=T_FIRST_MTCT_DATAPOINT to t=T_LAST_MTCT_DATAPOINT, in the array mtct_probability. */
+    double T_FIRST_MTCT_DATAPOINT;
+    double T_LAST_MTCT_DATAPOINT;
+    double mtct_probability[N_MAX_MTCT_TIMEPOINTS];
 
     /********** times **********/
     double start_time_hiv;
@@ -242,9 +245,6 @@ typedef struct {
     double eff_circ_tmc;         /* Effectiveness of traditional male circumcision.  */
     double rr_circ_unhealed; /* Increased susceptibilty to HIV during VMMC healing period (ie just after operation).   */
 
-    /* Time at which PMTCT programmes started */
-    double t0_pmtct;
-    double t50_pmtct;
 
     /* Average log viral load - this is used in hiv transmission and MTCT */
     double average_log_viral_load;

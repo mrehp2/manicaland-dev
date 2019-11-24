@@ -1191,8 +1191,8 @@ if __name__=="__main__":
             if (VERBOSE==1):
                 print("Processed parameter input files generated:",n_params,"parameters")
     
-    # Copy fertility and mortality parameter files
-    filetags = ["param_mortality.txt"]
+    # Copy fertility, mortality and mtct parameter files
+    filetags = ["param_mortality.txt","param_mtct.txt"]
     process_fertility_file(infiledir, outfiledir, NPATCHES)
     for f in filetags:
         for p in range(NPATCHES):

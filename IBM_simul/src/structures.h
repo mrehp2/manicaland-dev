@@ -217,6 +217,8 @@ typedef struct {
     double mtct_probability[N_MAX_MTCT_TIMEPOINTS];
     /* Proportion of births which are to HIV+ mothers: */
     double prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
+    /* Proportion of children who are on ART (for MTCT survival): */
+    double prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS];
 
     /********** times **********/
     double start_time_hiv;

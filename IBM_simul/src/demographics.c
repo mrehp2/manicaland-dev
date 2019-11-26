@@ -17,6 +17,8 @@
 /* Demographic processes for the PopART model:
 per_woman_fertility_rate()
     Rate at which a given woman gets pregnant (or rate at which children born per capita).  
+get_mtct_fraction()
+    Proportion of babies at time t who are born HIV+ (including those who will later die of AIDS-related illness), from Spectrum model output.
 natural_death_rate()
     Natural death rate (as a function of age and calendar time at present). 
 draw_sex_risk()
@@ -96,9 +98,7 @@ individual_death_AIDS()
 double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     /* Calculate per-woman fertility rate based on age using UNPD rates
     
-    Return the rate at which any one woman of age `age` gets pregnant and has an offspring that will
-    survive until AGE_ADULT.  Note, in the simulation it is also checked that the women who get
-    pregnant have at least one partner at that time.  
+    Return the rate at which any one woman of age `age` gets pregnant and has an offspring that will survive until AGE_ADULT.  Note, in the simulation it is also checked that the women who get pregnant have at least one partner at that time.  
     
     Interpolate fertility rate over time and age.  UNPD fertility data is in 5-year age groups
     (e.g. 15-19, 20-24, 25-29) which are converted to an in index (e.g. 0, 1, 2).  
@@ -109,34 +109,24 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     
     Arguments
     ---------
-    age : int
-        Individual's age in years
-    
+    age : int, Individual's age in years
     param : pointer to parameters strucuture
-    
-    y0 : int
-        Time index for the array fertility_rate_by_age[][]
-    
-    f : double
-        Interpolation coefficient over time
+    y0 : int, Time index for the array fertility_rate_by_age[][]
+    f : double, Interpolation coefficient over time
 
     Returns
     -------
     Per-year probability that a woman this age gets pregnant.
-
     */
 
 
     double result;
+
     if(age > UNPD_FERTILITY_OLDEST_AGE || age < UNPD_FERTILITY_YOUNGEST_AGE){
-        
-        printf("ERROR: in per_woman_fertility_rate() age %i lies outside fertile ages %i-%i\n",
-            age, UNPD_FERTILITY_YOUNGEST_AGE, UNPD_FERTILITY_OLDEST_AGE);
-        
+        printf("ERROR: in per_woman_fertility_rate() age %i lies outside fertile ages %i-%i\n", age, UNPD_FERTILITY_YOUNGEST_AGE, UNPD_FERTILITY_OLDEST_AGE);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
-        exit(1);
-        
+        exit(1);        
     }
     
     // Calculate the index for the age in question (compared to the UNPD age categories)
@@ -153,6 +143,10 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     return result;
 }
 
+
+double get_mtct_fraction(double t, patch_struct *patch, int p){
+    return 0.1;
+}
 
 void get_unpd_time_indices(double t, int *y0, double *f){
    /* Calculate index for arrays of UNPD fertility parameters and fraction of time through period
@@ -2016,6 +2010,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
  * Function returns: nothing. */
 void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *overall_partnerships){
     int hivstatus;
+    printf("Number of new HIV- (and HIV+) kids = %li %li\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
     if(PRINT_DEBUG_DEMOGRAPHICS == 1){
         //printf("Number of new HIV- (and HIV+) kids = %li %li\n",*(patch[p].child_population[0].transition_to_adult_index_n_child),*(patch[p].child_population[1].transition_to_adult_index_n_child));
         printf("Number of new HIV- (and HIV+) kids = %li %li\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
@@ -2187,34 +2182,18 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	}	
     
 	
-	/* First reset counters to zero: */
-	/* n_hivpos = 0; */
-	/* n_hivpos_unaware = 0; */
-	/* n_hivpos_aware_neverart = 0; */
-	/* n_hivpos_artvs = 0; */
-	/* n_hivpos_earlyart = 0; */
-	/* n_hivpos_artvu = 0; */
-	/* n_hivpos_cascadedropout = 0; */
-
 	/* Total number of women aged aa: */
 	n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
 
 	for (r=0; r<N_RISK; r++){
 	    n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];
 	    for (icd4=0; icd4<NCD4; icd4++){
-		/* n_hivpos_unaware += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1]; */
-		/* n_hivpos_aware_neverart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1]; */
-		/* n_hivpos_earlyart += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1]; */
-		/* n_hivpos_artvs += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1]; */
-		/* n_hivpos_artvu += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1]; */
-		/* n_hivpos_cascadedropout += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1]; */
 		n_hivpos_unaware[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
 		n_hivpos_aware_neverart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
 		n_hivpos_earlyart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
 		n_hivpos_artvs[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
 		n_hivpos_artvu[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
-		n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];
-		
+		n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];		
 	    }
 	}
 
@@ -2250,27 +2229,14 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	    }
 	    
 	}
-	/* if (t>2000 && (t-floor(t)<1e-9) && (p==0)){ */
-	/*     if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){ */
-		
-	/* 	printf("At time t=%lf\n",t); */
-	/* 	printf("Number of women aged %i = %li\n",aa+AGE_ADULT,n); */
-	/* 	printf("Number of women HIV+ total = %li\n",n_hivpos); */
-	/* 	printf("Number of women HIV+ unaware = %li\n",n_hivpos_unaware); */
-	/* 	printf("Number of women HIV+ aware, but never on ART = %li\n",n_hivpos_aware_neverart); */
-	/* 	printf("Number of women HIV+ on early ART = %li\n",n_hivpos_earlyart); */
-	/* 	printf("Number of women HIV+ on ART VS = %li\n",n_hivpos_artvs); */
-	/* 	printf("Number of women HIV+ on ART VU = %li\n\n",n_hivpos_artvu); */
-	/* 	printf("Number of women HIV+ dropped out = %li\n\n",n_hivpos_cascadedropout); */
-	/*     } */
-	/* } */
 
 	
 	/* We want to be able to include MTCT transmission of HIV.
-	   To do this we need to know the prevalence of HIV among women in each age group.
+	   At present we use Spectrum's outputs - the % of live births to HIV+ women (for which we take (the number of women who need PMTCT - assumed to be all HIV+ pregnant women who aren't on ART, and assume that on ART there is no MTCT)*(infant mortality rate)/(number of births from DemProj module)).
+
 	*/
 	
-        /* We discount the fertility rate by the childhood mortality rate - so we only include children who will survive to adulthood - this is done in per_woman
+        /* We discount the fertility rate by the childhood mortality rate - so we only include children who will survive to adulthood - this is done in per_woman. Note that we don't substract AIDS_related mortality in kids here - this is done separately.
 	 */
         age_group_fertility_rate_per_timestep = TIME_STEP*(1.0-childhood_mortality_rate)*per_woman_fertility_rate(aa+AGE_ADULT, patch[p].param, y0, f);      // * age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
 
@@ -2325,18 +2291,21 @@ void add_new_kids(double t, patch_struct *patch, int p){
     // This is a debugging routine for future use - assume that no children are HIV+ at this point.
     //if ((patch[p].child_population[0].transition_to_adult_index_n_child)<(&(patch[p].child_population[0].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
     //  *(patch[p].child_population[0].transition_to_adult_index_n_child+1) = (int) floor(n_births*1.0);
+
+    double proportion_of_hiv_positive_infants = get_mtct_fraction(t, patch, p);
+
     if ((patch[p].child_population[0].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-        patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1] = (int) floor(n_births*1.0);
+        patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
     else
-        (patch[p].child_population[0].n_child[0]) = (int) floor(n_births*1.0);
+        (patch[p].child_population[0].n_child[0]) = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
 
 
     //if ((patch[p].child_population[1].transition_to_adult_index_n_child)<(&(patch[p].child_population[1].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
     //  *(patch[p].child_population[1].transition_to_adult_index_n_child+1) = (int) floor(n_births*0.0);
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-        patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1] = (int) floor(n_births*0.0);
+        patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1] = (int) floor(n_births*proportion_of_hiv_positive_infants);
     else
-        (patch[p].child_population[1].n_child[0]) = (int) floor(n_births*0.0);
+        (patch[p].child_population[1].n_child[0]) = (int) floor(n_births*proportion_of_hiv_positive_infants);
 
 }
 

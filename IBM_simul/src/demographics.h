@@ -20,6 +20,7 @@
 #include "structures.h"
 
 double per_woman_fertility_rate(int , parameters *, int, double);
+double get_mtct_fraction(double , patch_struct *, int );
 void get_unpd_time_indices(double , int *, double *);
 double childhood_mortality(parameters *, double );
 double natural_death_rate(int , int , parameters *, double );

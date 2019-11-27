@@ -339,8 +339,11 @@ extern const char RISK_GP_NAMES[N_RISK][5];
  * 0="CD4>500", 1="CD4 350-500", 2="CD4 200-350", 3="CD4 <200". */
 #define CD4_UNINFECTED -1 
 
+#define NHIVSTATES_FOR_MTCT 2 /* Uninfected, HIV+ not on ART, HIV+ on ART. Used in structure child_population. */
+
 /* 4 set-point viral load categories (0="<4"; 1="4-4.5"; 2="4.5-5"; 3=">5") */
 #define NSPVL 4
+#define SPVL_DUMMY_VALUE_MTCT -2 /* Value for indiv->SPVL_infector when MTCT transmission (in the absence of 'genuine' MTCT where we know the SPVL of the mother). */
 #define SPVL_INHERITANCE 0 /* 1 if inherit SPVL from infector, 0 if draw each one separately. */
 /* 4 CD4 categories (0=">500", 1="350-500", 2= "200-350", 3="<200") */
 #define NCD4 4

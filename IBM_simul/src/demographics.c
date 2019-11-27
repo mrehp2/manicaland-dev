@@ -145,7 +145,7 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
 
 
 double get_mtct_fraction(double t, patch_struct *patch, int p){
-    return 0.1;
+    return 0.0;
 }
 
 void get_unpd_time_indices(double t, int *y0, double *f){
@@ -304,6 +304,43 @@ int draw_sex_risk(int gender, parameters *param){
         return HIGH;
 }
 
+
+void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, double t, parameters *param, patch_struct *patch, int p){
+    
+    new_adult->HIV_status = CHRONIC;   /* All children infected via MTCT will be chronic. */
+    new_adult->ART_status = LTART_VS; /// WRONG!!!
+
+    new_adult->SPVL_infector =  SPVL_DUMMY_VALUE_MTCT; /* For now we don't know the mother's SPVL so give this a dummy value to denote that we didn't record it, but it's not a seeded transmission. */
+    new_adult->cd4 = 2;                 /// WRONG!!!
+    
+    /* Assign SPVL_num_G and SPVL_num_E: */
+    draw_initial_SPVL(new_adult, param);
+    double logSPVL = new_adult->SPVL_num_G + new_adult->SPVL_num_E;
+    new_adult->SPVL_cat = get_spvl_cat(logSPVL);
+
+    
+    new_adult->time_last_hiv_test = t - AGE_ADULT;  /// WRONG!!!   ///  Assume that someone who survived this long was tested at birth. Not important anyway as we would be interested in ADULT testing in last year or less. 
+
+    new_adult->t_sc = t - AGE_ADULT;                /* Assume they seroconverted at birth - note that quite a large number of MTCT will happen during breastfeeding, so may be a few months later. */
+
+    new_adult->PANGEA_t_prev_cd4stage = -1.0;
+    new_adult->PANGEA_t_next_cd4stage = -1.0;
+    // Assume that CD4 has remained unchanged since diagnosis:
+    new_adult->PANGEA_cd4atdiagnosis = new_adult->cd4;
+    new_adult->PANGEA_cd4atfirstART = new_adult->cd4;
+    new_adult->PANGEA_t_diag = new_adult->time_last_hiv_test;
+    new_adult->PANGEA_date_firstARTstart = t - AGE_ADULT;    /// WRONG!!!
+    new_adult->PANGEA_date_startfirstVLsuppression = AGE_ADULT - param[p].t_end_early_art;
+    new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
+
+        /* Assume that this person was on ART and virally suppressed their whole life minus an initial early ART period (otherwise the debug stats may look weird if someone is on ART but never had early ART): */
+        new_adult->DEBUG_cumulative_time_on_ART_VS = AGE_ADULT - param[p].t_end_early_art;
+        new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
+        new_adult->DEBUG_cumulative_time_on_ART_early = param[p].t_end_early_art;
+        new_adult->DEBUG_time_of_last_cascade_event = t; /* Start counting additional time on ART from current time as we assume that childhood was spent VS (otherwise survival lower). */
+
+}
+
 /* Function does: creates entries for everything related to that new_person.
  * Function arguments: pointer to new person to be created, current time (for generating a DoB) and a pointer to the param structure (to get probabilities such as gender, MMC, etc).
  * Function returns: nothing. */
@@ -397,42 +434,16 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
         printf("+++ One new HIV+ (new adult) \n");
         fflush(stdout);
 
-	
-        new_adult->HIV_status = CHRONIC;
-        new_adult->ART_status = LTART_VS;                // Assume any new adult who has made it this far is successfully on ART (note that we add to the n_infected_by_all_strata counter below).
-        new_adult->SPVL_infector =  -1;                       // WRONG!!! "-1" means seeded infection.
-        new_adult->cd4 = 2;                 /// WRONG!!!
 
-	/* Add this person to the LTART VS group - note that we aren't keeping track of the number of ART-naive people so no 'old' counter to update : */
+	new_adult->idx_vmmc_event[0] = -1;         /* Initialize at dummy value.  - HIV+ so never gets VMMC. */
+	new_adult->idx_vmmc_event[1] = -1;
+    
+	add_hiv_info_for_new_hiv_positive_adult(new_adult, t, param, patch, p);
+	
+	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update : */
 	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
 
 	
-	/* Assign SPVL_num_G and SPVL_num_E: */
-	draw_initial_SPVL(new_adult, param);
-	double logSPVL = new_adult->SPVL_num_G + new_adult->SPVL_num_E;
-	new_adult->SPVL_cat = get_spvl_cat(logSPVL);
-
-	/// WRONG!!!
-        new_adult->time_last_hiv_test = t - AGE_ADULT;  ///  Assume that someone who survived this long was tested at birth. Not important anyway as we would be interested in ADULT testing in last year or less. 
-        new_adult->t_sc = t - AGE_ADULT;                /* Seroconverted at birth. */
-        new_adult->idx_vmmc_event[0] = -1;         /* Initialize at dummy value.  - HIV+ so never gets VMMC. */
-        new_adult->idx_vmmc_event[1] = -1;
-
-        new_adult->PANGEA_t_prev_cd4stage = -1.0;
-        new_adult->PANGEA_t_next_cd4stage = -1.0;
-	// Assume that CD4 has remained unchanged since diagnosis:
-        new_adult->PANGEA_cd4atdiagnosis = new_adult->cd4;
-        new_adult->PANGEA_cd4atfirstART = new_adult->cd4;
-        new_adult->PANGEA_t_diag = new_adult->time_last_hiv_test;
-        new_adult->PANGEA_date_firstARTstart = t - AGE_ADULT;    /// WRONG!!!
-        new_adult->PANGEA_date_startfirstVLsuppression = AGE_ADULT - param[p].t_end_early_art;
-        new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
-
-        /* Assume that this person was on ART and virally suppressed their whole life minus an initial early ART period (otherwise the debug stats may look weird if someone is on ART but never had early ART): */
-        new_adult->DEBUG_cumulative_time_on_ART_VS = AGE_ADULT - param[p].t_end_early_art;
-        new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
-        new_adult->DEBUG_cumulative_time_on_ART_early = param[p].t_end_early_art;
-        new_adult->DEBUG_time_of_last_cascade_event = t; /* Start counting additional time on ART from current time as we assume that childhood was spent VS (otherwise survival lower). */
 
         printf("Need to work out what is happening with new adults turning 13 who are HIV+\n"); 
         printf("Also need to schedule HIV and ART events for them. \n");
@@ -2009,11 +2020,16 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
  * Function arguments: pointers to child_population, the individual population, size of the population, age_list, params. Current time t.
  * Function returns: nothing. */
 void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *overall_partnerships){
-    int hivstatus;
-    printf("Number of new HIV- (and HIV+) kids = %li %li\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
+    int i_mtct_hiv_status; /* Index over MTCT HIV states (HIV-, HIV+ not on ART etc). */
+
+    
+    //printf("Number of new HIV- (and HIV+) kids = %li %li\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
     if(PRINT_DEBUG_DEMOGRAPHICS == 1){
         //printf("Number of new HIV- (and HIV+) kids = %li %li\n",*(patch[p].child_population[0].transition_to_adult_index_n_child),*(patch[p].child_population[1].transition_to_adult_index_n_child));
-        printf("Number of new HIV- (and HIV+) kids = %li %li\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
+        printf("Number of new HIV- (and HIV+) kids = %li ",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai]);
+	for (i_mtct_hiv_status=1; i_mtct_hiv_status<NHIVSTATES_FOR_MTCT ; i_mtct_hiv_status++)
+	    printf("%li ",patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]);
+	printf("\n");
     }
 
 
@@ -2025,22 +2041,23 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
     //  printf("*(patch[p].child_pop) = %li %li  debug_tai = %li %li \n",*(patch[p].child_population[0].transition_to_adult_index_n_child),*(patch[p].child_population[1].transition_to_adult_index_n_child),patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai]);
 
     //patch[p].DEBUG_NNEWADULTS = patch[p].DEBUG_NNEWADULTS + *(patch[p].child_population[0].transition_to_adult_index_n_child)+*(patch[p].child_population[1].transition_to_adult_index_n_child);
-    patch[p].DEBUG_NNEWADULTS = patch[p].DEBUG_NNEWADULTS + patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai]+patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai];
+    for (i_mtct_hiv_status=0; i_mtct_hiv_status<NHIVSTATES_FOR_MTCT ; i_mtct_hiv_status++)
+	patch[p].DEBUG_NNEWADULTS += patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai];
     //}
 
     //printf("Number of new HIV- (and HIV+) kids at time %6.2f in patch %i = %i %i\n",t,p,*(child_population[0].transition_to_adult_index_n_child),*(child_population[1].transition_to_adult_index_n_child));
     ////// Add HIV+ kids:
     /* Add all the kids for this  timestep: */
-    for (hivstatus=0;hivstatus<=1;hivstatus++){
-        //while (*(patch[p].child_population[hivstatus].transition_to_adult_index_n_child)>0){
-
-        while (patch[p].child_population[hivstatus].n_child[patch[p].child_population[hivstatus].debug_tai]>0){
+    for (i_mtct_hiv_status=0; i_mtct_hiv_status<NHIVSTATES_FOR_MTCT; i_mtct_hiv_status++){
+        //while (*(patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child)>0){
+	//printf("Running for i_mtct_hiv_status=%i, patch =%i n=%li at t=%lf\n",i_mtct_hiv_status,p,patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai],t);
+        while (patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]>0){
             /* This adds an individual (HIV-) to individual_population: */
             ////// DEBUG ERROR - this 
             // WRONG version: create_new_individual((individual_population+(n_population->total_pop_size)), t, param);
             /// Right version:
 
-            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, hivstatus, patch[p].n_infected, patch, p, overall_partnerships);
+            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, i_mtct_hiv_status, patch[p].n_infected, patch, p, overall_partnerships);
 
             if (t>=patch[p].param->COUNTRY_HIV_TEST_START)
                 initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events);
@@ -2060,28 +2077,28 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
 
             update_age_list_new_adult(patch[p].age_list,(patch[p].individual_population+patch[p].id_counter-1));
 
-            //printf("NEWID = %li Number of new kids left = %i, total pop = %li GENDER = %i\n",patch[p].id_counter,patch[p].child_population[hivstatus].n_child[patch[p].child_population[hivstatus].debug_tai],n_population_stratified->total_pop_size,(individual_population+patch[p].id_counter-1)->gender);
+            //printf("NEWID = %li Number of new kids left = %i, total pop = %li GENDER = %i\n",patch[p].id_counter,patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai],n_population_stratified->total_pop_size,(individual_population+patch[p].id_counter-1)->gender);
             if(PRINT_DEBUG_DEMOGRAPHICS == 1){
-                //printf("NEWID = %li Number of new kids left = %li, total pop = %li GENDER = %i\n",patch[p].id_counter,*(patch[p].child_population[hivstatus].transition_to_adult_index_n_child),patch[p].n_population_stratified->total_pop_size,(patch[p].individual_population+patch[p].id_counter-1)->gender);
-                printf("NEWID = %li Number of new kids left = %li, total pop = %li GENDER = %i\n",patch[p].id_counter,patch[p].child_population[hivstatus].n_child[patch[p].child_population[hivstatus].debug_tai],patch[p].n_population_stratified->total_pop_size,(patch[p].individual_population+patch[p].id_counter-1)->gender);
+                //printf("NEWID = %li Number of new kids left = %li, total pop = %li GENDER = %i\n",patch[p].id_counter,*(patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child),patch[p].n_population_stratified->total_pop_size,(patch[p].individual_population+patch[p].id_counter-1)->gender);
+                printf("NEWID = %li Number of new kids left = %li, total pop = %li GENDER = %i\n",patch[p].id_counter,patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai],patch[p].n_population_stratified->total_pop_size,(patch[p].individual_population+patch[p].id_counter-1)->gender);
             }
             /* Have added a kid, so reduce the number we need to add by 1: */
-            patch[p].child_population[hivstatus].n_child[patch[p].child_population[hivstatus].debug_tai]--;
-            //(*(patch[p].child_population[hivstatus].transition_to_adult_index_n_child))--;
+            patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]--;
+            //(*(patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child))--;
 
 
         }
         /* Note that the while loop set the number of kids in this slot to zero - this slot will now be used to store newborn kids. */
             /* Now we have added all the kids from this timestep, move the pointer to the place in the array for kids to add at the next time step. */
-        //if ((patch[p].child_population[hivstatus].transition_to_adult_index_n_child)>&(patch[p].child_population[hivstatus].n_child[0]))
-        //  (patch[p].child_population[hivstatus].transition_to_adult_index_n_child)--;
+        //if ((patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child)>&(patch[p].child_population[i_mtct_hiv_status].n_child[0]))
+        //  (patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child)--;
         //else
-        //  patch[p].child_population[hivstatus].transition_to_adult_index_n_child = &(patch[p].child_population[hivstatus].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1]);
+        //  patch[p].child_population[i_mtct_hiv_status].transition_to_adult_index_n_child = &(patch[p].child_population[i_mtct_hiv_status].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1]);
 
-        if ((patch[p].child_population[hivstatus].debug_tai)>0){
-            (patch[p].child_population[hivstatus].debug_tai)--;
+        if ((patch[p].child_population[i_mtct_hiv_status].debug_tai)>0){
+            (patch[p].child_population[i_mtct_hiv_status].debug_tai)--;
         }else{
-            patch[p].child_population[hivstatus].debug_tai = (AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1;
+            patch[p].child_population[i_mtct_hiv_status].debug_tai = (AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1;
         }
     }
 }
@@ -2298,7 +2315,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
         patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
     else
         (patch[p].child_population[0].n_child[0]) = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
-
 
     //if ((patch[p].child_population[1].transition_to_adult_index_n_child)<(&(patch[p].child_population[1].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
     //  *(patch[p].child_population[1].transition_to_adult_index_n_child+1) = (int) floor(n_births*0.0);

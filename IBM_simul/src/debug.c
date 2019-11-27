@@ -548,15 +548,13 @@ void write_one_year_age_groups_including_kids(file_struct *file_data_store, patc
     // Append the year
     fprintf(file_data_store->ONEYEARAGEDISTRIBUTIONFILE[p], "%6.4lf,", t);
 
-    // The 2 is because we have HIV- and HIV+ children
-    int child_start_index[2];
+    // The NHIVSTATES_FOR_MTCT is because we have HIV- and HIV+ children
+    int child_start_index[NHIVSTATES_FOR_MTCT];
     
     // If the oldest child group is at the end, then the youngest age group is [0]
-    for(hivstatus = 0; hivstatus < 2; hivstatus++){
+    for(hivstatus=0; hivstatus<NHIVSTATES_FOR_MTCT; hivstatus++){
         
-        if(
-        patch[p].child_population[hivstatus].debug_tai == (AGE_ADULT + 1) * N_TIME_STEP_PER_YEAR - 1
-        ){
+        if(patch[p].child_population[hivstatus].debug_tai == (AGE_ADULT + 1) * N_TIME_STEP_PER_YEAR - 1){
             child_start_index[hivstatus] = 0;
         }else{
             // Otherwise the youngest age group is the one after the oldest age group
@@ -570,7 +568,7 @@ void write_one_year_age_groups_including_kids(file_struct *file_data_store, patc
     for(i_child = 0; i_child < ((AGE_ADULT + 1) * N_TIME_STEP_PER_YEAR); i_child++){
         
         // Sum up number of kids by yearly age group
-        for(hivstatus = 0; hivstatus < 2; hivstatus++){
+        for(hivstatus=0; hivstatus<NHIVSTATES_FOR_MTCT; hivstatus++){
             nkids_by_year +=
                 patch[p].child_population[hivstatus].n_child[child_start_index[hivstatus]];
         }
@@ -582,7 +580,7 @@ void write_one_year_age_groups_including_kids(file_struct *file_data_store, patc
         }
         
         /* Now update pointer to loop over all kids: */
-        for(hivstatus = 0; hivstatus < 2; hivstatus++){
+        for(hivstatus=0; hivstatus<NHIVSTATES_FOR_MTCT; hivstatus++){
             if(child_start_index[hivstatus] < (AGE_ADULT + 1) * N_TIME_STEP_PER_YEAR - 1){
                 child_start_index[hivstatus]++;
             }else{

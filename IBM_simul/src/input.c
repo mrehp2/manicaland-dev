@@ -1299,12 +1299,12 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
 
 
 
-    for(i_run=0; i_run<2; i_run++){
-	printf("%i %i\n",(int) allrunparameters[i_run].T_FIRST_MTCT_DATAPOINT, (int) allrunparameters[i_run].T_LAST_MTCT_DATAPOINT);
-	for(y=0; y<N_MAX_MTCT_TIMEPOINTS; y++){
-	    printf("%i %lf %lf %lf\n",y,allrunparameters[i_run].mtct_probability[y],allrunparameters[i_run].prop_births_to_hivpos_mothers[y],allrunparameters[i_run].prop_children_on_ART_spectrum[y]);
-	}
-    }
+    /* for(i_run=0; i_run<2; i_run++){ */
+    /* 	printf("%i %i\n",(int) allrunparameters[i_run].T_FIRST_MTCT_DATAPOINT, (int) allrunparameters[i_run].T_LAST_MTCT_DATAPOINT); */
+    /* 	for(y=0; y<N_MAX_MTCT_TIMEPOINTS; y++){ */
+    /* 	    printf("%i %lf %lf %lf\n",y,allrunparameters[i_run].mtct_probability[y],allrunparameters[i_run].prop_births_to_hivpos_mothers[y],allrunparameters[i_run].prop_children_on_ART_spectrum[y]); */
+    /* 	} */
+    /* } */
 
 
 }

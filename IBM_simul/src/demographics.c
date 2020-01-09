@@ -21,11 +21,10 @@ get_mtct_fraction()
     Proportion of babies at time t who are born HIV+ (including those who will later die of AIDS-related illness), from Spectrum model output.
 natural_death_rate()
     Natural death rate (as a function of age and calendar time at present). 
-draw_sex_risk()
-    Decides an individual's sexual risk group when they become adults (ie enter population at
-    AGE_ADULT).
-create_new_individual()
-    Sets up a new individual structure when someone is born, initializing all parameters.
+draw_sex_risk(): Decides an individual's sexual risk group when they become adults (ie enter population at AGE_ADULT).
+
+add_hiv_info_for_new_hiv_positive_adult(): For MTCT who survive to adulthood, this function assigns their HIV/ART status variables. 
+create_new_individual(): Sets up a new individual structure when someone is born, initializing all parameters.
 initialize_first_cascade_event_for_new_individual()
     Schedules first cascade event for a new adult if HIV testting has started (otherwise no need as
     everyone gets a cascase event assigned when HIV testing begins.) 
@@ -305,44 +304,250 @@ int draw_sex_risk(int gender, parameters *param){
 }
 
 
-void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, double t, parameters *param, patch_struct *patch, int p){
+/* Function creates N_MTCT_TEMPLATES different 'template' HIV status-related variables for MTCT transmissions  for kids who aren't on ART. Assume that CD4 progrression is not dissimilar to adult ones. */
+void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, parameters *param){
+
+    /* Use this to send to draw_intiial_infection. 
+     We only need 1 'dummy_adult' for storage (who we draw N_MTCT_TEMPLATES times) to save on memory. */
+    individual *dummy_adult;
+    dummy_adult = malloc(sizeof(individual));
+
+    double logSPVL;
+    double time_in_this_cd4_stage, t_currentcd4, t_lastcd4;
+    int spvl, icd4;
+    int initial_icd4;
+
+    int i_template;    /* Index over the N_MTCT_TEMPLATES that we create. */
+
+
+    /************ First generate for people not on ART: ************/
+    i_template = 0;
+    while (i_template<N_MTCT_TEMPLATES){
+	
+	/* Assume for now that they would be unaware of status - change in demographics.c create_new_individual() otherwise. */
+	/* First draw a SPVL: */
+	draw_initial_SPVL(dummy_adult, param);
+	logSPVL = dummy_adult->SPVL_num_G + dummy_adult->SPVL_num_E;
+	dummy_adult->SPVL_cat = get_spvl_cat(logSPVL);
+
+	/* Initial cd4 category of this person (at birth).
+	   We are assuming progression in children looks like adults - it does ot, but only need a crude approximation for now and this will do. */
+	initial_icd4 = draw_initial_cd4(param,dummy_adult->SPVL_cat);
+
+	/* Work out if this individual will survive until adulthood given this initial icd4 and SPVL_cat. 
+	 Note that this is stochastic - so small chance that someone with CD4<200 initially or high SPVL will survive to adulthood, and the sample of templates should roughly be distributed according to this probability (so more templates with high initial CD4 and low SPVL. */
+	icd4 = initial_icd4;
+	t_currentcd4 = 0;
+	while ((t_currentcd4<AGE_ADULT) && (icd4<NCD4)){
+	    time_in_this_cd4_stage = get_mean_time_hiv_progression(param, dummy_adult);
+	    t_lastcd4 = t_currentcd4;
+	    t_currentcd4 += time_in_this_cd4_stage;
+	    icd4++;
+	}
+
+	/* If this person survives to adulthood, add them as a template. */
+	if (t_currentcd4>=AGE_ADULT){
+	    mtct_hiv_template_no_art[i_template].cd4 = initial_icd4;
+	    mtct_hiv_template_no_art[i_template].SPVL_num_G = dummy_adult->SPVL_num_G;
+	    mtct_hiv_template_no_art[i_template].SPVL_num_E = dummy_adult->SPVL_num_E;
+	    mtct_hiv_template_no_art[i_template].SPVL_cat = dummy_adult->SPVL_cat;
+   
+
+	    /* Note that this isn't actual calendar time (because we don't know when this template will be used), but time relative to becoming an adult. 
+	     We therefore fix it during the function where it's assigned to a new adult. */
+	    mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage = t_lastcd4-AGE_ADULT;
+	    
+	    /* Move to the next template: */
+	    i_template +=1;
+	}
+    }
     
+    
+    free(dummy_adult);
+}
+
+
+/* At time t:
+   - looks up probability that someone aged 14 who was infected via mtct who isn't on ART knows their status now;
+   - draws a Bernoulli RV based on this probability.
+   - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
+int get_art_status_of_mtct_new_adult(double t, parameters *param){
+    double p_knows_status=1.0;
+    printf("Need to add p_knows_status to param\n");
+    if (gsl_ran_bernoulli(rng,(p_knows_status))==1)   /* knows serostatus (but not on ART). */
+	return ARTNAIVE;
+    else{
+	printf("Check this - shouldn't happen.\n");
+        return ARTNEG;
+    }
+}
+
+/* hivstatus=1 if not on ART, hivstatus=2 if on ART. */
+void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatus, double t, parameters *param, patch_struct *patch, int p){
+
+    int i_template; 
     new_adult->HIV_status = CHRONIC;   /* All children infected via MTCT will be chronic. */
-    new_adult->ART_status = LTART_VS; /// WRONG!!!
 
     new_adult->SPVL_infector =  SPVL_DUMMY_VALUE_MTCT; /* For now we don't know the mother's SPVL so give this a dummy value to denote that we didn't record it, but it's not a seeded transmission. */
-    new_adult->cd4 = 2;                 /// WRONG!!!
     
-    /* Assign SPVL_num_G and SPVL_num_E: */
-    draw_initial_SPVL(new_adult, param);
-    double logSPVL = new_adult->SPVL_num_G + new_adult->SPVL_num_E;
-    new_adult->SPVL_cat = get_spvl_cat(logSPVL);
-
-    
-    new_adult->time_last_hiv_test = t - AGE_ADULT;  /// WRONG!!!   ///  Assume that someone who survived this long was tested at birth. Not important anyway as we would be interested in ADULT testing in last year or less. 
-
     new_adult->t_sc = t - AGE_ADULT;                /* Assume they seroconverted at birth - note that quite a large number of MTCT will happen during breastfeeding, so may be a few months later. */
 
-    new_adult->PANGEA_t_prev_cd4stage = -1.0;
-    new_adult->PANGEA_t_next_cd4stage = -1.0;
-    // Assume that CD4 has remained unchanged since diagnosis:
-    new_adult->PANGEA_cd4atdiagnosis = new_adult->cd4;
-    new_adult->PANGEA_cd4atfirstART = new_adult->cd4;
-    new_adult->PANGEA_t_diag = new_adult->time_last_hiv_test;
-    new_adult->PANGEA_date_firstARTstart = t - AGE_ADULT;    /// WRONG!!!
-    new_adult->PANGEA_date_startfirstVLsuppression = AGE_ADULT - param[p].t_end_early_art;
-    new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
 
-        /* Assume that this person was on ART and virally suppressed their whole life minus an initial early ART period (otherwise the debug stats may look weird if someone is on ART but never had early ART): */
-        new_adult->DEBUG_cumulative_time_on_ART_VS = AGE_ADULT - param[p].t_end_early_art;
-        new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
-        new_adult->DEBUG_cumulative_time_on_ART_early = param[p].t_end_early_art;
-        new_adult->DEBUG_time_of_last_cascade_event = t; /* Start counting additional time on ART from current time as we assume that childhood was spent VS (otherwise survival lower). */
+    
+    /* First if they are not on ART, find out if they know their serostatus: */
+    if (hivstatus==1){
+	new_adult->ART_status = get_art_status_of_mtct_new_adult(t, param);
+
+	/* Here we draw one of the mtct templates, and populate the relevant variables in new_adult from it: */
+	printf("TODO: Draw i_template\n");
+	i_template=1;
+	int printnotice=1;
+	new_adult->cd4 = mtct_hiv_template_no_art[i_template].cd4;
+	new_adult->SPVL_num_G = mtct_hiv_template_no_art[i_template].SPVL_num_G;
+	new_adult->SPVL_num_E = mtct_hiv_template_no_art[i_template].SPVL_num_E;
+	new_adult->SPVL_cat = mtct_hiv_template_no_art[i_template].SPVL_cat;
+
+	/* This is the time that CD4 stage last changed for the given template. */
+	new_adult->PANGEA_t_prev_cd4stage = t + mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
+	new_adult->PANGEA_t_next_cd4stage = t+ mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
+
+	if (mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
+	    printf("ERROR - relative_PANGEA_t_prev_cd4stage>0\n.");
+	    exit(1);
+	}
+	else{
+	    if (printnotice==1)
+		printf("Remove Error notice  for relative_PANGEA_t_prev_cd4stage\n");
+	}
+	/* Assume that people who are MTCT, but aren't now on ART, were never on ART: */
+	new_adult->PANGEA_cd4atfirstART = -1.0;   
+	new_adult->PANGEA_date_firstARTstart = -1.0;
+	new_adult->PANGEA_date_startfirstVLsuppression = -1.0;
+	new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
+
+	new_adult->DEBUG_cumulative_time_on_ART_VS = 0;
+	new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
+	new_adult->DEBUG_cumulative_time_on_ART_early = 0;
+	new_adult->DEBUG_time_of_last_cascade_event = -1; /* Dummy value. */
+
+
+
+
+	/* Never diagnosed: */
+	if (new_adult->ART_status==ARTNEG){
+	    new_adult->time_last_hiv_test = NEVERHIVTESTED;
+	    new_adult->PANGEA_cd4atdiagnosis = -1.0;
+	    new_adult->PANGEA_t_diag = -1.0;
+	}
+	else{
+	    /* Assume that CD4 decline was quite slow. */
+	    new_adult->PANGEA_cd4atdiagnosis = new_adult->cd4;
+	    /* ASSUMPTION - diagnosis half-way through childhood on average: */
+	    new_adult->PANGEA_t_diag = t-(AGE_ADULT/2.0);
+	    new_adult->time_last_hiv_test = new_adult->PANGEA_t_diag; 
+	}
+
+
+
+	/* PANGEA_t_prev/next_cd4stage are used to estimate CD4 given a current CD4 category and time t. For MTCT who aren't on ART we call next_hiv_event(), which sets indiv->PANGEA_t_prev_cd4stage = indiv->PANGEA_t_next_cd4stage. 
+	   So here we set PANGEA_t_prev_cd4stage to be in the past. 
+	   NOTE: the actual value we give is t + relative_PANGEA_t_prev_cd4stage. However, in reality what we 
+	   The logic is thus this - we need to initialise PANGEA_t_next_cd4stage here, and then call next_hiv_event. */
+
+
+	
+	/* next_hiv_event() requires indiv->PANGEA_t_next_cd4stage to be set (it is used for indiv->PANGEA_t_prev_cd4stage. Also requires cd4, spvl. idx_hiv_pos_progression should be set to dummy values (-1). 
+	   ART_status doesn't need to be set, but LTART_VU caused slower progression; !LTART_VU allows emergency ART if cd4==3. 
+    indiv->PANGEA_t_prev_cd4stage = indiv->PANGEA_t_next_cd4stage;
+    indiv->PANGEA_t_next_cd4stage = t + time_to_next_event;
+
+    Sets: next_HIV_event, PANGEA_t_prev_cd4stage, debug_last_hiv_event_index, idx_hiv_pos_progression.
+    Updates: PANGEA_t_next_cd4stage, DEBUGTOTALTIMEHIVPOS. */
+
+	/* Assign dummy values to HIV schedule - these are then overwritten in next_hiv_event() below. */
+	new_adult->next_HIV_event = NOEVENT;
+	new_adult->idx_hiv_pos_progression[0] = -1;
+	new_adult->idx_hiv_pos_progression[1] = -1;
+	/* DEBUGTOTALTIMEHIVPOS is set to AGE_ADULT in create_new_individual(), and next_hiv_event will add in the time to next event. */
+	next_hiv_event(new_adult, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, param, t, patch[p].cumulative_outputs, patch[p].calendar_outputs);
+
+
+
+	
+
+
+
+    }
+    /* Now if they are on ART: */
+    else if (hivstatus==2){
+	new_adult->ART_status = LTART_VS; /// Assumption - for children who were infected via MTCT and who are on ART, assume they are VS.
+
+	draw_initial_SPVL(new_adult, param);
+	logSPVL = new_adult->SPVL_num_G + new_adult->SPVL_num_E;
+	new_adult->SPVL_cat = get_spvl_cat(logSPVL);
+	
+	new_adult->cd4 = draw_initial_cd4(param, new_adult->SPVL_cat);
+
+
+	/* Started immediately on ART (in practice paediatric cd4 is different to adult cd4 - and is measured as a %, so not really comparable). */
+	new_adult->PANGEA_t_diag = t-AGE_ADULT;
+
+	new_adult->PANGEA_cd4atdiagnosis = new_adult->cd4;
+	
+	/* Assume that people who are MTCT, and who are now on ART, were on ART (and VS) since birth: */
+	new_adult->PANGEA_cd4atfirstART = new_adult->cd4;   
+	new_adult->PANGEA_date_firstARTstart = t - AGE_ADULT;
+	new_adult->PANGEA_date_startfirstVLsuppression = t - AGE_ADULT;
+	new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
+
+        /* Assume that this person was on ART and virally suppressed their whole life minus an initial early ART period (otherwise the debug stats may look weird if someone is on ART but never had early ART): 
+	 For simplicity I take early ART to last param->t_end_early_art (rather than drawing it from a range). */
+	new_adult->DEBUG_cumulative_time_on_ART_VS = AGE_ADULT-param->t_end_early_art;
+	new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
+	new_adult->DEBUG_cumulative_time_on_ART_early = param->t_end_early_art;	
+	new_adult->DEBUG_time_of_last_cascade_event = -1;   /* We will use the counter DEBUG_time_of_last_cascade_event for adult cascade events only. */
+
+	/* As in start_ART_process(), we assume that those who are VS do not progress: */
+	new_adult->next_HIV_event = NOEVENT;
+	new_adult->idx_hiv_pos_progression[0] = -1;
+	new_adult->idx_hiv_pos_progression[1] = -1;
+
+	/* Assume they were diagnosed at birth: */
+	new_adult->time_last_hiv_test = t - AGE_ADULT;      
+	
+
+	/* Assume no progression since birth: */
+	new_adult->PANGEA_t_prev_cd4stage = t-AGE_ADULT;
+
+	/* PANGEA_t_next_cd4stage only really matters if we are trying to calculate CD4 based on CD4 stage (we assume linear decline within a CD4 stage). 
+	   However it is ALSO used in next_hiv_event() where we set PANGEA_t_prev_cd4stage to be what was PANGEA_t_next_cd4stage, and then et PANGEA_t_next_cd4stage to be t + time_to_next_event.
+	   So for MTCT who are virally suppressed and nothing ever happens to them, we can set PANGEA_t_next_cd4stage to be at param_start_time_simul+MAX_N_YEARS. If we used the end of the simulation then CD4 would change depending on this parameter, which would be buggy. This choice does mean that the time would be different depending on the value of start_time_simul, but since the simulation would be different with a different value of start_time_simul (because of different partnerships) this is probably not important.
+	   Possibly the best solution would be to remove the PANGEA stuff, but keeping it for now. 
+	   HOWEVER, for those for who are VS but will eventually become VU/drop out, set PANGEA_t_next_cd4stage to be the time at which they become VU/drop out.
+	   The decision about whether this individual will become VU/drop out is done in initialize_first_cascade_event_for_new_individual(), which is called after this function, so we update new_adult->PANGEA_t_next_cd4stage there if needed.
+*/
+	
+	new_adult->PANGEA_t_next_cd4stage = (param->start_time_simul+MAX_N_YEARS);
+    }
+     else{
+	printf("Error: Unknown MTCT HIV status in add_hiv_info_for_new_hiv_positive_adult(). Exiting\n");
+	printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	fflush(stdout);
+	exit(1);
+    }
+
+
+
+
+	
+    
 
 }
 
-/* Function does: creates entries for everything related to that new_person.
- * Function arguments: pointer to new person to be created, current time (for generating a DoB) and a pointer to the param structure (to get probabilities such as gender, MMC, etc).
+/* Called by make_new_adults() to make a specific person with given HIV status. 
+   Function does: creates entries for everything related to that new_person.
+ * Function arguments: pointer to new person to be created, current time (for generating a DoB), hiv status of the person (for MTCT), and a pointer to the param structure (to get probabilities such as gender, MMC, etc).
+ * Note that initialize_first_cascade_event_for_new_individual() is called by the parent function make_new_adults(), and adds the individual to the cascade if needed/schedules a new cascade event. 
  * Function returns: nothing. */
 void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, population_size_one_year_age *n_infected, patch_struct *patch, int p, all_partnerships *overall_partnerships){
     int i;
@@ -367,9 +572,10 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
      * As it is we ensure this way that someone who enters the population at the last timestep is aged 14.0 when they are aged to the next year-group one timestep later. */
     new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);      
     new_adult->DoD = -1;
-    new_adult->DEBUGTOTALTIMEHIVPOS = 0;
     /* Assign a sex risk group: */
     new_adult->sex_risk = draw_sex_risk(new_adult->gender,param);  
+
+
     new_adult->n_lifetime_partners = 0;
     new_adult->n_lifetimeminusoneyear_partners = 0;
     new_adult->n_lifetime_partners_outside = 0;
@@ -387,14 +593,28 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 
     new_adult->PC_cohort_index = -1; /* Not in PC cohort (for now). */
 
+
+    
+    /* Note these three are also set/overwritten in initialize_first_cascade_event_for_new_individual().
+     * However that function is only called if HIV testing has started, and we need to set them to dummy values (if doing several runs this is part of resetting the memory). */
+    new_adult->next_cascade_event = NOEVENT; /* Initialize at dummy value. */
+    new_adult->idx_cascade_event[0] = -1;           /* Initialize at dummy value. */
+    new_adult->idx_cascade_event[1] = -1;           /* Initialize at dummy value. */
+    
+    /* Only used in next_hiv_event() to make sure not trying to schedule an alread-scheduled HIV event, so we can give it a dummy value for all new adults regardless of CD4. */
+    new_adult->debug_last_hiv_event_index = -1;
+
+    
     /* Assign HIV status, allowing for the fact that some children may have had perinatal transmission (children are divided into HIV+/- at birth). 
      * Note that CHRONIC is 2 so need an if statement here. */
     if (hivstatus==0){
         new_adult->HIV_status = UNINFECTED;
         new_adult->ART_status = ARTNEG;
         new_adult->next_HIV_event = NOEVENT; /* Initialize at dummy value. */
-        new_adult->next_cascade_event = NOEVENT; /* Initialize at dummy value. */
-        new_adult->SPVL_num_G = 0;                  /* Initialize at dummy value. */
+
+	new_adult->DEBUGTOTALTIMEHIVPOS = 0;
+
+	new_adult->SPVL_num_G = 0;                  /* Initialize at dummy value. */
         new_adult->SPVL_num_E = 0;                  /* Initialize at dummy value. */
         new_adult->SPVL_infector = 0;                /* Initialize at dummy value. */
         new_adult->cd4 = CD4_UNINFECTED;                 /* Initialize at dummy value, here -1 */
@@ -403,11 +623,6 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
         new_adult->t_sc = -1;                            /* Initialize at dummy value. */
         new_adult->idx_hiv_pos_progression[0] = -1;     /* Initialize at dummy value. */
         new_adult->idx_hiv_pos_progression[1] = -1;     /* Initialize at dummy value. */
-        new_adult->debug_last_hiv_event_index = -1;     /* Initialize at dummy value. */
-        /* Note these two are also set/overwritten in initialize_first_cascade_event_for_new_individual().
-         * However that function is only called if HIV testing has started, and we need to set them to dummy values (if doing several runs this is part of resetting the memory). */
-        new_adult->idx_cascade_event[0] = -1;           /* Initialize at dummy value. */
-        new_adult->idx_cascade_event[1] = -1;           /* Initialize at dummy value. */
         new_adult->debug_last_cascade_event_index = -1;     /* Initialize at dummy value. */
         new_adult->idx_vmmc_event[0] = -1;         /* Initialize at dummy value. */
         new_adult->idx_vmmc_event[1] = -1;      
@@ -429,24 +644,32 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
         new_adult->DEBUG_cumulative_time_on_ART_early = 0;
         new_adult->DEBUG_time_of_last_cascade_event = -1; /* Dummy value. */
     }
+
+    /************** For HIV+ people: **************/
     else{
+	/* Update counters for number of HIV+: */
         (n_infected->pop_size_per_gender_age1_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk]) += 1;
+        (n_infected_cumulative->pop_size_per_gender_age1_risk[new_adult->gender][n_infected_cumulative->youngest_age_group_index][new_adult->sex_risk]) += 1;
         printf("+++ One new HIV+ (new adult) \n");
         fflush(stdout);
 
+	
+	new_adult->DEBUGTOTALTIMEHIVPOS = AGE_ADULT;
 
 	new_adult->idx_vmmc_event[0] = -1;         /* Initialize at dummy value.  - HIV+ so never gets VMMC. */
 	new_adult->idx_vmmc_event[1] = -1;
-    
-	add_hiv_info_for_new_hiv_positive_adult(new_adult, t, param, patch, p);
+        new_adult->debug_last_vmmc_event_index = -1;     /* Initialize at dummy value. */
+
+	new_adult->debug_last_cascade_event_index = -1;     /* Variable does not seem to be used (09/12/2019). */
+
 	
-	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update : */
+	add_hiv_info_for_new_hiv_positive_adult(new_adult, hivstatus, t, param, patch, p);
+	
+	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update. Note that we can only do this once new_adult->ART_status has been assigned. */
 	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
 
-	
+    
 
-        printf("Need to work out what is happening with new adults turning 13 who are HIV+\n"); 
-        printf("Also need to schedule HIV and ART events for them. \n");
     }
 
 
@@ -474,7 +697,8 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     else
         new_adult->circ = 0;   /* Women - set to zero. */   
 
-
+    new_adult->t_vmmc = -1; /* Assume (as in person_template) that vmmc only occurs once reach adulthood. */
+    
     new_adult->idx_serodiscordant = -1;  /* Not in a serodiscordant partnership */
 
 
@@ -510,9 +734,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 }
 
 
-void initialize_first_cascade_event_for_new_individual(individual *new_adult, double t, 
-    parameters *param, individual ***cascade_events, long *n_cascade_events, 
-    long *size_cascade_events){
+void initialize_first_cascade_event_for_new_individual(individual *new_adult, double t, parameters *param, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata){
     /* Schedule HIV cascade events for individuals that transition from childhood to adulthood
     
     There are two types of HIV testing schedules in the model (determined by the macro called 
@@ -532,10 +754,11 @@ void initialize_first_cascade_event_for_new_individual(individual *new_adult, do
     n_cascade_events : pointer to a long
     size_cascade_events : pointer to a long
     */
+
+
     
-    
-    // Check the new adult is uninfected with HIV
-    if(new_adult->HIV_status == UNINFECTED){
+    // Check the new adult is uninfected with HIV, or MTCT who is not on ART at present (i.e. ARTNEG/ARTNAIVE): 
+    if((new_adult->HIV_status == UNINFECTED) || (new_adult->ART_status == ARTNEG) || (new_adult->ART_status == ARTNAIVE)){
         // If each individual schedules their HIV tests sequentially draw a time for this person.
         if(HIVTESTSCHEDULE == 0){
             schedule_new_hiv_test(new_adult, param, t, cascade_events, n_cascade_events,
@@ -549,13 +772,25 @@ void initialize_first_cascade_event_for_new_individual(individual *new_adult, do
             new_adult->idx_cascade_event[0] = NOEVENT;
             new_adult->idx_cascade_event[1] = -1;
         }
-    }else{
-        printf("What is the next cascade event if born HIV+?\n");
-        // This is an assumption, change this code when we decide out what happens to people who
-        // have been HIV+ since birth.  
-        new_adult->next_cascade_event = NOEVENT;
-        new_adult->idx_cascade_event[0] = -1;
-        new_adult->idx_cascade_event[1] = -1;
+
+	/* For HIV+ adults, update the n_infected_by_all_strata[] counter: */
+	if (new_adult->HIV_status>UNINFECTED)
+	    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, new_adult->ART_status, new_adult->ART_status, new_adult, IS_NEW_ADULT);
+    }
+
+    /* If mtct new adult who is on ART: */
+    else if(new_adult->ART_status == LTARTVS){
+
+	/* Virally_suppressed_process() updates: next_cascade_event, idx_cascade_event[]. It also calls update_ART_state_population_counters_ARTcascade_change() to update the counter n_infected_by_all_strata[].
+	   virally_suppressed_process also updates PANGEA_t_next_cd4 as needed. 
+	   The "TRUE" flag states that this is a new HIV+ adult. */
+	virally_suppressed_process(new_adult, param, t, cascade_events, n_cascade_events, size_cascade_events, hiv_pos_progression, n_hiv_pos_progression, size_hiv_pos_progression, n_infected_by_all_strata, TRUE);
+
+    }
+    /* Check for errors: */
+    else{
+        printf("Error in initialize_first_cascade_event_for_new_individual() - unexpected HIV/ART status. Exiting\n");
+	exit(1);
     }
 }
 
@@ -2053,14 +2288,11 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
 	//printf("Running for i_mtct_hiv_status=%i, patch =%i n=%li at t=%lf\n",i_mtct_hiv_status,p,patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai],t);
         while (patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]>0){
             /* This adds an individual (HIV-) to individual_population: */
-            ////// DEBUG ERROR - this 
-            // WRONG version: create_new_individual((individual_population+(n_population->total_pop_size)), t, param);
-            /// Right version:
 
             create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, i_mtct_hiv_status, patch[p].n_infected, patch, p, overall_partnerships);
 
             if (t>=patch[p].param->COUNTRY_HIV_TEST_START)
-                initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events);
+                initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].n_infected_by_all_strata);
             patch[p].id_counter++;
 
             if (patch[p].id_counter>MAX_POP_SIZE){

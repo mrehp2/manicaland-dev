@@ -300,6 +300,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 /* codes for indiv->ART_status - could merge with HIV status? Note that these are states and not processes. */
 #define NARTEVENTS 8 // Currently runs from -1..6 so 8 events.
+#define DUMMY_MTCT_TEMPLATE -10 // Value assigned to indiv->ART_status (and some other indiv characteristics) in the function create_mtct_templates(). That function creates 'template' HIV/ART states that we draw at random, but certain things (like knowledge of serostatus) can only be assigned at the time the person enters the adult population, as we need to know t (and hence the % of people who are aware of serostatus).
 #define ARTNEG  -1 // If never tested HIV positive (note that this is tested, not serostatus).
 #define ARTNAIVE 0 // Never been on ART.
 #define EARLYART 1 // First few weeks/months before achieve viral suppression. Higher mortality and drop-out rate.
@@ -338,6 +339,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
  * Note: CD4==-2 means the person is dead.
  * 0="CD4>500", 1="CD4 350-500", 2="CD4 200-350", 3="CD4 <200". */
 #define CD4_UNINFECTED -1 
+
+#define N_MTCT_TEMPLATES 10000 /* We create 'template' possible states of children who were infected via MTCT. Each 'template' contains CD4, SPVL, times of CD4 progression etc for someone who was infected via MTCT 14 years afterwards (i.e. what the model needs for their HIV/ART status when they enter the adult population). */
 
 #define NHIVSTATES_FOR_MTCT 2 /* Uninfected, HIV+ not on ART, HIV+ on ART. Used in structure child_population. */
 

@@ -116,6 +116,20 @@ void draw_initial_SPVL(individual *seroconverter, parameters *param){
     }
 }
 
+int draw_initial_cd4(parameters *param, int spvl_cat){
+    double x = gsl_rng_uniform(rng);
+
+    if(x < param->cumulative_p_initial_cd4_gt500[spvl_cat])
+        return 0;
+    else if(x < param->cumulative_p_initial_cd4_350_500[spvl_cat])
+	return 1;
+    else if(x < param->cumulative_p_initial_cd4_200_350[spvl_cat])
+	return 2;
+    else
+        return 3;
+}
+
+
 
 /* Function: inherit_spvl()
 Determine set-point viral load (SPVL) of seroconverter given SPVL of infector
@@ -776,16 +790,7 @@ void new_infection(double time_infect, int SEEDEDINFECTION, individual* seroconv
 
     // Draw CD4 category for end of acute phase (if not seeded infection), 
     // otherwise where a seeded infection starts:
-    x = gsl_rng_uniform(rng);
-    if(x < param->cumulative_p_initial_cd4_gt500[seroconverter->SPVL_cat]){
-        seroconverter->cd4 = 0;
-    }else if(x < param->cumulative_p_initial_cd4_350_500[seroconverter->SPVL_cat]){
-        seroconverter->cd4 = 1;
-    }else if(x < param->cumulative_p_initial_cd4_200_350[seroconverter->SPVL_cat]){
-        seroconverter->cd4 = 2;
-    }else{
-        seroconverter->cd4 = 3;
-    }
+    seroconverter->cd4 = draw_initial_cd4(param,seroconverter->SPVL_cat);
     
     if(WRITE_DEBUG_CD4_AFTER_SEROCONVERSION == 1){
         write_cd4_at_seroconversion(seroconverter, file_data_store);
@@ -2005,7 +2010,7 @@ void start_ART_process(individual* indiv, parameters *param, double t,
 
 
     /* Add this person to the early ART group (and remove from other groups if needed): */
-    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, EARLYART, indiv);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, EARLYART, indiv, FALSE);
 
 
     /* Now update this person's ART status: */
@@ -2700,7 +2705,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
     indiv->PANGEA_cd4atdiagnosis = PANGEA_get_cd4(indiv, t); 
     indiv->PANGEA_t_diag = t;
 
-    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);    
+    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);    
     indiv->ART_status = ARTNAIVE;  /* Status changes as now known positive. */
     
     /* If ART has started then there are 3 possibilities for the next cascade event
@@ -2893,7 +2898,6 @@ void schedule_start_of_art(individual* indiv, parameters *param, double t,
         t_delay = TIME_STEP;
     }
     time_start_art = t + t_delay;
-    indiv->t_start_art = time_start_art;
 
     if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
         printf("Scheduling start of ART for adult %ld at time %6.4f\n", indiv->id, time_start_art);
@@ -2991,7 +2995,7 @@ void cd4_test_process(individual* indiv, parameters *param, double t, individual
     }else if(is_eligible_for_art(indiv, param, t, patch, p) == 1){
 	/* Update ART cascade counter if needed: */
 	if (indiv->ART_status!=ARTNAIVE){
-            update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+            update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 	    indiv->ART_status = ARTNAIVE;
 	}
 	
@@ -3002,7 +3006,7 @@ void cd4_test_process(individual* indiv, parameters *param, double t, individual
     }else{
 	/* Update ART cascade counter if needed: */
 	if (indiv->ART_status!=ARTNAIVE){
-            update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);    
+            update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);    
 	    indiv->ART_status = ARTNAIVE;
 	}
 
@@ -3025,7 +3029,7 @@ void cd4_test_process(individual* indiv, parameters *param, double t, individual
 
 /* This sets up everything when someone becomes virally suppressed on ART and determines their next 
  * cascade event. */
-void virally_suppressed_process(individual* indiv, parameters *param, double t, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events,individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata){
+void virally_suppressed_process(individual* indiv, parameters *param, double t, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events,individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int IS_NEW_ADULT){
 
     /* Only need to remove HIV progression event if becoming VS after being VU (those who go from early ART to VS are
      * assumed to already not be progressing).
@@ -3039,14 +3043,14 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
         indiv->idx_hiv_pos_progression[1] = -1;
     }
 
-    /* This tells us if the cd4 test is due to PopART (is_popart=1) or not (is_popart=0). */
-    int is_popart = (indiv->next_cascade_event>=NCASCADEEVENTS_NONPOPART);
+    /* This tells us if the cd4 test is due to PopART (is_popart=1) or not (is_popart=0). Multiply by (1-IS_NEW_ADULT) to make sure that new adults who were infected via MTCT as children are not accidentally put as is_popart. */
+    int is_popart = (indiv->next_cascade_event>=NCASCADEEVENTS_NONPOPART)*(1-IS_NEW_ADULT);
 
     //printf("virally_suppressed_process is_popart= %i\n",is_popart);
 
 
     /* Add this person to the virally suppressed group (and remove from the VU group if needed): */
-    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VS, indiv);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VS, indiv, IS_NEW_ADULT);
 
     
     /* Now change their ART status flag: */
@@ -3096,7 +3100,13 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
         /* PANGEA stuff: record end of viral suppression. Note that this is in the future, so 
          * could be after someone dies, so need to fix in outputs to ensure this never happens. */
         indiv->PANGEA_date_endfirstVLsuppression = time_end_vs;
-        if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
+
+
+	/* When creating a new MTCT on ART we need to assign a value for PANGEA_t_next_cd4stage if they ever CD4 progress that is in the future from when the person is added to the simulation, as this value is used to set PANGEA_t_prev_cd4stage when calling next_hiv_event(). A good assumption is to take it to be the time at which they stop being VS. */
+	if (IS_NEW_ADULT==TRUE)
+	    indiv->PANGEA_t_next_cd4stage = time_end_vs;
+	    
+	if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
             printf("Adult %ld is scheduled to become VU at time %6.4f\n",indiv->id,time_end_vs);
             fflush(stdout);
         }
@@ -3112,7 +3122,13 @@ void virally_suppressed_process(individual* indiv, parameters *param, double t, 
             time_dropout = t + param->t_end_vs_dropout_min[POPART] + param->t_end_vs_dropout_range[POPART] * gsl_rng_uniform (rng);
             indiv->next_cascade_event = CASCADEEVENT_DROPOUT_POPART;
         }
-        if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
+
+
+	/* Again, when creating a new MTCT on ART we need to assign a value for PANGEA_t_next_cd4stage if they ever CD4 progress that is in the future from when the person is added to the simulation, as this value is used to set PANGEA_t_prev_cd4stage when calling next_hiv_event(). A good assumption is to take it to be the time at which they stop being VS. */
+	if (IS_NEW_ADULT==TRUE)
+	    indiv->PANGEA_t_next_cd4stage = time_dropout;
+
+	if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
             printf("Adult %ld is scheduled to drop out at time %6.4f\n",indiv->id,time_dropout);
             fflush(stdout);
         }
@@ -3129,7 +3145,7 @@ void virally_unsuppressed_process(individual* indiv, parameters *param, double t
     //printf("virally_unsuppressed_process is_popart= %i\n",is_popart);
 
     /* Add this person to the virally unsuppressed group (and remove from the VS group if needed): */
-    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VU, indiv);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, LTART_VU, indiv, FALSE);
     
     /* Now update their ART status: */
     indiv->ART_status = LTART_VU;
@@ -3228,7 +3244,7 @@ void dropout_process(individual* indiv, parameters *param, double t, individual 
     }
 
     /* Add this person to the dropout group (and remove from the VS/VU/EARLY group if needed): */
-    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, CASCADEDROPOUT, indiv);
+    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, indiv->ART_status, CASCADEDROPOUT, indiv, FALSE);
     
     /* Now update their ART status: */
     indiv->ART_status = CASCADEDROPOUT;
@@ -3277,11 +3293,12 @@ void dropout_process(individual* indiv, parameters *param, double t, individual 
  - dropped out of cascade 
    Primary use of this is for MTCT (where we want to be able to keep track of HIV+ women who are on ART, and potentially separate out the different ART stages) but I have included dropouts as it seems potentially useful.
 */
-void update_ART_state_population_counters_ARTcascade_change(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_ART_STATE, int NEW_ART_STATE, individual *indiv){
+void update_ART_state_population_counters_ARTcascade_change(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_ART_STATE, int NEW_ART_STATE, individual *indiv, int IS_NEW_ADULT){
 
 
-    /* For debugging: check transition is allowed: */
-    check_valid_ART_transition(INITIAL_ART_STATE,NEW_ART_STATE);
+    /* For debugging: check transition is allowed (except for new adults): */
+    if (IS_NEW_ADULT==FALSE)
+	check_valid_ART_transition(INITIAL_ART_STATE,NEW_ART_STATE);
 
     int aa = (int) floor(floor(t) - indiv->DoB) - AGE_ADULT;
     
@@ -3292,15 +3309,16 @@ void update_ART_state_population_counters_ARTcascade_change(double t, population
 	while (ai_art>(MAX_AGE-AGE_ADULT-1))
 	    ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 
-	/* Update the 'old' ART state: */
-	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][INITIAL_ART_STATE+1])--;
+	/* Update the 'old' ART state (if not a new adult): */
+	if (IS_NEW_ADULT==FALSE)
+	    (n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][INITIAL_ART_STATE+1])--;
 	    
 	/* Now update the 'new' ART state: */
 	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[indiv->gender][ai_art][indiv->sex_risk][indiv->cd4][NEW_ART_STATE+1])++;
 
 
     }else{
-	/* Update the 'old' ART state counter for the oldest age group: */
+	/* Update the 'old' ART state counter for the oldest age group (note that oldest age group *cannot* be a new adult!): */
 	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[indiv->gender][indiv->sex_risk][indiv->cd4][INITIAL_ART_STATE+1])--;
 	 
 	/* Update the 'new' ART state counter for the oldest age group: */
@@ -3310,7 +3328,7 @@ void update_ART_state_population_counters_ARTcascade_change(double t, population
 }
 
 
-
+/* Update n_infected_by_all_strata counter when progressing from one CD4 category to the next. */
 void update_ART_state_population_counters_cd4_change(double t, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, int INITIAL_CD4, int NEW_CD4, double DoB, int gender, int sex_risk, int iart){
 
     if (iart==ARTDROPOUT){
@@ -3331,15 +3349,15 @@ void update_ART_state_population_counters_cd4_change(double t, population_size_o
 	/* Update the 'old' CD4 state: */
 	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][INITIAL_CD4][iart+1])--;
 
-	/* Now update the 'new' ART state: */
+	/* Now update the 'new' CD4 state: */
 	(n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[gender][ai_art][sex_risk][NEW_CD4][iart+1])++;
 
 
     }else{
-	/* Update the 'old' ART state counter for the oldest age group: */
+	/* Update the 'old' CD4 state counter for the oldest age group: */
 	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][INITIAL_CD4][iart+1])--;
 	 
-	/* Update the 'new' ART state counter for the oldest age group: */
+	/* Update the 'new' CD4 state counter for the oldest age group: */
 	(n_infected_by_all_strata->hiv_pop_size_oldest_age_gender_risk[gender][sex_risk][NEW_CD4][iart+1])++;
     }
 
@@ -3434,7 +3452,7 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
                 if (indiv->ART_status==LTART_VU)
                     indiv->DEBUG_cumulative_time_on_ART_VU += (t-indiv->DEBUG_time_of_last_cascade_event);
                 indiv->DEBUG_time_of_last_cascade_event = t;
-                virally_suppressed_process(indiv,patch[p].param,t, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,patch[p].n_infected_by_all_strata);
+                virally_suppressed_process(indiv,patch[p].param,t, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,patch[p].n_infected_by_all_strata, FALSE);
             }
             else if ((indiv->next_cascade_event==CASCADEEVENT_VU_NONPOPART)||(indiv->next_cascade_event==CASCADEEVENT_VU_POPART)){
                 debug->art_vars[p].cascade_transitions[indiv->ART_status+1][LTART_VU+1]++;

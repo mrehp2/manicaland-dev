@@ -1284,6 +1284,7 @@ void add_commas_to_calibration_output(char *output_string,int NDATA){
 
 void print_param_struct(parameters *param){
     int g,ag,bg,icd4,spvl,r,i,y;
+    int i_spectrum;
     int ac;
 
     printf("------------------------------------------------------------------------------------\n");
@@ -1300,6 +1301,18 @@ void print_param_struct(parameters *param){
         for (ag = 0; ag<N_AGE_UNPD_MORTALITY; ag++)
             printf("param->mortality_rate_by_gender_age_slope[%i][%i]=%lg\n",g,ag,param->mortality_rate_by_gender_age_slope[g][ag]);
     printf("param->sex_ratio=%lg\n",param->sex_ratio);
+
+    printf("param->T_FIRST_MTCT_DATAPOINT=%lf\n",param->T_FIRST_MTCT_DATAPOINT);
+    printf("param->T_LAST_MTCT_DATAPOINT=%lf\n",param->T_LAST_MTCT_DATAPOINT);
+    int t_steps_spectrum = (int) (param->T_LAST_MTCT_DATAPOINT - param->T_FIRST_MTCT_DATAPOINT + 1)
+    for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)
+	printf("param->mtct_probability[%i]=%lf\n",i_spectrum,param->mtct_probability[i_spectrum]);
+    for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)
+	printf("param->prop_births_to_hivpos_mothers[%i]=%lf\n",i_spectrum,param->prop_births_to_hivpos_mothers[i_spectrum]);
+    for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)
+	printf("param->prop_children_on_ART_spectrum[%i]=%lg\n",i_spectrum,param->prop_children_on_ART_spectrum[i_spectrum]);
+
+
     printf("param->p_child_circ=%lg\n",param->p_child_circ);
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
@@ -1463,6 +1476,8 @@ void print_param_struct(parameters *param){
     printf("param->t_get_vmmc_range[POPART]=%lg\n",param->t_get_vmmc_range[POPART]);
     printf("param->t_vmmc_healing=%lg\n",param->t_vmmc_healing);
 
+
+    
     for (g=0; g<N_GENDER;g++)
         for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++)
             for (i=0; i<NCHIPSROUNDS; i++)

@@ -25,6 +25,9 @@ void get_unpd_time_indices(double , int *, double *);
 double childhood_mortality(parameters *, double );
 double natural_death_rate(int , int , parameters *, double );
 int draw_sex_risk(int, parameters *);
+void create_mtct_templates(mtct_hiv_template *, parameters *);
+int get_art_status_of_mtct_new_adult(double , parameters *);
+void add_hiv_info_for_new_hiv_positive_adult(individual *, int, double , parameters *, patch_struct *, int );
 void create_new_individual(individual *, double , parameters *, int, 
     population_size_one_year_age *, patch_struct *, int, all_partnerships *);
 void update_population_size_new_adult(individual *, population_size *, 
@@ -34,7 +37,7 @@ void update_population_size_death(individual *, population_size *,
     stratified_population_size *, int, age_list_struct *,
     population_size_one_year_age_hiv_by_stage_treatment *);
 void initialize_first_cascade_event_for_new_individual(individual *, double, 
-    parameters *, individual ***, long *, long *);
+    parameters *, individual ***, long *, long *, individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata);
 void update_age_list_new_adult(age_list_struct *, individual *);
 void update_age_list_death(age_list_struct *, int, int, long, double , int);
 int get_age_index(double , double );
@@ -58,7 +61,7 @@ void remove_from_hiv_pos_progression(individual *, individual ***, long *, long 
 void remove_from_cascade_events(individual *, individual ***, long *, long *, double, parameters *);
 void remove_from_vmmc_events(individual *, individual ***, long *, long *, double , parameters *);
 void deaths_natural_causes(double, patch_struct *, int , all_partnerships *,  file_struct *);
-void make_new_adults(double, patch_struct *, int , all_partnerships *);
+void make_new_adults(double, patch_struct *, int , all_partnerships *, , individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata);
 void add_new_kids(double , patch_struct *, int );
 void make_pop_from_age_list(population *, age_list_struct *, individual *);
 void individual_death_AIDS(age_list_struct *, individual *, population_size *, 

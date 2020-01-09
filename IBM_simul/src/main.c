@@ -402,6 +402,7 @@ int main(int argc,char *argv[]){
             
             /* (re)initialise debug variables to be zero at the start of each run */
             initialise_debug_variables(debug);
+
             
             /* Reset PC cohort data to null. */
             for (pc_enrolment_round=0; pc_enrolment_round<NPC_ENROLMENTS;pc_enrolment_round++){
@@ -498,13 +499,12 @@ int main(int argc,char *argv[]){
                 init_available_partnerships(p, patch, overall_partnerships,pop);
 
                 /* Set cumulative counters to zero: */
-                init_cumulative_counters(patch[p].cumulative_outputs);
-                
-                
+                init_cumulative_counters(patch[p].cumulative_outputs);                
                 
                 /* Set calendar counters to zero: */
                 init_calendar_counters(patch[p].calendar_outputs);
-                
+
+
                 // Reset counters of new infections and person-years each PC round.  
                 for(g = 0; g < N_GENDER; g++){
                     for(a = 0; a < PC_AGE_RANGE_MAX; a++){
@@ -514,6 +514,10 @@ int main(int argc,char *argv[]){
                         }
                     }
                 }
+
+		/* Create 'template' CD4/SPVL data for new adults who were infected via mtct as children (this is used by create_new_individual() and sub-functions): */
+		create_mtct_templates(patch[p].mtct_hiv_template_no_art, patch[p].param)
+
             }
             
             /* Loop through multiple years of the simulation */

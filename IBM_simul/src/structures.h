@@ -211,6 +211,9 @@ typedef struct {
     double mortality_rate_by_gender_age_slope[N_GENDER][N_AGE_UNPD_MORTALITY];
     //double scale_fertility_param;
     double sex_ratio;     /* Proportion of new sexually active population who are male. */
+
+
+    /********** mother-to-child transmission (mtct) **********/
     /* These store data from Spectrum, from t=T_FIRST_MTCT_DATAPOINT to t=T_LAST_MTCT_DATAPOINT, in the array mtct_probability. */
     double T_FIRST_MTCT_DATAPOINT;
     double T_LAST_MTCT_DATAPOINT;
@@ -619,6 +622,23 @@ typedef struct {
     // A version of transition_to_adult_index_n_child, storing the index rather than a pointer
     int debug_tai;
 } child_population_struct;
+
+
+/* When we add new adults who were HIV-infected as children, we need to assign them CD4 and SPVL. We draw N_MTCT_TEMPLATES copies of mtct_hiv_templates using param[]. 
+*/
+typedef struct{
+
+    int cd4; /* Currently use -2: dead ; -1: uninfected ; 0: CD4>500, 1: CD4 350-500, 2: CD4 200-350, 3: CD4<200. */
+    double SPVL_num_G; /* This is the genetic component of the log10(SPVL) - use for transmissibility and heritability. */
+    double SPVL_num_E; /* This is the environmental component of the log10(SPVL) - use for transmissibility and heritability. SPVL = SPVL_G + SPVL_E. */
+    int SPVL_cat; /* categorical variable. Derived from SPVL_num_G+SPVL_num_E in function get_spvl_cat(). 4 categories (0="<4"; 1="4-4.5"; 2="4.5-5"; 3=">5"). Use for CD4 progression.  */
+
+    double relative_PANGEA_t_prev_cd4stage; /* Time relative to the time at which the child becomes an adult at which the individual last moved CD4 stage. Used to make indiv->PANGEA_t_prev_cd4stage = t+relative_PANGEA_t_prev_cd4stage. 
+					     Note that this is negative. */
+
+}mtct_hiv_template;
+
+
 
 
 typedef struct{

@@ -28,6 +28,7 @@
 
 int get_spvl_cat(double );
 void draw_initial_SPVL(individual *, parameters *);
+int draw_initial_cd4(parameters *, int );
 void inherit_spvl(individual *, individual *, parameters *);
 double get_mean_time_hiv_progression(parameters *, individual *);
 double get_RR_SPVL(double , parameters *);
@@ -72,14 +73,13 @@ void schedule_start_of_art(individual* , parameters *, double , individual ***, 
 void cd4_test_process(individual* , parameters *, double , individual ***, long *, long *,
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
     patch_struct *, int );
-void virally_suppressed_process(individual* , parameters *, double , individual ***, long *, 
-    long *, individual ***, long *, long *, population_size_one_year_age_hiv_by_stage_treatment *);
+void virally_suppressed_process(individual* , parameters *, double , individual ***, long *, long *, individual ***, long *, long *, population_size_one_year_age_hiv_by_stage_treatment *, int );
 void virally_unsuppressed_process(individual* , parameters *, double , individual ***, long *,
     long *, individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *, population_size_one_year_age_hiv_by_stage_treatment *);
 void dropout_process(individual* , parameters *, double , individual ***, long *, long *,
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *,
     population_size_one_year_age_hiv_by_stage_treatment *);
-void update_ART_state_population_counters_ARTcascade_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , individual *);
+void update_ART_state_population_counters_ARTcascade_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , individual *, int );
 void update_ART_state_population_counters_cd4_change(double , population_size_one_year_age_hiv_by_stage_treatment *, int , int , double , int , int , int );
 void carry_out_cascade_events_per_timestep(double , patch_struct *, int , all_partnerships *,
     debug_struct *, file_struct *);

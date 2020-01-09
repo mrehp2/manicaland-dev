@@ -524,7 +524,7 @@ void alloc_patch_memoryv2(patch_struct *patch){
         //      }
 
 
-        patch[p].child_population = malloc(NHIVSTATES_FOR_MTCT*sizeof(child_population_struct));  // The 2 is because we have HIV- and HIV+ lists.
+        patch[p].child_population = malloc(NHIVSTATES_FOR_MTCT*sizeof(child_population_struct));  
         if(patch[p].child_population==NULL)
         {
             printf("Unable to allocate child_population in alloc_all_memory. Execution aborted.");

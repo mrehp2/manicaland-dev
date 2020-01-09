@@ -664,7 +664,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             cumulative_outputs->N_total_CD4_tests_popart++;
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
 
-	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
 	    indiv->ART_status = ARTNAIVE;
 
@@ -683,7 +683,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                 exit(1);
             }
 
-	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
             
             indiv->ART_status = ARTNAIVE;
             cumulative_outputs->N_total_CD4_tests_popart++;
@@ -709,7 +709,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
 
 
-	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
 
 	    indiv->ART_status = ARTNAIVE;
@@ -784,7 +784,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                         calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
                         indiv->next_cascade_event = CASCADEEVENT_START_ART_POPART;
 
-			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
 			indiv->ART_status = ARTNAIVE;
                         indiv->VISITEDBYCHIPS_TO_INIT_ART = 1;
@@ -799,7 +799,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
                         cumulative_outputs->N_total_CD4_tests_popart++;
                         calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
 
-			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv);
+			update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
 			indiv->ART_status = ARTNAIVE;
                         /*

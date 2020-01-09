@@ -104,7 +104,7 @@ void get_initial_population_distribution_of_exact_init_size(population_size *n_p
 }
 
 
-/* Function does: Initializes the child_population structure given fertility rate and number of women by age group.
+/* Function does: Initializes the child_population structure at the start of the simulation, given fertility rate and number of women by age group.
  * Note: child_population is the number of children who are in each per-timestep age group. Thus at each timestep this
  * specifies the number of children reaching adulthood. */
 void initialize_child_population(parameters *param, child_population_struct *child_population, 
@@ -162,6 +162,9 @@ void initialize_child_population(parameters *param, child_population_struct *chi
 	child_population[i_mtct_hiv_status].debug_tai = (AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1;
     }
 }
+
+
+
 
 ///////////// FIX THIS:
 ///////////// This is a placeholder - set max_n_partners correctly later

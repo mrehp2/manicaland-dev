@@ -323,7 +323,7 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
     /************ First generate for people not on ART: ************/
     i_template = 0;
     while (i_template<N_MTCT_TEMPLATES){
-	
+
 	/* Assume for now that they would be unaware of status - change in demographics.c create_new_individual() otherwise. */
 	/* First draw a SPVL: */
 	draw_initial_SPVL(dummy_adult, param);
@@ -333,17 +333,19 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 	/* Initial cd4 category of this person (at birth).
 	   We are assuming progression in children looks like adults - it does ot, but only need a crude approximation for now and this will do. */
 	initial_icd4 = draw_initial_cd4(param,dummy_adult->SPVL_cat);
-
+	dummy_adult->cd4 = initial_icd4;
 	/* Work out if this individual will survive until adulthood given this initial icd4 and SPVL_cat. 
 	 Note that this is stochastic - so small chance that someone with CD4<200 initially or high SPVL will survive to adulthood, and the sample of templates should roughly be distributed according to this probability (so more templates with high initial CD4 and low SPVL. */
 	icd4 = initial_icd4;
 	t_currentcd4 = 0;
+
 	while ((t_currentcd4<AGE_ADULT) && (icd4<NCD4)){
 	    time_in_this_cd4_stage = get_mean_time_hiv_progression(param, dummy_adult);
 	    t_lastcd4 = t_currentcd4;
 	    t_currentcd4 += time_in_this_cd4_stage;
 	    icd4++;
 	}
+
 
 	/* If this person survives to adulthood, add them as a template. */
 	if (t_currentcd4>=AGE_ADULT){

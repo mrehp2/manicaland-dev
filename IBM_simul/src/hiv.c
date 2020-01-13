@@ -747,7 +747,7 @@ void new_infection(double time_infect, int SEEDEDINFECTION, individual* seroconv
     int g = seroconverter->gender;
     long ncheck; 
     int aa;
-    double x;
+
     double time_to_next_event;
     int idx_next_event, idx_current_time;
 

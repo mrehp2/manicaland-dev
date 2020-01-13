@@ -1304,7 +1304,7 @@ void print_param_struct(parameters *param){
 
     printf("param->T_FIRST_MTCT_DATAPOINT=%lf\n",param->T_FIRST_MTCT_DATAPOINT);
     printf("param->T_LAST_MTCT_DATAPOINT=%lf\n",param->T_LAST_MTCT_DATAPOINT);
-    int t_steps_spectrum = (int) (param->T_LAST_MTCT_DATAPOINT - param->T_FIRST_MTCT_DATAPOINT + 1)
+    int t_steps_spectrum = (int) (param->T_LAST_MTCT_DATAPOINT - param->T_FIRST_MTCT_DATAPOINT + 1);
     for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)
 	printf("param->mtct_probability[%i]=%lf\n",i_spectrum,param->mtct_probability[i_spectrum]);
     for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)

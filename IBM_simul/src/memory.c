@@ -533,6 +533,15 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
+	patch[p].mtct_hiv_template_no_art = malloc(N_MTCT_TEMPLATES*sizeof(mtct_hiv_template));  
+        if(patch[p].mtct_hiv_template_no_art==NULL)
+        {
+            printf("Unable to allocate mtct_hiv_template_no_art in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
         patch[p].new_deaths = malloc(MAX_N_PER_AGE_GROUP*sizeof(long));  // There are <MAX_N_PER_AGE_GROUP people in an age group, so the number of people dying in that group has to be less than that number.
         if(patch[p].new_deaths==NULL)
         {
@@ -1085,7 +1094,7 @@ void alloc_partnership_memoryv2(all_partnerships *overall_partnerships){
 }
 
 
-void free_all_patch_memory(parameters *param, individual *individual_population, population_size *n_population, population_size_one_year_age *n_population_oneyearagegroups, stratified_population_size *n_population_stratified, age_list_struct *age_list, child_population_struct *child_population,
+void free_all_patch_memory(parameters *param, individual *individual_population, population_size *n_population, population_size_one_year_age *n_population_oneyearagegroups, stratified_population_size *n_population_stratified, age_list_struct *age_list, child_population_struct *child_population, mtct_hiv_template *mtct_hiv_template_no_art, 
         individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events,
 	individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events,
         long *new_deaths, long *death_dummylist,
@@ -1112,7 +1121,8 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     //  free(age_list->age_list_m);
     free(age_list);
     free(child_population);
-
+    free(mtct_hiv_template_no_art);
+    
     free(new_deaths);
     free(death_dummylist);
 
@@ -1245,7 +1255,7 @@ void free_patch_memory(patch_struct *patch){
 
         free_all_patch_memory(patch[p].param, patch[p].individual_population,
                 patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_population_stratified,
-                patch[p].age_list, patch[p].child_population,
+		patch[p].age_list, patch[p].child_population, patch[p].mtct_hiv_template_no_art,
                 patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression,
                 patch[p].size_hiv_pos_progression, patch[p].cascade_events, patch[p].n_cascade_events,
                 patch[p].size_cascade_events, patch[p].vmmc_events, patch[p].n_vmmc_events,

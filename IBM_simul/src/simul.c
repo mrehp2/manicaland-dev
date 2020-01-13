@@ -244,6 +244,10 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         sweep_through_all_and_check_age_and_risk_of_partners (patch, overall_partnerships, t0, 
                 t_step, debug);
     }
+
+    printf("Checking population size is OK: \n");
+    for (p=0; p<NPATCHES; p++)
+	count_population_size_three_ways(patch, p, t0 + t_step*TIME_STEP);
     
     if(fit_flag == 0){
         return 0;

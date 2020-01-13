@@ -816,6 +816,8 @@ typedef struct{
     population_size_one_year_age *n_population_oneyearagegroups;
     stratified_population_size *n_population_stratified;
     child_population_struct *child_population;
+    mtct_hiv_template *mtct_hiv_template_no_art;
+
     parameters *param;
     long *new_deaths;
     long *death_dummylist;

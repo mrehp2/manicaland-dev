@@ -516,7 +516,7 @@ int main(int argc,char *argv[]){
                 }
 
 		/* Create 'template' CD4/SPVL data for new adults who were infected via mtct as children (this is used by create_new_individual() and sub-functions): */
-		create_mtct_templates(patch[p].mtct_hiv_template_no_art, patch[p].param)
+		create_mtct_templates(patch[p].mtct_hiv_template_no_art, patch[p].param);
 
             }
             

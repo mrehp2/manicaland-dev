@@ -314,7 +314,7 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 
     double logSPVL;
     double time_in_this_cd4_stage, t_currentcd4, t_lastcd4;
-    int spvl, icd4;
+    int icd4;
     int initial_icd4;
 
     int i_template;    /* Index over the N_MTCT_TEMPLATES that we create. */
@@ -385,7 +385,9 @@ int get_art_status_of_mtct_new_adult(double t, parameters *param){
 /* hivstatus=1 if not on ART, hivstatus=2 if on ART. */
 void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatus, double t, parameters *param, patch_struct *patch, int p){
 
-    int i_template; 
+    int i_template;
+    double logSPVL;
+    
     new_adult->HIV_status = CHRONIC;   /* All children infected via MTCT will be chronic. */
 
     new_adult->SPVL_infector =  SPVL_DUMMY_VALUE_MTCT; /* For now we don't know the mother's SPVL so give this a dummy value to denote that we didn't record it, but it's not a seeded transmission. */
@@ -402,16 +404,16 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 	printf("TODO: Draw i_template\n");
 	i_template=1;
 	int printnotice=1;
-	new_adult->cd4 = mtct_hiv_template_no_art[i_template].cd4;
-	new_adult->SPVL_num_G = mtct_hiv_template_no_art[i_template].SPVL_num_G;
-	new_adult->SPVL_num_E = mtct_hiv_template_no_art[i_template].SPVL_num_E;
-	new_adult->SPVL_cat = mtct_hiv_template_no_art[i_template].SPVL_cat;
+	new_adult->cd4 = patch[p].mtct_hiv_template_no_art[i_template].cd4;
+	new_adult->SPVL_num_G = patch[p].mtct_hiv_template_no_art[i_template].SPVL_num_G;
+	new_adult->SPVL_num_E = patch[p].mtct_hiv_template_no_art[i_template].SPVL_num_E;
+	new_adult->SPVL_cat = patch[p].mtct_hiv_template_no_art[i_template].SPVL_cat;
 
 	/* This is the time that CD4 stage last changed for the given template. */
-	new_adult->PANGEA_t_prev_cd4stage = t + mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
-	new_adult->PANGEA_t_next_cd4stage = t+ mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
+	new_adult->PANGEA_t_prev_cd4stage = t + patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
+	new_adult->PANGEA_t_next_cd4stage = t+ patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
 
-	if (mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
+	if (patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
 	    printf("ERROR - relative_PANGEA_t_prev_cd4stage>0\n.");
 	    exit(1);
 	}
@@ -549,7 +551,7 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
  * Function arguments: pointer to new person to be created, current time (for generating a DoB), hiv status of the person (for MTCT), and a pointer to the param structure (to get probabilities such as gender, MMC, etc).
  * Note that initialize_first_cascade_event_for_new_individual() is called by the parent function make_new_adults(), and adds the individual to the cascade if needed/schedules a new cascade event. 
  * Function returns: nothing. */
-void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, population_size_one_year_age *n_infected, patch_struct *patch, int p, all_partnerships *overall_partnerships){
+void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, patch_struct *patch, int p, all_partnerships *overall_partnerships){
     int i;
 
     new_adult->id = patch[p].id_counter;        /* Set the id to be the value of patch[p].id_counter. */
@@ -647,9 +649,9 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 
     /************** For HIV+ people: **************/
     else{
-	/* Update counters for number of HIV+: */
-        (n_infected->pop_size_per_gender_age1_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk]) += 1;
-        (n_infected_cumulative->pop_size_per_gender_age1_risk[new_adult->gender][n_infected_cumulative->youngest_age_group_index][new_adult->sex_risk]) += 1;
+	/* Update counters for number of HIV+. n_infected_by_all_strata is updated later in the function, once ART status is assigned. */
+        (patch[p].n_infected->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected->youngest_age_group_index][new_adult->sex_risk]) += 1;
+        (patch[p].n_infected_cumulative->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected_cumulative->youngest_age_group_index][new_adult->sex_risk]) += 1;
         printf("+++ One new HIV+ (new adult) \n");
         fflush(stdout);
 
@@ -666,7 +668,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 	add_hiv_info_for_new_hiv_positive_adult(new_adult, hivstatus, t, param, patch, p);
 	
 	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update. Note that we can only do this once new_adult->ART_status has been assigned. */
-	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][n_infected->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
+	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][patch[p].n_infected_by_all_strata->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
 
     
 
@@ -775,11 +777,11 @@ void initialize_first_cascade_event_for_new_individual(individual *new_adult, do
 
 	/* For HIV+ adults, update the n_infected_by_all_strata[] counter: */
 	if (new_adult->HIV_status>UNINFECTED)
-	    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, new_adult->ART_status, new_adult->ART_status, new_adult, IS_NEW_ADULT);
+	    update_ART_state_population_counters_ARTcascade_change(t, n_infected_by_all_strata, new_adult->ART_status, new_adult->ART_status, new_adult, TRUE);
     }
 
     /* If mtct new adult who is on ART: */
-    else if(new_adult->ART_status == LTARTVS){
+    else if(new_adult->ART_status == LTART_VS){
 
 	/* Virally_suppressed_process() updates: next_cascade_event, idx_cascade_event[]. It also calls update_ART_state_population_counters_ARTcascade_change() to update the counter n_infected_by_all_strata[].
 	   virally_suppressed_process also updates PANGEA_t_next_cd4 as needed. 
@@ -2289,10 +2291,11 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
         while (patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]>0){
             /* This adds an individual (HIV-) to individual_population: */
 
-            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, i_mtct_hiv_status, patch[p].n_infected, patch, p, overall_partnerships);
+            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, i_mtct_hiv_status, patch, p, overall_partnerships);
 
             if (t>=patch[p].param->COUNTRY_HIV_TEST_START)
-                initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].n_infected_by_all_strata);
+                initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, patch[p].n_infected_by_all_strata);
+	    
             patch[p].id_counter++;
 
             if (patch[p].id_counter>MAX_POP_SIZE){
@@ -2304,7 +2307,7 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
 
 
 
-            /* This updates the n_population variable which counts number of people: */
+            /* This updates the n_population_stratified variable which counts number of people, and patch.n_population_oneyearagegroups: */
             update_population_size_new_adult((patch[p].individual_population+patch[p].id_counter-1), patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_population_stratified);
 
             update_age_list_new_adult(patch[p].age_list,(patch[p].individual_population+patch[p].id_counter-1));
@@ -2410,7 +2413,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
         while (ai_hivpos>(MAX_AGE-AGE_ADULT-1))
             ai_hivpos = ai_hivpos - (MAX_AGE-AGE_ADULT);
 
-	ai_art = aa + patch[p].n_infected->youngest_age_group_index;
+	ai_art = aa + patch[p].n_infected_by_all_strata->youngest_age_group_index;
         while (ai_art>(MAX_AGE-AGE_ADULT-1))
             ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 

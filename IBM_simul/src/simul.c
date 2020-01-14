@@ -246,7 +246,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     }
 
     // Use to check population counters are all consistent - i.e. we're updating them all correctly. Most recent check 13 Jan 2020 to check introduction of MTCT is OK.
-    printf("Checking population size is OK at time %lf: \n",t0 + t_step*TIME_STEP);
+    if (t0+t_step*TIME_STEP<1901)
+	printf("Checking population size is OK at time %lf: \n",t0 + t_step*TIME_STEP);
     for (p=0; p<NPATCHES; p++)
     	count_population_size_three_ways(patch, p, t0 + t_step*TIME_STEP);
     

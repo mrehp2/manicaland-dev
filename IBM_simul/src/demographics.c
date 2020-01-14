@@ -410,9 +410,10 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
    - looks up probability that someone aged 14 who was infected via mtct who isn't on ART knows their status now;
    - draws a Bernoulli RV based on this probability.
    - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
-int get_art_status_of_mtct_new_adult(int t_index, parameters *param){
+int get_art_status_of_mtct_new_adult(double t, parameters *param){
     double p_knows_status=1.0;
-    printf("Need to add p_knows_status to param\n");
+    if (t<1991) // so we don't keep printing out the reminder!
+	printf("Need to add p_knows_status to param\n");
     if (gsl_ran_bernoulli(rng,(p_knows_status))==1)   /* knows serostatus (but not on ART). */
 	return ARTNAIVE;
     else{
@@ -516,8 +517,6 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
     }
     /* Now if they are on ART: */
     else if (hivstatus==2){
-	printf("HIV+ on ART!!!!");
-	exit(1);
 	new_adult->ART_status = LTART_VS; /// Assumption - for children who were infected via MTCT and who are on ART, assume they are VS.
 
 	draw_initial_SPVL(new_adult, param);
@@ -2577,29 +2576,35 @@ void add_new_kids(double t, patch_struct *patch, int p){
     /* Use Spectrum outputs to get the % of infants (that survive to age 14) that are HIV+, and the proportion of HIV+ infants (who survive to age 14) that are on ART by age 14. */
     get_mtct_fraction(t, patch, p, &proportion_of_hiv_positive_infants, &proportion_of_hiv_pos_infants_on_art);
 
+
+    int n_birth_hivpos, n_birth_hivpos_art;
     /* Store number of HIV- new births: */
+    n_birth_hivpos = gsl_ran_binomial (rng, proportion_of_hiv_positive_infants, n_births);
+    if ((n_birth_hivpos>0) && (proportion_of_hiv_pos_infants_on_art>0))
+	n_birth_hivpos_art = gsl_ran_binomial (rng, proportion_of_hiv_pos_infants_on_art, n_birth_hivpos);
+    else
+	n_birth_hivpos_art = 0;
+    
     if ((patch[p].child_population[0].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[0].debug_tai+1;
     else
 	j = 0;
-    patch[p].child_population[0].n_child[j] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
+    patch[p].child_population[0].n_child[j] = n_births - n_birth_hivpos;
 
     /* Store number of HIV+ not on ART new births: */
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[1].debug_tai+1;
     else
 	j = 0;
-    patch[p].child_population[1].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants*(1.0-proportion_of_hiv_pos_infants_on_art));
+    patch[p].child_population[1].n_child[j] = n_birth_hivpos-n_birth_hivpos_art;
 
     /* Store number of HIV+, and on ART new births: */
     if ((patch[p].child_population[2].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[2].debug_tai+1;
     else
 	j = 0;
-    patch[p].child_population[2].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants*proportion_of_hiv_pos_infants_on_art);
+    patch[p].child_population[2].n_child[j] = n_birth_hivpos_art;
 
-
-    printf("MTCT params at t=%lf %lf %lf %li %li\n",t,proportion_of_hiv_positive_infants, proportion_of_hiv_pos_infants_on_art,patch[p].child_population[2].n_child[j],n_births);
 
 
     if (PRINT_DEBUG_DEMOGRAPHICS){

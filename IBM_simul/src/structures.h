@@ -607,19 +607,16 @@ typedef struct {
 
 /* This structure contains a list (n_child) of the number of children to be born at each timestep.
 n_child is an array containing the number of children for each timestep, and
-transition_to_adult_index_n_child is a pointer to the place in the list where the current adults 
-are stored (rather than having to move everybody by one slot each timestep, it is easier to have a
-pointer to the "end" of the list - ie kids about to turn AGE_ADULT.  At each time step, if n_t
-people are born, then n_t is added to the "start" of the array and the pointer is incremented by 1
-(so that it points to the "old" kids about to turn 13 at that timestep). */
+debug_tai is the index in the list where the current adults 
+are stored (rather than having to move everybody by one slot each timestep, it is easier to know the "end" of the list - ie kids about to turn AGE_ADULT.  At each time step, if n_t
+people are born, then n_t is added to the "start" of the array and debug_tai is incremented by 1
+(so that it locates the "old" kids about to turn 13 at that timestep). */
 typedef struct {
     /* Number of children (ie <=AGE_ADULT - as children turn to adults at
     AGE_ADULT+1-TIME_STEP=13.99 years) - this is an array where each element is the number of
     children who were born in a given timestep (so that in each timestep of the simulation we add
     more new people) */
     long n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR];
-    long *transition_to_adult_index_n_child;
-    // A version of transition_to_adult_index_n_child, storing the index rather than a pointer
     int debug_tai;
 } child_population_struct;
 

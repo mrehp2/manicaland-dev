@@ -1242,7 +1242,7 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
     }else
     {
         if(VERBOSE_OUTPUT==1)
-            printf("Cascade parameters read from: %s:\n",param_file_name);
+            printf("MTCT parameters read from: %s:\n",param_file_name);
     }
 
 
@@ -1271,12 +1271,13 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
 	check_if_cannot_read_param(checkreadok, "allrunparameters[0].prop_births_to_hivpos_mothers[y]");
 	checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].prop_children_on_ART_spectrum[y]));
 	check_if_cannot_read_param(checkreadok, "allrunparameters[0].prop_children_on_ART_spectrum[y]");
+	//printf("MTCT: %lf %lf %lf %lf\n",t,allrunparameters[0].mtct_probability[y],allrunparameters[0].prop_births_to_hivpos_mothers[y],allrunparameters[0].prop_children_on_ART_spectrum[y]);
     }
 
     // Close mtct parameter file
     fclose(param_file);
 
-    /* Make sure rest of array is populated with some value - assume pmtct remains same as at last timestep. */
+    /* Make sure rest of array by time is populated with some value - assume pmtct remains same as at last timestep. */
     for(y=t_steps; y<N_MAX_MTCT_TIMEPOINTS; y++){
 	allrunparameters[0].mtct_probability[y] = allrunparameters[0].mtct_probability[t_steps-1];
 	allrunparameters[0].prop_births_to_hivpos_mothers[y] = allrunparameters[0].prop_births_to_hivpos_mothers[t_steps-1];

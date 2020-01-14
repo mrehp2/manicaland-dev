@@ -158,7 +158,6 @@ void initialize_child_population(parameters *param, child_population_struct *chi
     }
     /* These indices points to the oldest age group in each child_population[i] group: */
     for (i_mtct_hiv_status=0; i_mtct_hiv_status<NHIVSTATES_FOR_MTCT ; i_mtct_hiv_status++){
-	child_population[i_mtct_hiv_status].transition_to_adult_index_n_child = ((child_population[i_mtct_hiv_status].n_child)+(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1);
 	child_population[i_mtct_hiv_status].debug_tai = (AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1;
     }
 }

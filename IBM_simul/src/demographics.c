@@ -144,7 +144,25 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
 
 
 double get_mtct_fraction(double t, patch_struct *patch, int p){
-    return 0.0;
+    // No transmission if before MTCT started. 
+    if (t<patch[p].param->T_FIRST_MTCT_DATAPOINT)
+	return 0.0;          
+    // Assume transmission remains constant after end of Spectrum projections:
+    if (t>=patch[p].param->T_LAST_MTCT_DATAPOINT)
+	return patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
+
+    /* Otherwise interpolate by year: */
+    int y = floor(t-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+    /* Fraction of a current year: */
+    double f = (t-y-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+    if (f<0||f>1){
+	printf("f=%lf, t=%lf, y=%i T=%lf\n",f,t,y,patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	printf("Error in get_mtct_fraction(): f needs to be in [0,1]\nExiting.\n");
+	exit(1);
+    }
+
+    return f*patch[p].param->mtct_probability[y]*patch[p].param->prop_births_to_hivpos_mothers[y] + (1-f)*(patch[p].param->mtct_probability[y+1]*patch[p].param->prop_births_to_hivpos_mothers[y+1]);
+    
 }
 
 void get_unpd_time_indices(double t, int *y0, double *f){
@@ -319,7 +337,9 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 
     int i_template;    /* Index over the N_MTCT_TEMPLATES that we create. */
 
+    int printnotice=1;
 
+    
     /************ First generate for people not on ART: ************/
     i_template = 0;
     while (i_template<N_MTCT_TEMPLATES){
@@ -358,7 +378,17 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 	    /* Note that this isn't actual calendar time (because we don't know when this template will be used), but time relative to becoming an adult. 
 	     We therefore fix it during the function where it's assigned to a new adult. */
 	    mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage = t_lastcd4-AGE_ADULT;
-	    
+
+	    if (mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
+		printf("ERROR - relative_PANGEA_t_prev_cd4stage>0\n.");
+		exit(1);
+	    }
+	    else{
+		if (printnotice==1)
+		    printf("Remove Error notice  for relative_PANGEA_t_prev_cd4stage\n");
+		printnotice=0;
+	    }
+
 	    /* Move to the next template: */
 	    i_template +=1;
 	}
@@ -403,9 +433,10 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 	new_adult->ART_status = get_art_status_of_mtct_new_adult(t, param);
 
 	/* Here we draw one of the mtct templates, and populate the relevant variables in new_adult from it: */
-	printf("TODO: Draw i_template\n");
-	i_template=1;
-	int printnotice=1;
+
+	/* Draws uniform integer from {0,1,...,N_MTCT_TEMPLATES-1}. */
+	i_template=gsl_rng_uniform_int(rng, N_MTCT_TEMPLATES);
+
 	new_adult->cd4 = patch[p].mtct_hiv_template_no_art[i_template].cd4;
 	new_adult->SPVL_num_G = patch[p].mtct_hiv_template_no_art[i_template].SPVL_num_G;
 	new_adult->SPVL_num_E = patch[p].mtct_hiv_template_no_art[i_template].SPVL_num_E;
@@ -415,14 +446,6 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 	new_adult->PANGEA_t_prev_cd4stage = t + patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
 	new_adult->PANGEA_t_next_cd4stage = t+ patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage;
 
-	if (patch[p].mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
-	    printf("ERROR - relative_PANGEA_t_prev_cd4stage>0\n.");
-	    exit(1);
-	}
-	else{
-	    if (printnotice==1)
-		printf("Remove Error notice  for relative_PANGEA_t_prev_cd4stage\n");
-	}
 	/* Assume that people who are MTCT, but aren't now on ART, were never on ART: */
 	new_adult->PANGEA_cd4atfirstART = -1.0;   
 	new_adult->PANGEA_date_firstARTstart = -1.0;
@@ -2353,13 +2376,12 @@ void add_new_kids(double t, patch_struct *patch, int p){
     int ai_hivpos, ai_art;
     long n_births = 0;
     double age_group_fertility_rate_per_timestep;
+    int j;
     /*    int i_hiv_mtct;
     double age_group_fertility_rate_per_timestep[NHIV_STATES_MTCT];
     for (i_hiv_mtct=0; i_hiv_mtct<NHIV_STATES_MTCT; i_hiv_mtct++)
 	age_group_fertility_rate_per_timestep[i_hiv_mtct] = 0.0;
     */
-
-
 
     
     /* Here we calculate the average per-woman fertility rate per timestep. Note that we ignore fertility in 65+ year olds! */
@@ -2534,13 +2556,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
 
 
-    if (PRINT_DEBUG_DEMOGRAPHICS){
-        //if ((patch[p].child_population[0].transition_to_adult_index_n_child)<&(patch[p].child_population[0].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1]))
-        if ((patch[p].child_population[0].debug_tai)<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-            printf("BIRTHSx were: %li %li are: %i %i\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1],(int) floor(n_births*1.0),(int) floor(n_births*0.0));
-        else
-            printf("BIRTHSy were: %li %li are: %i %i\n",patch[p].child_population[0].n_child[0],patch[p].child_population[1].n_child[0],(int) floor(n_births*1.0),(int) floor(n_births*0.0));
-    }
 
     // This is a debugging routine for future use - assume that no children are HIV+ at this point.
     //if ((patch[p].child_population[0].transition_to_adult_index_n_child)<(&(patch[p].child_population[0].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
@@ -2548,17 +2563,30 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
     double proportion_of_hiv_positive_infants = get_mtct_fraction(t, patch, p);
 
+    /* Store number of HIV- new births: */
     if ((patch[p].child_population[0].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-        patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
+	j = patch[p].child_population[0].debug_tai+1;
     else
-        (patch[p].child_population[0].n_child[0]) = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
+	j = 0;
+    patch[p].child_population[0].n_child[j] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
 
-    //if ((patch[p].child_population[1].transition_to_adult_index_n_child)<(&(patch[p].child_population[1].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
-    //  *(patch[p].child_population[1].transition_to_adult_index_n_child+1) = (int) floor(n_births*0.0);
+    /* Store number of HIV+ new births: */
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-        patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1] = (int) floor(n_births*proportion_of_hiv_positive_infants);
+	j = patch[p].child_population[1].debug_tai+1;
     else
-        (patch[p].child_population[1].n_child[0]) = (int) floor(n_births*proportion_of_hiv_positive_infants);
+	j = 0;
+    patch[p].child_population[1].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants);
+
+
+
+
+    if (PRINT_DEBUG_DEMOGRAPHICS){
+        if ((patch[p].child_population[0].debug_tai)<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
+            printf("BIRTHSx were: %li %li are: %i %i\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1],(int) floor(n_births*(1.0-proportion_of_hiv_positive_infants)),(int) floor(n_births*proportion_of_hiv_positive_infants));
+        else
+            printf("BIRTHSy were: %li %li are: %i %i\n",patch[p].child_population[0].n_child[0],patch[p].child_population[1].n_child[0],(int) floor(n_births*(1.0-proportion_of_hiv_positive_infants)),(int) floor(n_births*proportion_of_hiv_positive_infants));
+    }
+
 
 }
 

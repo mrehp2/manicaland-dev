@@ -20,13 +20,13 @@
 #include "structures.h"
 
 double per_woman_fertility_rate(int , parameters *, int, double);
-double get_mtct_fraction(double , patch_struct *, int );
+void get_mtct_fraction(double , patch_struct *, int , double *, double *);
 void get_unpd_time_indices(double , int *, double *);
 double childhood_mortality(parameters *, double );
 double natural_death_rate(int , int , parameters *, double );
 int draw_sex_risk(int, parameters *);
 void create_mtct_templates(mtct_hiv_template *, parameters *);
-int get_art_status_of_mtct_new_adult(double , parameters *);
+int get_art_status_of_mtct_new_adult(int , parameters *);
 void add_hiv_info_for_new_hiv_positive_adult(individual *, int, double , parameters *, patch_struct *, int );
 void create_new_individual(individual *, double , parameters *, int, 
     patch_struct *, int, all_partnerships *);

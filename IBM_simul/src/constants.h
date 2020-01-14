@@ -342,7 +342,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 #define N_MTCT_TEMPLATES 10000 /* We create 'template' possible states of children who were infected via MTCT. Each 'template' contains CD4, SPVL, times of CD4 progression etc for someone who was infected via MTCT 14 years afterwards (i.e. what the model needs for their HIV/ART status when they enter the adult population). */
 
-#define NHIVSTATES_FOR_MTCT 2 /* Uninfected, HIV+ not on ART, HIV+ on ART. Used in structure child_population. */
+#define NHIVSTATES_FOR_MTCT 3 /* Uninfected, HIV+ not on ART, HIV+ on ART. Used in structure child_population. */
 
 /* 4 set-point viral load categories (0="<4"; 1="4-4.5"; 2="4.5-5"; 3=">5") */
 #define NSPVL 4

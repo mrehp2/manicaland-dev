@@ -143,26 +143,33 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
 }
 
 
-double get_mtct_fraction(double t, patch_struct *patch, int p){
+void get_mtct_fraction(double t, patch_struct *patch, int p, double *proportion_of_hiv_positive_infants, double *proportion_of_hiv_pos_infants_on_art){
     // No transmission if before MTCT started. 
-    if (t<patch[p].param->T_FIRST_MTCT_DATAPOINT)
-	return 0.0;          
-    // Assume transmission remains constant after end of Spectrum projections:
-    if (t>=patch[p].param->T_LAST_MTCT_DATAPOINT)
-	return patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
-
-    /* Otherwise interpolate by year: */
-    int y = floor(t-patch[p].param->T_FIRST_MTCT_DATAPOINT);
-    /* Fraction of a current year: */
-    double f = (t-y-patch[p].param->T_FIRST_MTCT_DATAPOINT);
-    if (f<0||f>1){
-	printf("f=%lf, t=%lf, y=%i T=%lf\n",f,t,y,patch[p].param->T_FIRST_MTCT_DATAPOINT);
-	printf("Error in get_mtct_fraction(): f needs to be in [0,1]\nExiting.\n");
-	exit(1);
+    if (t<patch[p].param->T_FIRST_MTCT_DATAPOINT){
+	*proportion_of_hiv_positive_infants = 0.0;
+	*proportion_of_hiv_pos_infants_on_art = 0.0;
     }
+    // Assume transmission remains constant after end of Spectrum projections:
+    else if (t>=patch[p].param->T_LAST_MTCT_DATAPOINT){
+	*proportion_of_hiv_positive_infants =  patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS-1]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
+	*proportion_of_hiv_pos_infants_on_art  = patch[p].param->prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS-1];
+    }
+    else{
+	/* Otherwise interpolate by year: */
+	int y = floor(t-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	/* Fraction of a current year: */
+	double f = (t-y-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	if (f<0||f>1){
+	    printf("f=%lf, t=%lf, y=%i T=%lf\n",f,t,y,patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	    printf("Error in get_mtct_fraction(): f needs to be in [0,1]\nExiting.\n");
+	    exit(1);
+	}
 
-    return f*patch[p].param->mtct_probability[y]*patch[p].param->prop_births_to_hivpos_mothers[y] + (1-f)*(patch[p].param->mtct_probability[y+1]*patch[p].param->prop_births_to_hivpos_mothers[y+1]);
-    
+	*proportion_of_hiv_positive_infants =   f*patch[p].param->mtct_probability[y+1]*patch[p].param->prop_births_to_hivpos_mothers[y+1] + (1-f)*(patch[p].param->mtct_probability[y]*patch[p].param->prop_births_to_hivpos_mothers[y]);
+	*proportion_of_hiv_pos_infants_on_art  = f*patch[p].param->prop_children_on_ART_spectrum[y+1] + (1-f)*patch[p].param->prop_children_on_ART_spectrum[y];
+    }
+    //printf("In get_mtct_fraction(): %lf %lf %lf\n",t,*proportion_of_hiv_positive_infants,*proportion_of_hiv_pos_infants_on_art);
+
 }
 
 void get_unpd_time_indices(double t, int *y0, double *f){
@@ -403,12 +410,13 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
    - looks up probability that someone aged 14 who was infected via mtct who isn't on ART knows their status now;
    - draws a Bernoulli RV based on this probability.
    - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
-int get_art_status_of_mtct_new_adult(double t, parameters *param){
+int get_art_status_of_mtct_new_adult(int t_index, parameters *param){
     double p_knows_status=1.0;
     printf("Need to add p_knows_status to param\n");
     if (gsl_ran_bernoulli(rng,(p_knows_status))==1)   /* knows serostatus (but not on ART). */
 	return ARTNAIVE;
     else{
+	/* For now we assume everyone infected via MTCT knows their status (but doesn't have to be on ART). */
 	printf("Check this - shouldn't happen.\n");
         return ARTNEG;
     }
@@ -428,8 +436,9 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 
 
     
-    /* First if they are not on ART, find out if they know their serostatus: */
+    /* If they are not on ART: */
     if (hivstatus==1){
+	/* Check if they know their status: */
 	new_adult->ART_status = get_art_status_of_mtct_new_adult(t, param);
 
 	/* Here we draw one of the mtct templates, and populate the relevant variables in new_adult from it: */
@@ -507,6 +516,8 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
     }
     /* Now if they are on ART: */
     else if (hivstatus==2){
+	printf("HIV+ on ART!!!!");
+	exit(1);
 	new_adult->ART_status = LTART_VS; /// Assumption - for children who were infected via MTCT and who are on ART, assume they are VS.
 
 	draw_initial_SPVL(new_adult, param);
@@ -677,8 +688,8 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 	/* Update counters for number of HIV+. n_infected_by_all_strata is updated later in the function, once ART status is assigned. */
         (patch[p].n_infected->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected->youngest_age_group_index][new_adult->sex_risk]) += 1;
         (patch[p].n_infected_cumulative->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected_cumulative->youngest_age_group_index][new_adult->sex_risk]) += 1;
-        printf("+++ One new HIV+ (new adult) \n");
-        fflush(stdout);
+        //printf("+++ One new HIV+ (new adult) \n");
+	//fflush(stdout);
 
 	
 	new_adult->DEBUGTOTALTIMEHIVPOS = AGE_ADULT;
@@ -2367,7 +2378,6 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
 /* Function does: This is a DUMMY function to add newly born babies to the child_population structures so 
  * that there are always new individuals to reach adulthood as time goes on. The function has stochasticity 
  * so slight variation in number of births per timestep.  
- * NOTE: THIS FUNCTION CURRENTLY FORCES 10% OF CHILDREN TO BE HIV+.
  * Function arguments: pointers to child_population, the size of the population (to calculate the number 
  * of children to be born), params. 
  * Function returns: nothing. */
@@ -2561,7 +2571,11 @@ void add_new_kids(double t, patch_struct *patch, int p){
     //if ((patch[p].child_population[0].transition_to_adult_index_n_child)<(&(patch[p].child_population[0].n_child[(AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1])))
     //  *(patch[p].child_population[0].transition_to_adult_index_n_child+1) = (int) floor(n_births*1.0);
 
-    double proportion_of_hiv_positive_infants = get_mtct_fraction(t, patch, p);
+    
+    double proportion_of_hiv_positive_infants, proportion_of_hiv_pos_infants_on_art;
+
+    /* Use Spectrum outputs to get the % of infants (that survive to age 14) that are HIV+, and the proportion of HIV+ infants (who survive to age 14) that are on ART by age 14. */
+    get_mtct_fraction(t, patch, p, &proportion_of_hiv_positive_infants, &proportion_of_hiv_pos_infants_on_art);
 
     /* Store number of HIV- new births: */
     if ((patch[p].child_population[0].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
@@ -2570,14 +2584,22 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	j = 0;
     patch[p].child_population[0].n_child[j] = (int) floor(n_births*(1.0-proportion_of_hiv_positive_infants));
 
-    /* Store number of HIV+ new births: */
+    /* Store number of HIV+ not on ART new births: */
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[1].debug_tai+1;
     else
 	j = 0;
-    patch[p].child_population[1].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants);
+    patch[p].child_population[1].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants*(1.0-proportion_of_hiv_pos_infants_on_art));
+
+    /* Store number of HIV+, and on ART new births: */
+    if ((patch[p].child_population[2].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
+	j = patch[p].child_population[2].debug_tai+1;
+    else
+	j = 0;
+    patch[p].child_population[2].n_child[j] = (int) floor(n_births*proportion_of_hiv_positive_infants*proportion_of_hiv_pos_infants_on_art);
 
 
+    printf("MTCT params at t=%lf %lf %lf %li %li\n",t,proportion_of_hiv_positive_infants, proportion_of_hiv_pos_infants_on_art,patch[p].child_population[2].n_child[j],n_births);
 
 
     if (PRINT_DEBUG_DEMOGRAPHICS){

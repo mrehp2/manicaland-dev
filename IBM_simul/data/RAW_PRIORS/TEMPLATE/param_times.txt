@@ -1,4 +1,5 @@
 start_time_hiv 1975   // http://data.unaids.org/publications/irc-pub06/zimbabwe_epi_report_nov05_en.pdf reports first AIDS case in 1985 in Zimbabwe, so take 10 years before.
+start_time_hsv2 1901   // Assume around start of simulation.
 start_time_simul 1900   // Assumption - around 70 years for burn-in prior to introducing HIV.
 end_time_simul 2020     // Assumption for now.
 COUNTRY_HIV_TEST_START 1998.0  // In Manicaland R1 5.8% ever tested (carried out July 1998-Jan 00) so assume started just before this.

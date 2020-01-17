@@ -110,6 +110,12 @@ struct individual{
     double DEBUG_cumulative_time_on_ART_early; /* Record the time someone spends in early ART. Zero if never starts ART. */
     double DEBUG_time_of_last_cascade_event;   /* Use to calculate time VS/VU/early. */
 
+
+    int HSV2_status; /* HSV-2 state (HSV2_UNINFECTED, HSV2_ACUTE etc). */
+    long idx_hsv2_pos_progression[2];
+   
+
+	
     int n_partners; /* current number of partners of this individual (who are in OR out of the community) */
     partnership* partner_pairs[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; /* This is a list of the partnership pairs (with someone in the community) that this individual is in at a certain time. */
 
@@ -117,6 +123,11 @@ struct individual{
     int n_HIVpos_partners; /* current number of HIV+ partners of this individual */
     int n_HIVpos_partners_outside; /* current number of HIV+ partners of this individual who are outside of the patch */
     partnership * partner_pairs_HIVpos[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; /* This is a list of the partnership pairs (with someone in the community) with an HIV+ partner that this individual is in at a certain time. */
+
+    /* The two following are only updated for HSV2- individuals: */
+    int n_HSV2pos_partners; /* current number of HSV2+ partners of this individual */
+    partnership * partner_pairs_HSV2pos[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; /* This is a list of the partnership pairs (with someone in the community) with an HSV2+ partner that this individual is in at a certain time. */
+
 
     int sex_risk; /* 0, 1, 2 for LOW, MEDIUM, HIGH risk */
     int max_n_partners; /* maximum number of partners this individual can have at a certain time point */
@@ -148,7 +159,6 @@ struct individual{
        - socioeconomic_status, education/literacy (as a proxy of risk?);
        - clusternumber (includes which arm in, which country).
        - country; // 1 = Zambia, 2 = South Africa. (can ignore if have cluster number)
-       - HSV;  1 = HSV2 +ve, 0 = HSV2 -ve.
        - healthcareutilization; // Includes VMMC, PMTCT, non-CHiPs HIV testing;
        - treatment
        - adherence; // Expected level of adherence to ART, loss-to-follow-up, etc.
@@ -223,10 +233,19 @@ typedef struct {
     /* Proportion of children who are on ART (for MTCT survival): */
     double prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS];
 
+    /********** HSV-2-related parameters:**************************/
+    double mean_dur_hsv2event[N_HSV2_EVENTS];
+    double initial_prop_hsv2infected; /*Fraction of population seeded HSV-2 positive at time start_time_hsv2. */
+    double average_annual_hazard_hsv2; /* Probability of HSV-2 infection per year. */
+    
+    
     /********** times **********/
     double start_time_hiv;
     /* The two variables below are the year when HIV is seeded and the timestep in that year - so easier to check if HIV is seeded. */
     int start_time_hiv_discretised_year, start_time_hiv_discretised_timestep;
+    double start_time_hsv2;
+    int start_time_hsv2_discretised_year, start_time_hsv2_discretised_timestep;
+
     int start_time_simul;
     int end_time_simul;
     double COUNTRY_HIV_TEST_START;
@@ -776,6 +795,9 @@ typedef struct{
     /* Number of people who ever started ART (including those dead) for non-popart & popart: */
     long N_total_ever_started_ART_nonpopart;
     long N_total_ever_started_ART_popart;
+    long N_mother_to_child_transmissions;
+    long N_mother_to_child_transmissions_alive_age14;
+    long N_mother_to_child_transmissions_alive_onARTage14;
 } cumulative_outputs_struct;
 
 
@@ -823,6 +845,10 @@ typedef struct{
     population_size_one_year_age *n_infected_cumulative;
     population_size_one_year_age *n_newly_infected;
 
+    /*HSV2*/
+    //population_size_one_year_age *n_infected_hsv2;
+    //population_size_one_year_age *n_newly_infected_hsv2;
+
     /* Counts number of HIV+ by gender, risk, one-year age group, CD4 stage (not by acute though) and ART status. */
     population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata;
     
@@ -846,6 +872,11 @@ typedef struct{
     individual ***hiv_pos_progression;    /* ***hiv_pos_progression is the calendar (basically it is an array where each column corresponds to a timestep, and each row contains a list of all the people to whom an event will occur at that timestep. When we reach that timestep we go through the list at that timestep, and look up from the individual what will happen to them. */ 
     long *n_hiv_pos_progression;    /* n_hiv_pos_progression is a count of the number of events that are scheduled in hiv_pos_progression at each timestep. */
     long *size_hiv_pos_progression;    /* size_hiv_pos_progression is an array that just says what the maximum number of people/events that can occur in a single timestep in hiv_pos_progression - to ensure we don't run into memory issues. */
+
+    individual ***hsv2_pos_progression;    /* ***hsv2_pos_progression is the calendar (basically it is an array where each column corresponds to a timestep, and each row contains a list of all the people to whom an event will occur at that timestep. When we reach that timestep we go through the list at that timestep, and look up from the individual what will happen to them. */ 
+    long *n_hsv2_pos_progression;    /* n_hsv2_pos_progression is a count of the number of events that are scheduled in hsv2_pos_progression at each timestep. */
+    long *size_hsv2_pos_progression;    /* size_hsv2_pos_progression is an array that just says what the maximum number of people/events that can occur in a single timestep in hsv2_pos_progression - to ensure we don't run into memory issues. */
+
     individual ***cascade_events;
     long *n_cascade_events;
     long *size_cascade_events;
@@ -928,6 +959,10 @@ typedef struct{
 
     individual** susceptible_in_serodiscordant_partnership;
     long *n_susceptible_in_serodiscordant_partnership;
+    /*HSV-2*/
+    //individual** susceptible_in_hsv2serodiscordant_partnership,
+    //long *n_susceptible_in_hsv2serodiscordant_partnership;
+
 } all_partnerships;
 
 

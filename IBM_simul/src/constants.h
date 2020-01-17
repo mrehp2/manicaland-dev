@@ -310,6 +310,20 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define CASCADEDROPOUT 5 // Dropped out of HIV care cascade prior to ever starting ART.
 #define ARTDEATH 6 // Signals that the person needs to be removed as they die while on ART. 
 
+
+/* HSV-2 states: */
+#define HSV2_UNINFECTED 0
+#define HSV2_ACUTE 1
+#define HSV2_ASYMPTOMATIC 2
+#define HSV2_RECURRENCE 3
+
+/* HSV-2 events: */
+#define N_HSV2_EVENTS 3
+#define HSV2EVENT_BECOMEASYMPTOMATIC_FROMACUTE 0
+#define HSV2EVENT_RECURRENCE_FROMASYMPTOMATIC 1
+#define HSV2EVENT_BECOMEASYMPTOMATIC_FROMRECURRENCE 2
+
+
 #define NPrEPcascadesteps 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
 
 /* 1=due to Manicaland PrEP intervention, 0 otherwise. Determines adherence of person starting PrEP. */
@@ -417,9 +431,10 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define TRADITIONAL_MC 4
 
 
-#define DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP MAX_POP_SIZE/100   /* This is the default number of HIV+ people whose next progression event will happen in a given time step.
-                                                               Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. 
-                                                                At some point in the future we will tune this to avoid too many reallocs(). */
+#define DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP MAX_POP_SIZE/100   /* This is the default number of HIV+ people whose next progression event will happen in a given time step. Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. At some point in the future we will tune this to avoid too many reallocs(). */
+
+#define DEFAULT_N_HSV2_PROGRESS_PER_TIME_STEP MAX_POP_SIZE/100   /* Same, but for HSV-2. */
+
 #define DEFAULT_N_HIV_CASCADE_PER_TIME_STEP MAX_POP_SIZE/50   /* This is the default number of people who will have an HIV cascade event (HIV test, start ART etc) in a given time step.
                                                                Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. 
                                                                 At some point in the future we will tune this to avoid too many reallocs(). */

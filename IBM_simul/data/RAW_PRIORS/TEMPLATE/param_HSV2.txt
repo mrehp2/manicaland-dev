@@ -1,0 +1,3 @@
+mean_dur_hsv2event  0.1 10.0 0.1    // Duration of each HSV-2 stage. 
+average_annual_hazard_hsv2  0.05    // Assumption.
+

@@ -107,6 +107,15 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
         patch[p].size_hiv_pos_progression[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
 
+    /* Initialise the number of people in each group to be zero (as no HSV-2 at start of simulation): */
+    for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
+        patch[p].n_hsv2_pos_progression[i] = 0;
+
+    /* Initialise the  size of the arrays to the default: */
+    for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
+        patch[p].size_hsv2_pos_progression[i] = DEFAULT_N_HSV2_PROGRESS_PER_TIME_STEP;
+
+    
     /* Initialise the number of people in each group to be zero (as no HIV at start of simulation): */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
         patch[p].n_cascade_events[i] = 0;
@@ -591,6 +600,43 @@ void alloc_patch_memoryv2(patch_struct *patch){
         patch[p].size_hiv_pos_progression = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
         if(patch[p].size_hiv_pos_progression==NULL){
             printf("Unable to allocate size_hiv_pos_progression in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+
+
+        patch[p].hsv2_pos_progression = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(individual**));  // Equivalent to hiv_pos_progression but for HSV-2
+        if(patch[p].hsv2_pos_progression==NULL)
+        {
+            printf("Unable to allocate hsv2_pos_progression in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        for(i=0 ; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ; i++){
+            (patch[p].hsv2_pos_progression)[i] = malloc(DEFAULT_N_HSV2_PROGRESS_PER_TIME_STEP*sizeof(individual*));
+            if((patch[p].hsv2_pos_progression)[i]==NULL){
+                printf("Unable to allocate hsv2_pos_progression[i] in alloc_all_memory. Execution aborted.");
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+        }
+
+        patch[p].n_hsv2_pos_progression = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
+        if(patch[p].n_hsv2_pos_progression==NULL)
+        {
+            printf("Unable to allocate n_hsv2_pos_progression in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+        patch[p].size_hsv2_pos_progression = malloc(MAX_N_YEARS*N_TIME_STEP_PER_YEAR*sizeof(long));
+        if(patch[p].size_hsv2_pos_progression==NULL){
+            printf("Unable to allocate size_hsv2_pos_progression in alloc_all_memory. Execution aborted.");
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
@@ -1095,7 +1141,7 @@ void alloc_partnership_memoryv2(all_partnerships *overall_partnerships){
 
 
 void free_all_patch_memory(parameters *param, individual *individual_population, population_size *n_population, population_size_one_year_age *n_population_oneyearagegroups, stratified_population_size *n_population_stratified, age_list_struct *age_list, child_population_struct *child_population, mtct_hiv_template *mtct_hiv_template_no_art, 
-        individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events,
+        individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events,
 	individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events,
         long *new_deaths, long *death_dummylist,
 	population_size_one_year_age *n_infected, population_size_one_year_age *n_newly_infected, population_size_one_year_age *n_infected_cumulative, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, population_size *n_infected_wide_age_group, population_size *n_newly_infected_wide_age_group,
@@ -1132,6 +1178,12 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free(hiv_pos_progression);
     free(n_hiv_pos_progression);
     free(size_hiv_pos_progression);
+
+    for(i=0 ;i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ;i++)
+        free(hsv2_pos_progression[i]);
+    free(hsv2_pos_progression);
+    free(n_hsv2_pos_progression);
+    free(size_hsv2_pos_progression);
 
     /* Note we free each element within cascade_events in the function carry_out_cascade_events_per_timestep() in hiv.c. */
     for(i=0 ;i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ;i++)
@@ -1257,7 +1309,8 @@ void free_patch_memory(patch_struct *patch){
                 patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_population_stratified,
 		patch[p].age_list, patch[p].child_population, patch[p].mtct_hiv_template_no_art,
                 patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression,
-                patch[p].size_hiv_pos_progression, patch[p].cascade_events, patch[p].n_cascade_events,
+                patch[p].size_hiv_pos_progression, patch[p].hsv2_pos_progression, patch[p].n_hsv2_pos_progression,
+                patch[p].size_hsv2_pos_progression, patch[p].cascade_events, patch[p].n_cascade_events,
                 patch[p].size_cascade_events, patch[p].vmmc_events, patch[p].n_vmmc_events,
                 patch[p].size_vmmc_events,
 		patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, 

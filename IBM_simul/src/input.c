@@ -35,6 +35,10 @@ read_demographic_params()
 read_hiv_params()
     - Read in hiv-related (transmission, progression) parameters from param_processed_patch$p_HIV.csv
 
+read_hsv2_params()
+    - Read in HSV2-related (transmission, progression) parameters from param_processed_patch$p_HSV2.csv
+
+
 read_partnership_params()
     - Read in partnership parameters from param_processed_patch$p_partnerships.csv
 
@@ -98,6 +102,7 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 
         read_demographic_params(patch_tag, param[p], n_runs);
         read_hiv_params(patch_tag, param[p], n_runs, p);
+        read_hsv2_params(patch_tag, param[p], n_runs, p);
         read_partnership_params(patch_tag, param[p], n_runs);
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
@@ -600,6 +605,63 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 }
 
 
+
+void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs, int p){
+    /* Read parameters related to HSV-2. Does some small error checking.  
+    
+    Arguments
+    ---------
+    char *patch_tag, parameters *allrunparameters, int n_runs, int p
+    
+    Returns: nothing; 
+    */
+    
+    
+    FILE * param_file;
+    char param_file_name[LONGSTRINGLENGTH];
+    int checkreadok, i_run, hsv;
+    
+    // Temp variable to avoid having to write allparameters+i_run 
+    //(or equivalently &allparameters[i_run]).
+    parameters *param_local;
+
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strcat(param_file_name, "HSV2.csv");
+
+    // Open parameter file
+    if((param_file = fopen(param_file_name, "r")) == NULL){
+        printf("Cannot open %s", param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else{
+        if(VERBOSE_OUTPUT == 1){
+            printf("HSV-2 parameters read from: %s:\n", param_file_name);
+        }
+    }
+    // Throw away the first line of the parameter file (the header line)
+    fscanf(param_file, "%*[^\n]\n");
+
+    // Read parameters from each line (i_run) of the file
+    for(i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+
+        checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard_hsv2));
+        check_if_cannot_read_param(checkreadok, "param_local->average_annual_hazard_hsv2");
+
+
+        for(hsv = 0; hsv < N_HSV2_EVENTS; hsv++){
+            checkreadok = fscanf(param_file, "%lg", &(param_local->mean_dur_hsv2event[hsv]));
+            check_if_cannot_read_param(checkreadok, "param_local->mean_dur_hsv2event[hsv]");
+        }
+
+    }
+    // Close parameter file
+    fclose(param_file);
+    return;
+}
+
+
 void read_partnership_params(char *patch_tag, parameters *allrunparameters, int n_runs){
     /* Read partnership related parameters
     
@@ -857,8 +919,8 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     char param_file_name[LONGSTRINGLENGTH];
     int i_run, i;
     
-    // For rounding the time HIV starts to the nearest timestep
-    double time_start_hiv_undiscretised;
+    // For rounding the time HIV/HSV-2 starts to the nearest timestep
+    double time_start_hiv_undiscretised, time_start_hsv2_undiscretised;
     
     // This is a temporary var so as not to keep writing allparameters+i_run
     // (or equivalently &allparameters[i_run]). 
@@ -911,7 +973,27 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         }
         param_local->start_time_hiv = param_local->start_time_hiv_discretised_year +
             param_local->start_time_hiv_discretised_timestep / (1.0 * N_TIME_STEP_PER_YEAR);
+
+
+        // Same for start_time_hsv2 - want it to be equal to a timestep value
+        checkreadok = fscanf(param_file, "%lg", &time_start_hsv2_undiscretised);
+        check_if_cannot_read_param(checkreadok, "param_local->start_time_hsv2");
+        // The year when HSV-2 is seeded
+        param_local->start_time_hsv2_discretised_year = (int) floor(time_start_hsv2_undiscretised);
         
+        // The timestep within that year when HSV-2 is seeded:
+        param_local->start_time_hsv2_discretised_timestep = (int) floor((time_start_hsv2_undiscretised - param_local->start_time_hsv2_discretised_year)*N_TIME_STEP_PER_YEAR);
+        
+        if(param_local->start_time_hsv2_discretised_timestep >= N_TIME_STEP_PER_YEAR){
+            printf("Error in calculating when HSV-2 is seeded. Exiting\n");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        param_local->start_time_hsv2 = param_local->start_time_hsv2_discretised_year +
+            param_local->start_time_hsv2_discretised_timestep / (1.0 * N_TIME_STEP_PER_YEAR);
+
+	
         checkreadok = fscanf(param_file, "%lf", &temp_int);
         param_local->start_time_simul = (int) floor(temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->start_time_simul");
@@ -919,7 +1001,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         checkreadok = fscanf(param_file, "%lf", &temp_int);
         param_local->end_time_simul = (int) floor(temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->end_time_simul");
-
+    
         // If this message comes up make sure that age_list is correctly indexed
         if(
         ((param_local->end_time_simul-param_local->start_time_simul) >= 2*(MAX_AGE - AGE_ADULT)) &&
@@ -2166,7 +2248,12 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
         checkreadok = fscanf(param_file, "%lf", &temp_int);
         param_local->n_years_HIV_seeding = (int) floor(temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->n_years_HIV_seeding");
-        
+
+	/* Proportion of population seeded to be HSV-2 positive at start_time_hsv2: */
+        checkreadok = fscanf(param_file,"%lg",&(param_local->initial_prop_hsv2infected));
+        check_if_cannot_read_param(checkreadok,"param_local->initial_prop_hsv2infected");
+
+	
         ////// This is for debugging: 
         ////// Make sure proportions add to 1.
         ////// Shall we do it this way or have only 2 of the 3 read in a file and automatically calculating the third one? Could then print the third one to warn the user
@@ -2194,6 +2281,9 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
             exit(1);
         }
         /* End of debugging. */
+
+
+	
     }
     fclose(param_file);
     return;

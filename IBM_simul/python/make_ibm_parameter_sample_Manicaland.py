@@ -22,6 +22,7 @@ param_init.txt
 param_demographics.txt
 param_times.txt
 param_HIV.txt
+param_HSV2.txt
 param_cascade.txt
 param_popart.txt
 param_partnerships.txt
@@ -1034,7 +1035,7 @@ if __name__=="__main__":
 
     
     filename_list = ["param_init.txt", "param_demographics.txt", "param_times.txt", 
-                     "param_HIV.txt", "param_cascade.txt", "param_partnerships.txt"]
+                     "param_HIV.txt", "param_HSV2.txt", "param_cascade.txt", "param_partnerships.txt"]
 
     if COUNTRY in ["Zambia","SouthAfrica"]:
         filename_list+= ["param_popart.txt"]

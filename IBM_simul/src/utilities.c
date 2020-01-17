@@ -1283,7 +1283,7 @@ void add_commas_to_calibration_output(char *output_string,int NDATA){
 
 
 void print_param_struct(parameters *param){
-    int g,ag,bg,icd4,spvl,r,i,y;
+    int g,ag,bg,icd4,spvl,hsv,r,i,y;
     int i_spectrum;
     int ac;
 
@@ -1337,16 +1337,24 @@ void print_param_struct(parameters *param){
         printf("param->p_initial_cd4_200_350[spvl]=%lg\n",param->p_initial_cd4_200_350[spvl]);
     for (spvl=0; spvl<NSPVL; spvl++)
         printf("param->p_initial_cd4_lt200[spvl]=%lg\n",param->p_initial_cd4_lt200[spvl]);
-
     printf("param->initial_SPVL_mu=%lg\n",param->initial_SPVL_mu);
     printf("param->initial_SPVL_sigma=%lg\n",param->initial_SPVL_sigma);
     printf("param->SPVL_sigma_M=%lg\n",param->SPVL_sigma_M);
     printf("param->SPVL_sigma_E=%lg\n",param->SPVL_sigma_E);
-
     for (icd4=0; icd4<NCD4; icd4++)
         for (spvl=0; spvl<NSPVL; spvl++)
             printf("param->time_hiv_event[icd4][spvl]= %lg\n",param->time_hiv_event[icd4][spvl]);
     printf("param->factor_for_slower_progression_ART_VU=%lg\n",param->factor_for_slower_progression_ART_VU);
+
+
+    /* HSV.csv parameters: */
+    printf("param->average_annual_hazard_hsv2=%lg\n",param->average_annual_hazard_hsv2);
+    for(hsv = 0; hsv < N_HSV2_EVENTS; hsv++){
+	printf("param->mean_dur_hsv2event[hsv]=%lg\n",param->mean_dur_hsv2event[hsv]);
+    }
+
+
+    /* partnerships.csv parameters: */
     printf("param->assortativity=%lg\n",param->assortativity);
     printf("param->prop_compromise_from_males=%lg\n",param->prop_compromise_from_males);
 
@@ -1374,6 +1382,7 @@ void print_param_struct(parameters *param){
         printf("param->breakup_shape_k[r]=%lg\n",param->breakup_shape_k[r]);
 
     printf("param->start_time_hiv=%lg\n",param->start_time_hiv);
+    printf("param->start_time_hsv2=%lg\n",param->start_time_hsv2);
     printf("param->start_time_simul=%i\n",param->start_time_simul);
     printf("param->end_time_simul=%i\n",param->end_time_simul);
     printf("param->COUNTRY_HIV_TEST_START=%lg\n",param->COUNTRY_HIV_TEST_START);
@@ -1492,6 +1501,8 @@ void print_param_struct(parameters *param){
     for (g=0; g<N_GENDER; g++)
         for (r=0; r<N_RISK; r++)
             printf("param->initial_prop_infected_gender_risk[g][r]=%lg\n",param->initial_prop_infected_gender_risk[g][r]);
+    printf("param->n_years_HIV_seeding=%i\n",param->n_years_HIV_seeding);
+    printf("param->initial_prop_hsv2infected=%lg\n",param->initial_prop_hsv2infected);
 
     printf("------------------------------------------------------------------------------------\n");
     printf("------------------------------------------------------------------------------------\n");
@@ -1508,7 +1519,7 @@ void check_if_parameters_plausible(parameters *param){
     */
     
     
-    int g, ag, bg, icd4, jcd4, spvl, r, a_unpd, y;
+    int g, ag, bg, icd4, jcd4, spvl, hsv, r, a_unpd, y;
     int dhs_round;
     double temp;
     
@@ -1767,6 +1778,30 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
+
+    if (param->factor_for_slower_progression_ART_VU<0 || param->factor_for_slower_progression_ART_VU>5){
+        printf("Error: param->factor_for_slower_progression_ART_VU is outside expected range [0,5]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    
+    if (param->average_annual_hazard_hsv2<0 || param->average_annual_hazard_hsv2>5){
+        printf("Error: param->average_annual_hazard_hsv2 is outside expected range [0,5]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    for(hsv=0; hsv<N_HSV2_EVENTS; hsv++){
+	if (param->mean_dur_hsv2event[hsv]<0 || param->mean_dur_hsv2event[hsv]>20){
+	    printf("Error: param->mean_dur_hsv2event[hsv] is outside expected range [0,20] = %lf\nExiting\n",param->mean_dur_hsv2event[hsv]);
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+    }
 
 
     if (param->prop_compromise_from_males<0 || param->prop_compromise_from_males>1){
@@ -2092,6 +2127,13 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+    if (param->start_time_hsv2<param->start_time_simul || param->start_time_hsv2>1920){
+        printf("Error:param->start_time_hsv2 is outside expected range [start_time_simul,1920]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
     if (param->start_time_simul<1900 || param->start_time_simul>1980){
         printf("Error:param->start_time_simul is outside expected range [1900,1980]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -2191,6 +2233,23 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
+
+    if (param->n_years_HIV_seeding<1 || param->n_years_HIV_seeding>10){
+        printf("Error:param->n_years_HIV_seeding is outside expected range [1,10]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->initial_prop_hsv2infected<0.001 || param->initial_prop_hsv2infected>0.2){
+        printf("Error:param->initial_prop_hsv2infected is outside expected range [0.001,0.2]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    
     for(ag=0; ag<N_AGE; ag++){
         if (param->c_per_gender_within_patch[FEMALE][ag]<0 || param->c_per_gender_within_patch[FEMALE][ag]>20){
             printf("Error:param->c_per_gender_within_patch[FEMALE][ag] is outside expected range [0,20]\nExiting\n");

@@ -1787,8 +1787,8 @@ void check_if_parameters_plausible(parameters *param){
     }
 
     
-    if (param->average_annual_hazard_hsv2<0 || param->average_annual_hazard_hsv2>5){
-        printf("Error: param->average_annual_hazard_hsv2 is outside expected range [0,5]\nExiting\n");
+    if (param->average_annual_hazard_hsv2<0 || param->average_annual_hazard_hsv2>0.25){
+        printf("Error: param->average_annual_hazard_hsv2 is outside expected range [0,0.25]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

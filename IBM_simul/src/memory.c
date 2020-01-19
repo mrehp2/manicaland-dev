@@ -99,6 +99,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
         overall_partnerships->partner_dummylist[i] = i;         /* Initialize the dummy list. */
     *overall_partnerships->n_partnerships = 0;
     *overall_partnerships->n_susceptible_in_serodiscordant_partnership = 0;
+    *overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership = 0;
     /* Initialise the number of people in each group to be zero (as no HIV at start of simulation): */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
         patch[p].n_hiv_pos_progression[i] = 0;
@@ -467,6 +468,24 @@ void alloc_patch_memoryv2(patch_struct *patch){
         if(patch[p].n_newly_infected==NULL)
         {
             printf("Unable to allocate n_newly_infected in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+	patch[p].n_infected_hsv2 = malloc(sizeof(population_size_one_year_age));
+        if(patch[p].n_infected_hsv2==NULL)
+        {
+            printf("Unable to allocate n_infected_hsv2 in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+	patch[p].n_newly_infected_hsv2 = malloc(sizeof(population_size_one_year_age));
+        if(patch[p].n_newly_infected_hsv2==NULL)
+        {
+            printf("Unable to allocate n_newly_infected_hsv2 in alloc_all_memory. Execution aborted.");
             printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
             fflush(stdout);
             exit(1);
@@ -1026,6 +1045,24 @@ void alloc_partnership_memoryv2(all_partnerships *overall_partnerships){
         exit(1);
     }
 
+    overall_partnerships->susceptible_in_hsv2serodiscordant_partnership = malloc(MAX_POP_SIZE*MAX_PARTNERSHIPS_PER_INDIVIDUAL*sizeof(individual*));
+    if(overall_partnerships->susceptible_in_hsv2serodiscordant_partnership==NULL)
+    {
+        printf("Unable to allocate susceptible_in_hsv2serodiscordant_partnership in alloc_all_memory. Execution aborted.");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership = malloc(sizeof(long));  // only need space for one long
+    if(overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership==NULL)
+    {
+        printf("Unable to allocate n_susceptible_in_hsv2serodiscordant_partnership in alloc_all_memory. Execution aborted.");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
 
     overall_partnerships->pop_available_partners = malloc(sizeof(population_partners)); // Here only storing adresses to individuals who already exist and have been allocated memory for so should be ok
     if(overall_partnerships->pop_available_partners==NULL)
@@ -1144,7 +1181,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
         individual ***hiv_pos_progression, long *n_hiv_pos_progression, long *size_hiv_pos_progression, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events,
 	individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events,
         long *new_deaths, long *death_dummylist,
-	population_size_one_year_age *n_infected, population_size_one_year_age *n_newly_infected, population_size_one_year_age *n_infected_cumulative, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, population_size *n_infected_wide_age_group, population_size *n_newly_infected_wide_age_group,
+	population_size_one_year_age *n_infected, population_size_one_year_age *n_newly_infected, population_size_one_year_age *n_infected_cumulative, population_size_one_year_age *n_infected_hsv2, population_size_one_year_age *n_newly_infected_hsv2, population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata, population_size *n_infected_wide_age_group, population_size *n_newly_infected_wide_age_group,
 			   chips_sample_struct *chips_sample, cumulative_outputs_struct *cumulative_outputs, calendar_outputs_struct *calendar_outputs, long ****cross_sectional_distr_n_lifetime_partners, long ****cross_sectional_distr_n_partners_lastyear, PC_sample_struct *PC_sample, PC_cohort_struct *PC_cohort, PC_cohort_data_struct *PC_cohort_data, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params)
 {
 
@@ -1158,6 +1195,8 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free(n_infected);
     free(n_newly_infected);
     free(n_infected_cumulative);
+    free(n_infected_hsv2);
+    free(n_newly_infected_hsv2);
     free(n_infected_wide_age_group);
     free(n_infected_by_all_strata);
     
@@ -1246,7 +1285,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
 
 }
 
-void free_all_partnership_memory(partnership *partner_pairs, long *n_partnerships, individual **susceptible_in_serodiscordant_partnership, long *n_susceptible_in_serodiscordant_partnership,
+void free_all_partnership_memory(partnership *partner_pairs, long *n_partnerships, individual **susceptible_in_serodiscordant_partnership, long *n_susceptible_in_serodiscordant_partnership, individual **susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership,
         population_partners* pop_available_partners, population_size_all_patches *n_pop_available_partners,
         partnership ***planned_breakups, long *n_planned_breakups, long *size_planned_breakups,
         long *new_partners_f_sorted, long *shuffled_idx, long *new_partners_f_non_matchable, long *new_partners_m, long *new_partners_m_sorted, long *partner_dummylist)
@@ -1287,6 +1326,9 @@ void free_all_partnership_memory(partnership *partner_pairs, long *n_partnership
     free(susceptible_in_serodiscordant_partnership);
     free(n_susceptible_in_serodiscordant_partnership);
 
+    free(susceptible_in_hsv2serodiscordant_partnership);
+    free(n_susceptible_in_hsv2serodiscordant_partnership);
+
     free(n_pop_available_partners);
     for(m=0 ; m<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ; m++)
     {
@@ -1316,7 +1358,9 @@ void free_patch_memory(patch_struct *patch){
 		patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, 
 		patch[p].new_deaths, patch[p].death_dummylist,
                 patch[p].n_infected,
-		patch[p].n_newly_infected, patch[p].n_infected_cumulative, patch[p].n_infected_by_all_strata, patch[p].n_infected_wide_age_group, patch[p].n_newly_infected_wide_age_group,
+		patch[p].n_newly_infected, patch[p].n_infected_cumulative,
+		patch[p].n_infected_hsv2, patch[p].n_newly_infected_hsv2, 
+		patch[p].n_infected_by_all_strata, patch[p].n_infected_wide_age_group, patch[p].n_newly_infected_wide_age_group,
                 patch[p].chips_sample, patch[p].cumulative_outputs, patch[p].calendar_outputs, patch[p].cross_sectional_distr_n_lifetime_partners, patch[p].cross_sectional_distr_n_partners_lastyear,
 		patch[p].PC_sample, patch[p].PC_cohort, patch[p].PC_cohort_data,
 	        patch[p].PrEP_intervention_sample, patch[p].PrEP_intervention_params);
@@ -1328,7 +1372,8 @@ void free_partnership_memory(all_partnerships *overall_partnerships){
 
     free_all_partnership_memory(overall_partnerships->partner_pairs,overall_partnerships->n_partnerships,
             overall_partnerships->susceptible_in_serodiscordant_partnership, overall_partnerships->n_susceptible_in_serodiscordant_partnership,
-            overall_partnerships->pop_available_partners, overall_partnerships->n_pop_available_partners,
+            overall_partnerships->susceptible_in_hsv2serodiscordant_partnership, overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership,
+	    overall_partnerships->pop_available_partners, overall_partnerships->n_pop_available_partners,
             overall_partnerships->planned_breakups, overall_partnerships->n_planned_breakups,
             overall_partnerships->size_planned_breakups,
             overall_partnerships->new_partners_f_sorted, overall_partnerships->shuffled_idx, overall_partnerships->new_partners_f_non_matchable,

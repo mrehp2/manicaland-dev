@@ -365,6 +365,8 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     set_population_count_one_year_zero(patch[p].n_infected);
     set_population_count_one_year_zero(patch[p].n_newly_infected);
     set_population_count_one_year_zero(patch[p].n_infected_cumulative);
+    set_population_count_one_year_zero(patch[p].n_infected_hsv2);
+    set_population_count_one_year_zero(patch[p].n_newly_infected_hsv2);
     set_population_all_strata_count_one_year_zero(patch[p].n_infected_by_all_strata);
 
 
@@ -412,6 +414,13 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     person_template.idx_cascade_event[0] = -1;           /* Initialize at dummy value. */
     person_template.idx_cascade_event[1] = -1;           /* Initialize at dummy value. */
     person_template.debug_last_cascade_event_index = -1;     /* Initialize at dummy value. */
+
+
+    person_template.HSV2_status = HSV2_UNINFECTED; /* Initialize at dummy value. */
+    person_template.next_HSV2_event = NOEVENT;    /* Dummy value (same as HIV - but doesnt' matter). */
+    person_template.idx_hsv2_pos_progression[0] = -1;           /* Initialize at dummy value. */
+    person_template.idx_hsv2_pos_progression[1] = -1;           /* Initialize at dummy value. */
+
     person_template.time_to_delivery = -1;                /* Not pregnant - allow a % of women to be pregnant later. */
     /* Set up partnerships later on. */
     person_template.n_partners = 0;

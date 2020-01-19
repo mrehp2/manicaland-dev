@@ -24,6 +24,7 @@
 #include "init.h"
 #include "utilities.h"
 #include "partnership.h"
+#include "hsv.h"
 #include "checks.h"
 #include "demographics.h"
 #include "output.h"

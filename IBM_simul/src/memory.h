@@ -28,14 +28,15 @@ void alloc_pc_cohort_data(PC_cohort_data_struct **, int , int );
 void alloc_patch_memoryv2(patch_struct *);
 void alloc_partnership_memoryv2(all_partnerships *);
 void free_all_partnership_memory(partnership *, long *, individual **, long *,
-        population_partners* , population_size_all_patches *,
+        individual **, long *,
+	population_partners* , population_size_all_patches *,
         partnership ***, long *, long *,
         long *, long *, long *, long *, long *, long *);
 void free_all_patch_memory(parameters *, individual *, population_size *, 
         population_size_one_year_age *, stratified_population_size *, age_list_struct *, 
 	child_population_struct *, mtct_hiv_template *, individual ***, long *, long *, individual ***, long *, long *, individual ***,  
 	long *, long *, individual ***, long *, long *, individual ***, long *, long *, long *, long *,
-        population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age_hiv_by_stage_treatment *, population_size *, population_size *,
+        population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age_hiv_by_stage_treatment *, population_size *, population_size *,
         chips_sample_struct *, cumulative_outputs_struct *, calendar_outputs_struct *, 
 	long ****, long ****, PC_sample_struct *, PC_cohort_struct *, PC_cohort_data_struct *,PrEP_intervention_sample_struct *, PrEP_intervention_params_struct *);
 

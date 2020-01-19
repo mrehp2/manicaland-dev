@@ -33,6 +33,24 @@ double hsv2_transmission_probability(individual* susceptible, individual* positi
     
     // Assign hazard as baseline HSV-2 hazard
     hazard = param->average_annual_hazard_hsv2;
+
+
+
+    // Add a multiplying factor for assortative risk mixing: high-high is twice as risky and low-low half as risky as other combinations. We use the same values as for HIV (assuming that they modify coital frequency and condom use).
+    if(CHANGE_RR_BY_RISK_GROUP == 1){
+	if(positive_partner->sex_risk == LOW && susceptible->sex_risk == LOW)
+	    hazard *= 0.5;
+	else if(positive_partner->sex_risk == HIGH && susceptible->sex_risk == HIGH)
+	    hazard *= 2.0;
+    }
+    
+
+    // Add a multiplying factor for assortative community mixing: within community is more risky than between community, reflecting higher frequency of sex act and lower condom use. Same values as HIV. 
+    if(positive_partner->patch_no != susceptible->patch_no){
+	hazard *= param->rr_hiv_between_vs_within_patch;
+    }
+
+
     printf("Fix HSV-2 hazard\n");
     return hazard;
 }
@@ -43,7 +61,6 @@ void hsv2_acquisition(individual* susceptible, double time_infect, patch_struct 
     all_partnerships *overall_partnerships, output_struct *output, debug_struct *debug, 
     file_struct *file_data_store, int t0, int t_step){
 
-    individual *infector; /* Pointer to the person who infects. Makes code more readable. */
     
     if(susceptible->id == FOLLOW_INDIVIDUAL && susceptible->patch_no == FOLLOW_PATCH){
         printf("checking HSV-2 acquisition for adult %ld from patch %d at time %6.4f\n",
@@ -78,34 +95,18 @@ void hsv2_acquisition(individual* susceptible, double time_infect, patch_struct 
     /* This will create an alias for each seropositive partner to save typing. */
     individual* temp_HSV2pos_partner;
 
+    /* Store for the total probability of getting infected (given the susceptible's partners) at this timestep: */
+    double total_hazard_per_timestep = 0.0;
+    
     /* Now sum hazard over each HSV2+ partner: */
     for(i = 0; i < npos; i++){
         /* This is a pointer to the ith HSV2+ partner of the susceptible: */
         temp_HSV2pos_partner = susceptible->partner_pairs_HSV2pos[i]->ptr[partner_gender];
 
-
-        // Add a multiplying factor for assortative risk mixing: high-high is twice as risky and low-low half as risky as other combinations. We use the same values as for HIV (assuming that they modify coital frequency and condom use).
-        if(CHANGE_RR_BY_RISK_GROUP == 1){
-            if(temp_HSV2pos_partner->sex_risk == LOW && susceptible->sex_risk == LOW){
-                PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= 0.5;
-            }
-	    else if(temp_HSV2pos_partner->sex_risk == HIGH && susceptible->sex_risk == HIGH){
-                PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= 2.0;
-            }
-            
-        }
-
-        // Add a multiplying factor for assortative community mixing: within community is more risky than between community, reflecting higher frequency of sex act and lower condom use. Same values as HIV. 
-        if(temp_HSV2pos_partner->patch_no != susceptible->patch_no){
-            PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= patch[p].param->rr_hiv_between_vs_within_patch;
-        }
-
-         total_hazard_ignore_circ += PER_PARTNERSHIP_HAZARD_TEMPSTORE[i];
-
+	total_hazard_per_timestep += hsv2_transmission_probability(susceptible, temp_HSV2pos_partner, patch[p].param) * TIME_STEP;
     }
-    
-    total_hazard_per_timestep = total_hazard_ignore_circ * TIME_STEP;
 
+    
     double x = gsl_rng_uniform (rng);
     if(x <= total_hazard_per_timestep){
 
@@ -203,7 +204,7 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
             /* This partnership has become HSV-2 serodiscordant so, unless the HSV2- temp_partner was already in the list of susceptible_in_hsv2serodiscordant_partnership, they have to be added there.
 	       idx_serodiscordant == -1 means before HSV-2 seroconversion of seroconverter, this individual was in no HSV-2 serodiscordant partnerships. */
             if(temp_partner->idx_serodiscordant == -1 ){
-                add_susceptible_to_list_hsv2serodiscordant_partnership(temp_partner,
+                add_susceptible_to_list_serodiscordant_partnership(temp_partner,
                     susceptible_in_hsv2serodiscordant_partnership,
                     n_susceptible_in_hsv2serodiscordant_partnership);
             }
@@ -328,6 +329,10 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
         int ai_inc = n_newly_infected_hsv2->youngest_age_group_index + aa;
         while (ai_inc>(MAX_AGE-AGE_ADULT-1))
             ai_inc = ai_inc - (MAX_AGE-AGE_ADULT);
+
+        int ai_age = age_list->age_list_by_gender[g]->youngest_age_group_index + aa;
+        while (ai_age>(MAX_AGE-AGE_ADULT-1))
+            ai_age = ai_age - (MAX_AGE-AGE_ADULT);
 
         /* looking for the seroconverter in the age_list --> presumably only for debugging, could get rid of this in final code to speed up. */
         ncheck = 0;
@@ -529,7 +534,7 @@ void next_hsv2_event(individual* indiv, individual ***hsv2_pos_progression, long
     /* Only add an event if this happens before the end of the simulation: */
     if(t_step_event <= (param->end_time_simul - param->start_time_hsv2) * N_TIME_STEP_PER_YEAR){
         
-        //indiv->debug_last_hiv_event_index = indiv->idx_hiv_pos_progression[0];
+        //indiv->debug_last_hsv2_event_index = indiv->idx_hsv2_pos_progression[0];
         indiv->idx_hsv2_pos_progression[0] = t_step_event;
         indiv->idx_hsv2_pos_progression[1] = n_hsv2_pos_progression[t_step_event];
         
@@ -604,8 +609,7 @@ file_data_store : pointer to a file_struct structure
 
 Returns
 -------
-Nothing; carries out HIV events for a particular timestep for individuals with a scheduled event and
-schedules new events for those individuals.  Various lists and individual attributes are updated.  
+Nothing; carries out HSV-2 events for a particular timestep for individuals with a scheduled event and schedules new events for those individuals.  Various lists and individual attributes are updated.  
 */
 
 void carry_out_HSV2_events_per_timestep(double t, patch_struct *patch, int p, 
@@ -678,7 +682,7 @@ void carry_out_HSV2_events_per_timestep(double t, patch_struct *patch, int p,
                 
 	if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
 	    printf("Individual %ld from patch %d is ", indiv->id, indiv->patch_no);
-	    printf("progressing from HSV-2 stage %i to stage %i at t=%6.4f\n",t);
+	    printf("progressing to HSV-2 stage %i at t=%6.4f, with next HSV-2 event to be %i\n",indiv->HSV2_status,t,indiv->next_HSV2_event);
 	    fflush(stdout);
 	}
 
@@ -691,10 +695,11 @@ void carry_out_HSV2_events_per_timestep(double t, patch_struct *patch, int p,
 		printf(" to next_hsv2_event()\n");
 		fflush(stdout);
 	    }
-                
+
+
 	    next_hsv2_event(indiv, patch[p].hsv2_pos_progression, 
-			    patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression,
-			    patch[p].param, t, patch[p].cumulative_outputs, patch[p].calendar_outputs);
+		patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression,
+	        patch[p].param, t);
 	}
     }
 }

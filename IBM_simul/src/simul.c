@@ -24,6 +24,7 @@
 #include "partnership.h"
 #include "utilities.h"
 #include "hiv.h"
+#include "hsv.h"
 #include "init.h"
 #include "interventions.h"
 #include "structures.h"
@@ -87,6 +88,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     // Reset the counters for newly infected individuals
     for(p = 0; p < NPATCHES; p++){
         set_population_count_one_year_zero(patch[p].n_newly_infected);
+        set_population_count_one_year_zero(patch[p].n_newly_infected_hsv2);
         patch[p].n_newly_infected_total = 0;
         patch[p].n_newly_infected_total_from_outside = 0;
         patch[p].n_newly_infected_total_from_acute = 0;

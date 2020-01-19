@@ -32,15 +32,12 @@ void hsv2_acquisition(individual* , double , patch_struct *, int , all_partnersh
 
 void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_partnerships(individual* , individual** , long *);
 
-void new_hsv2_infection(double , int , individual* , population_size_one_year_age *, population_size_one_year_age *, age_list_struct *, 
-    parameters *, individual ***, long *, long *, file_struct *);
+void new_hsv2_infection(double , int , individual* , population_size_one_year_age *, population_size_one_year_age *, age_list_struct *, parameters *, individual ***, long *, long *, file_struct *);
 
-void draw_initial_hsv2_infection(double t, individual* indiv, patch_struct *patch, int p,
-				 all_partnerships *overall_partnerships, output_struct *output, file_struct *file_data_store);
+void draw_initial_hsv2_infection(double , individual* , patch_struct *, int , all_partnerships *, output_struct *, file_struct *);
 
-void next_hsv2_event(individual* indiv, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, parameters *param, double t);
+void next_hsv2_event(individual* , individual ***, long *, long *, parameters *, double );
 
-void carry_out_HSV2_events_per_timestep(double t, patch_struct *patch, int p, 
-					all_partnerships *overall_partnerships, debug_struct *debug, file_struct *file_data_store);
+void carry_out_HSV2_events_per_timestep(double , patch_struct *, int , all_partnerships *, debug_struct *, file_struct *);
 
 #endif /* HSV_H_ */

@@ -624,6 +624,12 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 
     new_adult->time_to_delivery = -1;  /* Not pregnant when enters population. */
 
+    /* Assume HSV-2 negative at birth for now. */
+    new_adult->HSV2_status = HSV2_UNINFECTED; /* Initialize at dummy value. */
+    new_adult->next_HSV2_event = NOEVENT;    /* Dummy value (same as HIV - but doesnt' matter). */
+    new_adult->idx_hsv2_pos_progression[0] = -1;           /* Initialize at dummy value. */
+    new_adult->idx_hsv2_pos_progression[1] = -1;           /* Initialize at dummy value. */
+
     new_adult->VISITEDBYCHIPS_TO_INIT_ART = FALSE;
     new_adult->VISITED_BY_CHIPS_THISROUND = FALSE;
     new_adult->NCHIPSVISITS = 0;

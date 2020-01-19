@@ -112,6 +112,7 @@ struct individual{
 
 
     int HSV2_status; /* HSV-2 state (HSV2_UNINFECTED, HSV2_ACUTE etc). */
+    int next_HSV2_event; /* Next scheduled event (HSV-2 positive only). */
     long idx_hsv2_pos_progression[2];
    
 
@@ -845,9 +846,8 @@ typedef struct{
     population_size_one_year_age *n_infected_cumulative;
     population_size_one_year_age *n_newly_infected;
 
-    /*HSV2*/
-    //population_size_one_year_age *n_infected_hsv2;
-    //population_size_one_year_age *n_newly_infected_hsv2;
+    population_size_one_year_age *n_infected_hsv2;
+    population_size_one_year_age *n_newly_infected_hsv2;
 
     /* Counts number of HIV+ by gender, risk, one-year age group, CD4 stage (not by acute though) and ART status. */
     population_size_one_year_age_hiv_by_stage_treatment *n_infected_by_all_strata;
@@ -959,6 +959,10 @@ typedef struct{
 
     individual** susceptible_in_serodiscordant_partnership;
     long *n_susceptible_in_serodiscordant_partnership;
+
+    individual** susceptible_in_hsv2serodiscordant_partnership;
+    long *n_susceptible_in_hsv2serodiscordant_partnership;
+
     /*HSV-2*/
     //individual** susceptible_in_hsv2serodiscordant_partnership,
     //long *n_susceptible_in_hsv2serodiscordant_partnership;

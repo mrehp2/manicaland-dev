@@ -59,6 +59,11 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
     indiv3->idx_serodiscordant = -1;
     indiv4->idx_serodiscordant = -1;
 
+    indiv1->idx_hsv2_serodiscordant = -1;
+    indiv2->idx_hsv2_serodiscordant = -1;
+    indiv3->idx_hsv2_serodiscordant = -1;
+    indiv4->idx_hsv2_serodiscordant = -1;
+
     indiv1->gender = 1;
     indiv2->gender = 1;
     indiv3->gender = 0;
@@ -154,6 +159,11 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
     indiv2->idx_serodiscordant = -1;
     indiv3->idx_serodiscordant = -1;
     indiv4->idx_serodiscordant = -1;
+
+    indiv1->idx_hsv2_serodiscordant = -1;
+    indiv2->idx_hsv2_serodiscordant = -1;
+    indiv3->idx_hsv2_serodiscordant = -1;
+    indiv4->idx_hsv2_serodiscordant = -1;
 
     indiv1->gender = 1;
     indiv2->gender = 1;
@@ -322,6 +332,11 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
     indiv2->idx_serodiscordant = -1;
     indiv3->idx_serodiscordant = -1;
     indiv4->idx_serodiscordant = -1;
+
+    indiv1->idx_hsv2_serodiscordant = -1;
+    indiv2->idx_hsv2_serodiscordant = -1;
+    indiv3->idx_hsv2_serodiscordant = -1;
+    indiv4->idx_hsv2_serodiscordant = -1;
 
     indiv1->gender = 1;
     indiv2->gender = 1;

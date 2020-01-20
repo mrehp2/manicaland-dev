@@ -27,9 +27,12 @@ void breakup(double, partnership*, all_partnerships *);
 void update_list_available_partners_breakup(double , partnership* , population_partners*, 
     population_size_all_patches *);
 void add_susceptible_to_list_serodiscordant_partnership(individual* , individual** , long *);
+void add_susceptible_to_list_hsv2serodiscordant_partnership(individual* indiv, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
 void remove_susceptible_from_list_serodiscordant_partnership(individual* , individual** , long *);
+void remove_susceptible_from_list_hsv2serodiscordant_partnership(individual* indiv, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
 void update_list_susceptibles_in_serodiscordant_partnerships_breakup(partnership* , 
     individual** , long *);
+void update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(partnership* breakup, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
 void draw_nb_new_partnerships(patch_struct *, parameters *, int, int);
 void draw_n_new_partnerships(int , long, parameters *, int , int , int , int , int *,
         all_partnerships *, patch_struct *, int , int , debug_struct *, file_struct *);

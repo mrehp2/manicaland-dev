@@ -864,6 +864,47 @@ void check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partne
     }
 }
 
+
+// CHECK 1b (not currently used): check if individual is alive, HSV2 -ve and has HSV2 +ve partners, and if so whether he is in the right place in the list of susceptibles in an HSV-2 serodiscordant partnership
+void check_if_individual_should_be_in_list_susceptibles_in_hsv2serodiscordant_partnership(individual *temp_ind, all_partnerships * overall_partnerships){
+    int i;
+    int isInHSV2SerodiscordantCouple = 0;
+
+    if(temp_ind->cd4 > DEAD && temp_ind->HSV2_status==0)
+    {
+        if(temp_ind->n_partners>0)
+        {
+            for(i=0 ; i<temp_ind->n_partners ; i++) // loop over all partners in case there is something wrong with HSV2 +ve partners tracking
+            {
+                // is partner HSV-2 +ve?
+                if(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]->HSV2_status>0)
+                    isInHSV2SerodiscordantCouple = 1;
+            }
+        }
+        if(isInHSV2SerodiscordantCouple>0)
+        {
+            // check this person is in the right place in the list of susceptibles in an HSV-2 serodiscordant partnership
+            if(temp_ind->idx_hsv2_serodiscordant<0 || temp_ind->idx_hsv2_serodiscordant>=overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership[0])
+            {
+                printf("PROBLEM: individual %ld from patch %d is not at all in the list of susceptible individuals in an HSV-2 serodiscordant couple\n",temp_ind->id,temp_ind->patch_no);
+                print_individual(temp_ind);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }else if(overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[temp_ind->idx_hsv2_serodiscordant]->id != temp_ind->id ||  overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[temp_ind->idx_hsv2_serodiscordant]->patch_no != temp_ind->patch_no)
+            {
+                printf("PROBLEM: individual %ld from patch %d is not found where should be in the list of HSV-2 susceptible individuals in an HSV-2 serodiscordant couple\n",temp_ind->id,temp_ind->patch_no);
+                print_individual(temp_ind);
+                printf("BUT the person pointed to in the list is at HSV2 idx %li:\n",temp_ind->idx_hsv2_serodiscordant);
+                print_individual(overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[temp_ind->idx_hsv2_serodiscordant]);
+                printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+                fflush(stdout);
+                exit(1);
+            }
+        }
+    }
+}
+
 // CHECK 2: check if individual is alive and has available partnerships, whether he is in the right place in the list of available partners
 void check_if_individual_should_be_in_list_available_partners(individual *temp_ind, all_partnerships * overall_partnerships, int t0, int t_step){
     int i;
@@ -918,6 +959,9 @@ void sweep_through_all_and_check_lists_serodiscordant_and_available_partners (pa
 
             // CHECK 1: check if individual is alive, HIV- and has HIV+ partners, and if so whether he is in the right place in the list of susceptibles in a serodiscordant partnership
             check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partnership(&temp_ind, overall_partnerships);
+
+	    // CHECK 1b: check if individual is alive, HSV2 -ve and has HSV-2 +ve partners, and if so whether he is in the right place in the list of HSV-2 susceptibles in an HSV-2 serodiscordant partnership
+            check_if_individual_should_be_in_list_susceptibles_in_hsv2serodiscordant_partnership(&temp_ind, overall_partnerships);
 
             // CHECK 2: check if individual is alive and has available partnerships, whether he is in the right place in the list of available partners
             check_if_individual_should_be_in_list_available_partners(&temp_ind, overall_partnerships, t0, t_step);

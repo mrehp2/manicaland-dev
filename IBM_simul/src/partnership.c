@@ -35,10 +35,11 @@
 /* Function does: fill in pair as a partnership between ind1 and ind2 formed at t_form_partnership
  *                  adds the pair to planned_breakups and n_planned_breakups
  *                  updates susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership accordingly
+ *                  updates susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership accordingly
  *                  NOTE THAT UPDATE OF available_partners and n_available_partners is done outside of this function, afterwards
  *                  (because several partnerships are planned in advance based on the index of individuals in the list available_partnership,
  *                  it messes things up if we update the list after each partnership formation so we do it once they are all formed)
- * function arguments: pointer to the pair and the 2 individuals, time of partnership formation, list of planned_breakups and n_planned_breakups, list of susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership, poiter to parameters.
+ * function arguments: pointer to the pair and the 2 individuals, time of partnership formation, pointer to partnership lists, poiter to parameters.
  * Function returns: nothing */
 
 void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
@@ -256,6 +257,25 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         }
     }
 
+
+    /* if the partnership is HSV-2 serodiscordant and the HSV-2 -ve is not yet in the list of susceptible_in_hsv2serodiscordant_partnership,
+     * adding the HSV-2 -ve partner to susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership */
+    if(is_hsv2_serodiscordant(pair)){
+        for(g=0 ; g<N_GENDER ; g++){
+            if(pair->ptr[g]->HSV2_status==0){ 
+		/* This is the HSV-2 susceptible individual in the HSV-2 serodiscordant partnership which is formed: */
+                if(pair->ptr[g]->idx_hsv2_serodiscordant==-1){
+		    /* This means this individual is not yet in the list susceptible_in_hsv2serodiscordant_partnership. 
+		       So add the susceptible from susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership */
+                    //printf("n_susceptible_in_hsv2serodiscordant_partnership BEFORE - part formation %li\n",*n_susceptible_in_hsv2serodiscordant_partnership);
+                    add_susceptible_to_list_hsv2serodiscordant_partnership(pair->ptr[g], overall_partnerships->susceptible_in_hsv2serodiscordant_partnership,  overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership);
+                    //printf("n_susceptible_in_hsv2serodiscordant_partnership AFTER - part formation %li\n",*n_susceptible_in_hsv2serodiscordant_partnership);
+                }
+            }
+        }
+    }
+
+    
     /*if(ind1->id==5486)
     {
         print_here_string("000000000000000000000000000000000000000000000000",0);
@@ -363,7 +383,7 @@ int time_to_partnership_dissolution(parameters *param, int r1, int r2, int p, in
 }
 
 /* Function does: breakup a given partnership and updates the lists of available partners and of serodiscordant couples accordingly
- * function arguments: the time at which partnership is broken up (double), a pointer to the partnership breaking up, pointers to the lists of pop_available_partners and n_pop_available_partners and susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership
+ * function arguments: the time at which partnership is broken up (double), a pointer to the partnership breaking up, pointer to a structure containing the lists of pop_available_partners and n_pop_available_partners, susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership,  susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership
  * Function returns: nothing */
 void breakup(double time_breakup, partnership* breakup, all_partnerships *overall_partnerships)
 {
@@ -414,6 +434,8 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
 
         update_list_susceptibles_in_serodiscordant_partnerships_breakup(breakup, overall_partnerships->susceptible_in_serodiscordant_partnership, overall_partnerships->n_susceptible_in_serodiscordant_partnership);
 
+	update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(breakup, overall_partnerships->susceptible_in_hsv2serodiscordant_partnership, overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership);
+
         /* removing the female from list of partners of the male and vice versa*/
         if(who->patch_no != other->patch_no)
         {
@@ -454,6 +476,18 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
                 }
                 who->partner_pairs_HIVpos[index_partner] = who->partner_pairs_HIVpos[who->n_HIVpos_partners];
             }
+
+	    if(who->HSV2_status==HSV2_UNINFECTED && other->HSV2_status>HSV2_UNINFECTED) /* only bother if the couple is HSV-2 serodiscordant */
+            {
+                index_partner = 0;
+                while(who->partner_pairs_HSV2pos[index_partner]->ptr[1-g]->id!=id_partners[1-g] || who->partner_pairs_HSV2pos[index_partner]->ptr[1-g]->patch_no!=patch_partners[1-g])
+                {
+                    index_partner++;
+                }
+                who->n_HSV2pos_partners--;
+                who->partner_pairs_HSV2pos[index_partner] = who->partner_pairs_HSV2pos[who->n_HSV2pos_partners];
+            }
+
         }
 
         // for debug to count the number of breakups and check that all partnerships are broken up at some point:
@@ -534,6 +568,31 @@ void add_susceptible_to_list_serodiscordant_partnership(individual* indiv,
 }
 
 
+void add_susceptible_to_list_hsv2serodiscordant_partnership(individual* indiv, 
+    individual** susceptible_in_hsv2serodiscordant_partnership, 
+    long *n_susceptible_in_hsv2serodiscordant_partnership){
+    /* Add a susceptible to the list of HSV-2 serodiscordant partnerships
+    
+    This function is called following infection of an individual with HSV-2 +ve partners or partnership formation with an HSV-2 +ve individual.  
+    
+    Arguments
+    ---------
+    indiv : pointer to an individual structure - Pointer to the HSV2-susceptible individual
+    susceptible_in_hsv2serodiscordant_partnership : pointer to array of individual structures
+    n_susceptible_in_hsv2serodiscordant_partnership : pointer to array of individual structures
+    
+    Returns:    Nothing; 
+    -------
+    */
+    
+    indiv->idx_hsv2_serodiscordant = n_susceptible_in_hsv2serodiscordant_partnership[0];
+    
+    susceptible_in_hsv2serodiscordant_partnership[n_susceptible_in_hsv2serodiscordant_partnership[0]] = indiv;
+    
+    n_susceptible_in_hsv2serodiscordant_partnership[0]++;
+}
+
+
 void remove_susceptible_from_list_serodiscordant_partnership(individual* indiv, individual** susceptible_in_serodiscordant_partnership, long *n_susceptible_in_serodiscordant_partnership){
     
     /* Remove a susceptible to the list of serodiscordant partnership (can happen upon partnership breakup (including because death of partner) or seroconversion)
@@ -580,6 +639,30 @@ void remove_susceptible_from_list_serodiscordant_partnership(individual* indiv, 
 }
 
 
+
+void remove_susceptible_from_list_hsv2serodiscordant_partnership(individual* indiv, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership){
+    
+    /* Remove an HSV-2 susceptible to the list of HSV-2 serodiscordant partnership (can happen upon partnership breakup (including because death of partner) or seroconversion)
+    * function arguments: a pointer to the HSV-2 susceptible individual, and pointers to the list of susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership
+    
+    Returns: Nothing
+
+    */
+    
+    /* removing this susceptible from susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership */
+    //int k;
+    if((n_susceptible_in_hsv2serodiscordant_partnership[0] > 0) && (indiv->idx_hsv2_serodiscordant != -1)){
+        susceptible_in_hsv2serodiscordant_partnership[indiv->idx_hsv2_serodiscordant] = susceptible_in_hsv2serodiscordant_partnership[n_susceptible_in_hsv2serodiscordant_partnership[0] - 1]; /* pointing to the last HSV-2 susceptible instead of this one */
+        /* changing the index of that partnership which has been "moved" from last */
+        susceptible_in_hsv2serodiscordant_partnership[indiv->idx_hsv2_serodiscordant]->idx_hsv2_serodiscordant = indiv->idx_hsv2_serodiscordant;
+        n_susceptible_in_hsv2serodiscordant_partnership[0]--;
+
+        indiv->idx_hsv2_serodiscordant = -1; // putting back this index to -1
+
+    }
+}
+
+
 /* Function does: updates the list of serodiscordant partnerships upon partnership breakup (the two individuals and their partners can enter or leave the list)
  * function arguments: a pointer to the partnership breaking up, and pointers to the list of susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership
  * Function returns: nothing */
@@ -600,6 +683,31 @@ void update_list_susceptibles_in_serodiscordant_partnerships_breakup(partnership
                     remove_susceptible_from_list_serodiscordant_partnership(breakup->ptr[g], susceptible_in_serodiscordant_partnership,  n_susceptible_in_serodiscordant_partnership);
                     //print_here_string("---",0);
                     //print_here_string("remove from serodiscordant because breakup partnership",0);
+                }
+            }
+        }
+
+    }
+}
+
+
+
+
+/* Function does: updates the list of HSV-2 serodiscordant partnerships upon partnership breakup (the two individuals and their partners can enter or leave the list)
+ * function arguments: a pointer to the partnership breaking up, and pointers to the list of susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership
+ * Function returns: nothing */
+void update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(partnership* breakup, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership){
+    /* if the partnership is HSV-2 serodiscordant and the HSV-2 susceptible has no other HSV-2 positive partners, removing the susceptible from susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership */
+    int g;
+
+    if(is_hsv2_serodiscordant(breakup)){
+        for(g=0 ; g<N_GENDER ; g++){
+            if(breakup->ptr[g]->HSV2_status==HSV2_UNINFECTED) /* this is the HSV-2 susceptible individual in the HSV-2 serodiscordant partnership which is breaking up */
+            {
+                if(breakup->ptr[g]->n_HSV2pos_partners==1) /* this means once this partnership has broken up the susceptible will have no more HSV-2 +ve partners */
+                {
+                    /* then remove the susceptible from susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership */
+                    remove_susceptible_from_list_hsv2serodiscordant_partnership(breakup->ptr[g], susceptible_in_hsv2serodiscordant_partnership,  n_susceptible_in_hsv2serodiscordant_partnership);
                 }
             }
         }

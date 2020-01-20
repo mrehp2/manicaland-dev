@@ -535,6 +535,26 @@ int is_serodiscordant(partnership *pair){
 }
 
 
+int is_hsv2_serodiscordant(partnership *pair){
+    /* Determine if a partnership is HSV-2 serodiscordant or not
+       Copy of is_serodiscordant() but for HSV-2. 
+       This function returns 1 if partnership is serodiscordant (ie 1 HSV-2 +ve and 1 HSV-2 -ve partner) and 0 if HSV-2 seroconcordant (i.e. +/+ or -/-).  The check finds the sum and product of the two HSV-2 serostatuses.  If sum is >0 (so at least one is HSV-2 +ve) and the product is zero (so at least one is HSV-2 -ve) then the partnership is HSV-2 serodiscordant. 
+    
+    Arguments
+    ---------
+    pair : pointer to a partnership struct. The partnership to test for serodiscordance.  
+    
+    Returns
+    -------
+    int: 1 if the partnership is serodiscordant; zero otherwise
+    */
+    return(
+        ((pair->ptr[0]->HSV2_status * pair->ptr[1]->HSV2_status) == 0) && 
+        ((pair->ptr[0]->HSV2_status + pair->ptr[1]->HSV2_status) > 0)
+    );
+}
+
+
 int compare_longs (const void *a, const void *b){
     const long *da = (const long *) a;
     const long *db = (const long *) b;

@@ -42,6 +42,7 @@ int has_free_partnership(individual *);
 int is_already_selected(long *, long , long );
 void copy_array_long(long *, long *, long );
 int is_serodiscordant(partnership *);
+int is_hsv2_serodiscordant(partnership *);
 void calcul_pop_wider_age_groups(population_size *, population_size_one_year_age *);
 void calcul_prevalence(proportion_population_size *, population_size *, population_size *, 
     population_size_one_year_age *);

@@ -1403,10 +1403,12 @@ void carry_out_HIV_events_per_timestep(double t, patch_struct *patch, int p,
             
             // Function removes person from everything except the cascade event list:
             individual_death_AIDS(patch[p].age_list, indiv, patch[p].n_population,
-                patch[p].n_population_oneyearagegroups, patch[p].n_infected,
+                patch[p].n_population_oneyearagegroups, patch[p].n_infected, patch[p].n_infected_hsv2,
                 patch[p].n_population_stratified, t, patch[p].param,
                 overall_partnerships->susceptible_in_serodiscordant_partnership,
                 overall_partnerships->n_susceptible_in_serodiscordant_partnership,
+		overall_partnerships->susceptible_in_hsv2serodiscordant_partnership,
+                overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership,
                 overall_partnerships->pop_available_partners,
                 overall_partnerships->n_pop_available_partners, 
                 patch[p].cascade_events, patch[p].n_cascade_events, 
@@ -3416,8 +3418,8 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
             /* Note that the last argument '3' indicates that this is an AIDS-related death. */
             remove_from_hiv_pos_progression(indiv,  patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression,t, patch[p].param, patch[p].n_infected_by_all_strata, 3);
             /* Function removes person from everything except the cascade event list: */
-            individual_death_AIDS(patch[p].age_list, indiv, patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_infected, patch[p].n_population_stratified, t, patch[p].param,
-                    overall_partnerships->susceptible_in_serodiscordant_partnership, overall_partnerships->n_susceptible_in_serodiscordant_partnership, overall_partnerships->pop_available_partners, overall_partnerships->n_pop_available_partners, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch, p, file_data_store);
+            individual_death_AIDS(patch[p].age_list, indiv, patch[p].n_population, patch[p].n_population_oneyearagegroups, patch[p].n_infected, patch[p].n_infected_hsv2, patch[p].n_population_stratified, t, patch[p].param,
+                    overall_partnerships->susceptible_in_serodiscordant_partnership, overall_partnerships->n_susceptible_in_serodiscordant_partnership, overall_partnerships->susceptible_in_hsv2serodiscordant_partnership, overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership, overall_partnerships->pop_available_partners, overall_partnerships->n_pop_available_partners, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch, p, file_data_store);
         }
 
         else{

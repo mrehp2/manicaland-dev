@@ -347,6 +347,12 @@ void print_individual(individual *indiv)
     }
     fflush(stdout);
 
+    if(indiv->HSV2_status==0)
+    {
+        printf("Number of HSV2+ partners = %i\n",indiv->n_HSV2pos_partners);
+    }
+    fflush(stdout);
+
     if (indiv->n_partners>0) printf("Id of partners = ");
     for (n=0; n<indiv->n_partners; n++)
     {
@@ -392,6 +398,10 @@ void print_individual(individual *indiv)
         fflush(stdout);
         exit(1);
     }
+
+
+    printf("HSV-2 status - %i\n",indiv->HSV2_status);
+    fflush(stdout);
 
 
     if (indiv->gender==FEMALE){

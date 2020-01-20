@@ -202,16 +202,16 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
             temp_partner->n_HSV2pos_partners++;
             
             /* This partnership has become HSV-2 serodiscordant so, unless the HSV2- temp_partner was already in the list of susceptible_in_hsv2serodiscordant_partnership, they have to be added there.
-	       idx_serodiscordant == -1 means before HSV-2 seroconversion of seroconverter, this individual was in no HSV-2 serodiscordant partnerships. */
-            if(temp_partner->idx_serodiscordant == -1 ){
-                add_susceptible_to_list_serodiscordant_partnership(temp_partner,
+	       idx_hsv2_serodiscordant == -1 means before HSV-2 seroconversion of seroconverter, this individual was in no HSV-2 serodiscordant partnerships. */
+            if(temp_partner->idx_hsv2_serodiscordant == -1 ){
+                add_susceptible_to_list_hsv2serodiscordant_partnership(temp_partner,
                     susceptible_in_hsv2serodiscordant_partnership,
                     n_susceptible_in_hsv2serodiscordant_partnership);
             }
         } // We do nothing if the partner is currently seropositive
     }
     // Remove seroconverter from list of suscepts in serodiscordant partnerships, if appropriate
-    remove_susceptible_from_list_serodiscordant_partnership(seroconverter,
+    remove_susceptible_from_list_hsv2serodiscordant_partnership(seroconverter,
         susceptible_in_hsv2serodiscordant_partnership, n_susceptible_in_hsv2serodiscordant_partnership);
 }
 

@@ -33,7 +33,7 @@ void create_new_individual(individual *, double , parameters *, int,
 void update_population_size_new_adult(individual *, population_size *, 
     population_size_one_year_age *, stratified_population_size *);
 void update_population_size_death(individual *, population_size *, 
-    population_size_one_year_age *, population_size_one_year_age *, 
+    population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *n_infected, 
     stratified_population_size *, int, age_list_struct *,
     population_size_one_year_age_hiv_by_stage_treatment *);
 void initialize_first_cascade_event_for_new_individual(individual *, double, 
@@ -52,6 +52,7 @@ void age_population_size_one_year_age_by_one_year(population_size_one_year_age *
 void update_n_infected_by_all_strata_ageing_by_one_year(population_size_one_year_age_hiv_by_stage_treatment *);
 void remove_dead_person_from_susceptible_in_serodiscordant_partnership(individual *, 
     individual **, long *);
+void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(individual *dead_person, individual **susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
 void remove_dead_person_from_list_available_partners(double, individual *,population_partners *,
     population_size_all_patches *);
 void remove_dead_persons_partners(individual *, population_partners *, 
@@ -60,15 +61,17 @@ void remove_from_hiv_pos_progression(individual *, individual ***, long *, long 
     double, parameters *, population_size_one_year_age_hiv_by_stage_treatment *, int);
 void remove_from_cascade_events(individual *, individual ***, long *, long *, double, parameters *);
 void remove_from_vmmc_events(individual *, individual ***, long *, long *, double , parameters *);
+void remove_from_hsv2_pos_progression(individual *indiv, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, double t, parameters *param);
 void deaths_natural_causes(double, patch_struct *, int , all_partnerships *,  file_struct *);
 //void make_new_adults(double, patch_struct *, int , all_partnerships *, individual ***, long *, long *, individual ***, long *, long *, population_size_one_year_age_hiv_by_stage_treatment *);
 void make_new_adults(double, patch_struct *, int , all_partnerships *);
 void add_new_kids(double , patch_struct *, int );
 void make_pop_from_age_list(population *, age_list_struct *, individual *);
 void individual_death_AIDS(age_list_struct *, individual *, population_size *, 
-    population_size_one_year_age *, population_size_one_year_age *, 
+    population_size_one_year_age *, population_size_one_year_age *, population_size_one_year_age *n_infected,
     stratified_population_size *, double , parameters *, individual **, 
-    long *, population_partners *, population_size_all_patches *, individual ***, 
+    long *, individual **, long *,
+    population_partners *, population_size_all_patches *, individual ***, 
     long *, long *, patch_struct *, int , file_struct *);
 
 #endif /* DEMOGRAPHICS_H_ */

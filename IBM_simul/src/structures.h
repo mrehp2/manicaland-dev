@@ -136,6 +136,9 @@ struct individual{
 
     long idx_serodiscordant; // this is -1 if the individual is in no serodiscordant partnership, otherwise it is the index of this individual in the list susceptible_in_serodiscordant_partnership
 
+    long idx_hsv2_serodiscordant; // this is -1 if the individual is in no HSV2-serodiscordant partnership, otherwise it is the index of this individual in the list susceptible_in_hsv2serodiscordant_partnership
+
+    
     long idx_available_partner[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; // this is filled in with -1 if the individual is not available for partnership (i.e. n_partners==max_n_partners), otherwise it is filled in from 0 to max_n+partners-n_partners with the index this individual is at in the list pop_available_partners (within its patch/gender/age/risk group)
 
     long n_lifetime_partners;             /* Counts the number of partners that someone has had in their lifetime. */

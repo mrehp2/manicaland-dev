@@ -2395,7 +2395,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
 
 
 		    
-                    // Now update popn counts: n_population, n_infected, n_population_stratified
+                    // Now update popn counts: n_population, n_infected, n_infected_hsv2, n_population_stratified
                     update_population_size_death(person_dying, patch[p].n_population,
                         patch[p].n_population_oneyearagegroups, patch[p].n_infected, patch[p].n_infected_hsv2,
 			patch[p].n_population_stratified, aa, patch[p].age_list,
@@ -3050,6 +3050,12 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
         /* Now call a function to remove people who have died and to update their partnerships. */
         remove_dead_person_from_susceptible_in_serodiscordant_partnership(dead_person, susceptible_in_serodiscordant_partnership, n_susceptible_in_serodiscordant_partnership);
 	remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(dead_person, susceptible_in_hsv2serodiscordant_partnership, n_susceptible_in_hsv2serodiscordant_partnership);
+
+
+	/* Remove from HSV-2 natural history.
+	   Note that remove_from_hiv_pos_progression() is called outside the function individual_death_AIDS(). */
+	if (dead_person->HSV2_status>HSV2_UNINFECTED)
+	    remove_from_hsv2_pos_progression(dead_person,  patch[p].hsv2_pos_progression, patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression, t, patch[p].param);
 
         remove_dead_person_from_list_available_partners(t, dead_person, pop_available_partners,n_pop_available_partners);
         remove_dead_persons_partners(dead_person, pop_available_partners, n_pop_available_partners, t);

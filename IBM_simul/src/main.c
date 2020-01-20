@@ -616,8 +616,9 @@ int main(int argc,char *argv[]){
                     /* Now update age_list: */
                     age_population_by_one_year(patch[p].age_list);
 
-                    /* Ageing by 1 year HIV positive people (update n_infected) */
+                    /* Ageing by 1 year HIV/HSV-2 positive people (update n_infected and n_infected_hsv2) */
                     age_population_size_one_year_age_by_one_year(patch[p].n_infected);
+                    age_population_size_one_year_age_by_one_year(patch[p].n_infected_hsv2);
 
 		    /* Age by 1 year counts of number of HIV+ people in different parts of ART cascade: */
 		    update_n_infected_by_all_strata_ageing_by_one_year(patch[p].n_infected_by_all_strata);

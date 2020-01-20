@@ -927,6 +927,31 @@ void update_population_size_death(individual *individual, population_size *n_pop
 	}
     }
 
+
+
+    /* Remove from HSV-2 prevalent cases if HSV-2 +ve. */
+    if (individual->HSV2_status>HSV2_UNINFECTED){
+        if (aa<MAX_AGE-AGE_ADULT){
+            ai = n_infected_hsv2->youngest_age_group_index + aa; /* ai is the index of the two arrays age_list->number_per_age_group and age_list->age_group */
+            while (ai>(MAX_AGE-AGE_ADULT-1))
+                ai = ai - (MAX_AGE-AGE_ADULT);
+            // FOR DEBUGGING ONLY:
+            //check_age_group_index(age_list, individual->gender, individual->id,ai); /// could be removed as only checking things ///
+            (n_infected_hsv2->pop_size_per_gender_age1_risk[individual->gender][ai][individual->sex_risk]) -= 1;
+            //printf("--- One death of HSV-2 +ve (age group %d, gender %d risk group %d)\n",ai, individual->gender, individual->sex_risk);
+            //fflush(stdout);
+
+	}
+
+	else{
+	    (n_infected_hsv2->pop_size_oldest_age_group_gender_risk[individual->gender][individual->sex_risk]) -= 1;
+            //printf("--- One death of HSV-2 +ve (old, gender %d risk group %d)\n",individual->gender, individual->sex_risk);
+            //fflush(stdout);
+
+	}
+    }
+
+    
     (n_population_stratified->pop_size_per_gender_age[individual->gender][ag])--;
     (n_population_stratified->pop_size_per_gender_risk[individual->gender][individual->sex_risk])--;
     (n_population_stratified->total_pop_size_per_gender[individual->gender])--;

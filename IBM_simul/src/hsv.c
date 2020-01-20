@@ -319,9 +319,9 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
     /* DEBUGGING - CAN REMOVE ALL THE DIFFERENT AI HERE */
     if(aa < (MAX_AGE - AGE_ADULT)){
 
-        /* ai is the age index of the array n_infected->pop_size_per_gender_age1_risk[g][ai][r] for the person with DoB as above at t_infect. */
+        /* ai is the age index of the array n_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r] for the person with DoB as above at t_infect. */
 
-        // Indices for the prevalence, incidence, ART cascade counter n_infected_by_all_strata:
+        // Indices for the HSV-2 prevalence, incidence counters:
         int ai_prev = n_infected_hsv2->youngest_age_group_index + aa;
         while (ai_prev>(MAX_AGE-AGE_ADULT-1))
             ai_prev = ai_prev - (MAX_AGE-AGE_ADULT);

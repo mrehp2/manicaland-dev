@@ -383,7 +383,7 @@ int main(int argc,char *argv[]){
                 allrunparameters[p][0].DHS_params->NDHSROUNDS);
         }
     }
-
+    printf("*** Need to fix HSV-2 acquisition probability\n");
     /* Set "partners outside community" file to just have the header (but be blank otherwise). 
        Note - this only works if NPATCHES>=2. */
     if(WRITE_PARTNERS_OUTSIDE_COMMUNITY == 1 && NPATCHES>1){

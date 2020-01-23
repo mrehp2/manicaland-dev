@@ -1,7 +1,7 @@
 #!/bin/bash
 
 seed=10
-nsamples=1 # chaneg for different nruns
+nsamples=2 # chaneg for different nruns
 nreps=1
 verbose=0
 community=5

@@ -366,6 +366,30 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
         //The list of serodiscordant partnerships is updated accordingly automatically within
         // the function hiv_acquisition().
     }
+
+
+    /************************************************************************/
+    /* HSV-2 transmission within partnerships */
+    /************************************************************************/
+    
+    // Loop through all HSV2-susceptible individuals who are in HSV2-serodiscordant partnerships
+    for(k = 0; k < overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership[0]; k++){
+        
+        // If the susceptible individual in the HSV-2 serodiscordant partnership is alive (yes we check being alive by looking at the cd4 characteristic!)
+        if(overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[k]->cd4 > DEAD){
+            
+            hsv2_acquisition(overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[k], t, patch, overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[k]->patch_no, overall_partnerships, output, debug, file_data_store, t0, t_step);
+            
+        }else{
+            printf("Here problem: trying to make a dead person acquire HSV-2. ID = %li\n",
+                overall_partnerships->susceptible_in_hsv2serodiscordant_partnership[k]->id);
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+        //The list of HSV-2 serodiscordant partnerships is updated accordingly automatically within the function hsv2_acquisition().
+    }
+
 }
 
 
@@ -970,8 +994,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
     // Initial cases are drawn according to the params `initial_prop_hsv2infected in the parameters structure.
     if((t0 >= patch[p].param->start_time_hsv2_discretised_year) && (t0 <= (patch[p].param->start_time_hsv2_discretised_year)) && (t_step==patch[p].param->start_time_hsv2_discretised_timestep)){
-	printf("HERE1\n");
-	fflush(stdout);
+
         // For all but the age group 80+ (which is in a separate part of the age_list struct)
         for(g = 0; g < N_GENDER; g++){
             
@@ -1001,10 +1024,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    for(k=0; k<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; k++){
 		draw_initial_hsv2_infection(t, patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k], patch, p, overall_partnerships, output,file_data_store);
             }
-	    int i;
-	    for(i=0; i<patch[p].id_counter; i++)
-		if (patch[p].individual_population[i].n_HSV2pos_partners!=0)
-		    printf("NHSV2_pos_partners = %i\n",patch[p].individual_population[i].n_HSV2pos_partners);
+
 
         }
                         

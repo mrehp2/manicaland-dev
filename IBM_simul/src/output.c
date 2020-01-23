@@ -993,6 +993,12 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
             if (PCdata == 0){
                 npositive_wrong += patch[p].n_infected->pop_size_oldest_age_group_gender_risk[g][r];
                 nincident += patch[p].n_newly_infected->pop_size_oldest_age_group_gender_risk[g][r];
+		if (g==MALE)
+		    nprevalent_hsv2_m += patch[p].n_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r];
+		else
+		    nprevalent_hsv2_f += patch[p].n_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r];
+		annual_incident_hsv2 += patch[p].n_newly_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r];
+
             }
         }
     }

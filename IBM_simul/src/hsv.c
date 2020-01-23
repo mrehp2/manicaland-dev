@@ -249,6 +249,7 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
     
     // For non-seed cases
     if(SEEDEDHSV2INFECTION == FALSE){
+	printf("### Non-seeded case\n");
         // Person is now in acute stage.
         seroconverter->HSV2_status = HSV2_ACUTE;
         seroconverter->next_HSV2_event = HSV2EVENT_BECOMEASYMPTOMATIC_FROMACUTE;
@@ -263,7 +264,8 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
             fflush(stdout);
         }
 
-    }else{ 
+    }else{
+	printf("Seeded infection\n");
         // For seeded infections assume person is in asymptomatic stage:
         seroconverter->HSV2_status = HSV2_ASYMPTOMATIC;
 	seroconverter->next_HSV2_event = HSV2EVENT_RECURRENCE_FROMASYMPTOMATIC;
@@ -361,6 +363,7 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
         
         // Add the seroconverter to n_infected_hsv2 in the correct age group
         (n_infected_hsv2->pop_size_per_gender_age1_risk[seroconverter->gender][ai_prev][seroconverter->sex_risk])++;
+	printf("ZZUpdating n_infected_hsv2 for id %li\n",seroconverter->id);
 
         /* adding the seroconverter to n_newly_infected_hsv2 in the right age group */
         (n_newly_infected_hsv2->pop_size_per_gender_age1_risk[seroconverter->gender][ai_inc][seroconverter->sex_risk])++;
@@ -379,6 +382,7 @@ void new_hsv2_infection(double time_infect, int SEEDEDHSV2INFECTION, individual*
 
         /* adding the seroconverter to n_infected_hsv2 in the right age group */
         (n_infected_hsv2->pop_size_oldest_age_group_gender_risk[seroconverter->gender][seroconverter->sex_risk])++;
+	printf("ZZ2Updating n_infected_hsv2 for id %li\n",seroconverter->id);
 
         /* adding the seroconverter to n_newly_infected_hsv2 in the right age group */
         (n_newly_infected_hsv2->pop_size_oldest_age_group_gender_risk[seroconverter->gender][seroconverter->sex_risk])++;
@@ -449,7 +453,8 @@ void draw_initial_hsv2_infection(double t, individual* indiv, patch_struct *patc
             printf("Seeding HSV-2 infection of adult %ld in patch %d at time %6.4f\n", indiv->id, indiv->patch_no,t);
             fflush(stdout);
         }
-        
+        printf("XYSeeding HSV-2 infection of adult %ld in patch %d at time %6.4f\n", indiv->id, indiv->patch_no,t);
+	
         // Generate a new HSV-2 infection
         new_hsv2_infection(t, TRUE, indiv, patch[p].n_infected_hsv2, patch[p].n_newly_infected_hsv2,
             patch[p].age_list, patch[p].param, patch[p].hsv2_pos_progression,

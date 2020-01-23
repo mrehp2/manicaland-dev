@@ -169,6 +169,7 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
     long *n_susceptible_in_hsv2serodiscordant_partnership){
     
     int i;
+    printf("Informing partners of HSV-2 for id=%li n_partners=%i\n",seroconverter->id, seroconverter->n_partners);
     
     // The gender of (all) partners of this seroconverter (since the model only has heterosexuals)
     int partner_gender = 1 - seroconverter->gender;
@@ -181,16 +182,17 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
     // zero as we no longer care about them. The list of indices does not need changing as this
     // counter tells us everything we need to know.  
     seroconverter->n_HSV2pos_partners = 0;
-    
+    printf("looping through seroconverter->n_partners=%i partners\n",seroconverter->n_partners);
     // Loop through the partners of the seroconverter
     for(i = 0; i < seroconverter->n_partners; i++){
-        
+
         // Find pointer to the ith partner of the seroconverter
         // (it points to an already allocated person so no malloc needed)
         temp_partner = seroconverter->partner_pairs[i]->ptr[partner_gender]; 
         
         // Check if the partner is currently seronegative (do nothing if they're HSV2+)
         if(temp_partner->HSV2_status == UNINFECTED){
+	    printf("Informing HSV-2 -ve partner i=%i of seroconversion\n",i);
             // Note: temp_partner->n_HSV2pos_partners is the number of HSV2+ partners
             // of this partner (prior to the current seroconversion).
 
@@ -200,7 +202,8 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
             
             // Increment this partner's number of HSV2+ partners (n_HSV2pos_partners)
             temp_partner->n_HSV2pos_partners++;
-            
+
+	    
             /* This partnership has become HSV-2 serodiscordant so, unless the HSV2- temp_partner was already in the list of susceptible_in_hsv2serodiscordant_partnership, they have to be added there.
 	       idx_hsv2_serodiscordant == -1 means before HSV-2 seroconversion of seroconverter, this individual was in no HSV-2 serodiscordant partnerships. */
             if(temp_partner->idx_hsv2_serodiscordant == -1 ){
@@ -406,7 +409,7 @@ file_data_store : pointer to a file_struct structure
 Returns
 -------
 Nothing; sets an input individual (indiv) as a seeding case according to a Bernoulli trial.  If the
-individual is a seeding case this function calls new_infection(), increments the number of infected
+individual is a seeding case this function calls new_hsv2_infection(), increments the number of infected
 cases, sets the individual's SPVL to -1, and updates lists of serodiscorant partnerships following
 a seroconversion.  
 */
@@ -441,7 +444,7 @@ void draw_initial_hsv2_infection(double t, individual* indiv, patch_struct *patc
     // Draw a random uniform number and determine if this individual is a seed case or not
     double random = gsl_rng_uniform(rng);
     if(random < patch[p].param->initial_prop_hsv2infected){
-        
+
         if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
             printf("Seeding HSV-2 infection of adult %ld in patch %d at time %6.4f\n", indiv->id, indiv->patch_no,t);
             fflush(stdout);
@@ -452,8 +455,8 @@ void draw_initial_hsv2_infection(double t, individual* indiv, patch_struct *patc
             patch[p].age_list, patch[p].param, patch[p].hsv2_pos_progression,
             patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression,
 	    file_data_store);
-        
-        inform_partners_of_seroconversion_and_update_list_serodiscordant_partnerships(indiv,
+        printf("***Indiv %li is now HSV-2 positive. Calling inform_partners...\n",indiv->id);
+        inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_partnerships(indiv,
             overall_partnerships->susceptible_in_hsv2serodiscordant_partnership,
             overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership);
         

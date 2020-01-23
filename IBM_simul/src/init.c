@@ -426,6 +426,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     person_template.n_partners = 0;
     person_template.n_HIVpos_partners = 0;
     person_template.n_HIVpos_partners_outside = 0;
+    person_template.n_HSV2pos_partners = 0;
     person_template.n_partners_outside = 0;
     person_template.n_lifetime_partners = 0;
     person_template.n_lifetimeminusoneyear_partners = 0;

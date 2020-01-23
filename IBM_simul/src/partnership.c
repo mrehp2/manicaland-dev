@@ -196,6 +196,21 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     }
     ind2->n_lifetime_partners++;
 
+    /* Now HSV-2: */
+        if(ind2->HSV2_status>HSV2_UNINFECTED && ind1->HSV2_status==HSV2_UNINFECTED) /* then we need to tell ind1 that he has a new HSV-2 partner */
+    {
+        ind1->n_HSV2pos_partners ++;
+        ind1->partner_pairs_HSV2pos[ind1->n_HSV2pos_partners-1] = pair;
+    }
+    if(ind1->HSV2_status>HSV2_UNINFECTED && ind2->HSV2_status==HSV2_UNINFECTED)  /* then we need to tell ind2 that he has a new HSV2 partner */
+    {
+        ind2->n_HSV2pos_partners++;
+        ind2->partner_pairs_HSV2pos[ind2->n_HSV2pos_partners-1] = pair;
+    }
+    /* End of HSV-2 */
+
+
+    
     if(ind1->patch_no != ind2->patch_no)
     {
         ind1->n_partners_outside++;
@@ -308,8 +323,8 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     {
         if (VERBOSE_OUTPUT==1){
 	    printf("Finishing partnership formation between individuals %ld from patch %d and %ld from patch %d\n",ind1->id,ind1->patch_no,ind2->id,ind2->patch_no);
-	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners);
-	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed) and %d HSV-2+ partners (before this one has formed)\n",ind1->id,ind1->patch_no,ind1->n_partners,ind1->n_HIVpos_partners,ind1->n_HSV2pos_partners);
+	    printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (now that this one has formed) and %d HSV-2+ partners (before this one has formed)\n",ind2->id,ind2->patch_no,ind2->n_partners,ind2->n_HIVpos_partners,ind2->n_HSV2pos_partners);
 	    printf("----");
 	    print_individual(ind1);
 	    printf("----");
@@ -397,8 +412,8 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
             //if (VERBOSE_OUTPUT==1){
             printf("-----------------------------------------------\n");
             printf("Starting partnership breakup between individuals %ld from patch %d and %ld from patch %d\n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[1]->id,breakup->ptr[1]->patch_no);
-            printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one breaks up) \n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[0]->n_partners,breakup->ptr[0]->n_HIVpos_partners);
-            printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (before this one breaks up) \n",breakup->ptr[1]->id,breakup->ptr[1]->patch_no,breakup->ptr[1]->n_partners,breakup->ptr[1]->n_HIVpos_partners);
+            printf("Ind %ld from patch %d has %d partners and %d HIV+ partners and %d HSV2 +ve partners (before this one breaks up)  \n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[0]->n_partners,breakup->ptr[0]->n_HIVpos_partners,breakup->ptr[0]->n_HSV2pos_partners);
+            printf("Ind %ld from patch %d has %d partners and %d HIV+ partners and %d HSV2 +ve partners (before this one breaks up) \n",breakup->ptr[1]->id,breakup->ptr[1]->patch_no,breakup->ptr[1]->n_partners,breakup->ptr[1]->n_HIVpos_partners,breakup->ptr[1]->n_HSV2pos_partners);
             printf("----");
             print_individual(breakup->ptr[0]);
             printf("----");
@@ -499,8 +514,8 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
         {
             if (VERBOSE_OUTPUT==1){
                 printf("Finishing partnership breakup between individuals %ld from patch %d and %ld from patch %d\n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[1]->id,breakup->ptr[1]->patch_no);
-                printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (after this one breaks up)\n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[0]->n_partners,breakup->ptr[0]->n_HIVpos_partners);
-                printf("Ind %ld from patch %d has %d partners and %d HIV+ partners (after this one breaks up)\n",breakup->ptr[1]->id,breakup->ptr[1]->patch_no,breakup->ptr[1]->n_partners,breakup->ptr[1]->n_HIVpos_partners);
+                printf("Ind %ld from patch %d has %d partners and %d HIV+ partners and %d HSV2 +ve partners (after this one breaks up)\n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[0]->n_partners,breakup->ptr[0]->n_HIVpos_partners,breakup->ptr[0]->n_HSV2pos_partners);
+                printf("Ind %ld from patch %d has %d partners and %d HIV+ partners and %d HSV2 +ve partners (after this one breaks up)\n",breakup->ptr[1]->id,breakup->ptr[1]->patch_no,breakup->ptr[1]->n_partners,breakup->ptr[1]->n_HIVpos_partners,breakup->ptr[1]->n_HSV2pos_partners);
                 printf("----");
                 print_individual(breakup->ptr[0]);
                 printf("----");

@@ -719,6 +719,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     /* Set up partnerships later on, so initialize to zero here:. */
     new_adult->n_partners = 0;         
     new_adult->n_HIVpos_partners = 0;
+    new_adult->n_HSV2pos_partners = 0;
 
 
 
@@ -1646,10 +1647,13 @@ void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(indiv
     int n,i;
     individual *a_partner;
 
-    //print_here_string("remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership line",1623);
+    //print_here_string("remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership line",1649);
+
 
     /* We only need to update HSV-2 serodiscordant partnerships when the dead individual is seropositive. */ 
     if ((dead_person->HSV2_status)>HSV2_UNINFECTED){
+	printf("R2 %i\n",dead_person->HSV2_status);
+	fflush(stdout);
 
         if(dead_person->id==FOLLOW_INDIVIDUAL && dead_person->patch_no==FOLLOW_PATCH){
             printf("Individual %ld from patch %d is dying - removing partners from susceptible in HSV-2 serodiscordant partnerships\n",dead_person->id,dead_person->patch_no);
@@ -1657,36 +1661,61 @@ void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(indiv
         }
 
         for (n=0; n<dead_person->n_partners; n++){
+	    printf("R3 %i\n",n);
+	    fflush(stdout);
 
             a_partner = dead_person->partner_pairs[n]->ptr[1-dead_person->gender];
 
             /* Only need to deal with the partner if the partner is HSV2-. */
             if (a_partner->HSV2_status==HSV2_UNINFECTED){
+		printf("R4 %li\n",a_partner->id);
+		fflush(stdout);
 
                 /* If they only have 1 HSV-2 seropositive partner (which should be the dead person), then remove them from the list susceptible_in_hsv2serodiscordant_partnership. */
                 if (a_partner->n_HSV2pos_partners==1){
+		    printf("R5 %li\n",a_partner->id);
+		    fflush(stdout);
+		
                     /* Provided there is more than one HSV2- in any serodiscordant partnership, do the following:
                      *  - swap out that person for the last person in the list.
                      *  - reduce the number of people in the list by 1.
                      *  - for the last person in the list, change their idx_hsv2_serodiscordant index.
                      *  - for the partner, set their idx_hsv2_serodiscordant index to -1 (as this was their only HSV2+ partner). */
                     if ((*n_susceptible_in_hsv2serodiscordant_partnership)>1){
+			printf("S1 %li\n",a_partner->id);
+			fflush(stdout);
+
                         susceptible_in_hsv2serodiscordant_partnership[a_partner->idx_hsv2_serodiscordant] = susceptible_in_hsv2serodiscordant_partnership[n_susceptible_in_hsv2serodiscordant_partnership[0] - 1];
+			printf("S2 %li\n",a_partner->id);
+			fflush(stdout);
+
                         (*n_susceptible_in_hsv2serodiscordant_partnership)--;
+
                         susceptible_in_hsv2serodiscordant_partnership[a_partner->idx_hsv2_serodiscordant]->idx_hsv2_serodiscordant = a_partner->idx_hsv2_serodiscordant;
                         a_partner->idx_hsv2_serodiscordant = -1;
+			printf("S3 %li\n",a_partner->id);
+			fflush(stdout);
+
                     }
                     /* If only one person, do the above apart from swapping (in this case set the pointer to NULL). */
                     else if ((*n_susceptible_in_hsv2serodiscordant_partnership)==1){
+			printf("T1 %li\n",a_partner->id);
+			fflush(stdout);
+
                         susceptible_in_hsv2serodiscordant_partnership[a_partner->idx_hsv2_serodiscordant] = NULL;
                         (*n_susceptible_in_hsv2serodiscordant_partnership)--;           
                         a_partner->idx_hsv2_serodiscordant = -1;
+			printf("T2 %li\n",a_partner->id);
+			fflush(stdout);
+
                     }
                     /* In either case their only HSV-2 seropositive partner has just died: */
                     a_partner->n_HSV2pos_partners = 0;
                 }
                 /* Otherwise the partner is still in at least one HSV-2 serodiscordant partnership, so just need to reduce the number of HSV-2 seropositive partners by 1: */
                 else{
+		    printf("U1 %li\n",a_partner->id);
+		    fflush(stdout);
 
                     //print_here_string("remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership",20);
                     /* Firstly we need to find where in that list is the dead person. */
@@ -1703,19 +1732,29 @@ void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(indiv
                         }
                     }
 
+		    printf("U2 %i\n",i);
+		    fflush(stdout);
                     while ((a_partner->partner_pairs_HSV2pos[i]->ptr[dead_person->gender])!=dead_person){
                         i++;
+			printf("U3 %i %i %li\n",i,a_partner->n_HSV2pos_partners,a_partner->id);
+			fflush(stdout);
+
                     }
 
+		    printf("U3b %i\n",i);
                     if(PRINT_DEBUG_DEMOGRAPHICS==1) printf("CHECKME: %li %li\n", a_partner->partner_pairs_HSV2pos[i]->ptr[dead_person->gender]->id,dead_person->id);
                     /* Now swap out that partner (as they are dead) */
                     a_partner->partner_pairs_HSV2pos[i] = a_partner->partner_pairs_HSV2pos[a_partner->n_HSV2pos_partners-1];
 
+		    printf("U3b %i\n",i);
 
                     /* Finally reduce number of HSV-2 seropositive partners by 1: */
                     (a_partner->n_HSV2pos_partners)--;
 
                 }
+		printf("R4b %li\n",a_partner->id);
+		fflush(stdout);
+
             }
         }
     }
@@ -1729,6 +1768,8 @@ void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(indiv
      * has HSV-2 seropositive partners, in which case they are in susceptible_in_hsv2serodiscordant_partnership[] 
      * which needs updating. */ 
     else if (dead_person->idx_hsv2_serodiscordant!=-1){
+	printf("Rb1\n");
+	fflush(stdout);
 
         //print_here_string("remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership in the else",0);
 
@@ -2246,6 +2287,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
     // Pointer to the person dying (so no need to malloc as pointing at pre-allocated memory) 
     individual *person_dying;
 
+
     // Note that we deal with deaths aged MAX_AGE separately - it is a separate array in age_list.
     
     // Loop over genders and age groups
@@ -2280,7 +2322,9 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
             // age+AGE_ADULT,t,p_death_per_timestep,natural_death_rate(age+AGE_ADULT, t, param));
             
             // This is the number of people in age group `a` who die per timestep
-            n_death_per_timestep =  gsl_ran_binomial(rng, p_death_per_timestep,
+
+
+	    n_death_per_timestep =  gsl_ran_binomial(rng, p_death_per_timestep,
                 patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]);
             
             patch[p].DEBUG_NDEATHS = patch[p].DEBUG_NDEATHS + n_death_per_timestep;
@@ -2291,13 +2335,16 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                     patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai],
                     n_death_per_timestep);
             }
+
+
             if(n_death_per_timestep > 0){
                 // 
                 gsl_ran_choose(rng, patch[p].new_deaths, n_death_per_timestep,
                     patch[p].death_dummylist, 
                     patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai], 
                     sizeof(long));
-                
+
+
                 // If ageing is switched off then we can accumulate too many individuals in
                 // youngest age groups (as they don't die, they just accumulate). 
                 
@@ -2316,7 +2363,9 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                 for(i = n_death_per_timestep - 1; i >= 0; i--){
                     
                     person_dying = patch[p].age_list->age_list_by_gender[g]->age_group[ai][(int) patch[p].new_deaths[i]];
-                    
+
+
+		    
                     // Now remove people who have died and to update their partnerships
                     achecktemp = get_age_index(person_dying->DoB, 
                         patch[p].param-> start_time_simul);
@@ -2324,7 +2373,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                     if(person_dying->id == FOLLOW_INDIVIDUAL && p == FOLLOW_PATCH){
                         find_in_age_list(t, person_dying, patch[p].age_list, patch[p].param);
                     }
-                    
+
                     // For debugging
                     if(person_dying->gender != g){
                         printf("Error - mismatch of gender in deaths_natural_causes(). Exiting\n");
@@ -2343,7 +2392,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                         fflush(stdout);
                         exit(1);
                     }
-                    
+
                     if(
                         (person_dying->id == FOLLOW_INDIVIDUAL) &&
                         (person_dying->patch_no == FOLLOW_PATCH)
@@ -2360,14 +2409,16 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                         overall_partnerships->n_susceptible_in_serodiscordant_partnership);
 
                     remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(person_dying, overall_partnerships->susceptible_in_hsv2serodiscordant_partnership, overall_partnerships->n_susceptible_in_hsv2serodiscordant_partnership);
-                    
+
+
                     remove_dead_person_from_list_available_partners(t, person_dying,
  overall_partnerships->pop_available_partners,overall_partnerships->n_pop_available_partners);
                     
                     remove_dead_persons_partners(person_dying,
                         overall_partnerships->pop_available_partners,
                         overall_partnerships->n_pop_available_partners, t);
-                        
+
+
                     if(person_dying->HIV_status > UNINFECTED){
                         // Note the final '1' argument means that the person is dying, 
                         // not starting ART.
@@ -2375,6 +2426,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                             patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, t,
                             patch[p].param, patch[p].n_infected_by_all_strata, 1);
                     }
+
                     
                     if(PRINT_DEBUG_DEMOGRAPHICS == 1){
                         printf("Calling deaths_natural_causes() with %i partners\n",
@@ -2384,11 +2436,13 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                     remove_from_cascade_events(person_dying, patch[p].cascade_events,
                         patch[p].n_cascade_events, patch[p].size_cascade_events, t, 
                         patch[p].param);
-                    
+		    
+		    
                     if(g == MALE){
                         remove_from_vmmc_events(person_dying, patch[p].vmmc_events,
                             patch[p].n_vmmc_events, patch[p].size_vmmc_events, t, patch[p].param);
                     }
+
 
                     if(person_dying->HSV2_status > HSV2_UNINFECTED)
                         remove_from_hsv2_pos_progression(person_dying, patch[p].hsv2_pos_progression, patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression, t, patch[p].param);

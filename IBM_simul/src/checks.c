@@ -84,6 +84,11 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
     indiv3->n_HIVpos_partners = 0;
     indiv4->n_HIVpos_partners = 0;
 
+    indiv1->n_HSV2pos_partners = 0;
+    indiv2->n_HSV2pos_partners = 0;
+    indiv3->n_HSV2pos_partners = 0;
+    indiv4->n_HSV2pos_partners = 0;
+
     printf("- Before partnership formation:\n");
 
     print_partners(indiv1);
@@ -202,6 +207,11 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
     indiv3->n_HIVpos_partners = 0;
     indiv4->n_HIVpos_partners = 0;
 
+    indiv1->n_HSV2pos_partners = 0;
+    indiv2->n_HSV2pos_partners = 0;
+    indiv3->n_HSV2pos_partners = 0;
+    indiv4->n_HSV2pos_partners = 0;
+    
     indiv1->patch_no = 0;
     indiv2->patch_no = 0;
     indiv3->patch_no = 0;
@@ -357,6 +367,11 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
     indiv2->n_HIVpos_partners = 0;
     indiv3->n_HIVpos_partners = 0;
     indiv4->n_HIVpos_partners = 0;
+
+    indiv1->n_HSV2pos_partners = 0;
+    indiv2->n_HSV2pos_partners = 0;
+    indiv3->n_HSV2pos_partners = 0;
+    indiv4->n_HSV2pos_partners = 0;
 
     /* forming partnership between them and checking things are OK */
     new_partnership(indiv1, indiv3, param->start_time_simul, 

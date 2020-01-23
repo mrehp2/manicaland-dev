@@ -106,7 +106,7 @@
 
 #define WRITE_PARTNERSHIPS_AT_PC0 0 /* Generates Distr_n_lifetime_partners and Distr_n_partners_lastyear csv files. NEEDED FOR ReadAnnualOutputs-knitr.Rnw.  */
 
-#define FOLLOW_INDIVIDUAL -1 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
+#define FOLLOW_INDIVIDUAL 466 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
 
 #define FOLLOW_PATCH 0 //1
 
@@ -289,6 +289,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define RUN_POPART 1
 #define YOUNGEST_AGE_SEED_WITH_HIV 18 // This gives the minimum age group index where we introduce HIV (1=18-22).
 #define OLDEST_AGE_SEED_WITH_HIV 30 // This gives the maximum age group index where we introduce HIV (2=23-30).
+
+#define YOUNGEST_AGE_SEED_WITH_HSV2 18 // Minimum age for seeding with HSV-2. No maximum age.
 
 #define ALLOW_EMERGENCY_ART 1 /* 1 - allow people to start emergency ART. 0 - stop this from happening. */
 

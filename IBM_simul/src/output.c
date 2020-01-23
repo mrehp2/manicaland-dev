@@ -890,6 +890,16 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     long NNeedART_f = 0;/* Counts no. of eligible M/F for ART given current CD4 elig criteria. */
     long NTestedLastYear = 0;
     long N_men_MC = 0;
+
+    long annual_incident_hsv2=0;    /* Number of new cases of HSV-2 in the past year (including dead). */
+    long nprevalent_hsv2_m=0;  /* Number of alive men/women with HSV-2. */
+    long nprevalent_hsv2_f=0;
+    long nprevalent_hsv2_check=0; /* Check of number of HSV-2 for debugging only. */
+    
+    long Cumulative_n_mother_to_child_transmissions=0;
+    long N_hivpositive_children=0;
+    long N_childen=0;    /* Current number of children age 0..(AGE_ADULT-1). */
+    long Cumulative_n_mtct_deaths_from_aids=0;
     
     /* FOR DEBUGGING ONLY */
     long N_men_noMC = 0;
@@ -962,7 +972,23 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                     ai = ai - (MAX_AGE - AGE_ADULT);
                 }
                 nincident += patch[p].n_newly_infected->pop_size_per_gender_age1_risk[g][ai][r];
-            }
+
+                ai = aa + patch[p].n_infected_hsv2->youngest_age_group_index;
+                while (ai > (MAX_AGE - AGE_ADULT - 1))
+                    ai = ai - (MAX_AGE - AGE_ADULT);
+		if (g==MALE)
+		    nprevalent_hsv2_m += patch[p].n_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r];
+		else
+		    nprevalent_hsv2_f += patch[p].n_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r];
+		
+
+		ai = aa + patch[p].n_newly_infected_hsv2->youngest_age_group_index;
+                while (ai > (MAX_AGE - AGE_ADULT - 1))
+                    ai = ai - (MAX_AGE - AGE_ADULT);
+		annual_incident_hsv2 += patch[p].n_newly_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r];
+
+
+	    }
             /* Only count if we are counting the whole population, not just PC age groups. */
             if (PCdata == 0){
                 npositive_wrong += patch[p].n_infected->pop_size_oldest_age_group_gender_risk[g][r];
@@ -1025,6 +1051,11 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
             if ((patch[p].individual_population[n_id]).HIV_status > 0){
                 (npos_r[(patch[p].individual_population[n_id]).sex_risk]) += 1;
             }
+
+	    /* To validate HSV-2 prevalence output: */
+	    if ((patch[p].individual_population[n_id]).HSV2_status > 0)
+		nprevalent_hsv2_check += 1;
+	    
         }else{
             n_dead += 1;
             if (patch[p].individual_population[n_id].HIV_status > 0){
@@ -1058,7 +1089,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     
     if(PCdata == 0){
         
-        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,",
+        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1084,10 +1115,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 NNeedART_f,
                 N_men_MC/(1.0*npop_m),
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
-                patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead);
-                
+                patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
+	
     }else if(PCdata == 1){
-        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,",
+        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1113,7 +1144,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 NNeedART_f,
                 N_men_MC/(1.0*npop_m),
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
-                patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead);
+                patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
     }
     
     
@@ -2573,7 +2604,8 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
         "NHIVTestedThisYear,NOnARTM,NNeedARTM,NOnARTF,NNeedARTF,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "PropMenCirc,NindInSdPart,NDied_from_HIV,NHIV_pos_dead,N_dead,");
-    
+    fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
+	 "annual_incident_hsv2,nprevalent_hsv2_m,nprevalent_hsv2_f,nprevalent_hsv2_check,");
     for(r = 0; r < N_RISK; r++){
         fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"Prop_risk%s,",RISK_GP_NAMES[r]);
     }

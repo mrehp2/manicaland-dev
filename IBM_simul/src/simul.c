@@ -143,8 +143,11 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
+	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
+	    //fflush(stdout);
             fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch, p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,  file_data_store, is_counterfactual);
         }
+
         
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output, debug, file_data_store);
         
@@ -450,7 +453,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    write_chips_data_annual(patch ,p, t0, t_step, POPART_FINISHED, file_data_store);
 	}
     }
-    
+
     /********************************************/
     /*      1. Set up PC sample                 */
     /********************************************/
@@ -665,21 +668,27 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // partnerships, serodiscordant people, planned breakups, available partners).  
      // Finally for each dead person we set CD4=-2 (note -2 is defined as DEAD in constants.h) so
     // we know they're dead. */
+
+
     deaths_natural_causes(t, patch, p, overall_partnerships, file_data_store);
-    
+
+
     if(PRINT_DEBUG_DEMOGRAPHICS == 1){
         printf("Making new adults at time t = %f\n", t);
     }
     // Making new adults (from the child_population) and adding them to the individual_population,
     // n_population, and other lists (available partners, etc.). */
     make_new_adults(t, patch, p, overall_partnerships);
+
+
     
     // Add children who have just been born to the child population
     // the number of kids is randomly drawn based on fertility rate, current adult pop size, etc
     add_new_kids(t, patch, p);
     if (t>2000 && (t-floor(t)<1e-9) && (p==0))
 	count_number_by_age_gender_risk_cascade_cd4(patch, p, t);
-    
+
+
     /// Validation of age groups:
     //validate_ages_based_on_age_group(age_list, 13, t);
 
@@ -952,6 +961,67 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
         carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
     }
 
+
+
+    /************************************************************************/
+    /* 12. HSV-2 introduction (at time param->start_time_hsv2) */
+    /************************************************************************/
+
+    // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
+    // Initial cases are drawn according to the params `initial_prop_hsv2infected in the parameters structure.
+    if((t0 >= patch[p].param->start_time_hsv2_discretised_year) && (t0 <= (patch[p].param->start_time_hsv2_discretised_year)) && (t_step==patch[p].param->start_time_hsv2_discretised_timestep)){
+	printf("HERE1\n");
+	fflush(stdout);
+        // For all but the age group 80+ (which is in a separate part of the age_list struct)
+        for(g = 0; g < N_GENDER; g++){
+            
+            // Seed HSV-2 infection from age YOUNGEST_AGE_SEED_WITH_HSV2 up. 
+            for(aa=(YOUNGEST_AGE_SEED_WITH_HSV2-AGE_ADULT); aa<=(MAX_AGE-AGE_ADULT); aa++){
+                
+                // ai is the index of the array age_list->number_per_age_group of the age group of people you want to be infected
+                
+                ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;
+                
+                while(ai > (MAX_AGE - AGE_ADULT - 1)){
+                    ai = ai - (MAX_AGE - AGE_ADULT);
+                }
+                
+                for(k = 0; k < patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+                    k++){
+                    // For each individual in that annual age group:
+                    // Draw whether each person is initially HSV-2 infected or not according to a Bernoulli trial. The probability can be made to vary by age/gender if needed.
+                        
+                    draw_initial_hsv2_infection(t, patch[p].age_list->age_list_by_gender[g]->age_group[ai][k], patch, p, overall_partnerships, output,file_data_store);
+                        
+                }
+            }
+            
+
+	    // For the last age group: for each individual in that age group draw whether initially HSV-2 infected or not according to a Bernoulli trial.
+	    for(k=0; k<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; k++){
+		draw_initial_hsv2_infection(t, patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k], patch, p, overall_partnerships, output,file_data_store);
+            }
+	    int i;
+	    for(i=0; i<patch[p].id_counter; i++)
+		if (patch[p].individual_population[i].n_HSV2pos_partners!=0)
+		    printf("NHSV2_pos_partners = %i\n",patch[p].individual_population[i].n_HSV2pos_partners);
+
+        }
+                        
+
+	/******************************************/
+	/* 13. Progressing (HSV-2)                */
+	/******************************************/
+    
+	if(t>=patch[p].param->start_time_hsv2){        
+	    carry_out_HSV2_events_per_timestep(t, patch, p, overall_partnerships, debug, file_data_store);
+	}
+                        
+
+	
+    }
+
+                        
     
     // Function determines if there are any things we need to fit to at the current timestep, 
     // and carries out any fitting needed.

@@ -209,12 +209,16 @@ gsl_rng * rng;
 /************************************************************************/
 /****************** Manicaland cascade constants  ***********************/
 /************************************************************************/
-#define MIN_AGE_PREP 18 /* PrEP offered to 18-24 year olds. */
-#define MAX_AGE_PREP 24
+#define MIN_AGE_PREP_BACKGROUND 18 /* PrEP offered to 18-24 year olds. */
+#define MAX_AGE_PREP_BACKGROUND 24
+/* We allow the intervention to be targeted to different groups. */
+#define MIN_AGE_PREP_INTERVENTION 18 /* PrEP offered to 18-24 year olds. */
+#define MAX_AGE_PREP_INTERVENTION 24
+
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
 /* Put this as a constant for now - determines if in simul.c we use PrEP intervention. Eventually will be part of counterfactual. */
-#define RUN_PREP_INTERVENTION 0
+#define RUN_PREP_INTERVENTION 1
 
 /************************************************************************/
 /*************** How age groups are structured in the IBM ***************/
@@ -326,7 +330,6 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define HSV2EVENT_BECOMEASYMPTOMATIC_FROMRECURRENCE 2
 
 
-#define NPrEPcascadesteps 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
 
 /* 1=due to Manicaland PrEP intervention, 0 otherwise. Determines adherence of person starting PrEP. */
 #define NOT_PREP_INTERVENTION 0
@@ -339,6 +342,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 /* Codes for indiv->next_PrEP_event. */
 
+#define PREP_UNAWARE -1 // Person has never been offered PrEP (i.e. for new individuals).
 #define PREP_NOEVENT 0 // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
 #define PREPAGANDA 1 // Exposure to PrEP-related intervention.
 #define START_PREP 2  // Initialise PrEP at some future timepoint.
@@ -347,6 +351,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define PREP_STOP_NOTNEEDED 5 // Stop PrEP (due to lower risk). 
 #define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
 
+#define NPrEPcascade_scale 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
+#define NPrEPcascade_steps 3 // Number of 'barriers' (steps in cascade) for PrEP in Manicaland.
 #define INDEX_PREP_BARRIER_MOTIVATION 0 //
 #define INDEX_PREP_BARRIER_ACCESS 1 //
 #define INDEX_PREP_BARRIER_UTILIZATION 2 //

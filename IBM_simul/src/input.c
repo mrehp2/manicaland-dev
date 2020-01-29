@@ -107,7 +107,7 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
 	read_mtct_params(patch_tag, param[p], n_runs);
-	
+	read_PrEP_uptake_params(patch_tag, param[p], n_runs);
 	if (SETTING==SETTING_POPART){
 	    read_popart_params(patch_tag, param[p], n_runs);
 	
@@ -947,6 +947,8 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     // Throw away first line of the file (the header line)
     fscanf(param_file, "%*[^\n]\n");
 
+    printf("Opening file %s\n", param_file_name);
+
     // Read parameters from each line (i_run) of the file as used for each run of the simulation
     for(i_run = 0; i_run < n_runs; i_run++){
         param_local = allrunparameters + i_run;
@@ -997,7 +999,6 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         checkreadok = fscanf(param_file, "%lf", &temp_int);
         param_local->start_time_simul = (int) floor(temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->start_time_simul");
-        
         checkreadok = fscanf(param_file, "%lf", &temp_int);
         param_local->end_time_simul = (int) floor(temp_int);
         check_if_cannot_read_param(checkreadok, "param_local->end_time_simul");
@@ -1031,10 +1032,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_VMMC_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_VMMC_START");
-
-        checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_T_PrEP_START));
-        check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_T_PrEP_START");
-	printf("PrEP start = %6.4lf\n",param_local->COUNTRY_T_PrEP_START);
+	printf("param_local->COUNTRY_VMMC_START = %lf\n",param_local->COUNTRY_VMMC_START);
 	
 	
         if( (int) (param_local->start_time_simul) != (param_local->start_time_simul) || 
@@ -2288,6 +2286,197 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
     fclose(param_file);
     return;
 }
+
+
+void read_PrEP_uptake_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    int i_run;
+    double t_prep_start_background;
+    double t_prep_start_intervention = 9999.0;  /* Dummy initial value set far into future... */
+
+    t_prep_start_background = read_PrEP_background_uptake_params(patch_tag, allrunparameters, n_runs);
+
+    if (RUN_PREP_INTERVENTION==1)
+	t_prep_start_intervention = read_PrEP_intervention_uptake_params(patch_tag, allrunparameters, n_runs);
+	
+    double t_prep_start;
+    if (RUN_PREP_INTERVENTION==1){
+	if (t_prep_start_background<t_prep_start_intervention)
+	    t_prep_start = t_prep_start_background;
+	else
+	    t_prep_start = t_prep_start_intervention;
+    }
+    else
+	t_prep_start = t_prep_start_background;
+
+    printf("AATime of PrEP start = %lf\n",t_prep_start);
+    for (i_run = 0; i_run < n_runs; i_run++)
+	allrunparameters[i_run].COUNTRY_T_PrEP_START = t_prep_start;
+
+}
+
+double read_PrEP_background_uptake_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    /* Read in PrEP background uptake/adherence parameters
+    
+    This function reads the PrEP parameters related to background (non-intervention) PrEP.  It populates the following array:
+        parameters->PrEP_background_params
+    
+    Arguments
+    ---------
+    patch_tag : pointer to a char
+    allrunparameters : pointer to an array of parameters structs
+    
+    Returns
+    -------
+    Nothing; populates parameters->PrEP_background_params
+    */
+
+
+    FILE * param_file;
+    char param_file_name[LONGSTRINGLENGTH];
+    int ap, i_run, checkreadok;
+
+    double time_start_prep_undiscretised;
+    
+    // Temp variable to avoid having to write allparameters+i_run 
+    //(or equivalently &allparameters[i_run]).
+    parameters *param_local;
+
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strcat(param_file_name, "PrEP_background.csv");
+
+    // Open parameter file
+    if((param_file = fopen(param_file_name, "r")) == NULL){
+        printf("Cannot open %s", param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else{
+        if(VERBOSE_OUTPUT == 1){
+            printf("PrEP background parameters read from: %s:\n", param_file_name);
+        }
+    }
+    // Throw away the first line of the parameter file (the header line)
+    fscanf(param_file, "%*[^\n]\n");
+
+    // Read parameters from each line (i_run) of the file
+    for(i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+	    
+        checkreadok = fscanf(param_file, "%lg", &time_start_prep_undiscretised);
+        check_if_cannot_read_param(checkreadok, "start_time_PrEP_background");
+        
+        // Here we want start_time_hiv to be equal to a timestep value (this avoids issues when
+        // seeding infections, where new_infections looks for the person in age_index[] using the
+        // index calculated using the infection time. If not a timestep then that may produce the
+        // wrong index and the person is not found (so HIV status not updated etc).
+        
+        // The time when PrEP becomes available:
+	param_local->PrEP_background_params->year_start_background = (int) floor(time_start_prep_undiscretised);
+	param_local->PrEP_background_params->timestep_start_background = (int) floor((time_start_prep_undiscretised - param_local->PrEP_background_params->year_start_background)*N_TIME_STEP_PER_YEAR);
+
+	for (ap=0; ap<=(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND); ap++){
+	    checkreadok = fscanf(param_file,"%lg", &(param_local->PrEP_background_params->proportion_seen_by_age[ap]));
+	    check_if_cannot_read_param(checkreadok, "param_local->PrEP_background_params->proportion_seen_by_age[ap]");
+	}
+	
+        checkreadok = fscanf(param_file, "%lg", &(param_local->PrEP_background_params->p_becomes_PrEP_adherent_background));
+        check_if_cannot_read_param(checkreadok, "param_local->PrEP_background_params->p_becomes_PrEP_adherent_background");
+
+        checkreadok = fscanf(param_file, "%lg", &(param_local->PrEP_background_params->p_semiadherent_acts_covered_background));
+        check_if_cannot_read_param(checkreadok, "param_local->PrEP_background_params->p_semiadherent_acts_covered_background");
+    }
+    fclose(param_file);
+
+    return time_start_prep_undiscretised;
+}
+    
+
+double read_PrEP_intervention_uptake_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    /* Read in PrEP intervention uptake/adherence parameters
+    
+    This function reads the PrEP parameters related to intervention  PrEP.  It populates the following array:
+        parameters->PrEP_intervention_params
+    
+    Arguments
+    ---------
+    patch_tag : pointer to a char
+    allrunparameters : pointer to an array of parameters structs
+    
+    Returns
+    -------
+    Nothing; populates parameters->PrEP_intervention_params
+    */
+
+    
+
+    FILE * param_file;
+    char param_file_name[LONGSTRINGLENGTH];
+    int ap, i_run, checkreadok;
+
+
+    double time_start_prep_undiscretised;
+    double temp;
+    // Temp variable to avoid having to write allparameters+i_run 
+    //(or equivalently &allparameters[i_run]).
+    parameters *param_local;
+
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strcat(param_file_name, "PrEP_intervention.csv");
+
+    // Open parameter file
+    if((param_file = fopen(param_file_name, "r")) == NULL){
+        printf("Cannot open %s", param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else{
+        if(VERBOSE_OUTPUT == 1){
+            printf("PrEP intervention parameters read from: %s:\n", param_file_name);
+        }
+    }
+    // Throw away the first line of the parameter file (the header line)
+    fscanf(param_file, "%*[^\n]\n");
+
+    // Read parameters from each line (i_run) of the file
+    for(i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+
+       	    
+        checkreadok = fscanf(param_file, "%lg", &time_start_prep_undiscretised);
+        check_if_cannot_read_param(checkreadok, "start_time_PrEP_intervention");
+        
+        // For simplicity we want start_time_PrEP_intervention to be equal to a timestep value. Here we discretise time:
+	param_local->PrEP_intervention_params->year_start_intervention = (int) floor(time_start_prep_undiscretised);
+	param_local->PrEP_intervention_params->timestep_start_intervention = (int) floor((time_start_prep_undiscretised - param_local->PrEP_intervention_params->year_start_intervention)*N_TIME_STEP_PER_YEAR);
+
+	for (ap=0; ap<=(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION); ap++){
+	    checkreadok = fscanf(param_file,"%lg", &(param_local->PrEP_intervention_params->proportion_seen_by_age[ap]));
+	    check_if_cannot_read_param(checkreadok, "param_local->PrEP_intervention_params->proportion_seen_by_age[ap]");
+	}
+
+	/* Read in as float, then recast as int: */
+	checkreadok = fscanf(param_file, "%lg", &(temp));
+        check_if_cannot_read_param(checkreadok, "param_local->PrEP_intervention_params->n_timesteps_in_round");
+	param_local->PrEP_intervention_params->n_timesteps_in_round = (int) temp;
+
+
+	if (param_local->PrEP_intervention_params->n_timesteps_in_round>N_PREP_INTERVENTION_TIMESTEPS){
+	    printf("Error: parameter PrEP_intervention_params->n_timesteps_in_round MUST be less than N_PREP_INTERVENTION_TIMESTEPS=%i, otherwise the array PrEP_intervention_sample->number_to_see_per_timestep is too small, causing a memory error.\nExiting\n",N_PREP_INTERVENTION_TIMESTEPS);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+        checkreadok = fscanf(param_file, "%lg", &(param_local->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention));
+        check_if_cannot_read_param(checkreadok, "param_local->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention");
+
+        checkreadok = fscanf(param_file, "%lg", &(param_local->PrEP_intervention_params->p_semiadherent_acts_covered_intervention));
+        check_if_cannot_read_param(checkreadok, "param_local->PrEP_intervention_params->p_semiadherent_acts_covered_intervention");
+    }
+    fclose(param_file);
+
+    return time_start_prep_undiscretised;
+}
+    
 
 
 long get_python_seed(char *file_directory){

@@ -1302,15 +1302,8 @@ void add_commas_to_calibration_output(char *output_string,int NDATA){
 }
 
 
-void print_param_struct(parameters *param){
-    int g,ag,bg,icd4,spvl,hsv,r,i,y;
-    int i_spectrum;
-    int ac;
-
-    printf("------------------------------------------------------------------------------------\n");
-    printf("---------------------------- Printing param structure ------------------------------\n");
-    printf("------------------------------------------------------------------------------------\n");
-
+void print_demographic_params(parameters *param){
+    int g, ag, y, i_spectrum;
     for (y=0; y<N_UNPD_TIMEPOINTS; y++)
         for (ag = 0; ag<N_AGE_UNPD_FERTILITY; ag++)
             printf("param->fertility_rate_by_age[%i][%i]=%lg\n",ag,y,param->fertility_rate_by_age[ag][y]);
@@ -1331,8 +1324,11 @@ void print_param_struct(parameters *param){
 	printf("param->prop_births_to_hivpos_mothers[%i]=%lf\n",i_spectrum,param->prop_births_to_hivpos_mothers[i_spectrum]);
     for (i_spectrum=0; i_spectrum<t_steps_spectrum; i_spectrum++)
 	printf("param->prop_children_on_ART_spectrum[%i]=%lg\n",i_spectrum,param->prop_children_on_ART_spectrum[i_spectrum]);
+}
 
 
+void print_hiv_params(parameters *param){
+    int icd4, spvl;
     printf("param->p_child_circ=%lg\n",param->p_child_circ);
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
@@ -1366,15 +1362,20 @@ void print_param_struct(parameters *param){
             printf("param->time_hiv_event[icd4][spvl]= %lg\n",param->time_hiv_event[icd4][spvl]);
     printf("param->factor_for_slower_progression_ART_VU=%lg\n",param->factor_for_slower_progression_ART_VU);
 
+}
 
-    /* HSV.csv parameters: */
+
+void print_hsv2_params(parameters *param){
+    int hsv;
     printf("param->average_annual_hazard_hsv2=%lg\n",param->average_annual_hazard_hsv2);
-    for(hsv = 0; hsv < N_HSV2_EVENTS; hsv++){
+    for(hsv=0; hsv<N_HSV2_EVENTS; hsv++){
 	printf("param->mean_dur_hsv2event[hsv]=%lg\n",param->mean_dur_hsv2event[hsv]);
     }
+}
 
-
-    /* partnerships.csv parameters: */
+void print_partnership_params(parameters *param){
+    int g, ag, bg, r;
+    
     printf("param->assortativity=%lg\n",param->assortativity);
     printf("param->prop_compromise_from_males=%lg\n",param->prop_compromise_from_males);
 
@@ -1400,7 +1401,10 @@ void print_param_struct(parameters *param){
         printf("param->breakup_scale_lambda_between_patch[r]=%lg\n",param->breakup_scale_lambda_between_patch[r]);
     for(r=0 ; r<N_RISK ; r++)
         printf("param->breakup_shape_k[r]=%lg\n",param->breakup_shape_k[r]);
+}
 
+void print_time_params(parameters *param){
+    int i;
     printf("param->start_time_hiv=%lg\n",param->start_time_hiv);
     printf("param->start_time_hsv2=%lg\n",param->start_time_hsv2);
     printf("param->start_time_simul=%i\n",param->start_time_simul);
@@ -1421,7 +1425,11 @@ void print_param_struct(parameters *param){
     for (i=0; i<param->DHS_params->NDHSROUNDS; i++)
         printf("param->DHS_params->DHS_YEAR[%i]=%i\n",i,param->DHS_params->DHS_YEAR[i]);
 
+}
 
+
+void print_cascade_params(parameters *param){
+    int icd4, iround, i;
     printf("param->time_to_background_HIVtestNOW=%lg\n",param->time_to_background_HIVtestNOW);
     printf("param->time_to_background_HIVtest_maxval=%lg\n",param->time_to_background_HIVtest_maxval);
     printf("param->time_to_background_HIVtest_exponent=%lg\n",param->time_to_background_HIVtest_exponent);
@@ -1466,7 +1474,6 @@ void print_param_struct(parameters *param){
     for (i=0; i<NCHIPSROUNDS; i++)
         printf("param->n_time_periods_art_popart_per_round[%i]=%d\n",i,param->n_time_periods_art_popart_per_round[i]);
     
-    int iround;
     for(iround = 0; iround < NCHIPSROUNDS; iround++){
         for(i = 0; i < param->n_time_periods_art_popart_per_round[iround]; i++){
             printf("param->t_start_art_mean_fast_popart[%d][%d]=%lg\n",
@@ -1504,14 +1511,20 @@ void print_param_struct(parameters *param){
     printf("param->t_get_vmmc_range[NOTPOPART]=%lg\n",param->t_get_vmmc_range[NOTPOPART]);
     printf("param->t_get_vmmc_range[POPART]=%lg\n",param->t_get_vmmc_range[POPART]);
     printf("param->t_vmmc_healing=%lg\n",param->t_vmmc_healing);
+}
 
-
-    
+void print_chips_params(parameters *param){
+    int g, ac, i;
     for (g=0; g<N_GENDER;g++)
         for (ac = 0; ac<(MAX_AGE-AGE_CHIPS+1); ac++)
             for (i=0; i<NCHIPSROUNDS; i++)
                 printf("param->prop_tested_by_chips_in_round[%i][%i][%i]=%lg\n",g,ac,i,param->chips_params->prop_tested_by_chips_in_round[g][ac][i]);
+}
 
+
+void print_init_params(parameters *param){
+    int ag, g, r;
+    
     printf("param->initial_population_size=%lg\n",param->initial_population_size);
     for (ag=0; ag<N_AGE; ag++)
         printf("param->initial_prop_age[ag]=%lg\n",param->initial_prop_age[ag]);
@@ -1523,6 +1536,101 @@ void print_param_struct(parameters *param){
             printf("param->initial_prop_infected_gender_risk[g][r]=%lg\n",param->initial_prop_infected_gender_risk[g][r]);
     printf("param->n_years_HIV_seeding=%i\n",param->n_years_HIV_seeding);
     printf("param->initial_prop_hsv2infected=%lg\n",param->initial_prop_hsv2infected);
+
+}
+
+
+void print_prep_params(parameters *param){
+    int ap;
+    
+    printf("Background parameters\n");
+    
+    printf("param->PrEP_background_params->year_start_background=%i\n",param->PrEP_background_params->year_start_background);
+    printf("param->PrEP_background_params->timestep_start_background=%i\n",param->PrEP_background_params->timestep_start_background);
+    
+    for (ap=0; ap<=(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND); ap++)
+	printf("param->PrEP_background_params->proportion_seen_by_age[%i]=%lg\n",ap,param->PrEP_background_params->proportion_seen_by_age[ap]);
+
+    printf("param->PrEP_background_params->p_becomes_PrEP_adherent_background=%lg\n",param->PrEP_background_params->p_becomes_PrEP_adherent_background);
+
+    printf("param->PrEP_background_params->p_semiadherent_acts_covered_background=%lg\n",param->PrEP_background_params->p_semiadherent_acts_covered_background);
+
+    /* Now output intervention params if needed: */
+    if (RUN_PREP_INTERVENTION==1){
+	printf("PrEP intervention parameters:\n");
+	printf("param->PrEP_intervention_params->year_start_intervention=%i\n",param->PrEP_intervention_params->year_start_intervention);
+	printf("param->PrEP_intervention_params->timestep_start_intervention=%i\n",param->PrEP_intervention_params->timestep_start_intervention);
+
+	printf("param->PrEP_intervention_params->n_timesteps_in_round=%i\n",param->PrEP_intervention_params->n_timesteps_in_round);
+
+	for (ap=0; ap<=(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION); ap++)
+	    printf("param->PrEP_intervention_params->proportion_seen_by_age[%i]=%lg\n",ap,param->PrEP_intervention_params->proportion_seen_by_age[ap]);
+	
+	printf("param->PrEP_intervention_params->n_timesteps_in_round=%i\n",param->PrEP_intervention_params->n_timesteps_in_round);
+
+	printf("param->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention=%lg\n",param->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention);
+	
+	printf("param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention=%lg\n",param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention);
+
+    }
+	
+}
+
+
+void print_param_struct(patch_struct *patch, int p){
+
+    printf("------------------------------------------------------------------------------------\n");
+    printf("--------------------- Printing param structure in patch %i -------------------------\n",p);
+    printf("------------------------------------------------------------------------------------\n");
+
+    printf("***Demographic parameters***\n");
+    print_demographic_params(patch[p].param);
+    printf("\n");
+
+    printf("***HIV parameters***\n");
+    print_hiv_params(patch[p].param);
+    printf("\n");
+
+    printf("***HSV-2 parameters***\n");
+    print_hsv2_params(patch[p].param);
+    printf("\n");
+    printf("***Partnership parameters***\n");
+    print_partnership_params(patch[p].param);
+    printf("\n");
+    printf("***Time parameters***\n");
+    print_time_params(patch[p].param);
+    printf("\n");
+    printf("***Cascade parameters***\n");
+    print_cascade_params(patch[p].param);
+    printf("\n");
+
+    if (SETTING==SETTING_POPART){
+	printf("***CHiPs parameters***\n");
+	print_chips_params(patch[p].param);
+	printf("\n");
+    }
+    
+    printf("***Init parameters***\n");
+    print_init_params(patch[p].param);
+    printf("\n");
+    printf("***PrEP parameters***\n");
+    print_prep_params(patch[p].param);
+    printf("\n");
+
+
+
+
+    /* HSV.csv parameters: */
+
+
+    /* partnerships.csv parameters: */
+
+
+
+
+
+    
+
 
     printf("------------------------------------------------------------------------------------\n");
     printf("------------------------------------------------------------------------------------\n");
@@ -1539,7 +1647,7 @@ void check_if_parameters_plausible(parameters *param){
     */
     
     
-    int g, ag, bg, icd4, jcd4, spvl, hsv, r, a_unpd, y;
+    int g, ag, bg, icd4, jcd4, spvl, hsv, r, a_unpd, y, ap;
     int dhs_round;
     double temp;
     
@@ -2326,6 +2434,107 @@ void check_if_parameters_plausible(parameters *param){
             exit(1);
         }
     }
+
+
+    /* PrEP-related parameters: */
+    if (param->PrEP_background_params->year_start_background<2012 || param->PrEP_background_params->year_start_background>2020){
+        printf("Error:param->PrEP_background_params->year_start_background is outside expected range [2012,2020]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    if (param->PrEP_background_params->timestep_start_background<0 || param->PrEP_background_params->timestep_start_background>N_TIME_STEP_PER_YEAR){
+        printf("Error:param->PrEP_background_params->timestep_start_background is outside expected range [0,N_TIMESTEPS_PER_YEAR]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    for (ap=0; ap<=(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND); ap++){
+	if (param->PrEP_background_params->proportion_seen_by_age[ap]<0 || param->PrEP_background_params->proportion_seen_by_age[ap] >1.0){
+	    printf("Error:param->PrEP_background_params->proportion_seen_by_age[ap] is outside expected range [0,1]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+    }
+
+    if (param->PrEP_background_params->p_becomes_PrEP_adherent_background<0.5 || param->PrEP_background_params->p_becomes_PrEP_adherent_background>1.0){
+        printf("Error:param-> is outside expected range [0.5,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->PrEP_background_params->p_semiadherent_acts_covered_background<0.1 || param->PrEP_background_params->p_semiadherent_acts_covered_background>0.9){
+        printf("Error:param-> is outside expected range [0.1,0.9]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    /* Now output intervention params if needed: */
+    if (RUN_PREP_INTERVENTION==1){
+
+	if (param->PrEP_intervention_params->year_start_intervention<2012 || param->PrEP_intervention_params->year_start_intervention>2020){
+	    printf("Error:param->PrEP_intervention_params->year_start_intervention is outside expected range [2012,2020]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+
+	if (param->PrEP_intervention_params->timestep_start_intervention<0 || param->PrEP_intervention_params->timestep_start_intervention>N_TIME_STEP_PER_YEAR){
+	    printf("Error:param->PrEP_intervention_params->timestep_start_intervention is outside expected range [0,N_TIMESTEPS_PER_YEAR]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+	for (ap=0; ap<=(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION); ap++){
+	    if (param->PrEP_intervention_params->proportion_seen_by_age[ap]<0 || param->PrEP_intervention_params->proportion_seen_by_age[ap] >1.0){
+		printf("Error:param->PrEP_intervention_params->proportion_seen_by_age[ap] is outside expected range [0,1]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
+
+	if (param->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention<0.5 || param->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention>1.0){
+	    printf("Error:param-> is outside expected range [0.5,1]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+	if (param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention<0.1 || param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention>0.9){
+	    printf("Error:param-> is outside expected range [0.1,0.9]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+
+	if (param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention<0.1 || param->PrEP_intervention_params->p_semiadherent_acts_covered_intervention>0.9){
+	    printf("Error:param-> is outside expected range [0.1,0.9]\nExiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	}
+
+    }
+
+
+
+
+
+
+
+
+
 }
 
 

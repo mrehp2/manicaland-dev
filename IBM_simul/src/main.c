@@ -196,6 +196,10 @@ int main(int argc,char *argv[]){
     /*** End of variable declarations                      ***/
     /*********************************************************/
 
+
+    /* Ensure that constants are not mis-specified: */
+    check_constants_consistency();
+    
     /*********************************************************/
     /* Parameters */
     /*********************************************************/
@@ -215,19 +219,24 @@ int main(int argc,char *argv[]){
             fflush(stdout);
             exit(1);
         }
-        
+
+	
         for(i_run = 0; i_run < n_runs; i_run++){
             
             allrunparameters[p][i_run].chips_params = malloc(sizeof(chips_param_struct));
             allrunparameters[p][i_run].PC_params = malloc(sizeof(PC_param_struct));
             allrunparameters[p][i_run].DHS_params = malloc(sizeof(DHS_param_struct));
+	    allrunparameters[p][i_run].PrEP_background_params = malloc(sizeof(PrEP_background_params_struct));
+	    allrunparameters[p][i_run].PrEP_intervention_params = malloc(sizeof(PrEP_intervention_params_struct));
             
             if(
             (allrunparameters[p][i_run].chips_params == NULL) ||
             (allrunparameters[p][i_run].PC_params == NULL) ||
-            (allrunparameters[p][i_run].DHS_params == NULL)
+            (allrunparameters[p][i_run].DHS_params == NULL) ||
+	    (allrunparameters[p][i_run].PrEP_background_params == NULL) ||
+	    (allrunparameters[p][i_run].PrEP_intervention_params == NULL)
             ){
-                printf("Unable to allocate allrunparameters.chips_params/PC_params. ");
+                printf("Unable to allocate allrunparameters.chips_params/PC_params/DHS_params/PrEP_background_params/PrEP_intervention_params. ");
                 printf("Execution aborted.");
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
                 fflush(stdout);
@@ -438,8 +447,8 @@ int main(int argc,char *argv[]){
             
             for(p = 0; p < NPATCHES; p++){
                 patch[p].param = allrunparameters[p] + i_run; /* Use pointer arithmetic. */
-                //print_param_struct(patch[p].param);      /* For debugging. */
-                
+                //print_param_struct(patch,p);      /* For debugging. */
+
                 if(CHECKPARAMS == 1){
                     /* Check if parameters plausible (if not, then inputs and/or param ranges may
                     be wrong so check). */
@@ -1051,6 +1060,8 @@ int main(int argc,char *argv[]){
             free(allrunparameters[p][i_run].chips_params);
             free(allrunparameters[p][i_run].PC_params);
             free(allrunparameters[p][i_run].DHS_params);
+            free(allrunparameters[p][i_run].PrEP_background_params);
+            free(allrunparameters[p][i_run].PrEP_intervention_params);
         }
     }
     

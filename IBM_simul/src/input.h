@@ -36,6 +36,9 @@ void read_pc0_enrolment_params(char *, int , parameters *, int , int );
 void copy_pc_params( parameters **, int );
 void read_pc_future_params(char *, parameters *, int );
 void read_initial_params(char *, parameters *, int);
+void read_PrEP_uptake_params(char *, parameters *, int );
+double read_PrEP_background_uptake_params(char *, parameters *, int );
+double read_PrEP_intervention_uptake_params(char *, parameters *, int );
 long get_python_seed(char *);
 //void get_uptake_scenarios(char *, uptake_scenario_struct *, patch_struct *, int );
 /* void change_popart_y3_params(parameters *, uptake_scenario_struct *); */

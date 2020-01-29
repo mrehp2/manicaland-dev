@@ -64,7 +64,18 @@ void concatenate_filename(char *, char *, char *, char *);
 void make_filenames_for_snapshot(char *, char *, file_label_struct *, int , int , char *);
 void make_calibration_output_filename(char *, char *, long , patch_struct *, int , int , int, int);
 void add_commas_to_calibration_output(char *,int );
-void print_param_struct(parameters *);
+
+void print_demographic_params(parameters *);
+void print_hiv_params(parameters *);
+void print_hsv2_params(parameters *);
+void print_partnership_params(parameters *);
+void print_time_params(parameters *);
+void print_cascade_params(parameters *);
+void print_chips_params(parameters *);
+void print_init_params(parameters *);
+void print_prep_params(parameters *);
+    
+void print_param_struct(patch_struct *, int);
 void check_if_parameters_plausible(parameters *);
 void check_if_popart_parameters_plausible(parameters *);
 

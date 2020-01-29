@@ -587,8 +587,8 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
  * Note that initialize_first_cascade_event_for_new_individual() is called by the parent function make_new_adults(), and adds the individual to the cascade if needed/schedules a new cascade event. 
  * Function returns: nothing. */
 void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, patch_struct *patch, int p, all_partnerships *overall_partnerships){
+    int i_barrier;
     int i;
-
     new_adult->id = patch[p].id_counter;        /* Set the id to be the value of patch[p].id_counter. */
 
     new_adult->patch_no = p;
@@ -646,6 +646,15 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     
     /* Only used in next_hiv_event() to make sure not trying to schedule an alread-scheduled HIV event, so we can give it a dummy value for all new adults regardless of CD4. */
     new_adult->debug_last_hiv_event_index = -1;
+
+    /* PrEP-related stuff: */
+    new_adult->PrEP_cascade_status = NOTONPREP;
+    for (i_barrier=0; i_barrier<NPrEPcascade_steps; i_barrier++)
+	new_adult->PrEP_cascade_barriers[i_barrier] = -1;    /* FIXME */
+    new_adult->next_PrEP_event = PREP_UNAWARE;
+    new_adult->idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
+    new_adult->idx_PrEP_event[1] = -1;
+    new_adult->starts_PrEP_due_to_intervention = -1; /* Initialize at dummy value. */
 
     
     /* Assign HIV status, allowing for the fact that some children may have had perinatal transmission (children are divided into HIV+/- at birth). 
@@ -2745,7 +2754,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 		n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];		
 	    }
 	}
-
+    
 	
 	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
 	    if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){

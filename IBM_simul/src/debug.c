@@ -2158,3 +2158,16 @@ void blank_hazard_file(file_struct *file_data_store){
 }
 
 
+
+/* Function checks that constants do not conflict and cause potential errors in code: */
+void check_constants_consistency(){
+    
+    if (MIN_AGE_PREP_BACKGROUND-AGE_ADULT<0){
+	printf("Error - MIN_AGE_PREP_BACKGROUND=%i needs to be >= AGE_ADULT=%i\n, otherwise there will be issues in schedule_PrEP_intervention(). Exiting.\n",MIN_AGE_PREP_BACKGROUND,AGE_ADULT);
+	exit(1);
+    }
+    if (MIN_AGE_PREP_INTERVENTION-AGE_ADULT<0){
+	printf("Error - MIN_AGE_PREP_INTERVENTION=%i needs to be >= AGE_ADULT=%i\n, otherwise there will be issues in schedule_PrEP_intervention(). Exiting.\n",MIN_AGE_PREP_INTERVENTION,AGE_ADULT);
+	exit(1);
+    }
+}

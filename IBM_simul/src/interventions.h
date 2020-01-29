@@ -37,7 +37,7 @@ void carry_out_VMMC_events_per_timestep(int , double , patch_struct *, int );
 /* Manicaland functions. */
 void schedule_PrEP_intervention(age_list_struct *, PrEP_intervention_sample_struct *, PrEP_intervention_params_struct *);
 void carry_out_PrEP_intervention_events_per_timestep(int , int , patch_struct *, int );
-void PrEP_intervention_for_person(individual *, PrEP_intervention_params_struct *, parameters *, individual ***, long *, long *, double );
+void PrEP_intervention_for_person(individual *, parameters *, individual ***, long *, long *, double );
 int overcome_PrEP_cascade_barriers(individual *);   
 double draw_next_PrEP_event_from_adherent(individual *, double );
 double draw_next_PrEP_event_from_semiadherent(individual *, double );

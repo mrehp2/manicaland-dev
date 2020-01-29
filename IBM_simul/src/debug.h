@@ -70,5 +70,6 @@ void output_hazard_over_time_period(double ,double , individual *, individual *,
     file_struct *, output_struct *);
 void write_hazard_data(file_struct *, char *);
 void blank_hazard_file(file_struct *);
+void check_constants_consistency();
 
 #endif /* DEBUG_H_ */

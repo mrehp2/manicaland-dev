@@ -40,6 +40,8 @@ typedef struct individual individual;
 typedef struct partnership partnership;
 
 
+
+
 struct partnership{
     /* Structure partnership contains one pointer to a list of 2 persons, 
     and the time after which break-up occurs (in the absence of death): */
@@ -83,8 +85,9 @@ struct individual{
     /* for the above the origin of time is COUNTRY_HIV_TEST_START */
     long debug_last_cascade_event_index; /* Stores the first index of idx_cascade_event for the last cascade event to happen - so can check that two cascade events do not happen to the same person in the same timestep. */
 
-    int PrEP_cascade_status;
-    int PrEP_cascade_barriers[NPrEPcascadesteps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
+    /* PrEP-related characteristics: */
+    int PrEP_cascade_status;   /* Whether on PrEP (and whether adherent) or not. */
+    int PrEP_cascade_barriers[NPrEPcascade_steps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
     int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person (due to either intervention or background). */ 
     long idx_PrEP_event[2]; /* The indices which locate this individual in the PrEP_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP event at some timestep dt) and the second is their location in this group. */    
     int starts_PrEP_due_to_intervention; /* -1 initially. 0 if started through non-intervention process, 1 if started through intervention. Allows us to modify adherence and long-term behaviour if was part of intervention. */
@@ -95,6 +98,7 @@ struct individual{
     long idx_vmmc_event[2];   /* The indices which locate this individual in the vmmc_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a VMMC event at some timestep dt) and the second is their location in this group. */
     long debug_last_vmmc_event_index; /* Stores the first index of idx_vmmc_event for the last vmmc event to happen - so can check that two vmmc events do not happen to the same person in the same timestep. */
 
+    
     // Pangea outputs for Olli
     double PANGEA_t_prev_cd4stage; /* Time at which an individual last moved CD4 stage. Allows us to linearly estimate CD4 at ART initiation. */
     double PANGEA_t_next_cd4stage; /* Time at which individual will move to the next CD4 stage. Used with PANGEA_t_prev_cd4stage. */  
@@ -213,6 +217,86 @@ typedef struct{
 } DHS_param_struct;
 
 
+
+typedef struct{
+    /* This structure contains the list of people who get PrEP through existing (background) channels in women in the age range MIN_AGE_PREP_BACKGROUND-MAX_AGE_PREP_BACKGROUND per year. 
+       We assume that a maximum of MAX_POP_SIZE/40 in each year age group are visited as follows:
+       - WPP 2019 puts around  17.6% of women aged 15+ are in the 15-19 age group in 2020. Given demographic changes this should (?) decline.
+       - So 2% of the total population (including men) are women in each yearly age group in 15-19.
+       - Allow PrEP coverage up to 100%, for safety make it 1/40 of MAX_POP_SIZE . */
+    long list_ids_to_visit_per_year[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][MAX_POP_SIZE/40];
+    
+    /* The number of people in each age group getting PrEP in a single year. */
+    long number_getting_prep_per_year[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
+    
+    /* This will be the number of people we see each timestep over the year. */
+    
+    long number_to_see_per_timestep[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][N_PREP_INTERVENTION_TIMESTEPS];
+
+    long next_person_to_see[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
+
+} PrEP_background_sample_struct;
+
+
+typedef struct{
+    /* This structure contains the parameters related to the PrEP background (i.e. not intervention):
+       - what % of eligible people (in each age group) are visited in a single year. 
+       - when background PrEP first starts.
+       - adherence measures from PrEP started via background treatment. 
+    */
+
+ 
+    double proportion_seen_by_age[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];   /* Total % of eligible women aged ap who get PrEP annually via background. */
+
+    /* We specify the background PrEP start date as year + timestep (rather than as a float) to avoid rounding errors. Note that this conversion is done when we read in the date in input.c. */
+    int year_start_background, timestep_start_background;
+
+    double p_becomes_PrEP_adherent_background;   /* Probability someone starting PrEP becomes fully adherent from background (non-intervention) PrEP. 1-p_becomes_PrEP_adherent_background is the probability that the person becomes semi adherent. */
+    double p_semiadherent_acts_covered_background;         /* Proportion of sex acts which are covered by PrEP if semi-adherent. */
+} PrEP_background_params_struct;
+
+
+
+typedef struct{
+    /* This structure contains the list of people who get PrEP through an intervention (such as the one for Manicaland) in women in the age range MIN_AGE_PREP_INTERVENTION-MAX_AGE_PREP_INTERVENTION. Intervention can be a single timestep, a year or other period.
+       We treat this the same as a CHiPs round - i.e. that there could be a second round/year of the PrEP intervention/programme with a new sampling frame.
+       We assume that a maximum of MAX_POP_SIZE/40 in each year age group are visited as for the background PrEP sample above.
+    */
+    
+    long list_ids_to_visit[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][MAX_POP_SIZE/40];
+    
+    
+    long number_getting_prep[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];   /* The number of people in each age group getting PrEP in a single round. */
+    
+    /* This will be the number of people we see each timestep over the intervention period PrEP_intervention_params->n_timesteps_in_intervention. We can customise hwo people are visited (everyone in a single timestep, or a gradual roll-out) as needed */
+    long number_to_see_per_timestep[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][N_PREP_INTERVENTION_TIMESTEPS];
+
+    long next_person_to_see[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];
+} PrEP_intervention_sample_struct;
+
+
+typedef struct{
+    /* This structure contains the parameters related to the PrEP intervention:
+        - what % of people (in each age group) in a single round. 
+        - what number of people (in each age group) in a single round (note that this is normally derived, but we allow it to be */
+
+    /* Total % of eligible women aged ap who get intervention. */
+    double proportion_seen_by_age[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];
+
+    /* We specify the intervention start date as year + timestep (rather than as a float) to avoid rounding errors. */
+    int year_start_intervention;
+    int timestep_start_intervention;
+    /* How long does the intervention round last for? (e.g. annual) */
+    int n_timesteps_in_round;
+
+    /* Adherence: */
+    double p_becomes_PrEP_adherent_intervention;   /* Probability someone starting PrEP becomes fully adherent from Manicaland intervention. 1-p_becomes_PrEP_adherent_intervention is the probability that the person becomes semi adherent. */
+    double p_semiadherent_acts_covered_intervention; 
+} PrEP_intervention_params_struct;
+
+
+
+
 /* structure 'parameters': */
 typedef struct {
 
@@ -241,7 +325,12 @@ typedef struct {
     double mean_dur_hsv2event[N_HSV2_EVENTS];
     double initial_prop_hsv2infected; /*Fraction of population seeded HSV-2 positive at time start_time_hsv2. */
     double average_annual_hazard_hsv2; /* Probability of HSV-2 infection per year. */
-    
+
+
+    /********** PrEP: ********************/
+    PrEP_background_params_struct *PrEP_background_params;
+    PrEP_intervention_params_struct *PrEP_intervention_params;
+    double COUNTRY_T_PrEP_START;  /* Time PrEP is first available (used for indexing PrEP schedule). */
     
     /********** times **********/
     double start_time_hiv;
@@ -495,9 +584,6 @@ typedef struct {
     PC_param_struct *PC_params;
     DHS_param_struct *DHS_params;
 
-    /* PrEP-related parameters: */
-    double COUNTRY_T_PrEP_START; /* Time when PrEP first becomes available. */
-    double p_becomes_PrEP_adherent_background; /* Probability that someone starting PrEP becomes fully adherent. 1-p_becomes_PrEP_adherent_background is then the probability that someone starting PrEP becomes partly adherent. */
     
 } parameters;
 
@@ -741,48 +827,6 @@ typedef struct{
 
 
 
-typedef struct{
-    /* This structure contains the list of people who get visited by a PrEP intervention which intervenes in women in the age range MIN_AGE_PREP-MAX_AGE_PREP. Intervention can be a single timestep, or over an extended period.
-       We treat this the same as a CHiPs round - i.e. that there could be a second round of the PrEP intervention with a new sampling frame.
-       We assume that a maximum of MAX_POP_SIZE/20 in each year age group are visited as follows:
-       - WPP 2019 puts just under 5% of women aged 18+ are in the 18 age group from 2010 onwards. Given demographic changes this should (?) decline.
-       - So 2.5% of the total population (including men).
-       - Allow PrEP coverage up to 100%, and add back the factor of 2 for safety, and 5% of MAX_POP_SIZE . */
-    long list_ids_to_visit[MAX_AGE_PREP-MIN_AGE_PREP+1][MAX_POP_SIZE/20];
-    
-    /* The number of people in each age group visited a single round of the PrEP intervention. */
-    long number_getting_intervention[MAX_AGE_PREP-MIN_AGE_PREP+1];
-    
-    /* This will be the number of people we see each timestep over the intervention period PrEP_intervention_params->n_timesteps_in_intervention. We can customise hwo people are visited (everyone in a single timestep, or a gradual roll-out) as needed */
-    
-    long number_to_see_per_timestep[MAX_AGE_PREP-MIN_AGE_PREP+1][N_PREP_INTERVENTION_TIMESTEPS];
-
-    long next_person_to_see[MAX_AGE_PREP-MIN_AGE_PREP+1];
-
-} PrEP_intervention_sample_struct;
-
-
-typedef struct{
-    /* This structure contains the parameters related to the PrEP intervention:
-        - what % of people (in each age group) in a single round. 
-        - what number of people (in each age group) in a single round (note that this is normally derived, but we allow it to be */
-
-    /* Total % of eligible women aged ap who get intervention. */
-    long total_coverage[MAX_AGE_PREP-MIN_AGE_PREP+1];
-
-    long proportion_seen_per_timestep[MAX_AGE_PREP-MIN_AGE_PREP+1][N_PREP_INTERVENTION_TIMESTEPS];
-
-    /* We specify the intervention start date as year + timestep (rather than as a float) to avoid rounding errors. */
-    int year_start_intervention;
-    int timestep_start_intervention;
-    /* How long does the intervention last for? */
-    int n_timesteps_in_intervention;
-
-    /* Adherence: */
-    double p_becomes_PrEP_adherent_intervention;   /* Probability someone starting PrEP becomes fully adherent from Manicaland intervention. 1-p_becomes_PrEP_adherent_intervention is the probability that the person becomes semi adherent. */
-    double p_semiadherent_acts_covered; 
-} PrEP_intervention_params_struct;
-
 
 
 
@@ -894,10 +938,9 @@ typedef struct{
     long *size_PrEP_events;
 
 
-    /* PrEP_intervention_params is the parameter input for how many/what % of women get PrEP.
-       PrEP_intervention_sample is drawn during the simulation based on PrEP_intervention_params to give the list of people who will actually receive the intervention in the given round. */
+    /*  PrEP_background_sample and PrEP_intervention_sample are used to generate and store the lists of people who will get PrEP through background and intervention during a given year/round. */
+    PrEP_background_sample_struct *PrEP_background_sample; 
     PrEP_intervention_sample_struct *PrEP_intervention_sample; 
-    PrEP_intervention_params_struct *PrEP_intervention_params;
 
     /***********************************/
 

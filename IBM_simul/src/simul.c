@@ -978,28 +978,44 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
 
     /*********************************************************************/
-    /* 11a. Set up women to receive PrEP intervention                    */
+    /* 11a. Set up women to receive PrEP background                    */
     /*********************************************************************/
     
-    if((t >= patch[p].param->COUNTRY_T_PrEP_START) && (t_step==(int) (N_TIME_STEP_PER_YEAR*(patch[p].param->COUNTRY_T_PrEP_START-floor(patch[p].param->COUNTRY_T_PrEP_START)))) && (RUN_PREP_INTERVENTION==1)){
+    if((t>=patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
+	printf("Starting PrEP background at t=%lf\n",t);
+        schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params);
+    }
+
+    /*********************************************************************/
+    /* 11b. Carry out PrEP background (if it has started)               */
+    /*********************************************************************/
+    
+    if(t>=patch[p].param->PrEP_background_params->year_start_background){
+        carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p);
+    }
+
+    /*********************************************************************/
+    /* 12a. Set up women to receive PrEP intervention                    */
+    /*********************************************************************/
+    
+    if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention) && (RUN_PREP_INTERVENTION==1)){
 	printf("Starting PrEP intervention at t=%lf\n",t);
         schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params);
 
     }
 
     /*********************************************************************/
-    /* 11b. Carry out PrEP intervention (if it has started)               */
+    /* 12b. Carry out PrEP intervention (if it has started)               */
     /*********************************************************************/
     
-    if((t >= patch[p].param->COUNTRY_T_PrEP_START
-	) && (RUN_PREP_INTERVENTION==1)){
+    if((t >= patch[p].param->COUNTRY_T_PrEP_START) && (RUN_PREP_INTERVENTION==1)){
         carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
     }
 
 
 
     /************************************************************************/
-    /* 12. HSV-2 introduction (at time param->start_time_hsv2) */
+    /* 13. HSV-2 introduction (at time param->start_time_hsv2) */
     /************************************************************************/
 
     // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
@@ -1041,7 +1057,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
                         
 
 	/******************************************/
-	/* 13. Progressing (HSV-2)                */
+	/* 14. Progressing (HSV-2)                */
 	/******************************************/
     
 	if(t>=patch[p].param->start_time_hsv2){        

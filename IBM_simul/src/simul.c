@@ -990,7 +990,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* 11b. Carry out PrEP background (if it has started)               */
     /*********************************************************************/
     
-    if(t>=patch[p].param->PrEP_background_params->year_start_background){
+    if(t>=patch[p].param->PrEP_background_params->year_start_background+TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background){
         carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p);
     }
 
@@ -1008,7 +1008,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* 12b. Carry out PrEP intervention (if it has started)               */
     /*********************************************************************/
     
-    if((t >= patch[p].param->COUNTRY_T_PrEP_START) && (RUN_PREP_INTERVENTION==1)){
+    if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1)){
         carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
     }
 

@@ -983,7 +983,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     if((t>=patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
 	printf("Starting PrEP background at t=%lf\n",t);
-        schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params);
+        schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params, patch, p);
     }
 
     /*********************************************************************/
@@ -1000,7 +1000,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention) && (RUN_PREP_INTERVENTION==1)){
 	printf("Starting PrEP intervention at t=%lf\n",t);
-        schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params);
+        schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
 
     }
 

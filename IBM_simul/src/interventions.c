@@ -1193,7 +1193,7 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
 
 
 
-void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_struct *PrEP_background_sample, PrEP_background_params_struct *PrEP_background_params){
+void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_struct *PrEP_background_sample, PrEP_background_params_struct *PrEP_background_params, patch_struct *patch, int p){
     
     /* We generate a list of ids of women in a single year age group ap who are eligible for the PrEP background (by running through age_list) and then draw from this list randomly to create the people who will receive PrEP through background means annually. 
        We then split up each list by timestep (which we do by specifying how many women from the list will be visited in each timestep).
@@ -1216,12 +1216,13 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 
     /* This is a temporary store of id numbers of people in a single age year - they are the people who are eligible for the background - we sample N of them. */
     long *temp_list_of_ids_for_sampling;
-    temp_list_of_ids_for_sampling = malloc(sizeof(long)*MAX_POP_SIZE/20);
+    temp_list_of_ids_for_sampling = malloc(sizeof(long)*MAX_POP_SIZE/40);
 
     /* Temporary stores used in scheduling people into each timestep. */
     long temp_cumulative_number_visited_this_timestep, temp_cumulative_number_visited_previous_timestep;
 
     individual *indiv;
+    int t_i, n;
     
     if(temp_list_of_ids_for_sampling == NULL){ /* Check memory allocated successfully. */
         printf("Error: Unable to allocate temp_list_of_ids_for_sampling in schedule_PrEP_background().");
@@ -1261,12 +1262,19 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 		//printf("Drawing background PrEP sample for age group %i\n",aa+AGE_ADULT);
 		/* Calculate how many people to see in this timestep (use integer division): */
 		PrEP_background_sample->number_getting_prep_per_year[ap] = PrEP_background_params->proportion_seen_by_age[ap] * n_eligible[ap];
+		/* Now add some reserves in case original people are ineligible. Add the extra '1' to make sure it is larger than the original sample. */
+		PrEP_background_sample->number_in_prep_sample_including_reserves[ap] = ceill(PrEP_background_sample->number_getting_prep_per_year[ap]*SAMPLE_INCLUDING_RESERVES+1);
+		/* Make sure that this is not more than the total number of people: */
+		if (PrEP_background_sample->number_in_prep_sample_including_reserves[ap]>n_eligible[ap])
+		    PrEP_background_sample->number_in_prep_sample_including_reserves[ap] = n_eligible[ap];
+		
 		//printf("Number of people getting PrEP via background in this year = %li\n",PrEP_background_sample->number_getting_prep_per_year[ap]);
+
 		if (PrEP_background_sample->number_getting_prep_per_year[ap]>0){
-		    gsl_ran_choose(rng, PrEP_background_sample->list_ids_to_visit_per_year[ap], PrEP_background_sample->number_getting_prep_per_year[ap], temp_list_of_ids_for_sampling, n_eligible[ap], sizeof (long));
+		    gsl_ran_choose(rng, PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap], PrEP_background_sample->number_in_prep_sample_including_reserves[ap], temp_list_of_ids_for_sampling, n_eligible[ap], sizeof (long));
 		    /* Randomise the order (as gsl_ran_choose maintains the order of 
 		       the original list). */
-		    gsl_ran_shuffle(rng, PrEP_background_sample->list_ids_to_visit_per_year[ap], PrEP_background_sample->number_getting_prep_per_year[ap], sizeof (long));
+		    gsl_ran_shuffle(rng, PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap], PrEP_background_sample->number_in_prep_sample_including_reserves[ap], sizeof (long));
 		}
 	    }
 	    
@@ -1319,7 +1327,33 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 	    }
 	}
     }
-    
+
+
+
+        /* Here we double-check the sample and set their PrEP_cascade_status to be WAITINGTOSTARTPREP: */
+    for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){
+	//printf("PrEP background for people in age group ap=%i\n",ap);
+	n = 0;
+	for (t_i=0; t_i<N_TIME_STEP_PER_YEAR; t_i++){
+	    for(i=n; (i<(n+ PrEP_background_sample->number_to_see_per_timestep[ap][t_i])); i++){
+		indiv = &(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]]);
+
+		if (indiv->PrEP_cascade_status!=NOTONPREP){
+		    printf("Error: PrEP status impossible for indiv id=%li in schedule_PrEP_background(). Exiting\n",indiv->id);
+		    fflush(stdout);
+		    exit(1);
+		}
+		
+		/* Set this so we don't schedule the same person to start PrEP by both background and intervention: */
+		indiv->PrEP_cascade_status = WAITINGTOSTARTPREP;
+		
+		
+		//printf("Background PrEP id=%li at t=%i\n",PrEP_background_sample->list_ids_to_visit_per_year[ap][i],t_i);
+	    }
+	    n += PrEP_background_sample->number_to_see_per_timestep[ap][t_i];
+	}
+    }
+
     free(temp_list_of_ids_for_sampling);
 }
 
@@ -1328,7 +1362,7 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 
 ////////////////////////////////////////////////////////////
 
-void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params){
+void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params, patch_struct *patch, int p){
     
     /* We generate a list of ids of women in a single year age group ap who are eligible for the PrEP intervention (by running through age_list) and then draw from this list randomly to create the people who will receive the PrEP intervention (in this round if there is >1 round). 
        We then split up each list by timestep (which we do by specifying how many women from the list will be visited in each timestep) - so we don't have any memory issues if we put all the women in one timestep.
@@ -1351,13 +1385,15 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 
     /* This is a temporary store of id numbers of people in a single age year - they are the people who are eligible for the intervention - we sample N of them. */
     long *temp_list_of_ids_for_sampling;
-    temp_list_of_ids_for_sampling = malloc(sizeof(long)*MAX_POP_SIZE/20);
+    temp_list_of_ids_for_sampling = malloc(sizeof(long)*MAX_POP_SIZE/40);
 
     /* Temporary stores used in scheduling people into each timestep. */
     long temp_cumulative_number_visited_this_timestep, temp_cumulative_number_visited_previous_timestep;
 
 
     individual *indiv;
+    int t_i, n;
+
     
     if(temp_list_of_ids_for_sampling == NULL){ /* Check memory allocated successfully. */
         printf("Error: Unable to allocate temp_list_of_ids_for_sampling in schedule_PrEP_intervention().");
@@ -1394,15 +1430,22 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 	    
 	    /* Once we have been through all women in this age group, draw sample: */
 	    if (i==age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]-1){
-		printf("Drawing intervention PrEP sample for age group %i\n",aa+AGE_ADULT);
+		//printf("Drawing intervention PrEP sample for age group %i\n",aa+AGE_ADULT);
 		/* Calculate how many people to see in this timestep (use integer division): */
 		PrEP_intervention_sample->number_getting_prep[ap] = PrEP_intervention_params->proportion_seen_by_age[ap] * n_eligible[ap];
-		printf("Number of people getting intervention PrEP in this round = %li\n",PrEP_intervention_sample->number_getting_prep[ap]);
+
+		/* Now add some reserves in case original people are ineligible. Add the extra '1' to make sure it is larger than the original sample. */
+		PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] = ceill(PrEP_intervention_sample->number_getting_prep[ap]*SAMPLE_INCLUDING_RESERVES+1);
+		/* Make sure that this is not more than the total number of people: */
+		if (PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]>n_eligible[ap])
+		    PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] = n_eligible[ap];
+
+		//printf("Number of people getting intervention PrEP in this round = %li\n",PrEP_intervention_sample->number_getting_prep[ap]);
 		if (PrEP_intervention_sample->number_getting_prep[ap]>0){
-		    gsl_ran_choose(rng, PrEP_intervention_sample->list_ids_to_visit[ap], PrEP_intervention_sample->number_getting_prep[ap], temp_list_of_ids_for_sampling, n_eligible[ap], sizeof (long));
+		    gsl_ran_choose(rng, PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap], PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap], temp_list_of_ids_for_sampling, n_eligible[ap], sizeof (long));
 		    /* Randomise the order (as gsl_ran_choose maintains the order of 
 		       the original list). */
-		    gsl_ran_shuffle(rng, PrEP_intervention_sample->list_ids_to_visit[ap], PrEP_intervention_sample->number_getting_prep[ap], sizeof (long));
+		    gsl_ran_shuffle(rng, PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap], PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap], sizeof (long));
 		}
 	    }
 	    
@@ -1418,7 +1461,7 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 
     /* Now specify what timestep people will be visited in: */
     for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++){
-	printf("Scheduling intervention PrEP for people in age group ap=%i\n",ap);
+	//printf("Scheduling intervention PrEP for people in age group ap=%i\n",ap);
 	
 	temp_cumulative_number_visited_previous_timestep = 0;
 	for(i=0; i<PrEP_intervention_params->n_timesteps_in_round; i++){
@@ -1456,17 +1499,25 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
     }
 
 
-
-    int t_i, n;
+    /* Here we double-check the sample and set their PrEP_cascade_status to be WAITINGTOSTARTPREP: */
     for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++){
-	printf("PrEP intervention for people in age group ap=%i\n",ap);
+	//printf("PrEP intervention for people in age group ap=%i\n",ap);
 	n = 0;
 	for (t_i=0; t_i<PrEP_intervention_params->n_timesteps_in_round; t_i++){
 	    for(i=n; (i<(n+ PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i])); i++){
+		indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][i]]);
+
+		if (indiv->PrEP_cascade_status!=NOTONPREP){
+		    printf("Error: PrEP status impossible for indiv id=%li in schedule_PrEP_intervention(). Exiting\n",indiv->id);
+		    fflush(stdout);
+		    exit(1);
+		}
 		
-		&(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year[ap][i]])->PrEP_cascade_status = WAITINGTOSTARTPREP;
+		/* Set this so we don't schedule the same person to start PrEP by both background and intervention: */
+		indiv->PrEP_cascade_status = WAITINGTOSTARTPREP;
 		
-		printf("Intervention id=%li at t=%i\n",PrEP_intervention_sample->list_ids_to_visit[ap][i],t_i);
+		
+		//printf("Intervention id=%li at t=%i\n",PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][i],t_i);
 	    }
 	    n += PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i];
 	}
@@ -1516,8 +1567,7 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
     
 
     int ap;
-    long i;  
-
+    int i,j;
     double t = year + t_step*TIME_STEP;
 
     individual *indiv;
@@ -1528,17 +1578,40 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
     for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){
 	//printf("Next person background PrEP = %li\n",patch[p].PrEP_background_sample->next_person_to_see[ap]);
 	//printf("number per timestep background PrEP = %li\n",patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i]);
-	for(i=patch[p].PrEP_background_sample->next_person_to_see[ap]; (i<(patch[p].PrEP_background_sample->next_person_to_see[ap] + patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i])); i++){
-	    /* This is the person being visited. */
-	    indiv = &(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year[ap][i]]);
-	    //printf("Bg prep: ID=%li. Supposed to be %li ap=%i i=%li\n",indiv->id,patch[p].PrEP_background_sample->list_ids_to_visit_per_year[ap][i],ap,i);
-	    /* They start PrEP due to background: */
-	    indiv->starts_PrEP_due_to_intervention = NOT_PREP_INTERVENTION;
-	    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+	j = 0;
+	for(i=0; i<patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i]; i++){
+	    /* This is the person potentially being visited. */
+	    indiv = &(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][j+patch[p].PrEP_background_sample->next_person_to_see[ap]]]);
+
+	    /* Make sure they are still eligible: */
+	    if (indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP)  && (indiv->cd4!=DEAD)){
+		//printf("Bg prep: ID=%li. Supposed to be %li ap=%i i=%i\n",indiv->id,patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i],ap,i);
+		/* They start PrEP due to background: */
+		indiv->starts_PrEP_due_to_intervention = NOT_PREP_INTERVENTION;
+		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+		j+=1;
+	    }
+	    else{
+		//printf("Original skipped person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
+		do{
+		    j++;
+		    /* This is the substitute potentially being visited. */
+		    indiv = &(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][j+patch[p].PrEP_background_sample->next_person_to_see[ap]]]);
+		}while ((j<patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap]) && !(indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP)));
+	    }
+
+	    if (j>=patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap] && j>0){
+		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
+		printf("Error: run out of reserves in PrEP background sample in carry_out_PrEP_background_events_per_timestep(). Exiting\n");
+		fflush(stdout);
+		exit(1);
+	    }
+			
 	}
 
+	//printf("Number of background reserves used[ap=%i] = %li out of %li to see. Total reserves = %li\n",ap,j-patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i],patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i],patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap]);
 	/* Update this index ready for the next timestep: */
-	patch[p].PrEP_background_sample->next_person_to_see[ap] += patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i];
+	patch[p].PrEP_background_sample->next_person_to_see[ap] += j;
     }
 }
 
@@ -1579,7 +1652,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
     
 
     int ap;
-    long i;  
+    int i,j;  
 
     double t = year + t_step*TIME_STEP;
 
@@ -1591,17 +1664,47 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
     for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++){
 	//printf("Next person intervention PrEP = %li\n",patch[p].PrEP_intervention_sample->next_person_to_see[ap]);
 	//printf("number per timestep intervention PrEP = %li\n",patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]);
-	for(i=patch[p].PrEP_intervention_sample->next_person_to_see[ap]; (i<(patch[p].PrEP_intervention_sample->next_person_to_see[ap] + patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i])); i++){
-	    /* This is the person being visited. */
-	    indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit[ap][i]]);
-	    //printf("Interetnion: ID=%li. Supposed to be %li ap=%i i=%li\n",indiv->id,patch[p].PrEP_intervention_sample->list_ids_to_visit[ap][i],ap,i);
-	    /* They start PrEP due to intervention: */
-	    indiv->starts_PrEP_due_to_intervention = IS_PREP_INTERVENTION;
-	    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+
+
+	////
+
+
+	j = 0;
+
+	for(i=0; i<patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]; i++){
+	    /* This is the person potentially being visited. */
+	    indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][j+patch[p].PrEP_intervention_sample->next_person_to_see[ap]]]);
+
+	    /* Make sure they are still eligible: */
+	    if (indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP) && (indiv->cd4!=DEAD)){
+		/* They start PrEP due to intervention: */
+		indiv->starts_PrEP_due_to_intervention = IS_PREP_INTERVENTION;
+		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+		j+=1;
+	    }
+	    else{
+		//printf("Original intervention skipped person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
+		do{
+		    j++;
+		    /* This is the substitute potentially being visited. */
+		    indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][j+patch[p].PrEP_intervention_sample->next_person_to_see[ap]]]);
+		    //printf("New intervention person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
+		}while ((j<patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]) && !(indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP)));
+	    }
+
+	    if (j>=patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] && j>0){
+		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
+		printf("Error: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). j=%i, n_reserves[ap=%i]=%li. Exiting\n",j,ap,patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]);
+		fflush(stdout);
+		exit(1);
+	    }
 	}
 
+	if (j-patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]>0)
+	    printf("Number of intervention reserves used = %li\n",j-patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]);
 	/* Update this index ready for the next timestep: */
-	patch[p].PrEP_intervention_sample->next_person_to_see[ap] += patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i];
+	patch[p].PrEP_intervention_sample->next_person_to_see[ap] += j;
+
     }
 }
 

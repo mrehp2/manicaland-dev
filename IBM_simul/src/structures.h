@@ -219,15 +219,17 @@ typedef struct{
 
 
 typedef struct{
-    /* This structure contains the list of people who get PrEP through existing (background) channels in women in the age range MIN_AGE_PREP_BACKGROUND-MAX_AGE_PREP_BACKGROUND per year. 
+    /* This structure contains the list of people who get PrEP through existing (background) channels in women in the age range MIN_AGE_PREP_BACKGROUND-MAX_AGE_PREP_BACKGROUND per year. It includes reserves (i.e. women in the same age who are also eligible in case some of the original sample seroconvert/start PrEP via intervention.
        We assume that a maximum of MAX_POP_SIZE/40 in each year age group are visited as follows:
        - WPP 2019 puts around  17.6% of women aged 15+ are in the 15-19 age group in 2020. Given demographic changes this should (?) decline.
        - So 2% of the total population (including men) are women in each yearly age group in 15-19.
        - Allow PrEP coverage up to 100%, for safety make it 1/40 of MAX_POP_SIZE . */
-    long list_ids_to_visit_per_year[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][MAX_POP_SIZE/40];
+    long list_ids_to_visit_per_year_including_reserves[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][MAX_POP_SIZE/40];
     
     /* The number of people in each age group getting PrEP in a single year. */
     long number_getting_prep_per_year[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
+    /* The number of people (including reserves) who were sampled. It is number_getting_prep_per_year*SAMPLE_INCLUDING_RESERVES. */
+    long number_in_prep_sample_including_reserves[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
     
     /* This will be the number of people we see each timestep over the year. */
     
@@ -259,15 +261,20 @@ typedef struct{
 
 typedef struct{
     /* This structure contains the list of people who get PrEP through an intervention (such as the one for Manicaland) in women in the age range MIN_AGE_PREP_INTERVENTION-MAX_AGE_PREP_INTERVENTION. Intervention can be a single timestep, a year or other period.
+       It includes reserves (i.e. women in the same age who are also eligible in case some of the original sample seroconvert/start PrEP via background.
        We treat this the same as a CHiPs round - i.e. that there could be a second round/year of the PrEP intervention/programme with a new sampling frame.
        We assume that a maximum of MAX_POP_SIZE/40 in each year age group are visited as for the background PrEP sample above.
     */
     
-    long list_ids_to_visit[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][MAX_POP_SIZE/40];
+    long list_ids_to_visit_including_reserves[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][MAX_POP_SIZE/40];
     
     
     long number_getting_prep[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];   /* The number of people in each age group getting PrEP in a single round. */
-    
+
+
+    /* The number of people (including reserves) who were sampled. It is number_getting_prep_per_year*SAMPLE_INCLUDING_RESERVES. */
+    long number_in_prep_sample_including_reserves[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
+
     /* This will be the number of people we see each timestep over the intervention period PrEP_intervention_params->n_timesteps_in_intervention. We can customise hwo people are visited (everyone in a single timestep, or a gradual roll-out) as needed */
     long number_to_see_per_timestep[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][N_PREP_INTERVENTION_TIMESTEPS];
 

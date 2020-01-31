@@ -337,8 +337,9 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 /* Codes for indiv->PrEP_cascade_status. */
 #define NOTONPREP 0
-#define ONPREP_SEMIADHERENT 1  // Tbc - something like 'takes PrEP but not every risky act is protected. 
-#define ONPREP_ADHERENT 2      // PrEP at full efficacy.
+#define WAITINGTOSTARTPREP 1
+#define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes PrEP but not every risky act is protected. 
+#define ONPREP_ADHERENT 3      // PrEP at full efficacy.
 
 /* Codes for indiv->next_PrEP_event. */
 
@@ -356,6 +357,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define INDEX_PREP_BARRIER_MOTIVATION 0 //
 #define INDEX_PREP_BARRIER_ACCESS 1 //
 #define INDEX_PREP_BARRIER_UTILIZATION 2 //
+
+#define SAMPLE_INCLUDING_RESERVES 1.2 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
 
 /* Used as CD4 value to identify that people are not infected with HIV.
  * Note: CD4==-2 means the person is dead.

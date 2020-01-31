@@ -35,8 +35,8 @@ void schedule_generic_vmmc_event(individual *, parameters *, individual ***, lon
 void carry_out_VMMC_events_per_timestep(int , double , patch_struct *, int );
 
 /* Manicaland functions. */
-void schedule_PrEP_background(age_list_struct *, PrEP_background_sample_struct *, PrEP_background_params_struct *);
-void schedule_PrEP_intervention(age_list_struct *, PrEP_intervention_sample_struct *, PrEP_intervention_params_struct *);
+void schedule_PrEP_background(age_list_struct *, PrEP_background_sample_struct *, PrEP_background_params_struct *, patch_struct *, int );
+void schedule_PrEP_intervention(age_list_struct *, PrEP_intervention_sample_struct *, PrEP_intervention_params_struct *, patch_struct *, int );
 void carry_out_PrEP_background_events_per_timestep(int , int , patch_struct *, int );
 void carry_out_PrEP_intervention_events_per_timestep(int , int , patch_struct *, int );
 void start_PrEP_for_person(individual *, parameters *, individual ***, long *, long *, double );

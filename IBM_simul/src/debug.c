@@ -36,14 +36,34 @@ write_one_year_age_groups_including_kids()
 write_nbirths_nnewadults_ndeaths()
 output_life_expectancy()
 check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partnership()
+check_if_individual_should_be_in_list_susceptibles_in_hsv2serodiscordant_partnership()
+
 check_if_individual_should_be_in_list_available_partners()
 sweep_through_all_and_check_lists_serodiscordant_and_available_partners()
 sweep_through_all_and_check_n_partners_outside_n_HIVpos_partners_and_n_HIVpos_partners_outside()
 sweep_through_all_and_check_age_and_risk_of_partners()
-blank_debugging_files()
-write_hiv_duration()
 
-check_valid_ART_transition() - checks that we are allowed to move from state A to state B (e.g. moving directly from never ART to LTART_VS is not allowed).
+void count_number_by_age_gender_risk_cascade_cd4()
+void create_header_for_cascade_count_files()
+void check_valid_ART_transition()  - checks that we are allowed to move from state A to state B (e.g. moving directly from never ART to LTART_VS is not allowed).
+void blank_debugging_files()
+void write_hiv_duration()
+void write_hiv_duration_km()
+void write_hiv_duration_km_end_of_simulation()
+void write_cd4_at_seroconversion()
+void write_initial_spvl_distribution()
+void write_cd4_spvl_states()
+void print_debugerror_shouldbezero_exit()
+void write_art_states()
+void reset_annual_chips_visit_counter()
+void print_chips_statistics_using_age_list()
+void print_chips_statistics_using_chipsonly()
+void output_hazard_over_time_period()
+void write_hazard_data()
+void blank_hazard_file()
+void check_constants_consistency()
+void check_prep_uptake()
+
  */
 
 
@@ -2170,4 +2190,70 @@ void check_constants_consistency(){
 	printf("Error - MIN_AGE_PREP_INTERVENTION=%i needs to be >= AGE_ADULT=%i\n, otherwise there will be issues in schedule_PrEP_intervention(). Exiting.\n",MIN_AGE_PREP_INTERVENTION,AGE_ADULT);
 	exit(1);
     }
+}
+
+
+void check_prep_uptake(double t, int t_step, patch_struct *patch, int p){
+    int ap, t_i;
+    int aa_temp, ai_temp, i;
+    individual *indiv;
+
+    int DEBUG_N_PREP[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];
+    for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++)
+    	DEBUG_N_PREP[ap] = 0;
+
+    if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1){
+    	printf("Number scheduled for PrEP by age * intervention at T=%6.4lf\n",t);
+    	for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){
+    	    for (t_i=0; t_i<N_TIME_STEP_PER_YEAR; t_i++){
+    		DEBUG_N_PREP[ap] += patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i];
+    	    }
+    	    printf("%i ",DEBUG_N_PREP[ap]);
+    	}
+    }
+
+    for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++)
+    	DEBUG_N_PREP[ap] = 0;
+
+    if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1) && t_step==N_TIME_STEP_PER_YEAR-1){
+    	printf(" * ");
+    	for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++){
+    	    for (t_i=0; t_i<patch[p].param->PrEP_intervention_params->n_timesteps_in_round; t_i++){
+    		DEBUG_N_PREP[ap] += patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i];
+    	    }
+    	    printf("%i ",DEBUG_N_PREP[ap]);
+    	}
+    }
+    if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1)
+    	printf("\n");
+
+
+    /* Now count number actually on PrEP: */
+    for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++)
+    	DEBUG_N_PREP[ap] = 0;
+
+    if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1){
+    	printf("Number on PrEP by age at T=%6.4lf\n",t);
+    	for (aa_temp=(MIN_AGE_PREP_INTERVENTION-AGE_ADULT); aa_temp<(MAX_AGE_PREP_INTERVENTION-AGE_ADULT+1); aa_temp++){
+    	    ai_temp = patch[p].age_list->age_list_by_gender[FEMALE]->youngest_age_group_index + aa_temp; /* a is the index of the two arrays age_list->number_per_age_group and age_list->age_group */
+    	    ap = aa_temp-(MIN_AGE_PREP_INTERVENTION-AGE_ADULT);
+    	    while (ai_temp>(MAX_AGE-AGE_ADULT-1))
+    		ai_temp = ai_temp - (MAX_AGE-AGE_ADULT);
+    	    /* Now loop over women in each year age group: */
+    	    for (i=0; i<patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai_temp]; i++){
+    		indiv = &(patch[p].individual_population[patch[p].age_list->age_list_by_gender[FEMALE]->age_group[ai_temp][i]->id]);
+    		if (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT){
+    		    if ((indiv->cd4==DEAD) || (indiv->HIV_status>UNINFECTED))
+    			printf("Error - person %li is either dead or HIV+. HIV=%i PrEP=%i\n",indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
+    		    else
+    			DEBUG_N_PREP[ap] += 1;
+    		}
+    	    }
+    	    printf("%i ",DEBUG_N_PREP[ap]);
+
+    	}
+    	printf("\n");
+	
+    }
+
 }

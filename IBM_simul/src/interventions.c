@@ -1676,28 +1676,38 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][j+patch[p].PrEP_intervention_sample->next_person_to_see[ap]]]);
 
 	    /* Make sure they are still eligible: */
-	    if (indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP) && (indiv->cd4!=DEAD)){
-		/* They start PrEP due to intervention: */
-		indiv->starts_PrEP_due_to_intervention = IS_PREP_INTERVENTION;
-		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
-		j+=1;
-	    }
-	    else{
-		//printf("Original intervention skipped person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
-		do{
-		    j++;
-		    /* This is the substitute potentially being visited. */
-		    indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][j+patch[p].PrEP_intervention_sample->next_person_to_see[ap]]]);
-		    //printf("New intervention person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
-		}while ((j<patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]) && !(indiv->HIV_status==UNINFECTED && (indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP)));
+	    //printf("Original intervention skipped person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
+	    while ((j<patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]) && (indiv->HIV_status>UNINFECTED || (indiv->PrEP_cascade_status>WAITINGTOSTARTPREP) || (indiv->cd4==DEAD))){
+		j++;
+		/* Ensure that the person isn't listed as waiting for PrEP. We will re-update eligible substitutes later in the function. */
+		indiv->PrEP_cascade_status=NOTONPREP;
+		/* This is the substitute potentially being visited. */
+		indiv = &(patch[p].individual_population[patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][j+patch[p].PrEP_intervention_sample->next_person_to_see[ap]]]);
+		printf("New intervention person id=%li HIV_status=%i PREP_cascade_status=%i\n",indiv->id, indiv->HIV_status, indiv->PrEP_cascade_status);
 	    }
 
+
+
+	    /* Debugging checks: */
 	    if (j>=patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] && j>0){
 		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
 		printf("Error: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). j=%i, n_reserves[ap=%i]=%li. Exiting\n",j,ap,patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]);
 		fflush(stdout);
 		exit(1);
 	    }
+	    if (indiv->HIV_status>UNINFECTED || (indiv->PrEP_cascade_status>WAITINGTOSTARTPREP) || (indiv->cd4==DEAD)){
+		printf("Error: Someone trying to start PrEP who shouldn't. Exiting\n");
+		fflush(stdout);
+		exit(1);
+	    }
+
+	    
+	    /* They start PrEP due to intervention: */
+	    indiv->starts_PrEP_due_to_intervention = IS_PREP_INTERVENTION;
+	    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+	    j+=1;
+
+
 	}
 
 	if (j-patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]>0)
@@ -1788,12 +1798,13 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 
 /* Placeholder function - need to discuss with Ranjeeta et al. */
 int overcome_PrEP_cascade_barriers(individual *indiv){
-    if ((indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_MOTIVATION]>=0) &&
-	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_ACCESS]>=0) &&
-	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_UTILIZATION]>=0))
-	return 1;
-    else
-	return 0;
+    /* if ((indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_MOTIVATION]>=0) && */
+    /* 	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_ACCESS]>=0) && */
+    /* 	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_UTILIZATION]>=0)) */
+    /* 	return 1; */
+    /* else */
+    /* 	return 0; */
+    return 1;
 }
 
 

@@ -2,6 +2,8 @@ p_child_circ 0.0596    // This is the probability of being circumcised tradition
 eff_circ_vmmc 0.6 // Cori 2014 Table S7
 eff_circ_tmc 0.6 // Assume for now that it is as effective as VMMC.
 rr_circ_unhealed 0.33 // Cori 2014 Table S7 parameter s_heal. This represents susceptibility during wound healing period. Cori also has an increase in infectivity.
+eff_prep_semiadherent 0.5 // CHANGE!!!
+eff_prep_adherent 1.0  // Assume PrEP is fully effective if perfectly adherent.
 average_log_viral_load 4.0 // Currently an unused parameter - the only time it is now used is in the function mtct_transmission(), which is never called.
 average_annual_hazard [0.05-0.3] // Fraser PNAS 2007 found beta = 0.317 per annum. Boily LID 2009 per act 0.0001 to 0.0014. Assume 50-200 acts per year. Then run in R: nsample=20000 n = sample(25:150,nsample,replace=TRUE) p = runif(nsample,0.0001,0.0014) c(quantile(1 - (1-p)^n,0.05),quantile(1 - (1-p)^n,0.95)). Hollingsworth 2008 had 10.6 (7.61-13.3). Donnell Lancet 2010 found transmission rate 2.24 per 100 person-years among people not on ART (so censoring CD4<200). 
 RRacute_trans 5.3 // Bellan Plos Med 2015.

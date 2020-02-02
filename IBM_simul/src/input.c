@@ -448,7 +448,14 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->rr_circ_unhealed));
         check_if_cannot_read_param(checkreadok, "param_local->rr_circ_unhealed");
-        checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
+
+        checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_semiadherent));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_prep_semiadherent");
+
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_adherent));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_prep_adherent");
+
+	checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
         check_if_cannot_read_param(checkreadok, "param_local->average_log_viral_load");
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard));
@@ -837,7 +844,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             param_local->max_n_part_noage[r] = (int) floor(temp_int);
             check_if_cannot_read_param(checkreadok, "param_local->max_n_part_noage");
             
-            printf("param_local->max_n_part_noage in risk group %d is %d\n",r,param_local->max_n_part_noage[r]);
+            //printf("param_local->max_n_part_noage in risk group %d is %d\n",r,param_local->max_n_part_noage[r]);
             //fflush(stdout);
         }
 
@@ -847,7 +854,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             check_if_cannot_read_param(checkreadok,
                 "param_local->breakup_scale_lambda_within_patch");
             
-            printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
+            //printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
             //fflush(stdout);
         }
         for(r = 0; r < N_RISK; r++){
@@ -947,7 +954,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     // Throw away first line of the file (the header line)
     fscanf(param_file, "%*[^\n]\n");
 
-    printf("Opening file %s\n", param_file_name);
+    //printf("Opening file %s\n", param_file_name);
 
     // Read parameters from each line (i_run) of the file as used for each run of the simulation
     for(i_run = 0; i_run < n_runs; i_run++){
@@ -1032,7 +1039,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_VMMC_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_VMMC_START");
-	printf("param_local->COUNTRY_VMMC_START = %lf\n",param_local->COUNTRY_VMMC_START);
+
 	
 	
         if( (int) (param_local->start_time_simul) != (param_local->start_time_simul) || 
@@ -2308,7 +2315,7 @@ void read_PrEP_uptake_params(char *patch_tag, parameters *allrunparameters, int 
     else
 	t_prep_start = t_prep_start_background;
 
-    printf("AATime of PrEP start = %lf\n",t_prep_start);
+    printf("Time of PrEP start = %lf\n",t_prep_start);
     for (i_run = 0; i_run < n_runs; i_run++)
 	allrunparameters[i_run].COUNTRY_T_PrEP_START = t_prep_start;
 

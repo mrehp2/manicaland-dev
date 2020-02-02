@@ -336,6 +336,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define IS_PREP_INTERVENTION 1 
 
 /* Codes for indiv->PrEP_cascade_status. */
+#define SEROCONVERTEDBEFOREPREP -1
 #define NOTONPREP 0
 #define WAITINGTOSTARTPREP 1
 #define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes PrEP but not every risky act is protected. 

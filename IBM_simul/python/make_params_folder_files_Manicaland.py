@@ -813,7 +813,7 @@ def copy_fertility_file(country, input_dir, output_dir):
     fertility_data_file = get_current_IBM_fertility_datafile(input_dir, country_sentencecase)
     
     # This is what we are copying to
-    print "Copying ",fertility_data_file
+    #print "Copying ",fertility_data_file
     fertility_outfilename = join(output_dir, "param_fertility.txt")
 
     copy_file_checking_if_exists(fertility_data_file, fertility_outfilename)
@@ -904,7 +904,7 @@ def copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_
     
     # This is what we are copying to
     mortality_outfilename = join(output_dir, "param_mortality.txt")
-    print "Copying file",mortality_data_file," to ",mortality_outfilename
+    #print "Copying file",mortality_data_file," to ",mortality_outfilename
     copy_file_checking_if_exists(mortality_data_file,mortality_outfilename)
 
 
@@ -1142,7 +1142,7 @@ if __name__=="__main__":
                 
         output_file_strings[f] = "" # This will store the new file output.
 
-        print "Processing",f
+        #print "Processing",f
         for l in linedata:
 
             # Pull out parameter name, the value (or range etc) and any comments on that line
@@ -1196,7 +1196,7 @@ if __name__=="__main__":
         
     for f in template_files:
         output_filename = f.replace(template_dir, output_dir)
-        print "Writing to",output_filename
+        #print "Writing to",output_filename
         output_file = open(output_filename, "w")
         output_file.write(output_file_strings[f])
         output_file.close()

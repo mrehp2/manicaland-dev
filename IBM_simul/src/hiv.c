@@ -469,6 +469,14 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         }
     
 }
+
+    if (susceptible->PrEP_cascade_status>WAITINGTOSTARTPREP){
+	if (susceptible->PrEP_cascade_status==ONPREP_ADHERENT)
+	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_prep_adherent);
+	else if (susceptible->PrEP_cascade_status==ONPREP_SEMIADHERENT)
+	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_prep_semiadherent);
+    }
+    
     /* Adjust according to the circumcision status of the susceptible: */
     if(susceptible->gender==FEMALE)
         total_hazard_per_timestep = total_hazard_ignore_circ * TIME_STEP;

@@ -982,7 +982,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /*********************************************************************/
     
     if((t>=patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
-	printf("Starting PrEP background at t=%lf\n",t);
+	//printf("Starting PrEP background at t=%lf\n",t);
         schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params, patch, p);
     }
 
@@ -999,7 +999,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /*********************************************************************/
     
     if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention) && (RUN_PREP_INTERVENTION==1)){
-	printf("Starting PrEP intervention at t=%lf\n",t);
+	//printf("Starting PrEP intervention at t=%lf\n",t);
         schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
 
     }
@@ -1011,6 +1011,69 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1)){
         carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
     }
+    
+
+    /*@@@@@@@@@@@@@@ For VALIDATION ONLY - remove when finished. @@@@@@@@@@@@@@*/
+    /* int ap, t_i; */
+    /* int DEBUG_N_PREP[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1]; */
+    /* for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++) */
+    /* 	DEBUG_N_PREP[ap] = 0; */
+
+    /* if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1){ */
+    /* 	printf("Number scheduled for PrEP by age * intervention at T=%6.4lf\n",t); */
+    /* 	for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){ */
+    /* 	    for (t_i=0; t_i<N_TIME_STEP_PER_YEAR; t_i++){ */
+    /* 		DEBUG_N_PREP[ap] += patch[p].PrEP_background_sample->number_to_see_per_timestep[ap][t_i]; */
+    /* 	    } */
+    /* 	    printf("%i ",DEBUG_N_PREP[ap]); */
+    /* 	} */
+    /* } */
+
+    /* for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++) */
+    /* 	DEBUG_N_PREP[ap] = 0; */
+
+    /* if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1) && t_step==N_TIME_STEP_PER_YEAR-1){ */
+    /* 	printf(" * "); */
+    /* 	for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++){ */
+    /* 	    for (t_i=0; t_i<patch[p].param->PrEP_intervention_params->n_timesteps_in_round; t_i++){ */
+    /* 		DEBUG_N_PREP[ap] += patch[p].PrEP_intervention_sample->number_to_see_per_timestep[ap][t_i]; */
+    /* 	    } */
+    /* 	    printf("%i ",DEBUG_N_PREP[ap]); */
+    /* 	} */
+    /* } */
+    /* if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1) */
+    /* 	printf("\n"); */
+
+
+    /* /\* Now count number actually on PrEP: *\/ */
+    /* for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++) */
+    /* 	DEBUG_N_PREP[ap] = 0; */
+    /* int aa_temp, ai_temp, i; */
+    /* individual *indiv; */
+    /* if((t >= patch[p].param->PrEP_background_params->year_start_background + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && t_step==N_TIME_STEP_PER_YEAR-1){ */
+    /* 	printf("Number on PrEP by age at T=%6.4lf\n",t); */
+    /* 	for (aa_temp=(MIN_AGE_PREP_INTERVENTION-AGE_ADULT); aa_temp<(MAX_AGE_PREP_INTERVENTION-AGE_ADULT+1); aa_temp++){ */
+    /* 	    ai_temp = patch[p].age_list->age_list_by_gender[FEMALE]->youngest_age_group_index + aa_temp; /\* a is the index of the two arrays age_list->number_per_age_group and age_list->age_group *\/ */
+    /* 	    ap = aa_temp-(MIN_AGE_PREP_INTERVENTION-AGE_ADULT); */
+    /* 	    while (ai_temp>(MAX_AGE-AGE_ADULT-1)) */
+    /* 		ai_temp = ai_temp - (MAX_AGE-AGE_ADULT); */
+    /* 	    /\* Now loop over women in each year age group: *\/ */
+    /* 	    for (i=0; i<patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai_temp]; i++){ */
+    /* 		indiv = &(patch[p].individual_population[patch[p].age_list->age_list_by_gender[FEMALE]->age_group[ai_temp][i]->id]); */
+    /* 		if (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT){ */
+    /* 		    if ((indiv->cd4==DEAD) || (indiv->HIV_status>UNINFECTED)) */
+    /* 			printf("Error - person %li is either dead or HIV+. HIV=%i PrEP=%i\n",indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status); */
+    /* 		    else */
+    /* 			DEBUG_N_PREP[ap] += 1; */
+    /* 		} */
+    /* 	    } */
+    /* 	    printf("%i ",DEBUG_N_PREP[ap]); */
+
+    /* 	} */
+    /* 	printf("\n"); */
+	
+    /* } */
+    /*@@@@@@@@@@@@@@ END OF VALIDATION  - remove when finished. @@@@@@@@@@@@@@*/
 
 
 

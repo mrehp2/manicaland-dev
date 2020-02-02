@@ -371,6 +371,8 @@ typedef struct {
     double eff_circ_tmc;         /* Effectiveness of traditional male circumcision.  */
     double rr_circ_unhealed; /* Increased susceptibilty to HIV during VMMC healing period (ie just after operation).   */
 
+    double eff_prep_semiadherent;
+    double eff_prep_adherent;
 
     /* Average log viral load - this is used in hiv transmission and MTCT */
     double average_log_viral_load;

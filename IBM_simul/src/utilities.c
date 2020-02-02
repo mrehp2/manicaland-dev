@@ -1333,6 +1333,8 @@ void print_hiv_params(parameters *param){
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
     printf("param->rr_circ_unhealed=%lg\n",param->rr_circ_unhealed);
+    printf("param->eff_prep_semiadherent=%lg\n",param->eff_prep_semiadherent);
+    printf("param->eff_prep_adherent=%lg\n",param->eff_prep_adherent);
     printf("param->average_log_viral_load=%lg\n",param->average_log_viral_load);
     printf("param->average_annual_hazard=%lg\n",param->average_annual_hazard);
     printf("param->RRacute_trans=%lg\n",param->RRacute_trans);
@@ -1695,6 +1697,21 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+
+    if (param->eff_prep_semiadherent<0.1 || param->eff_prep_semiadherent>0.8){
+        printf("Error: param->eff_prep_semiadherent is outside expected range [0,3]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+        if (param->eff_prep_adherent<0.7 || param->eff_prep_adherent>1.0){
+        printf("Error: param->eff_prep_adherent is outside expected range [0,3]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
     if (param->average_log_viral_load<3 || param->average_log_viral_load>6){
         printf("Error: param->average_log_viral_load is outside expected range [3,6]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);

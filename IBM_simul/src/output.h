@@ -63,7 +63,7 @@ void store_calibration_outputs_pc(patch_struct *, int , output_struct *);
 void store_calibration_outputs_chips(patch_struct *, int ,  output_struct *);
 
 void store_calibration_outputs_cohortpopulation_snapshot(patch_struct *, int , output_struct *, int );
-void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *, output_struct *);
+void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *, int, output_struct *);
 
 void write_annual_outputs(file_struct *, output_struct *, int);
 void write_annual_partnerships_outputs(file_struct *, output_struct *, int);

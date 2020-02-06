@@ -903,6 +903,7 @@ int main(int argc,char *argv[]){
                 
                     for(p = 0; p < NPATCHES; p++){
 
+			write_calibration_outputs_cohortpopulation_snapshot(patch, p, output);
                         write_calibration_outputs(calibration_output_filename[p],output, p);
                         
                         // Blank the string so we don't run out of memory

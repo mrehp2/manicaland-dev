@@ -702,9 +702,10 @@ int is_start_of_chips_round(parameters *param, int year, int t_step, int trial_a
 int is_manicaland_cohort_time(int t0, int t_step, parameters *param){
     int r;
 
-    if (param->COHORTYEAR[0]<t0 || param->COHORTYEAR[NCOHORTROUNDS-1]>t0)
+    if (param->COHORTYEAR[0]>t0 || param->COHORTYEAR[NCOHORTROUNDS-1]<t0){
+	//printf("Before beginning or after end of cohort. %i %i\n",t0,param->COHORTYEAR[0],param->COHORTYEAR[NCOHORTROUNDS-1]);
 	return -1;  // Before beginning or after end of cohort.
-
+    }
 
     for (r=0; r<NCOHORTROUNDS; r++){
 	if (param->COHORTYEAR[r]==t0 && param->COHORTTIMESTEP[r]==t_step)

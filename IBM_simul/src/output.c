@@ -2522,58 +2522,56 @@ st    * number positive who are aware of status
 }
 
 
-void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, output_struct *output){
+void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, int p, output_struct *output){
 
-    int g, aa, round, p;
+    int g, aa, round;
     /* Temporary store for string. */
     char temp_string[100];
 
-    for (p=0; p<NPATCHES; p++){
-	for (round=0; round<NCOHORTROUNDS; round++){
-	    /* Record the population size (by one year age+gender): */
-	    for(g = 0; g < N_GENDER; g++){
-		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-		    sprintf(temp_string,"%li,", output->COHORT_NPOP[p][g][aa][round]);
-		    join_strings_with_check(output->calibration_outputs_combined_string[p],
-					    temp_string, SIZEOF_calibration_outputs - 1, 
-					    "calibration_outputs_combined_string and temp_string in "
-					    "write_calibration_outputs_cohortpopulation_snapshot()");
-		}
+    for (round=0; round<NCOHORTROUNDS; round++){
+	/* Record the population size (by one year age+gender): */
+	for(g = 0; g < N_GENDER; g++){
+	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		sprintf(temp_string,"%li,", output->COHORT_NPOP[p][g][aa][round]);
+		join_strings_with_check(output->calibration_outputs_combined_string[p],
+					temp_string, SIZEOF_calibration_outputs - 1, 
+					"calibration_outputs_combined_string and temp_string in "
+					"write_calibration_outputs_cohortpopulation_snapshot()");
 	    }
-
-	    /* Record the number of HIV positive: */
-	    for(g = 0; g < N_GENDER; g++){
-		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-		    sprintf(temp_string,"%li,", output->COHORT_NPOSITIVE[p][g][aa][round]);                
-		    join_strings_with_check(output->calibration_outputs_combined_string[p],
-					    temp_string, SIZEOF_calibration_outputs - 1, 
-					    "calibration_outputs_combined_string and temp_string in "
-					    "write_calibration_outputs_cohortpopulation_snapshot()");
-		}
-	    }
-
-
-	    /* Record the number HIV positive that are aware of status: */
-	    for(g = 0; g < N_GENDER; g++){
-		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-		    sprintf(temp_string,"%li,", output->COHORT_NAWARE[p][g][aa][round]);
-		    join_strings_with_check(output->calibration_outputs_combined_string[p],
-					    temp_string, SIZEOF_calibration_outputs - 1, 
-					    "calibration_outputs_combined_string and temp_string in "
-					    "write_calibration_outputs_cohortpopulation_snapshot()");
-		}
-	    }
+	}
 	
-	    /* Record the number positive that are on ART: */
-	    for(g = 0; g < N_GENDER; g++){
-		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-		    sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);
-                
-		    join_strings_with_check(output->calibration_outputs_combined_string[p],
-					    temp_string, SIZEOF_calibration_outputs - 1, 
-					    "calibration_outputs_combined_string and temp_string in "
-					    "write_calibration_outputs_cohortpopulation_snapshot()");
-		}
+	/* Record the number of HIV positive: */
+	for(g = 0; g < N_GENDER; g++){
+	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		sprintf(temp_string,"%li,", output->COHORT_NPOSITIVE[p][g][aa][round]);                
+		join_strings_with_check(output->calibration_outputs_combined_string[p],
+					temp_string, SIZEOF_calibration_outputs - 1, 
+					"calibration_outputs_combined_string and temp_string in "
+					"write_calibration_outputs_cohortpopulation_snapshot()");
+	    }
+	}
+	
+	
+	/* Record the number HIV positive that are aware of status: */
+	for(g = 0; g < N_GENDER; g++){
+	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		sprintf(temp_string,"%li,", output->COHORT_NAWARE[p][g][aa][round]);
+		join_strings_with_check(output->calibration_outputs_combined_string[p],
+					temp_string, SIZEOF_calibration_outputs - 1, 
+					"calibration_outputs_combined_string and temp_string in "
+					"write_calibration_outputs_cohortpopulation_snapshot()");
+	    }
+	}
+	
+	/* Record the number positive that are on ART: */
+	for(g = 0; g < N_GENDER; g++){
+	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);
+		
+		join_strings_with_check(output->calibration_outputs_combined_string[p],
+					temp_string, SIZEOF_calibration_outputs - 1, 
+					"calibration_outputs_combined_string and temp_string in "
+					"write_calibration_outputs_cohortpopulation_snapshot()");
 	    }
 	}
     }
@@ -2601,7 +2599,7 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
         for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
             fprintf(TEMPFILE, "DHSRound%iNposM%i,", r, a);
         for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-	    if (SETTING==SETTING_POPART)
+	    if (SETTING==SETTING_POPART || SETTING==SETTING_MANICALAND)
 		fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
 	    else{
 	    /* For non-PopART this is the last entry, and should have a new-line rather than a comma. */
@@ -2721,7 +2719,11 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
 	    for(a = AGE_ADULT; a < MAX_AGE; a++)
 		fprintf(TEMPFILE, "CohortRound%iNonARTM%i,", r, a);
 	    for(a = AGE_ADULT; a < MAX_AGE; a++)
-		fprintf(TEMPFILE, "CohortRound%iNonARTF%i,", r, a);
+		if(a==MAX_AGE && r==NCOHORTROUNDS-1)
+		    fprintf(TEMPFILE, "CohortRound%iNonARTF%i\n", r, a);
+		else
+		    fprintf(TEMPFILE, "CohortRound%iNonARTF%i,", r, a);
+
 	}
     }
     

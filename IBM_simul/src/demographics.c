@@ -702,7 +702,10 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 	/* Update counters for number of HIV+. n_infected_by_all_strata is updated later in the function, once ART status is assigned. */
         (patch[p].n_infected->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected->youngest_age_group_index][new_adult->sex_risk]) += 1;
         (patch[p].n_infected_cumulative->pop_size_per_gender_age1_risk[new_adult->gender][patch[p].n_infected_cumulative->youngest_age_group_index][new_adult->sex_risk]) += 1;
-        //printf("+++ One new HIV+ (new adult) \n");
+
+	patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14 += 1;
+
+	//printf("+++ One new HIV+ (new adult) \n");
 	//fflush(stdout);
 
 	
@@ -720,7 +723,10 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update. Note that we can only do this once new_adult->ART_status has been assigned. */
 	(patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[new_adult->gender][patch[p].n_infected_by_all_strata->youngest_age_group_index][new_adult->sex_risk][new_adult->cd4][new_adult->ART_status+1])++;
 
-    
+	/* If on ART, add to counter: */
+	if (new_adult->ART_status>ARTNAIVE)
+	    patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14 += 1;
+
 
     }
 
@@ -2864,6 +2870,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	j = 0;
     patch[p].child_population[0].n_child[j] = n_births - n_birth_hivpos;
 
+    
     /* Store number of HIV+ not on ART new births: */
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[1].debug_tai+1;
@@ -2871,12 +2878,20 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	j = 0;
     patch[p].child_population[1].n_child[j] = n_birth_hivpos-n_birth_hivpos_art;
 
+
+
+    
     /* Store number of HIV+, and on ART new births: */
     if ((patch[p].child_population[2].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
 	j = patch[p].child_population[2].debug_tai+1;
     else
 	j = 0;
     patch[p].child_population[2].n_child[j] = n_birth_hivpos_art;
+
+
+    /* Store total number of children born HIV+ (including those who go on ART): */
+    patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions += n_birth_hivpos;
+
 
 
 

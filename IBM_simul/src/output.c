@@ -908,6 +908,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     long N_men_VMMC_healing = 0;
     long N_men_TMC = 0;
     /************************/
+
+    long N_women_waiting_PrEP = 0;
+    long N_women_on_PrEP_adherent = 0;
+    long N_women_on_PrEP_semiadherent = 0;
     
     long N_NEW_INFECTIONS = patch[p].DEBUG_NHIVPOS-patch[p].DEBUG_NHIVPOSLASTYR;
     long npop_r[N_RISK] = {0,0,0};
@@ -1047,6 +1051,16 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                     exit(1);
                 }
             }else{ /* Else female */
+
+		/* PrEP outputs: */
+		if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_ADHERENT)
+		    N_women_on_PrEP_adherent++;
+		else if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_SEMIADHERENT)
+		    N_women_on_PrEP_semiadherent++;
+		else if (patch[p].individual_population[n_id].PrEP_cascade_status==WAITINGTOSTARTPREP)
+		    N_women_waiting_PrEP++;
+
+		
                 update_annual_outputs_gender(&(patch[p].individual_population[n_id]), &npop_f,
                     &npositive_f, &NNeedART_f, &NArt_f, current_cd4_guidelines);
             }
@@ -1095,7 +1109,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     
     if(PCdata == 0){
         
-        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1110,6 +1124,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 npop_m,
                 npositive_f,
                 npop_f,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14,
                 patch[p].cumulative_outputs->N_total_HIV_tests_nonpopart,
                 patch[p].cumulative_outputs->N_total_HIV_tests_popart,
                 patch[p].cumulative_outputs->N_total_CD4_tests_nonpopart,
@@ -1120,11 +1138,14 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 NArt_f,
                 NNeedART_f,
                 N_men_MC/(1.0*npop_m),
+		N_women_waiting_PrEP,
+		N_women_on_PrEP_adherent,
+		N_women_on_PrEP_semiadherent,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
 	
     }else if(PCdata == 1){
-        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1139,6 +1160,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 npop_m,
                 npositive_f,
                 npop_f,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14,
+		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14,
                 patch[p].cumulative_outputs->N_total_HIV_tests_nonpopart,
                 patch[p].cumulative_outputs->N_total_HIV_tests_popart,
                 patch[p].cumulative_outputs->N_total_CD4_tests_nonpopart,
@@ -1149,6 +1174,9 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 NArt_f,
                 NNeedART_f,
                 N_men_MC/(1.0*npop_m),
+		N_women_waiting_PrEP,
+		N_women_on_PrEP_adherent,
+		N_women_on_PrEP_semiadherent,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
     }
@@ -2433,6 +2461,124 @@ void store_calibration_outputs_chips(patch_struct *patch, int p, output_struct *
 }
 
 
+
+
+/* At time t (corresponding to say a round of the Manicaland cohort) take a snapshot of the population cascade (Number, Npos, Naware, NOnART). */
+void store_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, int p, output_struct *output, int round){
+    /* Stores data for each cohort round (to be written to the calibration files)
+    This will output a set of columns for each cohort round.  The macro determining the number of rounds to be output is called NCOHORTROUNDS and is set in constants.h.  
+    
+    Outputs the following by one year age gp and sex: 
+    * number 
+    * number HIV positive
+st    * number positive who are aware of status
+    * number positive on ART
+    
+    Arguments
+    ---------
+    patch : pointer to patch_struct object
+        Array of patch_struct objects (one for each patch)
+    
+    p : int (Patch number)
+    
+    output : pointer to an output_struct struct
+    
+    Returns Nothing; adds text to output->calibration_outputs_combined_string[p] for each patch (p)
+    ------- */
+
+    int g, aa, ai, k;
+
+    individual *indiv; /* Temporary store for individual of interest - no need to allocate memory. */
+    
+
+    /* Note that counters are already set to zero in reinitialize_arrays_to_default() in memory.c. */
+
+    /* Loop through population of people who are alive: */
+    for (g=0;g<N_GENDER;g++){
+	for (aa=AGE_ADULT;aa<MAX_AGE;aa++){
+	    ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index;
+	    /* Make sure never goes beyond end of array. */
+	    while (ai>(MAX_AGE-AGE_ADULT-1))
+		ai = ai - (MAX_AGE-AGE_ADULT);
+	    for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai] ; k++){
+
+		/* Add to the overall counter: */
+		output->COHORT_NPOP[p][g][aa-AGE_ADULT][round]++;
+		
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];		
+		if(indiv->HIV_status>UNINFECTED){
+		    output->COHORT_NAWARE[p][g][aa-AGE_ADULT][round]++;
+		    if (indiv->ART_status>ARTNEG && indiv->ART_status<ARTDEATH){
+			output->COHORT_NAWARE[p][g][aa-AGE_ADULT][round]++;
+			if (indiv->ART_status==EARLYART || indiv->ART_status==LTART_VS || indiv->ART_status==LTART_VU){
+			    output->COHORT_NONART[p][g][aa-AGE_ADULT][round]++;
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+}
+
+
+void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, output_struct *output){
+
+    int g, aa, round, p;
+    /* Temporary store for string. */
+    char temp_string[100];
+
+    for (p=0; p<NPATCHES; p++){
+	for (round=0; round<NCOHORTROUNDS; round++){
+	    /* Record the population size (by one year age+gender): */
+	    for(g = 0; g < N_GENDER; g++){
+		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		    sprintf(temp_string,"%li,", output->COHORT_NPOP[p][g][aa][round]);
+		    join_strings_with_check(output->calibration_outputs_combined_string[p],
+					    temp_string, SIZEOF_calibration_outputs - 1, 
+					    "calibration_outputs_combined_string and temp_string in "
+					    "write_calibration_outputs_cohortpopulation_snapshot()");
+		}
+	    }
+
+	    /* Record the number of HIV positive: */
+	    for(g = 0; g < N_GENDER; g++){
+		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		    sprintf(temp_string,"%li,", output->COHORT_NPOSITIVE[p][g][aa][round]);                
+		    join_strings_with_check(output->calibration_outputs_combined_string[p],
+					    temp_string, SIZEOF_calibration_outputs - 1, 
+					    "calibration_outputs_combined_string and temp_string in "
+					    "write_calibration_outputs_cohortpopulation_snapshot()");
+		}
+	    }
+
+
+	    /* Record the number HIV positive that are aware of status: */
+	    for(g = 0; g < N_GENDER; g++){
+		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		    sprintf(temp_string,"%li,", output->COHORT_NAWARE[p][g][aa][round]);
+		    join_strings_with_check(output->calibration_outputs_combined_string[p],
+					    temp_string, SIZEOF_calibration_outputs - 1, 
+					    "calibration_outputs_combined_string and temp_string in "
+					    "write_calibration_outputs_cohortpopulation_snapshot()");
+		}
+	    }
+	
+	    /* Record the number positive that are on ART: */
+	    for(g = 0; g < N_GENDER; g++){
+		for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+		    sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);
+                
+		    join_strings_with_check(output->calibration_outputs_combined_string[p],
+					    temp_string, SIZEOF_calibration_outputs - 1, 
+					    "calibration_outputs_combined_string and temp_string in "
+					    "write_calibration_outputs_cohortpopulation_snapshot()");
+		}
+	    }
+	}
+    }
+}
+
 void blank_calibration_output_file(char *calibration_output_filename, int NDHSROUNDS){
     /*  Generate (and write) header file for calibration outputs
     
@@ -2553,6 +2699,32 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
 	    }
 	}
     }
+
+
+    if (SETTING==SETTING_MANICALAND){
+	for(r = 1; r <= NCOHORTROUNDS; r++){
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNtotM%i,", r, a);
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNtotF%i,", r, a);
+
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNposM%i,", r, a);
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNposF%i,", r, a);
+
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE,"CohortRound%iNawareM%i,",r,a);
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNawareF%i,",r,a);
+
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNonARTM%i,", r, a);
+	    for(a = AGE_ADULT; a < MAX_AGE; a++)
+		fprintf(TEMPFILE, "CohortRound%iNonARTF%i,", r, a);
+	}
+    }
+    
     fclose(TEMPFILE);
 }
 
@@ -2602,6 +2774,7 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NAnnual,TotalPopulation,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "NumberPositiveM,PopulationM,NumberPositiveF,PopulationF,");
+    fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"N_mother_to_child_transmissions,N_mother_to_child_transmissions_deaths,N_mother_to_child_transmissions_alive_age14,N_mother_to_child_transmissions_alive_onARTage14,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "CumulativeNonPopartHIVtests,CumulativePopartHIVtests,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
@@ -2609,7 +2782,8 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "NHIVTestedThisYear,NOnARTM,NNeedARTM,NOnARTF,NNeedARTF,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
-        "PropMenCirc,NindInSdPart,NDied_from_HIV,NHIV_pos_dead,N_dead,");
+	    "PropMenCirc,N_women_waiting_PrEP,N_women_on_PrEP_adherent,N_women_on_PrEP_semiadherent,");    
+    fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NindInSdPart,NDied_from_HIV,NHIV_pos_dead,N_dead,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
 	 "annual_incident_hsv2,nprevalent_hsv2_m,nprevalent_hsv2_f,nprevalent_hsv2_check,");
     for(r = 0; r < N_RISK; r++){

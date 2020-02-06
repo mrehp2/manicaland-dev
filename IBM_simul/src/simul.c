@@ -227,6 +227,19 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		}
 	    }
         }
+
+
+	if (SETTING==SETTING_MANICALAND){
+	    if(WRITE_CALIBRATION == 1){
+		int r;
+		for(p = 0; p < NPATCHES; p++){
+		    r = is_manicaland_cohort_time(t0,t_step, patch[p].param); // -1 if not time for a cohort snapshot. 
+		    if(r>=0){
+			store_calibration_outputs_cohortpopulation_snapshot(patch, p, output, r);
+		    }
+		}
+	    }
+	}
 	
     }
     
@@ -1014,7 +1027,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
 
 
-    check_prep_uptake(t, t_step, patch, p);
+    //check_prep_uptake(t, t_step, patch, p);
 
     /************************************************************************/
     /* 13. HSV-2 introduction (at time param->start_time_hsv2) */

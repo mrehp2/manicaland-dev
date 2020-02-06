@@ -91,7 +91,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 {
 
     long i;
-    int g, ac, a, chips_round, pc_round;
+    int g, ac, a, chips_round, pc_round, cohort_round;
     for (i=0; i<MAX_N_PER_AGE_GROUP; i++)
         patch[p].death_dummylist[i] = i;         /* Initialize the dummy list. */
 
@@ -179,6 +179,20 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
         }
     }
 
+
+    // Reset counters of Manicaland cohort:
+    for(g = 0; g < N_GENDER; g++){
+        for(a = 0; a < (MAX_AGE-AGE_ADULT); a++){
+            for(cohort_round = 0; cohort_round < NCOHORTROUNDS; cohort_round++){
+                output->COHORT_NPOP[p][g][a][cohort_round] = 0;
+                output->COHORT_NPOSITIVE[p][g][a][cohort_round] = 0;
+                output->COHORT_NAWARE[p][g][a][cohort_round] = 0;
+                output->COHORT_NONART[p][g][a][cohort_round] = 0;
+            }
+        }
+    }
+
+    
     /* Set annual outputs strings to be blank: */
     memset(output->annual_outputs_string[p], '\0', SIZEOF_annual_outputs_string*sizeof(char));
     memset(output->annual_outputs_string_pconly[p], '\0', SIZEOF_annual_outputs_string_pconly*sizeof(char));
@@ -828,7 +842,7 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
-        patch[p].cumulative_outputs  = malloc(sizeof(chips_sample_struct));
+        patch[p].cumulative_outputs  = malloc(sizeof(cumulative_outputs_struct));
         if(patch[p].cumulative_outputs==NULL)
         {
             printf("Unable to allocate cumulative_outputs in alloc_all_memory. Execution aborted.");
@@ -836,7 +850,17 @@ void alloc_patch_memoryv2(patch_struct *patch){
             fflush(stdout);
             exit(1);
         }
-        
+
+
+	patch[p].cumulative_outputs->cumulative_outputs_MTCT  = malloc(sizeof(cumulative_outputs_MTCT_struct));
+        if(patch[p].cumulative_outputs->cumulative_outputs_MTCT==NULL)
+        {
+            printf("Unable to allocate cumulative_outputs->cumulative_outputs_MTCT in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
         patch[p].calendar_outputs  = malloc(sizeof(calendar_outputs_struct));
         if(patch[p].calendar_outputs==NULL)
         {
@@ -1255,6 +1279,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free_pc_cohort_data_memory(PC_cohort_data);  /* Firstly free memory inside: */
     free(PC_cohort_data);
 
+    free(cumulative_outputs->cumulative_outputs_MTCT);
     free(cumulative_outputs);
     free(calendar_outputs);
     

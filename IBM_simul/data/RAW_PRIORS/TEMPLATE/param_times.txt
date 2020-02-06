@@ -12,3 +12,9 @@ NDHSROUNDS 3 // DONE - Number of DHS rounds with HIV prevalence data. Early DHS 
 DHSROUND1 2006   // DONE - Report p7: Data collection took place over a seven-month period, from August 2005 to February 2006.
 DHSROUND2 2011   // DONE - Report p7: Data collection took place over a six-month period, from 29 September 2010 through late March 2011
 DHSROUND3 2015   // DONE - Report p5: Data collection took place over a 6-month period from July 6 to December 20, 2015.
+COHORTROUND1 1999.25 // Round 1 (excluding pilot) from July 1998-Jan 2000.
+COHORTROUND2 2002.5 // Round 2 Sept 2001-March 2003
+COHORTROUND3 2004.583 // Median value - see Dropbox file Get_dates_surveys.do.
+COHORTROUND4 2007.833 // Median value - same file.
+COHORTROUND5 2010.833 // Median value - same file.
+COHORTROUND6 2013.25  // Median value - same file, but using stata dates.

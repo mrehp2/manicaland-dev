@@ -669,6 +669,13 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
     cumulative_outputs->N_total_HIV_tests_popart_negative = 0;
     cumulative_outputs->N_total_ever_started_ART_nonpopart = 0;
     cumulative_outputs->N_total_ever_started_ART_popart = 0;
+
+    cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions =  0;
+    cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths = 0;
+    //cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths_newborn = 0;
+    cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14 = 0;
+    cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14 = 0;
+
 }
 
 

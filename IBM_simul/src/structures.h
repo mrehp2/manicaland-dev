@@ -593,6 +593,8 @@ typedef struct {
     PC_param_struct *PC_params;
     DHS_param_struct *DHS_params;
 
+    int COHORTYEAR[NCOHORTROUNDS];
+    int COHORTTIMESTEP[NCOHORTROUNDS];
     
 } parameters;
 
@@ -838,6 +840,13 @@ typedef struct{
 
 
 
+typedef struct{
+    long N_mother_to_child_transmissions;
+    long N_mother_to_child_transmissions_deaths;
+    //long N_mother_to_child_transmissions_deaths_newborn;
+    long N_mother_to_child_transmissions_alive_age14;
+    long N_mother_to_child_transmissions_alive_onARTage14;
+} cumulative_outputs_MTCT_struct;
 
 
 typedef struct{
@@ -852,9 +861,9 @@ typedef struct{
     /* Number of people who ever started ART (including those dead) for non-popart & popart: */
     long N_total_ever_started_ART_nonpopart;
     long N_total_ever_started_ART_popart;
-    long N_mother_to_child_transmissions;
-    long N_mother_to_child_transmissions_alive_age14;
-    long N_mother_to_child_transmissions_alive_onARTage14;
+
+    cumulative_outputs_MTCT_struct *cumulative_outputs_MTCT;
+
 } cumulative_outputs_struct;
 
 
@@ -1083,6 +1092,7 @@ typedef struct{ /* structure which contains all the strings that are outputted *
     long NCHIPS_HIVAWARE[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
     long NCHIPS_ONART[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
     long NCHIPS_VS[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
+
     
     // Counter for the number of incident infections in a PC round
     long PC_ROUND_INFECTIONS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS - 1];
@@ -1094,6 +1104,14 @@ typedef struct{ /* structure which contains all the strings that are outputted *
     long PC_NAWARE[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
     long PC_NONART[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
     long PC_NVS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
+
+
+    long COHORT_NPOP[NPATCHES][N_GENDER][MAX_AGE-AGE_ADULT][NCOHORTROUNDS];
+    long COHORT_NPOSITIVE[NPATCHES][N_GENDER][MAX_AGE-AGE_ADULT][NCOHORTROUNDS];
+    long COHORT_NAWARE[NPATCHES][N_GENDER][MAX_AGE-AGE_ADULT][NCOHORTROUNDS];
+    long COHORT_NONART[NPATCHES][N_GENDER][MAX_AGE-AGE_ADULT][NCOHORTROUNDS];
+
+
 } output_struct;
 
 

@@ -191,6 +191,10 @@ gsl_rng * rng;
 #define AGE_DHS_MIN 15
 #define AGE_DHS_MAX 59
 #define DHS_AGE_RANGE_MAX 45  /* DHS runs from 15-59 so 45 age groups. */
+
+
+#define NCOHORTROUNDS 6 /* Number of rounds of Manicaland (or similar) cohort. */
+
 /************************************************************************/
 /***************************** PC constants *****************************/
 /************************************************************************/
@@ -336,7 +340,6 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define IS_PREP_INTERVENTION 1 
 
 /* Codes for indiv->PrEP_cascade_status. */
-#define SEROCONVERTEDBEFOREPREP -1
 #define NOTONPREP 0
 #define WAITINGTOSTARTPREP 1
 #define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes PrEP but not every risky act is protected. 
@@ -359,7 +362,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define INDEX_PREP_BARRIER_ACCESS 1 //
 #define INDEX_PREP_BARRIER_UTILIZATION 2 //
 
-#define SAMPLE_INCLUDING_RESERVES 1.2 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
+#define SAMPLE_INCLUDING_RESERVES 1.5 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
 
 /* Used as CD4 value to identify that people are not infected with HIV.
  * Note: CD4==-2 means the person is dead.

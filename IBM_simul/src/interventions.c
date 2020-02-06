@@ -1602,9 +1602,8 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 
 	    if (j>=patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap] && j>0){
 		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
-		printf("Error: run out of reserves in PrEP background sample in carry_out_PrEP_background_events_per_timestep(). Exiting\n");
+		printf("Warning: run out of reserves in PrEP background sample in carry_out_PrEP_background_events_per_timestep(). Exiting\n");
 		fflush(stdout);
-		exit(1);
 	    }
 			
 	}
@@ -1691,9 +1690,9 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    /* Debugging checks: */
 	    if (j>=patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] && j>0){
 		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
-		printf("Error: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). j=%i, n_reserves[ap=%i]=%li. Exiting\n",j,ap,patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]);
+		printf("Warning: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). j=%i, n_reserves[ap=%i]=%li. Exiting\n",j,ap,patch[p].PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]);
 		fflush(stdout);
-		exit(1);
+		//exit(1);
 	    }
 	    if (indiv->HIV_status>UNINFECTED || (indiv->PrEP_cascade_status>WAITINGTOSTARTPREP) || (indiv->cd4==DEAD)){
 		printf("Error: Someone trying to start PrEP who shouldn't. Exiting\n");

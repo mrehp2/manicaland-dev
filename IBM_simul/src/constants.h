@@ -92,6 +92,7 @@
 #define WRITE_DEBUG_CHIPS_STATES 0                /* Generates the files CHIPS_outputs_annual*.csv and CHIPS_outputs_visit*.csv containing the data on people when they are visited by CHiPs. */
 
 #define WRITE_CALIBRATION 1 /* Write Calibration*.csv files to disk */
+#define WRITE_DHS_CALIBRATION 0 /* Write DHS outputs to Calibration*.csv files. */
 #define PRINT_ALL_RUNS 1 /* Use this if you want to print everything regardless of fitting. */
 #define PRINT_EACH_RUN_OUTPUT 1 /* 0 if don't want to generate an output file for every run (when calibrating at present this is the case), or 1 if we do. */
 #define WRITE_EVERYTIMESTEP 1 /* Generates the files Timestep_outputs*.csv */
@@ -218,6 +219,7 @@ gsl_rng * rng;
 /* We allow the intervention to be targeted to different groups. */
 #define MIN_AGE_PREP_INTERVENTION 18 /* PrEP offered to 18-24 year olds. */
 #define MAX_AGE_PREP_INTERVENTION 24
+#define MAX_PREP_ONE_YEAR_AGE_SAMPLE MAX_POP_SIZE/40
 
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
@@ -362,7 +364,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define INDEX_PREP_BARRIER_ACCESS 1 //
 #define INDEX_PREP_BARRIER_UTILIZATION 2 //
 
-#define SAMPLE_INCLUDING_RESERVES 1.5 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
+#define SAMPLE_INCLUDING_RESERVES 2.0 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
 
 /* Used as CD4 value to identify that people are not infected with HIV.
  * Note: CD4==-2 means the person is dead.

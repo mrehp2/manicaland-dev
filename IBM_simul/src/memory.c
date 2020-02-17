@@ -91,7 +91,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 {
 
     long i;
-    int g, ac, a, chips_round, pc_round, cohort_round;
+    int g, ac, a, ap, chips_round, pc_round, cohort_round;
     for (i=0; i<MAX_N_PER_AGE_GROUP; i++)
         patch[p].death_dummylist[i] = i;         /* Initialize the dummy list. */
 
@@ -191,6 +191,14 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
             }
         }
     }
+
+    for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++)
+	for (i=0; i<MAX_PREP_ONE_YEAR_AGE_SAMPLE; i++)
+	    patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i] = -1;
+
+    for(ap=0; ap <(MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1); ap++)
+	for (i=0; i<MAX_PREP_ONE_YEAR_AGE_SAMPLE; i++)
+	    patch[p].PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap][i] = -1;
 
     
     /* Set annual outputs strings to be blank: */

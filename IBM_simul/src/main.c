@@ -408,6 +408,7 @@ int main(int argc,char *argv[]){
     /* SIMPLE_PARTNERSHIP_CHECK allows to either (=0) run the whole model normally or (=1) run a
     very simple partnership formation / dissolution which we used initially when designing
     partnership formation to check thigs work ok */
+    printf("i_startrun=%i n_startrun=%i\n",i_startrun, n_startrun);
     if(SIMPLE_PARTNERSHIP_CHECK == 0){
         
         for(i_run = (i_startrun - 1); i_run < (i_startrun - 1 + n_startrun); i_run++){
@@ -444,7 +445,7 @@ int main(int argc,char *argv[]){
             a copy of allrunparameters[i_run]).  Note that the way this is done, if we modify
             param->something it also modifies the element in allrunparameters[i_run] at the same
             time. */
-            
+	    printf("i_run=%i\n",i_run);
             for(p = 0; p < NPATCHES; p++){
                 patch[p].param = allrunparameters[p] + i_run; /* Use pointer arithmetic. */
                 //print_param_struct(patch,p);      /* For debugging. */
@@ -739,27 +740,29 @@ int main(int argc,char *argv[]){
                     output the snapshot of the population at the END of 2001.  
                     */
                     if(WRITE_CALIBRATION == 1){
-                        if(i_dhs_round < patch[p].param->DHS_params->NDHSROUNDS){
-                            if(year == patch[p].param->DHS_params->DHS_YEAR[i_dhs_round] - 1){
-                                if(VERBOSE_OUTPUT == 1){
-                                    printf("Storing DHS data at time %i for DHS round %i\n", 
-                                        year, i_dhs_round);
-                                }
-                                store_calibration_outputs_dhs(patch, p, output, year);
+			if (WRITE_DHS_CALIBRATION==1){
+			    if(i_dhs_round < patch[p].param->DHS_params->NDHSROUNDS){
+				if(year == patch[p].param->DHS_params->DHS_YEAR[i_dhs_round] - 1){
+				    if(VERBOSE_OUTPUT == 1){
+					printf("Storing DHS data at time %i for DHS round %i\n", 
+					       year, i_dhs_round);
+				    }
+				    store_calibration_outputs_dhs(patch, p, output, year);
                             
-                                /* Store everything after the final DHS: */
-                                if(i_dhs_round == (patch[p].param->DHS_params->NDHSROUNDS - 1)){
-                                    join_strings_with_check(
-                                        output->calibration_outputs_combined_string[p],
-                                        output->dhs_output_string[p], SIZEOF_calibration_outputs - 1,
-                                        "output->dhs_output_string[p] and output->calibration_outputs_combined_string[p] in main()");
-                                }
-                                // Only increment i_dhs_round if we've looped through all patches    
-                                if(p == NPATCHES - 1){
-                                    i_dhs_round += 1;
-                                }
-                            }
-                        }
+				    /* Store everything after the final DHS: */
+				    if(i_dhs_round == (patch[p].param->DHS_params->NDHSROUNDS - 1)){
+					join_strings_with_check(
+								output->calibration_outputs_combined_string[p],
+								output->dhs_output_string[p], SIZEOF_calibration_outputs - 1,
+								"output->dhs_output_string[p] and output->calibration_outputs_combined_string[p] in main()");
+				    }
+				    // Only increment i_dhs_round if we've looped through all patches    
+				    if(p == NPATCHES - 1){
+					i_dhs_round += 1;
+				    }
+				}
+			    }
+			}
                     }
                     /* Generates the Age_distribution_check files - these are used to validate the
                     model age distribution by gender against UNPD age distribution estimates. */
@@ -893,8 +896,9 @@ int main(int argc,char *argv[]){
                     }
 
 		    
-		    // Add a newline character to the output
-		    strcat(output->calibration_outputs_combined_string[p], "\n");
+		    // Add a newline character to the output for non-Manicaland outputs:
+		    if (SETTING!=SETTING_MANICALAND)
+			strcat(output->calibration_outputs_combined_string[p], "\n");
                 }
                 
                 /* Only want to write out to disk every NRUNSPERWRITETOFILE runs. So calculate i_run
@@ -903,7 +907,13 @@ int main(int argc,char *argv[]){
                 
                     for(p = 0; p < NPATCHES; p++){
 
-			write_calibration_outputs_cohortpopulation_snapshot(patch, p, output);
+			if (SETTING==SETTING_MANICALAND){
+			    write_calibration_outputs_cohortpopulation_snapshot(patch, p, output);
+			    /* Add extra line break at end of file: */
+			    if (i_run==n_runs-1)
+				strcat(output->calibration_outputs_combined_string[p], "\n");
+			}
+
                         write_calibration_outputs(calibration_output_filename[p],output, p);
                         
                         // Blank the string so we don't run out of memory
@@ -913,6 +923,8 @@ int main(int argc,char *argv[]){
                         memset(output->pc_output_string[p], '\0',
                             SIZEOF_calibration_outputs*sizeof(char));
                     }
+
+
                 }
             }
             

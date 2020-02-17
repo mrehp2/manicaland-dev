@@ -2507,7 +2507,7 @@ st    * number positive who are aware of status
 		
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];		
 		if(indiv->HIV_status>UNINFECTED){
-		    output->COHORT_NAWARE[p][g][aa-AGE_ADULT][round]++;
+		    output->COHORT_NPOSITIVE[p][g][aa-AGE_ADULT][round]++;
 		    if (indiv->ART_status>ARTNEG && indiv->ART_status<ARTDEATH){
 			output->COHORT_NAWARE[p][g][aa-AGE_ADULT][round]++;
 			if (indiv->ART_status==EARLYART || indiv->ART_status==LTART_VS || indiv->ART_status==LTART_VU){
@@ -2566,7 +2566,11 @@ void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, in
 	/* Record the number positive that are on ART: */
 	for(g = 0; g < N_GENDER; g++){
 	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-		sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);
+		/* r runs from 0..NCOHORTROUNDS-1 here. */
+		if (aa==(MAX_AGE-AGE_ADULT-1) && g==(N_GENDER-1) && round==(NCOHORTROUNDS-1))
+		    sprintf(temp_string,"%li\n",output->COHORT_NONART[p][g][aa][round]);
+		else
+		    sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);		    
 		
 		join_strings_with_check(output->calibration_outputs_combined_string[p],
 					temp_string, SIZEOF_calibration_outputs - 1, 
@@ -2590,25 +2594,26 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
     FILE *TEMPFILE;
     TEMPFILE = fopen(calibration_output_filename, "w");
     fprintf(TEMPFILE, "RunNumber,RandomSeed,");
-    
-    for(r = 1; r <= NDHSROUNDS; r++){
-        for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-            fprintf(TEMPFILE, "DHSRound%iNtotM%i,", r, a);
-        for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-            fprintf(TEMPFILE, "DHSRound%iNtotF%i,", r, a);
-        for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-            fprintf(TEMPFILE, "DHSRound%iNposM%i,", r, a);
-        for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
-	    if (SETTING==SETTING_POPART || SETTING==SETTING_MANICALAND)
-		fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
-	    else{
-	    /* For non-PopART this is the last entry, and should have a new-line rather than a comma. */
-		if(a == AGE_DHS_MAX && r == NDHSROUNDS)
-		    fprintf(TEMPFILE, "DHSRound%iNposF%i\n", r, a);
-		else
+
+    if (WRITE_DHS_CALIBRATION==1){
+	for(r = 1; r <= NDHSROUNDS; r++){
+	    for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
+		fprintf(TEMPFILE, "DHSRound%iNtotM%i,", r, a);
+	    for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
+		fprintf(TEMPFILE, "DHSRound%iNtotF%i,", r, a);
+	    for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
+		fprintf(TEMPFILE, "DHSRound%iNposM%i,", r, a);
+	    for(a = AGE_DHS_MIN; a <= AGE_DHS_MAX; a++)
+		if (SETTING==SETTING_POPART || SETTING==SETTING_MANICALAND)
 		    fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
-	    }
-    
+		else{
+		    /* For non-PopART this is the last entry, and should have a new-line rather than a comma. */
+		    if(a == AGE_DHS_MAX && r == NDHSROUNDS)
+			fprintf(TEMPFILE, "DHSRound%iNposF%i\n", r, a);
+		    else
+			fprintf(TEMPFILE, "DHSRound%iNposF%i,", r, a);
+		}
+	}
 
     }
     // Write headers for number visited by chips, number positive, number aware of status, 
@@ -2719,7 +2724,8 @@ void blank_calibration_output_file(char *calibration_output_filename, int NDHSRO
 	    for(a = AGE_ADULT; a < MAX_AGE; a++)
 		fprintf(TEMPFILE, "CohortRound%iNonARTM%i,", r, a);
 	    for(a = AGE_ADULT; a < MAX_AGE; a++)
-		if(a==MAX_AGE && r==NCOHORTROUNDS-1)
+		/* r runs from 1..NCOHORTROUNDS. */
+		if(a==(MAX_AGE-1) && r==NCOHORTROUNDS)
 		    fprintf(TEMPFILE, "CohortRound%iNonARTF%i\n", r, a);
 		else
 		    fprintf(TEMPFILE, "CohortRound%iNonARTF%i,", r, a);

@@ -1078,7 +1078,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
             check_if_cannot_read_param(checkreadok, "param_local->COHORTDATES[round]");
             param_local->COHORTYEAR[i] = (int) trunc(temp);
 	    param_local->COHORTTIMESTEP[i] = (int) round((temp-param_local->COHORTYEAR[i])*N_TIME_STEP_PER_YEAR);
-	    printf("At time t=%lf y=%i and t=%i\n",temp,param_local->COHORTYEAR[i],param_local->COHORTTIMESTEP[i]);
+	    //printf("At time t=%lf y=%i and t=%i\n",temp,param_local->COHORTYEAR[i],param_local->COHORTTIMESTEP[i]);
         }
 
     }
@@ -1158,7 +1158,8 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_ANC));
         check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_ANC");
-        printf("HIV rapid test sensitivity = %6.4lf\n",param_local->HIV_rapid_test_sensitivity_ANC);
+	if (i_run==0)
+	    printf("HIV rapid test sensitivity = %6.4lf\n",param_local->HIV_rapid_test_sensitivity_ANC);
 
 
         /* Input probabilities for the cascade events: */

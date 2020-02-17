@@ -224,7 +224,7 @@ typedef struct{
        - WPP 2019 puts around  17.6% of women aged 15+ are in the 15-19 age group in 2020. Given demographic changes this should (?) decline.
        - So 2% of the total population (including men) are women in each yearly age group in 15-19.
        - Allow PrEP coverage up to 100%, for safety make it 1/40 of MAX_POP_SIZE . */
-    long list_ids_to_visit_per_year_including_reserves[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][MAX_POP_SIZE/40];
+    long list_ids_to_visit_per_year_including_reserves[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1][MAX_PREP_ONE_YEAR_AGE_SAMPLE];
     
     /* The number of people in each age group getting PrEP in a single year. */
     long number_getting_prep_per_year[MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1];
@@ -266,7 +266,7 @@ typedef struct{
        We assume that a maximum of MAX_POP_SIZE/40 in each year age group are visited as for the background PrEP sample above.
     */
     
-    long list_ids_to_visit_including_reserves[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][MAX_POP_SIZE/40];
+    long list_ids_to_visit_including_reserves[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1][MAX_PREP_ONE_YEAR_AGE_SAMPLE];
     
     
     long number_getting_prep[MAX_AGE_PREP_INTERVENTION-MIN_AGE_PREP_INTERVENTION+1];   /* The number of people in each age group getting PrEP in a single round. */

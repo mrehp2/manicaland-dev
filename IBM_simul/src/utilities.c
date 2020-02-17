@@ -760,7 +760,7 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
     if (argc>5)
         *n_startrun = strtol(argv[5],NULL,10);
     else
-        *n_startrun = *n_runs;
+        *n_startrun = (*n_runs)-(*i_startrun);
 
     if (argc>7)
         *rng_seed_offset = strtol(argv[7],NULL,10);
@@ -1672,8 +1672,9 @@ void check_if_parameters_plausible(parameters *param){
     
     for(y = 0; y < N_UNPD_TIMEPOINTS; y++){
         for (a_unpd = 0; a_unpd < N_AGE_UNPD_FERTILITY; a_unpd++){
+		
             if (param->fertility_rate_by_age[a_unpd][y] < 1e-5 || param->fertility_rate_by_age[a_unpd][y] > 1.0){
-                printf("Error: param->total_fertility_rate is outside expected range [0.1,8]\nExiting\n");
+                printf("Error: param->total_fertility_rate =%lf is outside expected range [0.1,8]\nExiting\n",param->fertility_rate_by_age[a_unpd][y]);
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
                 fflush(stdout);
                 exit(1);

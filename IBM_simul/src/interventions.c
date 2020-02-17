@@ -1275,7 +1275,11 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 		/* Make sure that this is not more than the total number of people: */
 		if (PrEP_background_sample->number_in_prep_sample_including_reserves[ap]>n_eligible[ap])
 		    PrEP_background_sample->number_in_prep_sample_including_reserves[ap] = n_eligible[ap];
-		
+		/* Make sure that this isn't more than the memory allocated: */
+		if (PrEP_background_sample->number_in_prep_sample_including_reserves[ap]>MAX_PREP_ONE_YEAR_AGE_SAMPLE){
+		    printf("***WARNING***: PrEP_background_sample->number_in_prep_sample_including_reserves[ap]=%li > MAX_PREP_ONE_YEAR_AGE_SAMPLE=%i\n",PrEP_background_sample->number_in_prep_sample_including_reserves[ap],MAX_PREP_ONE_YEAR_AGE_SAMPLE);
+		    PrEP_background_sample->number_in_prep_sample_including_reserves[ap]=MAX_PREP_ONE_YEAR_AGE_SAMPLE;
+		}	
 		//printf("Number of people getting PrEP via background in this year = %li\n",PrEP_background_sample->number_getting_prep_per_year[ap]);
 		//printf("Age ap=%i Need %li people, including reserves we get %li people. n_eligible=%i\n",ap,PrEP_background_sample->number_getting_prep_per_year[ap],PrEP_background_sample->number_in_prep_sample_including_reserves[ap],n_eligible[ap]);
 		
@@ -1465,7 +1469,11 @@ void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sam
 		/* Make sure that this is not more than the total number of people: */
 		if (PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]>n_eligible[ap])
 		    PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap] = n_eligible[ap];
-
+		/* Make sure that this isn't more than the memory allocated: */
+		if (PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]>MAX_PREP_ONE_YEAR_AGE_SAMPLE){
+		    printf("***WARNING***: PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]=%li > MAX_PREP_ONE_YEAR_AGE_SAMPLE=%i\n",PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap],MAX_PREP_ONE_YEAR_AGE_SAMPLE);
+		    PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap]=MAX_PREP_ONE_YEAR_AGE_SAMPLE;
+		}
 		//printf("Number of people getting intervention PrEP in this round = %li\n",PrEP_intervention_sample->number_getting_prep[ap]);
 		if (PrEP_intervention_sample->number_getting_prep[ap]>0){
 		    gsl_ran_choose(rng, PrEP_intervention_sample->list_ids_to_visit_including_reserves[ap], PrEP_intervention_sample->number_in_prep_sample_including_reserves[ap], temp_list_of_ids_for_sampling, n_eligible[ap], sizeof (long));

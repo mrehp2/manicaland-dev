@@ -1636,9 +1636,8 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 	    }
 	    else{
 		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
-		printf("Warning: run out of reserves in PrEP background sample in carry_out_PrEP_background_events_per_timestep() ap=%i timestep=%li Number to start on PrEP=%li Number including reserves=%li. Exiting\n",ap,t_i,patch[p].PrEP_background_sample->number_getting_prep_per_year[ap],patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap]);
+		printf("Warning: run out of reserves in PrEP background sample in carry_out_PrEP_background_events_per_timestep() ap=%i timestep=%li Number to start on PrEP=%li Number including reserves=%li. Code still running!\n",ap,t_i,patch[p].PrEP_background_sample->number_getting_prep_per_year[ap],patch[p].PrEP_background_sample->number_in_prep_sample_including_reserves[ap]);
 		fflush(stdout);
-		exit(1);
 	    }
 	}
 
@@ -1725,9 +1724,8 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    }
 	    else{
 		/* This really shouldn't happen. If you think it's an error (e.g. putting PrEP into  a subgroup that has high incidence/mortality >=10%) then increase SAMPLE_INCLUDING_RESERVES to be bigger (i.e. get more reserves). */ 
-		printf("Warning: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). Exiting\n");
+		printf("Warning: run out of reserves in PrEP intervention sample in carry_out_PrEP_intervention_events_per_timestep(). Code still running!\n");
 		fflush(stdout);
-		exit(1);
 	    }
 	}
 

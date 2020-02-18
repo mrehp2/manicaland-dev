@@ -595,7 +595,7 @@ int main(int argc,char *argv[]){
                 
                 fit_flag = carry_out_processes(year, *fitting_data, patch, overall_partnerships,
                     output, rng_seed_offset, rng_seed_offset_PC, debug, file_data_store,
-                    is_counterfactual);
+					       is_counterfactual, i_run);
 
                 /* If there was one or more criteria which were not fitted in the past year, then
                 stop this run and move on to the next parameter set. */
@@ -876,7 +876,7 @@ int main(int argc,char *argv[]){
             * serostatus is 2000-2014, PC0 and 2019, 2024, 2029. */
             //int N_ANNUAL_PREVALENCE_PTS = 30;
             //int N_ANNUAL_SEROSTATUS_PTS = 20;
-            
+	
             if(WRITE_CALIBRATION == 1){
                 
                 // Write the CHIPS values for the calibration file to the character array
@@ -896,9 +896,14 @@ int main(int argc,char *argv[]){
                     }
 
 		    
+		    else if (SETTING==SETTING_MANICALAND){
+			write_calibration_outputs_cohortpopulation_snapshot(patch, p, output);
+		    }
+		    
+
 		    // Add a newline character to the output for non-Manicaland outputs:
-		    if (SETTING!=SETTING_MANICALAND)
-			strcat(output->calibration_outputs_combined_string[p], "\n");
+		    //if (SETTING!=SETTING_MANICALAND)
+		    strcat(output->calibration_outputs_combined_string[p], "\n");
                 }
                 
                 /* Only want to write out to disk every NRUNSPERWRITETOFILE runs. So calculate i_run
@@ -906,13 +911,11 @@ int main(int argc,char *argv[]){
                 if((i_run % NRUNSPERWRITETOFILE == 0) || (i_run == n_runs - 1)){
                 
                     for(p = 0; p < NPATCHES; p++){
+			
+			/* Add extra line break at end of file: */
+			if (i_run==n_runs-1)
+			    strcat(output->calibration_outputs_combined_string[p], "\n");
 
-			if (SETTING==SETTING_MANICALAND){
-			    write_calibration_outputs_cohortpopulation_snapshot(patch, p, output);
-			    /* Add extra line break at end of file: */
-			    if (i_run==n_runs-1)
-				strcat(output->calibration_outputs_combined_string[p], "\n");
-			}
 
                         write_calibration_outputs(calibration_output_filename[p],output, p);
                         

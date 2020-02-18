@@ -2568,7 +2568,7 @@ void write_calibration_outputs_cohortpopulation_snapshot(patch_struct *patch, in
 	    for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
 		/* r runs from 0..NCOHORTROUNDS-1 here. */
 		if (aa==(MAX_AGE-AGE_ADULT-1) && g==(N_GENDER-1) && round==(NCOHORTROUNDS-1))
-		    sprintf(temp_string,"%li\n",output->COHORT_NONART[p][g][aa][round]);
+		    sprintf(temp_string,"%li",output->COHORT_NONART[p][g][aa][round]);
 		else
 		    sprintf(temp_string,"%li,",output->COHORT_NONART[p][g][aa][round]);		    
 		

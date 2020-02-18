@@ -54,7 +54,7 @@ carry_out_processes_by_patch_by_time_step()
 int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct *patch,
     all_partnerships * overall_partnerships, output_struct *output, int rng_seed_offset, 
     int rng_seed_offset_PC, debug_struct *debug, file_struct *file_data_store, 
-    int is_counterfactual){
+    int is_counterfactual, int i_run){
     /* Main function for carrying out 
     
     
@@ -264,7 +264,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     }
 
     // Use to check population counters are all consistent - i.e. we're updating them all correctly. Most recent check 13 Jan 2020 to check introduction of MTCT is OK.
-    if (t0+t_step*TIME_STEP<1901)
+    if (t0+t_step*TIME_STEP<1901 && i_run==1)
 	printf("Checking population size is OK at time %lf: \n",t0 + t_step*TIME_STEP);
     for (p=0; p<NPATCHES; p++)
     	count_population_size_three_ways(patch, p, t0 + t_step*TIME_STEP);

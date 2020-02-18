@@ -760,7 +760,7 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
     if (argc>5)
         *n_startrun = strtol(argv[5],NULL,10);
     else
-        *n_startrun = (*n_runs)-(*i_startrun);
+        *n_startrun = (*n_runs)-(*i_startrun-1);
 
     if (argc>7)
         *rng_seed_offset = strtol(argv[7],NULL,10);

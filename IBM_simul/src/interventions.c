@@ -1253,8 +1253,8 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 	    if ((age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->HIV_status==UNINFECTED) && (age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->PrEP_cascade_status==NOTONPREP)){
 		/* Store their id: */
 		temp_list_of_ids_for_sampling[n_eligible[ap]] = age_list->age_list_by_gender[FEMALE]->age_group[ai][i]->id;
-		if (temp_list_of_ids_for_sampling[n_eligible[ap]]==26812)
-		    printf("Storing id in sampling frame ap=%i i=%i id= %li t=%lf\n",ap,i,temp_list_of_ids_for_sampling[n_eligible[ap]],t);
+		//if (temp_list_of_ids_for_sampling[n_eligible[ap]]==26812)
+		//   printf("Storing id in sampling frame ap=%i i=%i id= %li t=%lf\n",ap,i,temp_list_of_ids_for_sampling[n_eligible[ap]],t);
 		
 
 		n_eligible[ap]++;
@@ -1295,14 +1295,14 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
     }
 
 
-    for (ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){
-	//printf("ap=%i i=%li\n",ap,PrEP_background_sample->number_in_prep_sample_including_reserves[ap]);
-	for(i=0; i<PrEP_background_sample->number_in_prep_sample_including_reserves[ap]; i++){
-	    //printf("i=%li id=%li\n",i,PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]);
-	    if (PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]==26812)
-		printf("Storing id in sampling frame ap=%i i=%i id= %li t=%lf\n",ap,i,PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i],t);
-	}
-    }
+    /* for (ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++){ */
+    /* 	//printf("ap=%i i=%li\n",ap,PrEP_background_sample->number_in_prep_sample_including_reserves[ap]); */
+    /* 	for(i=0; i<PrEP_background_sample->number_in_prep_sample_including_reserves[ap]; i++){ */
+    /* 	    //printf("i=%li id=%li\n",i,PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]); */
+    /* 	    if (PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]==26812) */
+    /* 		printf("Storing id in sampling frame ap=%i i=%i id= %li t=%lf\n",ap,i,PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i],t); */
+    /* 	} */
+    /* } */
 
     /* Initialise values in prep_background_sample->next_person_to_see[] so begin at the start of the list. */
     for(ap=0; ap <(MAX_AGE_PREP_BACKGROUND-MIN_AGE_PREP_BACKGROUND+1); ap++)
@@ -1365,8 +1365,8 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 	for (t_i=0; t_i<N_TIME_STEP_PER_YEAR; t_i++){
 	    for(i=n; (i<(n+ PrEP_background_sample->number_to_see_per_timestep[ap][t_i])); i++){
 		indiv = &(patch[p].individual_population[patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i]]);
-		if (indiv->id==26812)
-		    printf("Scheduling backgroup ap=%i id=%li\n",ap,indiv->id);
+		//if (indiv->id==26812)
+		//    printf("Scheduling backgroup ap=%i id=%li\n",ap,indiv->id);
 		if (indiv->PrEP_cascade_status!=NOTONPREP){
 		    printf("Error: PrEP status impossible for indiv id=%li in schedule_PrEP_background(). Exiting\n",indiv->id);
 		    fflush(stdout);
@@ -1633,9 +1633,9 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 	    if (prep_eligible==1){
 		//printf("Bg prep: ID=%li. Supposed to be %li ap=%i i=%i\n",indiv->id,patch[p].PrEP_background_sample->list_ids_to_visit_per_year_including_reserves[ap][i],ap,i);
 		/* They start PrEP due to background: */
-		if (indiv->id==26812){
-		    printf("Starting PrEP for 26812 ap=%i\n",ap);
-		}
+		//if (indiv->id==26812){
+		//   printf("Starting PrEP for 26812 ap=%i\n",ap);
+		//}
 		indiv->starts_PrEP_due_to_intervention = NOT_PREP_INTERVENTION;
 		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
 		//printf("BStartijng PrEP for id=%li\n",indiv->id);

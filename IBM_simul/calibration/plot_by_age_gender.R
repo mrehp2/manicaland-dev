@@ -1,4 +1,4 @@
-
+require(plotrix)
 
 
 my_rainbow <- c("hotpink","purple","blue","royalblue1","cyan","green","gold","orange2","red","brown","grey","black")
@@ -118,47 +118,119 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
 
 
 
-row <- 1
+
 infile = "Calibration_data_bestfits.csv"
 #infile = "../results2/RESULTS1/Calibration_output_CL05_Zim_V2.0_patch0_Rand10_PCseed0_0.csv"
 
 model.data <- read.csv(infile,header=T)
 
 nruns <- dim(model.data)[1]
-r <- 2 # round
 
-denom.f.prev <- list(1:nruns)
-numerator.f.prev <- list(1:nruns)
-prev.f <- list(1:nruns)
-denom.m.prev <- list(1:nruns)
-numerator.m.prev <- list(1:nruns)
-prev.m <- list(1:nruns)
+# We use rounds 1+2 at present:
+rounds <- 1:2
 
 
-for (row in 1:nruns)
+for (r in rounds)
 {
+    denom.f.prev <- list(1:nruns)
+    numerator.f.prev <- list(1:nruns)
+    prev.f <- list(1:nruns)
+    denom.m.prev <- list(1:nruns)
+    numerator.m.prev <- list(1:nruns)
+    prev.m <- list(1:nruns)
+
+    denom.f.aware <- list(1:nruns)
+    numerator.f.aware <- list(1:nruns)
+    aware.f <- list(1:nruns)
+    denom.m.aware <- list(1:nruns)
+    numerator.m.aware <- list(1:nruns)
+    aware.m <- list(1:nruns)
+
+    denom.f.onart <- list(1:nruns)
+    numerator.f.onart <- list(1:nruns)
+    onart.f <- list(1:nruns)
+    denom.m.onart <- list(1:nruns)
+    numerator.m.onart <- list(1:nruns)
+    onart.m <- list(1:nruns)
+
+
+
+    for (row in 1:nruns)
+    {
     
     
-    outcome <- "Ntot"
-    gender <- "F"
-    denom.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
-    outcome <- "Npos"
-    numerator.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Ntot"
+        gender <- "F"
+        denom.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Npos"
+        numerator.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Ntot"
+        gender <- "M"
+        denom.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Npos"
+        numerator.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        ### Awareness
+        outcome <- "Npos"
+        gender <- "F"
+        denom.f.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Naware"
+        numerator.f.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Npos"
+        gender <- "M"
+        denom.m.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Naware"
+        numerator.m.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
 
 
-    outcome <- "Ntot"
-    gender <- "M"
-    denom.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
-    outcome <- "Npos"
-    numerator.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        ### On ART:
+        outcome <- "Naware"
+        gender <- "F"
+        denom.f.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "NonART"
+        numerator.f.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Naware"
+        gender <- "M"
+        denom.m.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "NonART"
+        numerator.m.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
 
 
-    prev.f[[row]] <- 100*numerator.f.prev[[row]]/denom.f.prev[[row]]
-    prev.m[[row]] <- 100*numerator.m.prev[[row]]/denom.m.prev[[row]]
+        
+        prev.f[[row]] <- 100*numerator.f.prev[[row]]/denom.f.prev[[row]]
+        prev.m[[row]] <- 100*numerator.m.prev[[row]]/denom.m.prev[[row]]
+
+        aware.f[[row]] <- 100*numerator.f.aware[[row]]/denom.f.aware[[row]]
+        aware.m[[row]] <- 100*numerator.m.aware[[row]]/denom.m.aware[[row]]
+
+        onart.f[[row]] <- 100*numerator.f.onart[[row]]/denom.f.onart[[row]]
+        onart.m[[row]] <- 100*numerator.m.onart[[row]]/denom.m.onart[[row]]
+
+    }
+
+    file.name <- paste0("HIVprevalenceRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r)
+    dev.off()
+
+
+    file.name <- paste0("HIVawareRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(aware.m,aware.f,denom.m.aware,denom.f.aware,r)
+    dev.off()
+
+    file.name <- paste0("HIVonARTRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(onart.m,onart.f,denom.m.onart,denom.f.onart,r)
+    dev.off()
+
+    
 }
 
 
 
 
 
-plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r)

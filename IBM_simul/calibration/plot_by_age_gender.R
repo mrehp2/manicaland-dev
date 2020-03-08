@@ -1,3 +1,4 @@
+rm(list=ls())
 require(plotrix)
 
 
@@ -46,11 +47,20 @@ get.model.data <- function(model.data,r,outcome,gender,row,min.age,max.age,age.g
 }
 
 
+    #plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r,survey.data.prev[[r]],survey.data.prev.denom[[r]])
 
-plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.allruns,r)
+# plotrange is the y axis range.
+plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.allruns,r,survey.data.p,survey.data.n,plotrange=c(0,30),plot.title)
 {
+    #prev.m.allruns <- prev.m
+    #prev.f.allruns <- prev.f
+    #denom.m.allruns <- denom.m.prev
+    #denom.f.allruns <- denom.f.prev
+    #survey.data.p <- survey.data.prev[[5]]
+    #survey.data.n <- survey.data.prev.denom[[5]]
+
     # Y axis goes from 0-20% in increments of 5%:
-    tmp <- seq(0,20,5)
+    tmp <- seq(plotrange[1],plotrange[2],10)
     round.label <- paste0("Round ",as.character(r))
 
     # Increase/reduce gap between M/F plots:
@@ -83,13 +93,16 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
         }
     }
     # X axis label:
-    mtext(side=1,line=2.5,"HIV prevalence (%)")
+    mtext(side=1,line=2.5,plot.title)
 
-    # Now plot the survey data and confidence interval:
-    survey.prev.m <- prev.m.allruns[[10]]
-    survey.prev.f <- prev.f.allruns[[10]]
-    survey.prev.denom.m <- denom.m.allruns[[10]]
-    survey.prev.denom.f <- denom.f.allruns[[10]]
+                                        # Now plot the survey data and confidence interval:
+    n.survey.data <- length(survey.data.p)
+    n.survey.data.by.gender <- n.survey.data/2
+    
+    survey.prev.m <- 100*survey.data.p[1:n.survey.data.by.gender]
+    survey.prev.f <- 100*survey.data.p[(n.survey.data.by.gender+1):n.survey.data]
+    survey.prev.denom.m <- survey.data.n[1:n.survey.data.by.gender]
+    survey.prev.denom.f <- survey.data.n[(n.survey.data.by.gender+1):length(survey.data)]
 
     points(-survey.prev.m - max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)
     points(survey.prev.f + max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)
@@ -111,6 +124,49 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
 }
 
 
+
+#group.survey.data(survey.data["HIV+",],survey.data["All",], min.age, max.age, age.gp.width)
+#numerator.ungrouped <- survey.data["HIV+",]
+#denominator.ungrouped <- survey.data["All",]
+group.survey.data  <- function(numerator.ungrouped, denominator.ungrouped, min.age, max.age, age.gp.width)
+{
+    both.genders <- c("M","F")
+    
+    n.age.groups.per.gender <- (max.age+1-min.age)/age.gp.width
+    n.age.groups <- length(both.genders)*n.age.groups.per.gender
+    outputs <- list()   # Store for prevalence and Ndenom.
+    prev <- rep(0,n.age.groups)
+    denom <- rep(0,n.age.groups)
+    for (g in 1:length(both.genders))
+    {
+        this.gender <- both.genders[g]
+        for (i in 1:n.age.groups.per.gender)
+        {
+            age <- min.age + (i-1)*age.gp.width
+            label <- paste0(this.gender,as.character(age))
+                                        # Index in the numerator/denominator
+            i.start <- which(colnames(numerator.ungrouped)==label)
+            numerator.sum <- sum(numerator.ungrouped[i.start:(i.start+age.gp.width-1)])
+            denominator.sum <- sum(denominator.ungrouped[i.start:(i.start+age.gp.width-1)])     
+            if (numerator.sum>denominator.sum)
+            {
+                print("Error - numerator>denominator")
+            }
+            if (denominator.sum>0)
+            {
+                prev[i+(g-1)*n.age.groups.per.gender] = numerator.sum/denominator.sum
+            } else {
+                prev[i+(g-1)*n.age.groups.per.gender] = 0
+            }
+            denom[i+(g-1)*n.age.groups.per.gender] <- denominator.sum
+
+        }
+    }
+    outputs <- list(prev,denom)
+    return(outputs)
+}
+
+
 #####################################################################
 #Main code:
 #####################################################################
@@ -121,37 +177,73 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
 
 infile = "Calibration_data_bestfits.csv"
 #infile = "../results2/RESULTS1/Calibration_output_CL05_Zim_V2.0_patch0_Rand10_PCseed0_0.csv"
-
 model.data <- read.csv(infile,header=T)
-
 nruns <- dim(model.data)[1]
 
 # We use rounds 1+2 at present:
-rounds <- 1:2
+rounds <- 5:6
+
+survey.data.prev <- list()
+survey.data.propaware <- list()
+survey.data.proponART <- list()
+survey.data.prev.denom <- list()
+survey.data.propaware.denom <- list()
+survey.data.proponART.denom <- list()
+
+            
+
+for (r in rounds)
+{
+                                        # Read in survey data
+    survey.data <- read.csv(paste0("~/Dropbox (SPH Imperial College)/Manicaland/Model/CalibrationData/Manicalandr",as.character(r),"_calibration_data.txt"),sep=" ")
+
+    temp <- group.survey.data(survey.data["HIV+",],survey.data["All",], min.age, max.age, age.gp.width)
+    survey.data.prev[[r]] <- temp[[1]]
+    survey.data.prev.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.prev[[r]][is.na(survey.data.prev[[r]])] <- 0
+
+
+    temp <- group.survey.data(survey.data["AwareOfStatus",],survey.data["HIV+",], min.age, max.age, age.gp.width)
+    survey.data.propaware[[r]] <- temp[[1]]
+    survey.data.propaware.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.propaware[[r]][is.na(survey.data.propaware[[r]])] <- 0
+
+
+    temp <- group.survey.data(survey.data["OnART",],survey.data["AwareOfStatus",], min.age, max.age, age.gp.width)
+    survey.data.proponART[[r]] <- temp[[1]]
+    survey.data.proponART.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.proponART[[r]][is.na(survey.data.proponART[[r]])] <- 0
+    
+}
+
 
 
 for (r in rounds)
 {
-    denom.f.prev <- list(1:nruns)
-    numerator.f.prev <- list(1:nruns)
-    prev.f <- list(1:nruns)
-    denom.m.prev <- list(1:nruns)
-    numerator.m.prev <- list(1:nruns)
-    prev.m <- list(1:nruns)
+    # was list(1:nruns)
+    denom.f.prev <- list()
+    numerator.f.prev <- list()
+    prev.f <- list()
+    denom.m.prev <- list()
+    numerator.m.prev <- list()
+    prev.m <- list()
 
-    denom.f.aware <- list(1:nruns)
-    numerator.f.aware <- list(1:nruns)
-    aware.f <- list(1:nruns)
-    denom.m.aware <- list(1:nruns)
-    numerator.m.aware <- list(1:nruns)
-    aware.m <- list(1:nruns)
+    denom.f.aware <- list()
+    numerator.f.aware <- list()
+    aware.f <- list()
+    denom.m.aware <- list()
+    numerator.m.aware <- list()
+    aware.m <- list()
 
-    denom.f.onart <- list(1:nruns)
-    numerator.f.onart <- list(1:nruns)
-    onart.f <- list(1:nruns)
-    denom.m.onart <- list(1:nruns)
-    numerator.m.onart <- list(1:nruns)
-    onart.m <- list(1:nruns)
+    denom.f.onart <- list()
+    numerator.f.onart <- list()
+    onart.f <- list()
+    denom.m.onart <- list()
+    numerator.m.onart <- list()
+    onart.m <- list()
 
 
 
@@ -211,20 +303,24 @@ for (r in rounds)
 
     }
 
+
+    
     file.name <- paste0("HIVprevalenceRound",as.character(r),".pdf")
     pdf(file.name)
-    plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r)
+    plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r,survey.data.prev[[r]],survey.data.prev.denom[[r]],c(0,40),"HIV prevalence (%)")
     dev.off()
 
 
     file.name <- paste0("HIVawareRound",as.character(r),".pdf")
     pdf(file.name)
-    plot.stuff(aware.m,aware.f,denom.m.aware,denom.f.aware,r)
+    plot.stuff(aware.m,aware.f,denom.m.aware,denom.f.aware,r,survey.data.propaware[[r]],survey.data.propaware.denom[[r]],c(0,100),"% aware of status")
     dev.off()
 
+
+    # Set NAs to zero:
     file.name <- paste0("HIVonARTRound",as.character(r),".pdf")
     pdf(file.name)
-    plot.stuff(onart.m,onart.f,denom.m.onart,denom.f.onart,r)
+    plot.stuff(onart.m,onart.f,denom.m.onart,denom.f.onart,r,survey.data.proponART[[r]],survey.data.proponART.denom[[r]],c(0,100),"% on ART")
     dev.off()
 
     

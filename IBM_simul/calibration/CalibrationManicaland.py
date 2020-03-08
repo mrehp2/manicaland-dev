@@ -81,12 +81,12 @@ def add_slash(directory):
         return directory+"/"
 
 
-def make_age_grouping_dictionary(min_age,max_age):
+def make_age_grouping_dictionary(min_age,max_age, width):
     # Use integer division:
-    offset = min_age/5   # This is the 0 group.
+    offset = min_age/width   # This is the 0 group.
     age_grouping_dictionary = {}
     for a in range(min_age,max_age+1):
-        age_grouping_dictionary[a] = a/5 - offset
+        age_grouping_dictionary[a] = a/width - offset
     return age_grouping_dictionary
     
 
@@ -111,7 +111,8 @@ def read_ibm_calibration_files(calibration_root_dir):
 
     # Get all the sub-directories where the Calibration*.csv files are:
     calibration_results_dirs = get_calibration_results_dirs(calibration_root_dir)
-
+    # Print where we're getting results from:
+    print calibration_results_dirs
     # Find the files in those sub-directories, and check that they are all named the right way e.g. Calibration_output_CL05_Zim_V2.0_patch0_Rand1_PCseed0_0.csv 
     [calibration_files,community] = check_calibration_files_consistent(calibration_results_dirs)
 
@@ -266,7 +267,12 @@ def structure_ibm_data(model_data_array, header):
 # Code reads in ONLY ONE TYPE OF DATA (e.g. CHIPS, COHORT, DHS)           #
 # so need to call multiple times if working with different types of data. #
 ###########################################################################
-def read_survey_files(survey_data_dir,rounds):
+def read_survey_files(rounds):
+
+    # When opening a file python can't apparently use '~' directly. But os.path.expanduser('~')
+    # gives the expanded path (e.g. /home/me).
+    homedir = os.path.expanduser('~')
+    survey_data_dir = homedir+"/Dropbox (SPH Imperial College)/Manicaland/Model/"
     # These need to match the IBM outputs.
     dictionary_survey_to_IBMoutput = {"All": "Ntot", "HIV+":"Npos", "AwareOfStatus":"Naware", "OnART":"NonART"}
 
@@ -289,7 +295,9 @@ def read_survey_files(survey_data_dir,rounds):
 
         
         print "***PLACEHOLDER HERE***"
-        survey_data_filename = survey_data_dir + "Round1/TimeOfChipsVisits/cascade_by_gender_age_table_n_round1_community1.txt"
+
+        survey_data_filename = survey_data_dir+"CalibrationData/Manicalandr"+str(r)+"_calibration_data.txt"
+        #survey_data_filename = survey_data_dir + "Round1/TimeOfChipsVisits/cascade_by_gender_age_table_n_round1_community1.txt"
 
         survey_file = open(survey_data_filename)
         survey_data = survey_file.read().rstrip().splitlines()
@@ -307,7 +315,7 @@ def read_survey_files(survey_data_dir,rounds):
     return [header,survey_data_store]
 
 
-def get_cohort_likelihood(survey_data,model_data, age_groupings):
+def get_cohort_likelihood(survey_data,model_data, age_groupings, N_BESTFITS):
     survey_rounds = survey_data.keys()
 
     model_data_files = model_data.keys()
@@ -391,12 +399,13 @@ def get_cohort_likelihood(survey_data,model_data, age_groupings):
                             survey_N[age_gp_index] += survey_data[r][denominator][g][a]
                             if test_condition(a,f,n,r,g,denominator):
                                 sum += model_data[f][n][r][denominator][g][a]
-                                print n,r,g,denominator,sum,age_gp_index,model_data[f][n][r][denominator][g][a]
+                                #print n,r,g,denominator,sum,age_gp_index,model_data[f][n][r][denominator][g][a]
                        # print sum#print model_k[age_gp_index],model_N[age_gp_index]
                                 
                         #
                                                 
                         for age_gp_index in age_group_indices:
+                            #print "PP",g,age_gp_index, numerator,denominator
                             log_likelihood_by_round[(f,n)] += calculate_log_likelihood(survey_k[age_gp_index],survey_N[age_gp_index],model_k[age_gp_index],model_N[age_gp_index])
 
     #Print for debugging - checked that sorting works OK.
@@ -407,7 +416,7 @@ def get_cohort_likelihood(survey_data,model_data, age_groupings):
     # Needs python3!
     #res = dict(sorted(log_likelihood_by_round.items(), key = itemgetter(1), reverse = True)[:10])
 
-    res = sorted( log_likelihood_by_round.items(), key=lambda pair: pair[1], reverse=True )[:10]
+    res = sorted( log_likelihood_by_round.items(), key=lambda pair: pair[1], reverse=True )[:N_BESTFITS]
     return res
         
 
@@ -435,7 +444,7 @@ def calculate_log_likelihood(survey_k, survey_N, model_k, model_N):
     try:
         log_likelihood = math.log(math.factorial(survey_k)) + survey_k*math.log(model_p)+(survey_N-survey_k)*math.log(1-model_p)-math.log(math.factorial(survey_N)) - math.log(math.factorial(survey_N-survey_k))
     except:
-        print model_k,model_N,model_p,survey_k,survey_N
+        print "XXX",model_k,model_N,model_p,survey_k,survey_N
         print Ramunajan_approximation(survey_k)
         print survey_k*math.log(model_p)
         print (survey_N-survey_k)*math.log(1-model_p)
@@ -458,7 +467,7 @@ def Ramunajan_approximation(N):
 ###      Main code:      ####
 #################################################
 
-calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/"
+calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_new/"
 [community, header, model_data_array,full_header_string] = read_ibm_calibration_files(calibration_root_dir)
 
 
@@ -472,21 +481,22 @@ ibm_model_data_structured = structure_ibm_data(model_data_array,  header)
 
 
 
-chips_survey_data_dir = "/home/mike/Dropbox (SPH Imperial College)/PoPART/Data:Stats/CHiPs data/"
+#chips_survey_data_dir = "/home/mike/Dropbox (SPH Imperial College)/PoPART/Data:Stats/CHiPs data/"
+
 
 survey_data = {}
-rounds = [1,2]
+rounds = [6]
 # For each type of data (cohort, DHS, CHiPS) etc we call read_survey_files:
-[header,survey_data["Cohort"]] = read_survey_files(chips_survey_data_dir,rounds)
+[header,survey_data["Cohort"]] = read_survey_files(rounds)
 #print survey_data
 
 #print ibm_model_data_structured
 
 # Make 5 year age groups 10-14, 15-19, 20-24 etc up to 75-79.
-#age_groupings = [[5*x+i for i in range(5)] for x in range(2,16)]
-age_groupings = make_age_grouping_dictionary(10,79)
+age_groupings = make_age_grouping_dictionary(10,79, 10)
 
-likelihood_cohort = get_cohort_likelihood(survey_data["Cohort"],ibm_model_data_structured["Cohort"], age_groupings)
+# Last argument is number of best fits to get.
+likelihood_cohort = get_cohort_likelihood(survey_data["Cohort"],ibm_model_data_structured["Cohort"], age_groupings, 10)
 
 
 best_model_calibration_filename = "Calibration_data_bestfits.csv"
@@ -500,7 +510,7 @@ best_model_likelihood_output = ""
 
 # Create file listing the files, lines and likelihoods of the best files:
 for i in likelihood_cohort:
-    best_model_likelihood_output += i[0][0]+str(i[0][1])+str(i[1])+"\n"
+    best_model_likelihood_output += i[0][0]+" "+str(i[0][1])+" "+str(i[1])+"\n"
 
     best_model_calibration_data += ",".join([str(x) for x in model_data_array[i[0][0]][i[0][1]]])+"\n"
 
@@ -509,3 +519,8 @@ best_model_likelihood_file.write(best_model_likelihood_output)
 
 best_model_calibration_file.close()
 best_model_likelihood_file.close()
+
+
+
+# Call R to plot stuff:
+os.system("Rscript plot_by_age_gender.R")

@@ -434,7 +434,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     person_template.n_lifetimeminusoneyear_partners_outside = 0;
     person_template.n_partnersminusoneyear = 0;
     person_template.idx_serodiscordant = -1;              /* Not in a serodiscordant partnership */
-    person_template.idx_hsv2_serodiscordant = -1;              /* Not in a serodiscordant partnership */
+    person_template.idx_hsv2_serodiscordant = -1;              /* Not in a hsv-2 serodiscordant partnership */
 
     person_template.circ = UNCIRC;                       /* Not circumcised - allow a % of men to be circumcised later. */
     person_template.idx_vmmc_event[0] = -1;         /* Initialize at dummy value. */

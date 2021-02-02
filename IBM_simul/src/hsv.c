@@ -707,3 +707,41 @@ void carry_out_HSV2_events_per_timestep(double t, patch_struct *patch, int p,
 	}
     }
 }
+
+
+
+/* Function is a prototype for Weibull distribution RV.
+   Orroth et al (STDSIM) assume that HSV-2 ulcers last 1 week on average
+   with Weibull distribution with shape parameter=2. */
+double get_ulcer_duration(){
+    double t_ulcer_duration;
+    //gsl_ran_weibull(const gsl_rng * r, double a, double b);
+    /* where:
+       b = k = shape parameter
+       a = lambda = scale parameter
+       
+       So b =2
+       Mean of Weibull is lambda * Gamma(1+1/k) = a*Gamma(3/2)
+       So a = 1 week / (Gamma(3/2))
+ */
+
+
+    /* lgamma(x) in C is the natural log of the Gamma function. */
+    /* Gamma(3/2) = 0.5*sqrt(pi) = 0.8862269254527580137. */
+    
+    double g = exp(lgamma(1.5));
+    double a = (7/365.0) /g;
+    double x;
+    printf("Gamma(3/2)=%12.10lf\n",g);
+
+
+    /* Unit test I ran to check this works - checking mean was roughly 1 week, and distribution was Weibull-like. */
+    /* int i; */
+    /* for(i=0;i<1000;i++){ */
+    /* 	x = gsl_ran_weibull(rng, a, 2); */
+    /* 	printf("%12.10lf\n",x); */
+    /* } */
+
+    x = gsl_ran_weibull(rng, a, 2);
+    return x;
+}

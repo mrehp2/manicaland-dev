@@ -49,7 +49,7 @@ def check_calibration_files_consistent(dir_list):
     #print "in check_calibration_files_consistent dir_list=",dir_list
     checked_files = []
     for i in range(len(dir_list)):
-        potential_calibration_files = glob.glob(dir_list[i]+"/Calibration*.csv")
+        potential_calibration_files = glob.glob(dir_list[i]+"/Output/Calibration*.csv")
         for j in range(len(potential_calibration_files)):
             # Get the filename:
             f_name = potential_calibration_files[j].split("/")[-1]
@@ -371,13 +371,15 @@ def get_cohort_likelihood(survey_data,model_data, age_groupings, N_BESTFITS):
     # Store log-likelihoods:
     log_likelihood_by_round = {}
     for f in model_data_files:
+        resultsdir = f.split("/")[-1]
         for n in range(model_data_runs):
-            log_likelihood_by_round[(f,n)] = 0
+            log_likelihood_by_round[(resultsdir,n)] = 0
 
     #print model_data["/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/RESULTS2/Calibration_output_CL05_Zim_V2.0_patch0_Rand10_PCseed0_0.csv"][1]["R1"]["Ntot"]["F"]
                 
     # IBM data store format is ibm_data_structure[s][f][n][r][t][g][a].
     for f in model_data_files:
+        resultsdir = f.split("/")[-1]
         for n in range(model_data_runs):
             for r in survey_rounds:
                 # Loop through survey types:
@@ -467,9 +469,9 @@ def Ramunajan_approximation(N):
 ###      Main code:      ####
 #################################################
 
-calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_new/"
+calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2020_03_09/"
 [community, header, model_data_array,full_header_string] = read_ibm_calibration_files(calibration_root_dir)
-
+print "Finished reading in IBM calibration files. Community=",community
 
 
 # Find out what the IBM is storing - we will compare this against survey data later:
@@ -497,7 +499,7 @@ age_groupings = make_age_grouping_dictionary(10,79, 10)
 
 # Last argument is number of best fits to get.
 likelihood_cohort = get_cohort_likelihood(survey_data["Cohort"],ibm_model_data_structured["Cohort"], age_groupings, 10)
-
+print "Finiahed calculating likelihoods"
 
 best_model_calibration_filename = "Calibration_data_bestfits.csv"
 best_model_likelihood_filename = "goodfits.txt"

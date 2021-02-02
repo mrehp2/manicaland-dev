@@ -82,7 +82,6 @@ int main(int argc,char *argv[]){
     if(VERBOSE_OUTPUT == 1){
         printf("-------------------------------------\n");
     }
-
     /*********************************************************/
     /*** Declaration of variables                          ***/
     /*********************************************************/
@@ -95,7 +94,7 @@ int main(int argc,char *argv[]){
     
     int n_runs; // Total number of parameter sets used (read into memory)
     int i_startrun; // the first parameter set used (i_startrun); allows picking a single run
-    int n_startrun; // the number of parameter sets used (i.e. run from i_startrun to (n_startrun-1))
+    int n_startrun; // the number of parameter sets used (i.e. run from i_startrun to n_startrun)
     int i_dhs_round; /* To let us know if/when we need to store data for DHS. */
 
     /* This stores the return value of carry_out_processes() - it is 1 if there was no fitting or
@@ -184,6 +183,7 @@ int main(int argc,char *argv[]){
     TYPE_RNG = gsl_rng_default;
     rng = gsl_rng_alloc (TYPE_RNG);
 
+    get_ulcer_duration();
 	
     
     /* Dummy variable used when storing random_seed in the output file string. */
@@ -232,11 +232,10 @@ int main(int argc,char *argv[]){
             if(
             (allrunparameters[p][i_run].chips_params == NULL) ||
             (allrunparameters[p][i_run].PC_params == NULL) ||
-            (allrunparameters[p][i_run].DHS_params == NULL) ||
 	    (allrunparameters[p][i_run].PrEP_background_params == NULL) ||
 	    (allrunparameters[p][i_run].PrEP_intervention_params == NULL)
             ){
-                printf("Unable to allocate allrunparameters.chips_params/PC_params/DHS_params/PrEP_background_params/PrEP_intervention_params. ");
+                printf("Unable to allocate allrunparameters.chips_params/PC_params/PrEP_background_params/PrEP_intervention_params. ");
                 printf("Execution aborted.");
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
                 fflush(stdout);
@@ -400,13 +399,13 @@ int main(int argc,char *argv[]){
     }
 
     /****************************************************************************/
-    /*   Loop over parameter sets from i_startrun...(i_startrun + n_startrun-1)   */
+    /*   Loop over parameter sets from i_startrun...(i_startrun + n_startrun)   */
     /*   Remember C convention that start at 0 so index runs                    */
-    /*   from (i_startrun-1)...(i_startrun-1 + n_startrun-1)                      */
+    /*   from (i_startrun-1)...(i_startrun-1 + n_startrun)                      */
     /****************************************************************************/
 
     /* SIMPLE_PARTNERSHIP_CHECK allows to either (=0) run the whole model normally or (=1) run a
-    very simple partnership formation / disssolution which we used initially when designing
+    very simple partnership formation / dissolution which we used initially when designing
     partnership formation to check thigs work ok */
     printf("i_startrun=%i n_startrun=%i\n",i_startrun, n_startrun);
     if(SIMPLE_PARTNERSHIP_CHECK == 0){
@@ -511,8 +510,10 @@ int main(int argc,char *argv[]){
                 init_available_partnerships(p, patch, overall_partnerships,pop);
 
                 /* Set cumulative counters to zero: */
-                init_cumulative_counters(patch[p].cumulative_outputs);                
+                init_cumulative_counters(patch[p].cumulative_outputs);
                 
+                
+		
                 /* Set calendar counters to zero: */
                 init_calendar_counters(patch[p].calendar_outputs);
 

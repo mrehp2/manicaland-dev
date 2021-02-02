@@ -40,4 +40,6 @@ void next_hsv2_event(individual* , individual ***, long *, long *, parameters *,
 
 void carry_out_HSV2_events_per_timestep(double , patch_struct *, int , all_partnerships *, debug_struct *, file_struct *);
 
+double get_ulcer_duration();
+
 #endif /* HSV_H_ */

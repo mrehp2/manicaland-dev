@@ -1,7 +1,8 @@
 #!/bin/bash
 
-seed=10
-nsamples=1000 # chaneg for different nruns
+#seed=11
+seed=1
+nsamples=3 # chaneg for different nruns
 nreps=1
 verbose=0
 community=5
@@ -32,6 +33,8 @@ python python/make_params_folder_files_Manicaland.py $currentdir $community LAPT
 
 # Make the parameter files used by the IBM:
 python python/make_ibm_parameter_sample_Manicaland.py $inputdirectory $outputdirectory $seed $nsamples $nreps $verbose
+#echo $inputdirectory $outputdirectory $seed $nsamples $nreps $verbose
+#exit 1
 
 # Is this a counterfactual or not?
 
@@ -87,3 +90,5 @@ fi
 
 # Post-process the calibration files to include sample and rep numbers in the csv files
 python python/calibration_add_sample_rep_numbers.py $outputdirectory/Output $nsamples $nreps
+mkdir results_2021_01_12/RESULTS$1
+mv $outputdirectory/Output results_2021_01_12/RESULTS$1

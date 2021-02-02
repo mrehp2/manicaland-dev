@@ -16,7 +16,8 @@ for (i in 1:n.age.groups)
     age_groups_lab[i] <- paste(as.character(i.age),as.character(i.age+age.gp.width-1),sep="-")
 }
 
-#age_groups_lab <- c("15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79")
+print("Remove this to fit all age groups")
+age_groups_lab <- c("15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64")
 
 col <-  rainbow(length(age_groups_lab))
 
@@ -88,7 +89,7 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
             ymax <- a-height_of_a_bar/2+height_of_a_bar*k/nruns
             y <- c(ymin,ymin,ymax,ymax)
             polygon(x,y,col=col[a],border = NA)
-            x <- c(prev.f[[k]][a],0,0,prev.f[[k]][a]) + max(tmp)/gap.adjustment.scale
+            x <- c(prev.f.allruns[[k]][a],0,0,prev.f.allruns[[k]][a]) + max(tmp)/gap.adjustment.scale
             polygon(x,y,col=col[a],border = NA)
         }
     }
@@ -99,10 +100,10 @@ plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.all
     n.survey.data <- length(survey.data.p)
     n.survey.data.by.gender <- n.survey.data/2
     
-    survey.prev.m <- 100*survey.data.p[1:n.survey.data.by.gender]
-    survey.prev.f <- 100*survey.data.p[(n.survey.data.by.gender+1):n.survey.data]
-    survey.prev.denom.m <- survey.data.n[1:n.survey.data.by.gender]
-    survey.prev.denom.f <- survey.data.n[(n.survey.data.by.gender+1):length(survey.data)]
+    survey.prev.m <- 100*survey.data.p[1:min(n.survey.data.by.gender,length(age_groups_lab))]
+    survey.prev.f <- 100*survey.data.p[(n.survey.data.by.gender+1):min(n.survey.data,n.survey.data.by.gender+length(age_groups_lab))]
+    survey.prev.denom.m <- survey.data.n[1:min(n.survey.data.by.gender,length(age_groups_lab))]
+    survey.prev.denom.f <- survey.data.n[(n.survey.data.by.gender+1):min(n.survey.data,n.survey.data.by.gender+length(age_groups_lab))]
 
     points(-survey.prev.m - max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)
     points(survey.prev.f + max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)

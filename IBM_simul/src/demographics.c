@@ -93,7 +93,6 @@ individual_death_AIDS()
 #include "debug.h"
 
 
-//void per_woman_fertility_rate(int age, parameters *param, int y0, double f, double *fertility_rate_by_HIV_status){
 double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     /* Calculate per-woman fertility rate based on age using UNPD rates
     
@@ -572,14 +571,8 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 	fflush(stdout);
 	exit(1);
     }
-
-
-
-
-	
-    
-
 }
+
 
 /* Called by make_new_adults() to make a specific person with given HIV status. 
    Function does: creates entries for everything related to that new_person.

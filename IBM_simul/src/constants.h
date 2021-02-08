@@ -63,7 +63,6 @@
                                                  */
 
 #define WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS 0 // if 1 then writes files of the form Annual_partnerships_outputs_*.csv
-#define AGE_DISTRIBUTION_CHECK 0 // if 0 then normal simulation is run, otherwise print age distribution at some specified times.
 
 #define WRITE_HIVSURVIVAL_OUTPUT 0 /*  Generates the files HIVsurvival_individualdata.csv - containing DoB, DoD, gender, date first on ART etc for all HIV+ in simulation. */
 
@@ -73,6 +72,8 @@
 
 #define VERBOSE_OUTPUT 0  /* 1 if want to print normal things to screen, 0 for run on a cluster (where want to minimise output to screen). */
 #define CHECKPARAMS 1 /* 1 means we run check_if_parameters_plausible() to check if parameters are in a suitable range. 0 if we are trying crazy params for debugging. */
+#define CHECK_POPULATION_SIZE_CONSISTENCY 1 /* 1 means we check the population size is consistent by three means (count of number of people alive, via age_list and via n_population) via the function count_population_size_three_ways(). Note that this functions slows the code down enormously (so should not be run when calibrating). */
+
 #define PRINT_DEBUG_DEMOGRAPHICS 0      /* Prints extra demographic info to screen. */
 //#define PRINT_DEBUG_DEMOGRAPHICS_NEWADULTS 0 /* Prints to screen the number of adults created in a timestep. Used to check e.g. OneYearAgeGp_CL01_Za_A_V1.2_patch0_Rand10_Run1_0.csv to check have the correct number of new adults (ie that the number of people aged 14 is equal to the number of new adults in the previous year - apart from deaths. */
 #define WRITE_DEBUG_DEMOGRAPHICS_NBIRTHS_NEWADULTS_DEATHS 0           /* Generates the files BirthsNNewAdultsNdeaths.csv. For model validation. Outputs the number of births, new adults and deaths in a year. Compare with output of files produced by print_one_year_age_groups_including_kids() which allow us to see number of each of these in a year. */
@@ -89,7 +90,7 @@
 #define DEBUG_MAX_HIV_STATE_OUTPUT_TIME 2016
 #define WRITE_DEBUG_ART_STATE 0                   /* Generates the files DEBUG_ART_population_*.csv. These are then used by generate_art_distribution_files.py to make ART_distribution.csv and ART_transition_dist.csv files. */
 #define WRITE_ART_STATUS_BY_AGE_SEX 0 // Write totals of individuals in each ART_status stratified by sex and year of age.  Write these for each time step.
-#define WRITE_DEBUG_CHIPS_STATES 0                /* Generates the files CHIPS_outputs_annual*.csv and CHIPS_outputs_visit*.csv containing the data on people when they are visited by CHiPs. */
+#define WRITE_DEBUG_CHIPS_STATES 0                /* Generates the files CHIPS_outputs_annual*.csv containing the annual data on people when they are visited by CHiPs. */
 
 #define WRITE_CALIBRATION 1 /* Write Calibration*.csv files to disk */
 #define WRITE_DHS_CALIBRATION 0 /* Write DHS outputs to Calibration*.csv files. */
@@ -206,7 +207,7 @@ gsl_rng * rng;
 #define AGE_PC_MAX 44
 #define PC_AGE_RANGE_MAX 27  /* PC runs from 18-44 so 27 age groups. */
 
-#define MAX_N_TIMESTEPS_PER_PC_ROUND 48 /* No PC round can last >1.5 years (in fact longest from data is 66 timesteps in community 9). */
+#define MAX_N_TIMESTEPS_PER_PC_ROUND 72 /* No PC round can last >1.5 years (in fact longest from data is 66 timesteps in community 9). */
 #define N_PC_HIV_STRATA 3 /* This is the number of HIV-related categories we use for dividing up the PC sample - we want to include the right number of HIV-, HIV+ know status etc. */
 #define MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP 200 /* Fixes size of list_ids_in_cohort[g][ap][i_pc_category][MAX_NUMBER_PC_PARTICIPANTS_PER_GROUP]; */
 

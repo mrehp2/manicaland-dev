@@ -72,9 +72,9 @@ void write_timestep_age_outputs(file_struct *, output_struct *, int, int);
 void blank_calibration_output_file(char *, int );
 void write_calibration_outputs(char *, output_struct *, int);
 void store_phylogenetic_transmission_output(output_struct *, double, individual*, 
-    individual*, file_struct *);
+    individual*, file_struct *, int , int );
 void store_phylogenetic_transmission_initial_cases(output_struct *, parameters *, 
-    individual*, file_struct *);
+    individual*, file_struct *, int , int );
 void blank_phylo_transmission_data_file(file_struct *);
 void write_phylo_transmission_data(file_struct *, char *);
 void write_phylo_individual_data(file_struct *, individual *,  long);

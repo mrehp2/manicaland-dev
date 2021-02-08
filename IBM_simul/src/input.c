@@ -1147,14 +1147,14 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->time_to_background_HIVtest_midpoint");
 
         /* Input probabilities for the cascade events: */
-        checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_background_testing_rate_multiplier_pre2006));
-        check_if_cannot_read_param(checkreadok,"param_local->HIV_background_testing_rate_multiplier_pre2006");
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_pre2006));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_pre2006");
         
-        checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_background_testing_rate_multiplier));
-        check_if_cannot_read_param(checkreadok,"param_local->HIV_background_testing_rate_multiplier");
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_current));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_current");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_background_testing_rate_multiplier_male));
-        check_if_cannot_read_param(checkreadok,"param_local->HIV_background_testing_rate_multiplier_male");
+        checkreadok = fscanf(param_file,"%lg",&(param_local->RR_HIV_background_testing_male));
+        check_if_cannot_read_param(checkreadok,"param_local->RR_HIV_background_testing_male");
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_ANC));
         check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_ANC");

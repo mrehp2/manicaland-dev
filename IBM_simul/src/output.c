@@ -3116,30 +3116,74 @@ void write_timestep_age_outputs(file_struct *file_data_store, output_struct *out
  * whether infecting partner was acute. 
  */
 /* NOTE: if we change the output from this function then we may need to alter the size of the string array phylogenetics_output_string[] in constants.h */
-void store_phylogenetic_transmission_output(output_struct *output, double time, individual* infectee, individual* infector, file_struct *file_data_store){
+void store_phylogenetic_transmission_output(output_struct *output, double time, individual* infectee, individual* infector, file_struct *file_data_store, int t0, int t_step){
 
     ////// MEMORY CHECK THIS
     char temp_string[100]; /* Temporary store of data from one transmission event. */
     long who_infected_id = infector -> id;
     long new_infectee_id = infectee -> id;
-    int partner_is_acute = 2 - (infector -> HIV_status);
+
+    int partner_is_acute;
+    if(infector->HIV_status == ACUTE){
+        partner_is_acute = 1;
+    }else{
+        partner_is_acute = 0;
+    }
+
     int partner_on_art = infector -> ART_status;
+
     int infector_out_patch;
-    
-    if (infector->patch_no == infectee->patch_no)
+    if (infector->patch_no == infectee->patch_no){
         infector_out_patch = 0;
-    else
+    }else{
         infector_out_patch = 1;
+    }
+
     
     double SPVL_infector = infector->SPVL_num_E + infector->SPVL_num_G; /* Log10(SPVL). */
     double SPVL_infectee = infectee->SPVL_num_E + infectee->SPVL_num_G;
-    
+
+    	// Risk group of infected individual
+	char infected_risk_text[2];
+	if(infectee->sex_risk == LOW){
+		sprintf(infected_risk_text,"L");
+	}else if(infectee->sex_risk == MEDIUM){
+		sprintf(infected_risk_text,"M");
+	}else if(infectee->sex_risk == HIGH){
+		sprintf(infected_risk_text,"H");
+	}else{
+        printf("Unknown Sexual Risk Group\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+	
+	// Risk group of individual responsible for infection
+	char infector_risk_text[2];
+	if(infector->sex_risk == LOW){
+		sprintf(infector_risk_text,"L");
+	}else if(infector->sex_risk == MEDIUM){
+		sprintf(infector_risk_text,"M");
+	}else if(infector->sex_risk == HIGH){
+		sprintf(infector_risk_text,"H");
+	}else{
+        printf("Unknown Sexual Risk Group\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
     /* Format output: */
     if (infector->gender==MALE)
-        sprintf(temp_string,"%li,%li,%9.6lf,%i,%i,%i,%i,%6.4lf,%6.4lf,%i,M\n",who_infected_id,new_infectee_id,time, partner_is_acute,partner_on_art,infector_out_patch,infector->cd4,SPVL_infector,SPVL_infectee,infector->n_partners);
+        sprintf(temp_string,"%li,%li,%9.6lf,%i,%i,%i,%i,%i,%i,%6.4lf,%6.4lf,%i,M,%s,%s,%.2lf,%.2lf\n",
+		who_infected_id,new_infectee_id,time,t0,t_step, partner_is_acute,partner_on_art,
+		infector_out_patch,infector->cd4,SPVL_infector,SPVL_infectee,infector->n_partners,
+		infected_risk_text,infector_risk_text,infectee->DoB,infector->DoB);
     else
-        sprintf(temp_string,"%li,%li,%9.6lf,%i,%i,%i,%i,%6.4lf,%6.4lf,%i,F\n",who_infected_id,new_infectee_id,time, partner_is_acute,partner_on_art,infector_out_patch,infector->cd4,SPVL_infector,SPVL_infectee,infector->n_partners);
-    //print_here_string("store_phylogenetic_transmission_output line",978);
+        sprintf(temp_string,"%li,%li,%9.6lf,%i,%i,%i,%i,%i,%i,%6.4lf,%6.4lf,%i,F,%s,%s,%.2lf,%.2lf\n",
+		who_infected_id,new_infectee_id,time,t0,t_step, partner_is_acute,partner_on_art,
+		infector_out_patch,infector->cd4,SPVL_infector,SPVL_infectee,infector->n_partners,
+		infected_risk_text,infector_risk_text,infectee->DoB,infector->DoB);
     
     //print_here_string(temp_string,0);
     /* The -2 is because in C the last character in any string of length n is "\0" - so we only have n-1 characters in the array we can write to. Make -2 instead of -1 to be a bit more sure! */
@@ -3169,22 +3213,33 @@ void store_phylogenetic_transmission_output(output_struct *output, double time, 
  * e.g. if person 1234 is infected in 1975.0 then the output will be
  * -1 1234 1975.0000 -1. Include file_data_store in case we want to be able to write to file immediately
  * (in case any worries about buffer overflow in  phylogenetics_output_string).  */
-void store_phylogenetic_transmission_initial_cases(output_struct *output, parameters *param, individual* infectee, file_struct *file_data_store){
+void store_phylogenetic_transmission_initial_cases(output_struct *output, parameters *param, individual* infectee, file_struct *file_data_store, int t0, int t_step){
     ////// MEMORY CHECK THIS
     char temp_string[100]; /* Temporary store of data from one transmission event. Note that format of string below means it will not be 40 chars long. */
 
     long new_infectee_id = infectee -> id;
 
+	// Risk group of infected individual
+	char infected_risk_text[2];
+	if(infectee->sex_risk == LOW){
+		sprintf(infected_risk_text,"L");
+	}else if(infectee->sex_risk == MEDIUM){
+		sprintf(infected_risk_text,"M");
+	}else if(infectee->sex_risk == HIGH){
+		sprintf(infected_risk_text,"H");
+	}
+	
     /* Format output. If more data is added, make temp_string a bigger array.
      * The "-1" indicates that this is a seeded infection (so no infector in the model). */
-    sprintf(temp_string,"-1,%li,%6.4lg,%i,-1,-1,-1\n",new_infectee_id,infectee->t_sc,-1);
+    sprintf(temp_string,"-1,%li,%6.4lg,%i,%i,%i,-1,-1,-1,,,,,%s,-1,%.2lf,-1\n",
+		new_infectee_id,infectee->t_sc, t0, t_step,-1,infected_risk_text,infectee->DoB);
     /* Add to existing phylogenetic output string. */
     strcat(output->phylogenetics_output_string,temp_string);
 }
 
 void blank_phylo_transmission_data_file(file_struct *file_data_store){
     file_data_store->PHYLOGENETIC_TRANSMISSION_FILE = fopen(file_data_store->filename_phylogenetic_transmission,"w");
-    fprintf(file_data_store->PHYLOGENETIC_TRANSMISSION_FILE,"IdInfector,IdInfected,TimeOfInfection,IsInfectorAcute,PartnerARTStatus,IsInfectorOutsidePatch,InfectorCD4,InfectorSPVL,InfecteeSPVL,Infector_NPartners,InfectorGender\n");
+    fprintf(file_data_store->PHYLOGENETIC_TRANSMISSION_FILE,"IdInfector,IdInfected,TimeOfInfection,YearOfInfection,TimestepOfInfection,IsInfectorAcute,PartnerARTStatus,IsInfectorOutsidePatch,InfectorCD4,InfectorSPVL,InfectedSPVL,Infector_NPartners,InfectorGender,InfectedRiskGroup,InfectorRiskGroup,InfectedDoB,InfectorDoB\n");
     fclose(file_data_store->PHYLOGENETIC_TRANSMISSION_FILE);
 
 }
@@ -4302,7 +4357,7 @@ void store_cost_effectiveness_outputs(patch_struct *patch, int p, output_struct 
     Nothing; output is stored in output_struct
     */
     
-    int year_idx = year - patch[p].param->start_time_simul - 1;
+    int year_idx = year - patch[p].param->start_time_simul;
     
     int aa, g, r, ai;
     long n_id;

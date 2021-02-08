@@ -483,9 +483,9 @@ typedef struct {
 
     /* Cascade probabilities: */
 
-    double HIV_background_testing_rate_multiplier_pre2006; /* Baseline probability of a women having an HIV test in the background cascade from start of HIV testing until 2006. */
-    double HIV_background_testing_rate_multiplier; /* Baseline annual probability of a women having an annual test in the background cascade. */
-    double HIV_background_testing_rate_multiplier_male; /* Decrease in annual probability of an HIV test for men (cp to women) so we can fit VS in PC24. */
+    double p_HIV_background_testing_female_pre2006; /* Baseline probability of a women having an HIV test in the background cascade from start of HIV testing until 2006. */
+    double p_HIV_background_testing_female_current; /* Baseline annual probability of a women having an annual test in the background cascade. */
+    double RR_HIV_background_testing_male; /* Decrease in annual probability of an HIV test for men (cp to women) so we can fit VS in PC24. */
 
     double HIV_rapid_test_sensitivity_CHIPS;       /* Represents the sensitivity of the rapid HIV test used by CHiPs. We might want this to be time-varying (to reflect better training/test kits used later in trial). */
     double HIV_rapid_test_sensitivity_ANC;       /* Represents the sensitivity of the rapid HIV test used in ANC testing (for Simon's routine testing misclassification project).  */

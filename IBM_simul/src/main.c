@@ -633,7 +633,7 @@ int main(int argc,char *argv[]){
 		    /* Age by 1 year counts of number of HIV+ people in different parts of ART cascade: */
 		    update_n_infected_by_all_strata_ageing_by_one_year(patch[p].n_infected_by_all_strata);
 
-		     /* Age the 1-year age group population by 1 year: */
+		    /* Age the 1-year age group population by 1 year: */
 		    age_population_size_one_year_age_by_one_year(
                             patch[p].n_population_oneyearagegroups);
 
@@ -892,7 +892,10 @@ int main(int argc,char *argv[]){
 		    
 		    
 			// Combine PC calibration values with calibration_outputs_combined_string
-			join_strings_with_check(output->calibration_outputs_combined_string[p], output->pc_output_string[p], SIZEOF_calibration_outputs - 1, "output->pc_output_string[p] and output->calibration_..._string[p] in main()");
+			join_strings_with_check(
+						output->calibration_outputs_combined_string[p],
+						output->pc_output_string[p], SIZEOF_calibration_outputs - 1,
+						"output->pc_output_string[p] and output->calibration_..._string[p] in main()");
                     }
 
 		    
@@ -978,7 +981,7 @@ int main(int argc,char *argv[]){
         (CHECK_AGE_AND_RISK_ASSORTATIVITY != 0) ||
         (DEBUG_PARTNERSHIP_DURATION != 0 )||
         (WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS != 0) ||
-        (AGE_DISTRIBUTION_CHECK!= 0) ||
+        (WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER!= 0) ||
         (WRITE_DEBUG_INITIAL_SPVL_DISTRIBUTION!= 0) ||
         (WRITE_DEBUG_CD4_AFTER_SEROCONVERSION!= 0) ||
         (WRITE_DEBUG_HIV_DURATION!= 0) ||
@@ -994,7 +997,7 @@ int main(int argc,char *argv[]){
             printf("- CHECK_AGE_AND_RISK_ASSORTATIVITY\n");
             printf("- DEBUG_PARTNERSHIP_DURATION\n");
             printf("- WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS\n");
-            printf("- AGE_DISTRIBUTION_CHECK\n");
+            printf("- WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER\n");
             printf("- WRITE_DEBUG_INITIAL_SPVL_DISTRIBUTION\n");
             printf("- WRITE_DEBUG_CD4_AFTER_SEROCONVERSION\n");
             printf("- WRITE_DEBUG_HIV_DURATION\n");

@@ -43,26 +43,26 @@ sweep_through_all_and_check_lists_serodiscordant_and_available_partners()
 sweep_through_all_and_check_n_partners_outside_n_HIVpos_partners_and_n_HIVpos_partners_outside()
 sweep_through_all_and_check_age_and_risk_of_partners()
 
-void count_number_by_age_gender_risk_cascade_cd4()
-void create_header_for_cascade_count_files()
-void check_valid_ART_transition()  - checks that we are allowed to move from state A to state B (e.g. moving directly from never ART to LTART_VS is not allowed).
-void blank_debugging_files()
-void write_hiv_duration()
-void write_hiv_duration_km()
-void write_hiv_duration_km_end_of_simulation()
-void write_cd4_at_seroconversion()
-void write_initial_spvl_distribution()
-void write_cd4_spvl_states()
-void print_debugerror_shouldbezero_exit()
-void write_art_states()
-void reset_annual_chips_visit_counter()
-void print_chips_statistics_using_age_list()
-void print_chips_statistics_using_chipsonly()
-void output_hazard_over_time_period()
-void write_hazard_data()
-void blank_hazard_file()
-void check_constants_consistency()
-void check_prep_uptake()
+count_number_by_age_gender_risk_cascade_cd4()
+create_header_for_cascade_count_files()
+check_valid_ART_transition()  - checks that we are allowed to move from state A to state B (e.g. moving directly from never ART to LTART_VS is not allowed).
+blank_debugging_files()
+write_hiv_duration()
+write_hiv_duration_km()
+write_hiv_duration_km_end_of_simulation()
+write_cd4_at_seroconversion()
+write_initial_spvl_distribution()
+write_cd4_spvl_states()
+print_debugerror_shouldbezero_exit()
+write_art_states()
+reset_annual_chips_visit_counter()
+print_chips_statistics_using_age_list()
+print_chips_statistics_using_chipsonly()
+output_hazard_over_time_period()
+write_hazard_data()
+blank_hazard_file()
+check_constants_consistency()
+check_prep_uptake()
 
  */
 
@@ -850,12 +850,12 @@ void check_if_individual_should_be_in_list_susceptibles_in_serodiscordant_partne
                 // is partner HIV+?
                 if(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]->HIV_status>0)
                 {
-                    /* if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH) */
-                    /* { */
-                    /*     printf("seropositive partner: "); */
-                    /*     print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]); */
-                    /*     fflush(stdout); */
-                    /* } */
+                    if(temp_ind->id==FOLLOW_INDIVIDUAL  && temp_ind->patch_no==FOLLOW_PATCH)
+                    {
+                        printf("seropositive partner: ");
+                        print_individual(temp_ind->partner_pairs[i]->ptr[1-temp_ind->gender]);
+                        fflush(stdout);
+                    }
                     isInSerodiscordantCouple = 1;
                 }
             }
@@ -1502,8 +1502,8 @@ void blank_debugging_files(file_struct *file_data_store){
             fprintf(file_data_store->HIVSTATEPOPULATIONFILE[p],"time,cd4_status,spvl,art_status,cumulative_t_earlyART,cumulative_t_ARTVS,cumulative_t_ARTVU,npartners\n");
             fclose(file_data_store->HIVSTATEPOPULATIONFILE[p]);
         }
-        /* If AGE_DISTRIBUTION_CHECK==1 then we print age distribution at some specified times, so make sure that the file is initially blank. */
-        if (AGE_DISTRIBUTION_CHECK==1){
+        /* If WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER==1 then we print age distribution at some specified times, so make sure that the file is initially blank. */
+        if (WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER==1){
             /* The "1000" refers to the size of the array age_group_string declared above. */
             generate_demographics_byage_gender_file_header(age_group_string, 1000);
             file_data_store->AGEDISTRIBUTIONFILE[p] = fopen(file_data_store->filename_debug_agedistribution[p],"w");

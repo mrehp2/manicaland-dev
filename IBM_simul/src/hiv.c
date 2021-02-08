@@ -467,8 +467,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
                     temp_HIVpos_partner, file_data_store, output);
             }
         }
-    
-}
+    }
 
     if (susceptible->PrEP_cascade_status>WAITINGTOSTARTPREP){
 	if (susceptible->PrEP_cascade_status==ONPREP_ADHERENT)
@@ -596,7 +595,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         if(p == PHYLO_PATCH && WRITE_PHYLOGENETICS_OUTPUT == 1){
             store_phylogenetic_transmission_output(output, time_infect, susceptible, 
                 susceptible->partner_pairs_HIVpos[infector_index]->ptr[partner_gender], 
-                file_data_store);
+                file_data_store, t0, t_step);
         }
         //printf("Individual %d is infected by individual %d\n",
         //  susceptible->id,
@@ -1024,8 +1023,8 @@ a seroconversion.
 */
 
 void draw_initial_infection(double t, individual* indiv, patch_struct *patch, int p,
-    all_partnerships *overall_partnerships, output_struct *output, file_struct *file_data_store){
-    
+			    all_partnerships *overall_partnerships, output_struct *output, file_struct *file_data_store,
+			    int t0, int t_step){
     // Run a couple of checks to begin with
     if(indiv->cd4 == DUMMYVALUE){
         printf("Error. Using an uninitialised person.\n");
@@ -1092,7 +1091,7 @@ void draw_initial_infection(double t, individual* indiv, patch_struct *patch, in
         // (these are dummy outputs signifying that they are seed infections): */
         if(p == PHYLO_PATCH && WRITE_PHYLOGENETICS_OUTPUT == 1){
         store_phylogenetic_transmission_initial_cases(output, patch[p].param, 
-            indiv, file_data_store);
+            indiv, file_data_store, t0, t_step);
         }
         patch[p].DEBUG_NHIVPOS++;
     }
@@ -2504,12 +2503,12 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
     
     if(year == COUNTRY_HIV_TEST_START){
         /* This refers to the period [COUNTRY_HIV_TEST_START, 2006]. */
-        p_test[MALE] = param->HIV_background_testing_rate_multiplier_pre2006 * param->HIV_background_testing_rate_multiplier_male;
-        p_test[FEMALE] = param->HIV_background_testing_rate_multiplier_pre2006;
+        p_test[MALE] = param->p_HIV_background_testing_female_pre2006 * param->RR_HIV_background_testing_male;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_pre2006;
         *t_gap = 2006 - COUNTRY_HIV_TEST_START;
     }else{
-        p_test[MALE] = param->HIV_background_testing_rate_multiplier*param->HIV_background_testing_rate_multiplier_male;
-        p_test[FEMALE] = param->HIV_background_testing_rate_multiplier;
+        p_test[MALE] = param->p_HIV_background_testing_female_current*param->RR_HIV_background_testing_male;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_current;
         *t_gap = 1;
     }
 }

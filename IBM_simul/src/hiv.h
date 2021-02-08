@@ -42,7 +42,7 @@ void new_infection(double, int, individual *, individual *, population_size_one_
     population_size_one_year_age *, age_list_struct *,  parameters *, individual ***, long *,
     long *, population_size_one_year_age *,  population_size_one_year_age_hiv_by_stage_treatment *, file_struct *);
 void draw_initial_infection(double, individual* , patch_struct *, int, all_partnerships *,
-    output_struct *, file_struct *);
+			    output_struct *, file_struct *, int, int);
 void next_hiv_event(individual *, individual ***, long *, long *, parameters *, double ,
     cumulative_outputs_struct *, calendar_outputs_struct *);
 void carry_out_HIV_events_per_timestep(double , patch_struct *, int , all_partnerships *,

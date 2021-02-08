@@ -187,7 +187,9 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
                                 icd4 = patch[p].individual_population[i].cd4;
                             
                                 // Check that the person is on ART
-                                if(patch[p].individual_population[i].ART_status > ARTNAIVE){
+                                if(patch[p].individual_population[i].ART_status > ARTNAIVE &&
+                                    patch[p].individual_population[i].ART_status < ARTDROPOUT){
+				   
                                 
                                     patch[p].py_n_positive_on_art[icd4] += TIME_STEP;
                                 }else{ // Otherwise, the person is not on ART
@@ -264,10 +266,12 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     }
 
     // Use to check population counters are all consistent - i.e. we're updating them all correctly. Most recent check 13 Jan 2020 to check introduction of MTCT is OK.
-    if (t0+t_step*TIME_STEP<1901 && i_run==1)
-	printf("Checking population size is OK at time %lf: \n",t0 + t_step*TIME_STEP);
-    for (p=0; p<NPATCHES; p++)
-    	count_population_size_three_ways(patch, p, t0 + t_step*TIME_STEP);
+    if (CHECK_POPULATION_SIZE_CONSISTENCY==1){
+	if (t0+t_step*TIME_STEP<1901 && i_run==1)
+	    printf("Warning: checking population size function count_population_size_three_ways() is active. This slows down the code\n");
+	for (p=0; p<NPATCHES; p++)
+	    count_population_size_three_ways(patch, p, t0 + t_step*TIME_STEP);
+    }
     
     if(fit_flag == 0){
         return 0;
@@ -462,7 +466,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* This stores the return value of fit_data() - it is 1 if there was no fitting or if the run
     passed all the fits during the year, and 0 if there was a fit criterion which was not satisfied.
     This allows us to see if a run should be terminated early or not. */
-    int fit_flag;
+    int fit_flag, POPART_FINISHED;
     
     /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
@@ -470,10 +474,15 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // Determine if the current time is within the final CHiPs round or not.  The variable
     // `POPART_FINISHED` takes value 1 after the end of the final CHiPs round. Once
     // PopART finishes assume that test-and-treat continues like the last CHiPs round.
-    int POPART_FINISHED;
+  
     if (SETTING==SETTING_POPART){
 
-	if((t0 > patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) || ((t0 == patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) && (t_step > patch[p].param->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1]))){
+	if(
+	   (t0 > patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) ||
+	   ((t0 == patch[p].param->CHIPS_END_YEAR[NCHIPSROUNDS - 1]) &&
+	    (t_step > patch[p].param->CHIPS_END_TIMESTEP[NCHIPSROUNDS - 1])
+	    )
+	   ){
 	    POPART_FINISHED = 1;
 	}else{
 	    POPART_FINISHED = 0;
@@ -486,7 +495,10 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     if (SETTING==SETTING_POPART){
 	// Write chips data to file if we're in a period when CHiPs are active
 	// (and at the start of the year)
-	if(t0 >= patch[p].param->CHIPS_START_YEAR[0] && t_step == 0 && PRINT_EACH_RUN_OUTPUT == 1){
+	if(
+	   t0 >= patch[p].param->CHIPS_START_YEAR[0] &&
+	   t_step == 0 &&
+	   PRINT_EACH_RUN_OUTPUT == 1){
 	    write_chips_data_annual(patch ,p, t0, t_step, POPART_FINISHED, file_data_store);
 	}
     }
@@ -788,7 +800,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
                         
                     draw_initial_infection(t, 
                         patch[p].age_list->age_list_by_gender[g]->age_group[ai][k], patch, p,
-                        overall_partnerships, output,file_data_store);
+                        overall_partnerships, output,file_data_store, t0, t_step);
                 }
             }
             
@@ -801,7 +813,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
                     // with probability depending on gender and risk group */
                     draw_initial_infection(t,
                         patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k], patch, p,
-                        overall_partnerships, output,file_data_store);
+                        overall_partnerships, output,file_data_store, t0, t_step);
                 }
             }
         }

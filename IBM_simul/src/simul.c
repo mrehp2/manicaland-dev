@@ -145,11 +145,14 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         for(p = 0; p < NPATCHES; p++){
 	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
 	    //fflush(stdout);
-            fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch, p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,  file_data_store, is_counterfactual);
+            fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
+								 p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,
+								 file_data_store, is_counterfactual);
         }
 
         
-        carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output, debug, file_data_store);
+        carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
+						     debug, file_data_store);
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/
@@ -160,11 +163,11 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
                 (t_step%OUTPUTTIMESTEP == (OUTPUTTIMESTEP - 1))
             ){
                 /* Stores data for all age groups. */
-                store_timestep_outputs(patch, p ,t0 + (t_step + 1)*TIME_STEP, output, 0);
+                store_timestep_outputs(patch, p ,t0 + (t_step + 1)*TIME_STEP, output, 0, t0, t_step);
                 
                 /* Stores data for PC age groups only. */
 		if (SETTING==SETTING_POPART)
-		    store_timestep_outputs(patch, p , t0 + (t_step + 1)*TIME_STEP, output, 1);
+		    store_timestep_outputs(patch, p , t0 + (t_step + 1)*TIME_STEP, output, 1, t0, t_step);
                 
                 // Store age-specific timestep outputs
                 if(TIMESTEP_AGE == 1){
@@ -221,7 +224,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		    // Check we're at the start of a PC round.  
 		    for(pc_round = 0; pc_round < NPC_ROUNDS; pc_round++){
                     
-			if(t0 == patch[p].param->PC_params->PC_MIDPOINT_YEAR[pc_round] && t_step == patch[p].param->PC_params->PC_MIDPOINT_TIMESTEP[pc_round]){
+			if(t0 == patch[p].param->PC_params->PC_MIDPOINT_YEAR[pc_round] &&
+			   t_step == patch[p].param->PC_params->PC_MIDPOINT_TIMESTEP[pc_round]){
 			    
 			    save_calibration_outputs_pc(patch, p, output, t0, t_step);
 			}

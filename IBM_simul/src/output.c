@@ -1542,7 +1542,7 @@ void store_annual_partnerships_outputs(patch_struct *patch, int p, output_struct
 
 
 void store_timestep_outputs(patch_struct *patch, int p, double t, output_struct *output, 
-        int PCdata){
+        int PCdata, int t0, int t_step){
     /* 
     Stores timestep data (such as incidence, prevalence, number on ART, cum numbers of tests etc.)
     for a given time step and state of the epidemic.  
@@ -1608,67 +1608,68 @@ void store_timestep_outputs(patch_struct *patch, int p, double t, output_struct 
         fflush(stdout);
         exit(1);
     }
+    
 
     
 
-	for (g=0;g<N_GENDER;g++){
-	    for (aa=MINAGE_COUNTED;aa<MAX_AGE_COUNTED;aa++){
-		ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index;
-		/* Make sure never goes beyond end of array. */
-		while (ai>(MAX_AGE-AGE_ADULT-1))
-		    ai = ai - (MAX_AGE-AGE_ADULT);
-		for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai] ; k++){
-		    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];
-		    /* Gender-specific outputs derived here: */
-		    if(indiv->gender == MALE){
-			
-			/* Use a function here so easy to add extra stratifications to output: */
-			update_outputs_gender_veryshort(indiv, 
-							&npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
-							&NNotKnowStatus_m);
-                    
-			/* Count number of men who are currently circ: */
-			if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
-			    N_men_MC++;
-			}
-		    }else{
-			update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
-		    }
+    for (g=0;g<N_GENDER;g++){
+	for (aa=MINAGE_COUNTED;aa<MAX_AGE_COUNTED;aa++){
+	    ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index;
+	    /* Make sure never goes beyond end of array. */
+	    while (ai>(MAX_AGE-AGE_ADULT-1))
+		ai = ai - (MAX_AGE-AGE_ADULT);
+	    for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai] ; k++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];
+		/* Gender-specific outputs derived here: */
+		if(indiv->gender == MALE){
 		    
+		    /* Use a function here so easy to add extra stratifications to output: */
+		    update_outputs_gender_veryshort(indiv, 
+						    &npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
+						    &NNotKnowStatus_m);
+                    
+		    /* Count number of men who are currently circ: */
+		    if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
+			N_men_MC++;
+		    }
+		}else{
+		    update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
 		}
-
+		
 	    }
 
-	    /* For PC we are looking at a restricted age range only (e.g. 18-44); if not PC then we include the 80+ age group: */
-	    if(PCdata == 0){
+	}
+    
+	/* For PC we are looking at a restricted age range only (e.g. 18-44); if not PC then we include the 80+ age group: */
+	if(PCdata == 0){
 
-		for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group ; k++){
-		    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k];
-		    /* Gender-specific outputs derived here: */
-		    if(indiv->gender == MALE){
+	    for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group ; k++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[k];
+		/* Gender-specific outputs derived here: */
+		if(indiv->gender == MALE){
 		    
-			/* Use a function here so easy to add extra stratifications to output: */
-			update_outputs_gender_veryshort(indiv, 
-							&npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
-							&NNotKnowStatus_m);
+		    /* Use a function here so easy to add extra stratifications to output: */
+		    update_outputs_gender_veryshort(indiv, 
+						    &npop_m, &npositive_m, &Nknowpositive_m, &NArt_m, &NVS_m, 
+						    &NNotKnowStatus_m);
                     
-			/* Count number of men who are currently circ: */
-			if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
-			    N_men_MC++;
-			}
-		    }else{
-			update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
+		    /* Count number of men who are currently circ: */
+		    if (indiv->circ == VMMC || indiv->circ==VMMC_HEALING||indiv->circ==TRADITIONAL_MC){
+			N_men_MC++;
 		    }
-		    
+		}else{
+		    update_outputs_gender_veryshort(indiv, &npop_f, &npositive_f, &Nknowpositive_f, &NArt_f, &NVS_f, &NNotKnowStatus_f);
 		}
+		
 	    }
 	}
+    }
 
     
     
     // Write variables to string `temp_string`
-    sprintf(temp_string,"%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,",
-        t, npop_m, npop_f, npositive_m, npositive_f, Nknowpositive_m, Nknowpositive_f, 
+    sprintf(temp_string,"%6.4f,%i,%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,",
+        t, (int) floor(t0 + (t_step+1)*TIME_STEP), (t_step + 1)%N_TIME_STEP_PER_YEAR, npop_m, npop_f, npositive_m, npositive_f, Nknowpositive_m, Nknowpositive_f, 
         NArt_m, NArt_f, NVS_m, NVS_f, NNotKnowStatus_m, NNotKnowStatus_f, N_men_MC/(1.0*npop_m));
     
     
@@ -2945,7 +2946,7 @@ void write_timestep_outputs(file_struct *file_data_store, output_struct *output,
     }
     
     // Write the header file
-    fprintf(file_data_store->TIMESTEP_OUTPUT_FILE[p],"Time,N_m,N_f,NPos_m,NPos_f,N_knowpos_m,N_knowpos_f,NART_m,NART_f,NVS_m,NVS_f,NNotKnowStatus_m,NNotKnowStatus_f,PropMenCirc,Cumulative_Infected_m,Cumulative_Infected_f\n");
+    fprintf(file_data_store->TIMESTEP_OUTPUT_FILE[p],"Time,Year,Timestep,N_m,N_f,NPos_m,NPos_f,N_knowpos_m,N_knowpos_f,NART_m,NART_f,NVS_m,NVS_f,NNotKnowStatus_m,NNotKnowStatus_f,PropMenCirc,Cumulative_Infected_m,Cumulative_Infected_f\n");
     
     if (PCdata == 0){
         fprintf(file_data_store->TIMESTEP_OUTPUT_FILE[p],"%s\n",output->timestep_outputs_string[p]);

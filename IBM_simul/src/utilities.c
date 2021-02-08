@@ -1717,14 +1717,14 @@ void check_if_parameters_plausible(parameters *param){
     }
 
     if (param->eff_prep_semiadherent<0.1 || param->eff_prep_semiadherent>0.8){
-        printf("Error: param->eff_prep_semiadherent is outside expected range [0,3]\nExiting\n");
+        printf("Error: param->eff_prep_semiadherent is outside expected range [0.1,0.8]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
 
         if (param->eff_prep_adherent<0.7 || param->eff_prep_adherent>1.0){
-        printf("Error: param->eff_prep_adherent is outside expected range [0,3]\nExiting\n");
+        printf("Error: param->eff_prep_adherent is outside expected range [0.7,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

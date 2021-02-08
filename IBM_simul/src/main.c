@@ -681,7 +681,7 @@ int main(int argc,char *argv[]){
                     this is called every year.  */
                     if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){
                         store_cost_effectiveness_outputs(patch, p, output, overall_partnerships,
-                            n_infected_total + p, year + 1, i_run + 1);
+                            n_infected_total + p, year, i_run + 1);
                     }
                     
                     if(WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS == 1){

@@ -343,8 +343,6 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 
     int i_template;    /* Index over the N_MTCT_TEMPLATES that we create. */
 
-    int printnotice=1;
-
     
     /************ First generate for people not on ART: ************/
     i_template = 0;
@@ -388,11 +386,6 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
 	    if (mtct_hiv_template_no_art[i_template].relative_PANGEA_t_prev_cd4stage>=0){
 		printf("ERROR - relative_PANGEA_t_prev_cd4stage>0\n.");
 		exit(1);
-	    }
-	    else{
-		if (printnotice==1)
-		    printf("Remove Error notice  for relative_PANGEA_t_prev_cd4stage\n");
-		printnotice=0;
 	    }
 
 	    /* Move to the next template: */
@@ -487,8 +480,8 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
 
 	/* PANGEA_t_prev/next_cd4stage are used to estimate CD4 given a current CD4 category and time t. For MTCT who aren't on ART we call next_hiv_event(), which sets indiv->PANGEA_t_prev_cd4stage = indiv->PANGEA_t_next_cd4stage. 
 	   So here we set PANGEA_t_prev_cd4stage to be in the past. 
-	   NOTE: the actual value we give is t + relative_PANGEA_t_prev_cd4stage. However, in reality what we 
-	   The logic is thus this - we need to initialise PANGEA_t_next_cd4stage here, and then call next_hiv_event. */
+	   NOTE: the actual value we give is t + relative_PANGEA_t_prev_cd4stage. 
+	   The logic is thus this - we need to initialise PANGEA_t_next_cd4stage here, and then call next_hiv_event. next_hiv_event then sets PANGEA_t_prev_cd4stage to be PANGEA_t_next_cd4stage, and then calculates the new PANGEA_t_next_cd4stage. So we set PANGEA_t_next_cd4stage to be equal to PANGEA_t_prev_cd4stage before we call next_hiv_stage. */
 
 
 	

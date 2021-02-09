@@ -90,5 +90,5 @@ fi
 
 # Post-process the calibration files to include sample and rep numbers in the csv files
 python python/calibration_add_sample_rep_numbers.py $outputdirectory/Output $nsamples $nreps
-mkdir results_2021_01_12/RESULTS$1
-mv $outputdirectory/Output results_2021_01_12/RESULTS$1
+mkdir results_2021_02_08/RESULTS$1
+mv $outputdirectory/Output results_2021_02_08/RESULTS$1

@@ -372,7 +372,7 @@ int main(int argc,char *argv[]){
     // Define the variable calibration_output_filename
     char *calibration_output_filename[NPATCHES];
 
-    printf("For debugging cascade counts...\n");
+    /* For debugging cascade counts - CHECK if these are supposed to be the same */
     create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
     create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
     
@@ -535,9 +535,7 @@ int main(int argc,char *argv[]){
             }
             
             /* Loop through multiple years of the simulation */
-            for(year = patch[0].param->start_time_simul; 
-            year < patch[0].param->end_time_simul; 
-            year++){
+            for(year = patch[0].param->start_time_simul; year < patch[0].param->end_time_simul; year++){
                 
                 if(VERBOSE_OUTPUT == 1){
                     printf("Year %d\n",year);

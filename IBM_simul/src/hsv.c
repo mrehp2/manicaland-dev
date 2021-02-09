@@ -732,7 +732,7 @@ double get_ulcer_duration(){
     double g = exp(lgamma(1.5));
     double a = (7/365.0) /g;
     double x;
-    printf("Gamma(3/2)=%12.10lf\n",g);
+
 
 
     /* Unit test I ran to check this works - checking mean was roughly 1 week, and distribution was Weibull-like. */

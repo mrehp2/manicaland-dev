@@ -2,9 +2,9 @@ time_to_background_HIVtestNOW 3 // NOT USED AT PRESENT. Only called if HIVTESTSC
 time_to_background_HIVtest_maxval 8.0 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0. 
 time_to_background_HIVtest_exponent 6 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0.
 time_to_background_HIVtest_midpoint 6.5 // NOT USED AT PRESENT. Only called if HIVTESTSCHEDULE=0.
-HIV_background_testing_rate_multiplier_pre2006 [0.0-1.0] // Baseline probability of a female having an HIV test in period from when HIV tests were offered until 2006 in the background cascade
-HIV_background_testing_rate_multiplier [0.0-1.0] // Annual baseline probability of a female having an HIV test from 2006 onwards in the background cascade
-HIV_background_testing_rate_multiplier_male [0.0-1.0] // Adjustment for decreased probability of men having an HIV test in the background cascade compared to women
+p_HIV_background_testing_female_pre2006 [0.0-1.0] // Baseline probability of a female having an HIV test in period from when HIV tests were offered until 2006 in the background cascade
+p_HIV_background_testing_female_current [0.0-1.0] // Annual baseline probability of a female having an HIV test from 2006 onwards in the background cascade
+RR_HIV_background_testing_male [0.0-1.0] // Adjustment for decreased probability of men having an HIV test in the background cascade compared to women
 HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC.
 p_collect_hiv_test_results_cd4_over200 0.97 //
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 

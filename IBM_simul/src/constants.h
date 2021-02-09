@@ -72,7 +72,7 @@
 
 #define VERBOSE_OUTPUT 0  /* 1 if want to print normal things to screen, 0 for run on a cluster (where want to minimise output to screen). */
 #define CHECKPARAMS 1 /* 1 means we run check_if_parameters_plausible() to check if parameters are in a suitable range. 0 if we are trying crazy params for debugging. */
-#define CHECK_POPULATION_SIZE_CONSISTENCY 1 /* 1 means we check the population size is consistent by three means (count of number of people alive, via age_list and via n_population) via the function count_population_size_three_ways(). Note that this functions slows the code down enormously (so should not be run when calibrating). */
+#define CHECK_POPULATION_SIZE_CONSISTENCY 0 /* 1 means we check the population size is consistent by three means (count of number of people alive, via age_list and via n_population) via the function count_population_size_three_ways(). Note that this functions slows the code down enormously (so should not be run when calibrating). */
 
 #define PRINT_DEBUG_DEMOGRAPHICS 0      /* Prints extra demographic info to screen. */
 //#define PRINT_DEBUG_DEMOGRAPHICS_NEWADULTS 0 /* Prints to screen the number of adults created in a timestep. Used to check e.g. OneYearAgeGp_CL01_Za_A_V1.2_patch0_Rand10_Run1_0.csv to check have the correct number of new adults (ie that the number of people aged 14 is equal to the number of new adults in the previous year - apart from deaths. */

@@ -652,21 +652,17 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     // Has to be called before deaths_natural_causes() or individual_AIDS_death() in given t.s. 
     
-    if(
-        t >= patch[p].param->COUNTRY_HIV_TEST_START &&
-        t < (patch[p].param->COUNTRY_HIV_TEST_START + TIME_STEP) && 
-        DO_HIV_TESTING == 1
-    ){
+    if(t >= patch[p].param->COUNTRY_HIV_TEST_START && t < (patch[p].param->COUNTRY_HIV_TEST_START + TIME_STEP) && DO_HIV_TESTING == 1){
         if(VERBOSE_OUTPUT == 1){
             printf("Setting up initial HIV cascade events\n");
         }
-        
         if(HIVTESTSCHEDULE == 0){
             // This function will go through all people currently alive and schedule HIV tests for
             // them at some point in the future.
             draw_initial_hiv_tests(patch[p].param, patch[p].age_list, t, patch[p].cascade_events, 
                 patch[p].n_cascade_events, patch[p].size_cascade_events);
         }else{
+	    printf("Setting up initial HIV cascade events at t=%lf\n",t);
             /// The difference between this function and the draw_initial_hiv_tests() function is
             // that these are drawn up to a set time, when HIV tests are redrawn
 	    // Note - only need to call this if the first test is before 2005 - otherwise the following years if statement will capture this. 
@@ -821,9 +817,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
                 }
             }
         }
-        
+	
         if(VERBOSE_OUTPUT == 1){
-            printf("Prevalence at time of HIV introduction\n");
+            printf("Prevalence at time t=%lf of HIV introduction\n",t);
             print_prevalence(patch[p].n_population, patch[p].n_infected_wide_age_group,
                 patch[p].n_infected);
             printf("-------------------------------------\n");
@@ -1001,6 +997,14 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /*********************************************************************/
     /* 10. Carry out VMMC (if it has started in the country in question) */
     /*********************************************************************/
+    if(BACKGROUND_CIRCUMCISION_THROUGH_TESTING==0){
+	if(t0 >= patch[p].param->COUNTRY_VMMC_START && t_step==patch[p].param->COUNTRY_VMMC_START_timestep){
+	    /* Choose men to undergo VMMC, so as to match some annual uptake data: */
+	    printf("Set up VMMC schedule at t=%lf\n",t);
+	    //draw_annual_VMMC_schedule(t_step, t, patch, p);
+	}
+    }
+	
     
     if(t >= patch[p].param->COUNTRY_VMMC_START){
         carry_out_VMMC_events_per_timestep(t_step, t, patch, p);
@@ -1054,7 +1058,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
     // Initial cases are drawn according to the params `initial_prop_hsv2infected in the parameters structure.
     if((t0 >= patch[p].param->start_time_hsv2_discretised_year) && (t0 <= (patch[p].param->start_time_hsv2_discretised_year)) && (t_step==patch[p].param->start_time_hsv2_discretised_timestep)){
-
+	printf("Seeding HSV-2 at t=%lf\n",t0+t_step*TIME_STEP);
         // For all but the age group 80+ (which is in a separate part of the age_list struct)
         for(g = 0; g < N_GENDER; g++){
             

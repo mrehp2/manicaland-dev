@@ -831,7 +831,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
 void draw_if_VMMC(individual *indiv, parameters *param, individual ***vmmc_events, long *n_vmmc_events, long *size_vmmc_events, double t, int is_popart){
     double p_circ;
     int year, t_step, chips_round;
-
+    printf("Calling draw_if_vmmc at t=%lf\n",t);
     /* For DEBUGGING: */
     if (indiv->gender==FEMALE||(indiv->circ!=UNCIRC)) 
     {
@@ -1390,7 +1390,9 @@ void schedule_PrEP_background(age_list_struct *age_list, PrEP_background_sample_
 
 
 
-////////////////////////////////////////////////////////////
+/******************************************************************************
+ *** Not used for Manicaland cascades project - keep for possible future use.**
+ ******************************************************************************/
 
 void schedule_PrEP_intervention(age_list_struct *age_list, PrEP_intervention_sample_struct *PrEP_intervention_sample, PrEP_intervention_params_struct *PrEP_intervention_params, patch_struct *patch, int p){
     
@@ -1636,7 +1638,6 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 		//if (indiv->id==26812){
 		//   printf("Starting PrEP for 26812 ap=%i\n",ap);
 		//}
-		indiv->starts_PrEP_due_to_intervention = NOT_PREP_INTERVENTION;
 		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
 		//printf("BStartijng PrEP for id=%li\n",indiv->id);
 
@@ -1726,7 +1727,6 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    if (prep_eligible==1){
 
 		/* They start PrEP due to intervention: */
-		indiv->starts_PrEP_due_to_intervention = IS_PREP_INTERVENTION;
 		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
 		j+=1;
 	    }
@@ -1746,6 +1746,8 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 }
 
 
+
+/* PrEP is allowed for both men and women. */
 void start_PrEP_for_person(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t){
     /* 
 
@@ -1768,12 +1770,7 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
         fflush(stdout);
         exit(1);
     }
-    if(indiv->gender == MALE){
-        printf("Trying to start PrEP for a man id=%ld indiv->starts_PrEP_due_to_intervention = %i !!! Exiting\n", indiv->id,indiv->starts_PrEP_due_to_intervention);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
+
     /* double age = t-indiv->DoB; */
     /* /\* Add 1 to make sure we didn't schedule when they were eligible: *\/ */
     /* if((age>(MAX_AGE_PREP_INTERVENTION+1) && age>(MAX_AGE_PREP_BACKGROUND+1)) || (age<MIN_AGE_PREP_INTERVENTION && age<MIN_AGE_PREP_BACKGROUND)){ */
@@ -1795,51 +1792,32 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 
 
     
+    /* There is a probability that they will start PrEP in this timestep (which is a function of their PrEP cascade immediately start PrEP, and we schedule future PrEP events
+       (stopping PrEP, becoming less adherent etc). : */
 
-    /* If either:
-       (a) The person already has no barriers to PrEP, OR
-       (b) The intervention reduces those barriers sufficiently
-       THEN they immediately start PrEP, and we schedule future PrEP events
-       (stopping PrEP, becoming less adherent etc. : */
-    if (overcome_PrEP_cascade_barriers(indiv)==1){
-	double x = gsl_rng_uniform(rng);
+    double x = gsl_rng_uniform(rng);
 
-	/* Here we allow for different PrEP adherence profiles if start due to intervention or not: */
-	double p_becomes_adherent;
-	if (indiv->starts_PrEP_due_to_intervention==IS_PREP_INTERVENTION)
-	    p_becomes_adherent = param->PrEP_intervention_params->p_becomes_PrEP_adherent_intervention;
-	else
-	    /* Adherence according to non-intervention values: */
-	    p_becomes_adherent = param->PrEP_background_params->p_becomes_PrEP_adherent_background;
+    /* Here we allow for different PrEP adherence profiles if start due to intervention or not: */
+    double p_becomes_adherent;
+    p_becomes_adherent = param->PrEP_background_params->p_becomes_PrEP_adherent_background;
 
-	/* Individual initiates PrEP and is fully adherent: */
-	if (x<=p_becomes_adherent){
-	    indiv->PrEP_cascade_status = ONPREP_ADHERENT;
-	    /* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
-	    t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
-	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
-	}
-	/* Individual initiates PrEP but only semi-adherent: */
-	else{
-	    indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
-	    /* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
-	    t_next_PrEP_event = draw_next_PrEP_event_from_semiadherent(indiv,t);
-	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
-	    
-	}
+    /* Individual initiates PrEP and is fully adherent: */
+    if (x<=p_becomes_adherent){
+	indiv->PrEP_cascade_status = ONPREP_ADHERENT;
+	/* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
+	t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
+	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+    }
+    /* Individual initiates PrEP but only semi-adherent: */
+    else{
+	indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
+	/* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
+	t_next_PrEP_event = draw_next_PrEP_event_from_semiadherent(indiv,t);
+	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+	
     }
 }
 
-/* Placeholder function - need to discuss with Ranjeeta et al. */
-int overcome_PrEP_cascade_barriers(individual *indiv){
-    /* if ((indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_MOTIVATION]>=0) && */
-    /* 	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_ACCESS]>=0) && */
-    /* 	(indiv->PrEP_cascade_barriers[INDEX_PREP_BARRIER_UTILIZATION]>=0)) */
-    /* 	return 1; */
-    /* else */
-    /* 	return 0; */
-    return 1;
-}
 
 
 /* Decide what the next PrEP event will be for indiv who is currently adherent.

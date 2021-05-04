@@ -2691,7 +2691,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
             calendar_outputs->N_calendar_HIV_tests_popart_negative[year_idx]++;
         }
 
-        if (indiv->gender==MALE)
+        if (indiv->gender==MALE && BACKGROUND_CIRCUMCISION_THROUGH_TESTING==1)
             if (indiv->circ==UNCIRC)   /* Only if not already circumcised (and not waiting for VMMC): */
                 draw_if_VMMC(indiv,param,vmmc_events,n_vmmc_events,size_vmmc_events,t,is_popart);
         /* Rest of the code in this function is if test HIV+, so return. */

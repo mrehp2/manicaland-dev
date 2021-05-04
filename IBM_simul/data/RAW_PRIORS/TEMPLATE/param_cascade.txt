@@ -41,6 +41,6 @@ t_end_vu_becomevs_nonpopart_max 6.0 // **** FIX ME**** To match timescale for be
 t_end_vu_dropout_nonpopart_min 0.01 // As for t_end_vs_dropout_nonpopart_min **** FIX ME**** 
 t_end_vu_dropout_nonpopart_max 6.0 //
 p_circ_nopopart BY_COUNTRY // Probability of 'background' VMMC
-t_get_vmmc_nonpopart_min 0.25 // **** FIX ME**** assume 3 months-1 year
+t_get_vmmc_nonpopart_min 0 // Chosen as we schedule VMMC annually (so t_get_vmmc lies in [0,1]).
 t_get_vmmc_nonpopart_max 1.0 // 
 t_vmmc_healing 0.038 // Cori 2014 table S6 (page 12) tau_heal=26, corresponding to 2 weeks healing period. Approximate 2/52 ~ 0.038.

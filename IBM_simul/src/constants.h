@@ -297,6 +297,10 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define DO_HIV_TESTING 1 /* Governs how background (non-CHiPs) HIV testing is carried out.
   0 = each person gets scheduled HIV tests sequentially.
   1 - we annually draw what percentage of pop gets tested and then draw a time to next test (which is uniform). */
+
+#define BACKGROUND_CIRCUMCISION_THROUGH_TESTING 0 /* Governs how background VMMS testing works. 
+						     1 - when a man gets a -ve HIV test, he is offered VMMC, which he may take with some propbability p_circ_nopopart.
+						     0 - each year we sweep through. */
 #define RUN_POPART 1
 #define YOUNGEST_AGE_SEED_WITH_HIV 18 // This gives the minimum age group index where we introduce HIV (1=18-22).
 #define OLDEST_AGE_SEED_WITH_HIV 30 // This gives the maximum age group index where we introduce HIV (2=23-30).
@@ -337,8 +341,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define HSV2EVENT_BECOMEASYMPTOMATIC_FROMRECURRENCE 2
 
 
-
-/* 1=due to Manicaland PrEP intervention, 0 otherwise. Determines adherence of person starting PrEP. */
+/* 1=due to PrEP intervention, 0 otherwise. Determines adherence of person starting PrEP. Code not currently used (we implement a basic PrEP for everyone). */
 #define NOT_PREP_INTERVENTION 0
 #define IS_PREP_INTERVENTION 1 
 
@@ -352,18 +355,17 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 #define PREP_UNAWARE -1 // Person has never been offered PrEP (i.e. for new individuals).
 #define PREP_NOEVENT 0 // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
-#define PREPAGANDA 1 // Exposure to PrEP-related intervention.
+#define PREP_AWARE 1 // Exposure to/aware of PrEP-related intervention.
 #define START_PREP 2  // Initialise PrEP at some future timepoint.
 #define BECOME_PREP_FULLYADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.
 #define BECOME_PREP_SEMIADHERENT 4 // Fully adherent PrEP user becomes semi-adherent.
 #define PREP_STOP_NOTNEEDED 5 // Stop PrEP (due to lower risk). 
-#define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
+//#define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
 
-#define NPrEPcascade_scale 10 /* Scale of each PrEP cascade 'barrier' runs from 0-NPrEPcascadesteps. */
-#define NPrEPcascade_steps 3 // Number of 'barriers' (steps in cascade) for PrEP in Manicaland.
+#define N_cascade_steps 3 // Number of 'barriers' (steps in cascade) for PrEP in Manicaland.
 #define INDEX_PREP_BARRIER_MOTIVATION 0 //
 #define INDEX_PREP_BARRIER_ACCESS 1 //
-#define INDEX_PREP_BARRIER_UTILIZATION 2 //
+#define INDEX_PREP_BARRIER_EFFECTIVEUSE 2 //
 
 #define SAMPLE_INCLUDING_RESERVES 2.0 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
 

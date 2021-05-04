@@ -39,6 +39,7 @@
 typedef struct individual individual;
 typedef struct partnership partnership;
 
+typedef struct cascade_barrier_struct cascade_barrier_struct; /* Variables relating to barriers for prevention (Manicaland 2020/21 project). */
 
 
 
@@ -85,12 +86,10 @@ struct individual{
     /* for the above the origin of time is COUNTRY_HIV_TEST_START */
     long debug_last_cascade_event_index; /* Stores the first index of idx_cascade_event for the last cascade event to happen - so can check that two cascade events do not happen to the same person in the same timestep. */
 
-    /* PrEP-related characteristics: */
+    /* PrEP-related characteristics for scheduled PrEP: */
     int PrEP_cascade_status;   /* Whether on PrEP (and whether adherent) or not. */
-    int PrEP_cascade_barriers[NPrEPcascade_steps]; /* Integers representing how challenging each step in the Manicaland PrEP cascade would be (0=no barrier, 10=maximal barrier. */
     int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person (due to either intervention or background). */ 
     long idx_PrEP_event[2]; /* The indices which locate this individual in the PrEP_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP event at some timestep dt) and the second is their location in this group. */    
-    int starts_PrEP_due_to_intervention; /* -1 initially. 0 if started through non-intervention process, 1 if started through intervention. Allows us to modify adherence and long-term behaviour if was part of intervention. */
 
 
     int circ; /* 0 if uncircumcised, 1 if VMMC circumcised (and healed), 2 if VMMC during healing period, 3 if traditional circumcised (assumed at birth/youth). */
@@ -98,6 +97,8 @@ struct individual{
     long idx_vmmc_event[2];   /* The indices which locate this individual in the vmmc_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a VMMC event at some timestep dt) and the second is their location in this group. */
     long debug_last_vmmc_event_index; /* Stores the first index of idx_vmmc_event for the last vmmc event to happen - so can check that two vmmc events do not happen to the same person in the same timestep. */
 
+
+    cascade_barrier_struct *cascade_barriers;
     
     // Pangea outputs for Olli
     double PANGEA_t_prev_cd4stage; /* Time at which an individual last moved CD4 stage. Allows us to linearly estimate CD4 at ART initiation. */
@@ -175,6 +176,21 @@ struct individual{
 };
 
 
+struct cascade_barrier_struct{
+
+    double PrEP_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
+    double p_will_use_PrEP; /* Probability will use PrEP given barriers and individual characteristics. */
+    
+    double VMMC_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
+    double p_will_use_VMMC;
+    
+    double condom_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
+    double p_will_use_condom;
+    
+};
+
+
+    
 /* structure containing chips-related parameters: */
 typedef struct{
     double prop_tested_by_chips_per_timestep[N_GENDER][MAX_AGE-AGE_CHIPS+1][MAX_N_TIMESTEPS_PER_CHIPS_ROUND][NCHIPSROUNDS];
@@ -354,7 +370,8 @@ typedef struct {
     double COUNTRY_CD4_500_START;
     double COUNTRY_IMMEDIATE_ART_START;
     double COUNTRY_VMMC_START;
-
+    int COUNTRY_VMMC_START_timestep;
+    
     int CHIPS_START_TIMESTEP[NCHIPSROUNDS]; /* This represents the timestep when the nth round of CHiPs visits begins. */
     int CHIPS_START_TIMESTEP_POSTTRIAL;     /* This is the timestep when each CHiPs round begins post-trial. */
     int CHIPS_START_YEAR[NCHIPSROUNDS];     /* This represents the  year when the nth round of CHiPs visits begins.

@@ -38,7 +38,7 @@
 void blank_individual_array(individual *individual_population, int id_counter){
     /* This is a blank template to make it easier to debug when we accidentally add people from previous runs who should not exist in the current run. */
 
-    int i_id, i_prepbarrier;
+    int i_id, i_cascadebarrier;
     individual blank_person_template;
 
     blank_person_template.HIV_status = DUMMYVALUE;
@@ -59,10 +59,10 @@ void blank_individual_array(individual *individual_population, int id_counter){
     blank_person_template.idx_vmmc_event[1] = DUMMYVALUE;
     blank_person_template.debug_last_vmmc_event_index = DUMMYVALUE;
 
-    /* Manicaland cascade-related characteristics. */
     blank_person_template.PrEP_cascade_status = DUMMYVALUE;
-    for (i_prepbarrier=0; i_prepbarrier<NPrEPcascade_steps; i_prepbarrier++)
-	blank_person_template.PrEP_cascade_barriers[i_prepbarrier] = DUMMYVALUE;
+
+
+    
     blank_person_template.next_PrEP_event = DUMMYVALUE;
     blank_person_template.idx_PrEP_event[0] = DUMMYVALUE;
     blank_person_template.idx_PrEP_event[1] = DUMMYVALUE;
@@ -74,8 +74,20 @@ void blank_individual_array(individual *individual_population, int id_counter){
     blank_person_template.VISITED_BY_CHIPS_THISROUND = FALSE;
 
     /* Now blank out each individual: */
-    for (i_id=0;i_id<id_counter;i_id++)
+    for (i_id=0;i_id<id_counter;i_id++){
         individual_population[i_id] = blank_person_template;
+
+	/* Manicaland cascade barrier-related characteristics. */
+	for (i_cascadebarrier=0; i_cascadebarrier<N_cascade_steps; i_cascadebarrier++){
+	    individual_population[i_id].cascade_barriers->PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	    individual_population[i_id].cascade_barriers->VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	    individual_population[i_id].cascade_barriers->condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	}
+	
+	individual_population[i_id].cascade_barriers->p_will_use_PrEP = 0; /* Default value is 0. */
+	individual_population[i_id].cascade_barriers->p_will_use_VMMC = 0; /* Default value is 0. */
+	individual_population[i_id].cascade_barriers->p_will_use_condom = 0; /* Default value is 0. */
+    }
 
 }
 
@@ -401,7 +413,7 @@ void alloc_pc_cohort_data(PC_cohort_data_struct **PC_cohort_data, int pc_enrolme
 
 
 void alloc_patch_memoryv2(patch_struct *patch){
-    int p,g;
+    int p,g,n;
     /*
      *patch = malloc(NPATCHES*sizeof(patch_struct));
     for (p=0; p<NPATCHES; p++){
@@ -440,7 +452,16 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
-
+	for(n=0;n<MAX_POP_SIZE;n++){
+	    patch[p].individual_population[n].cascade_barriers = malloc(sizeof(cascade_barrier_struct));
+	    if(patch[p].individual_population[n].cascade_barriers==NULL){
+		printf("Unable to allocate cascade_barriers in alloc_all_memory. Execution aborted.");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+        }   
+	
         patch[p].n_population = malloc(sizeof(population_size));
         if(patch[p].n_population==NULL)
         {
@@ -1216,7 +1237,13 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
 {
 
     long i;
-    int g, a, r;
+    int g, a, r, n;
+
+    for(n=0;n<MAX_POP_SIZE;n++)
+	free(individual_population[n].cascade_barriers);
+
+
+    
     free(individual_population);
     free(n_population);
     free(n_population_oneyearagegroups);

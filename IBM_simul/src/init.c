@@ -445,11 +445,11 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     }
 
     person_template.PrEP_cascade_status = NOTONPREP;
-    person_template.PrEP_cascade_barriers[i] = -1;    /* FIXME */
+    person_template.cascade_barriers->PrEP_cascade_barriers[i] = -1;    /* FIXME */
     person_template.next_PrEP_event = PREP_UNAWARE;
     person_template.idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     person_template.idx_PrEP_event[1] = -1;
-    person_template.starts_PrEP_due_to_intervention = -1; /* Initialize at dummy value. */
+
     person_template.PANGEA_t_prev_cd4stage = -1.0;
     person_template.PANGEA_t_next_cd4stage = -1.0;
     person_template.PANGEA_cd4atdiagnosis = -1.0;

@@ -79,14 +79,14 @@ void blank_individual_array(individual *individual_population, int id_counter){
 
 	/* Manicaland cascade barrier-related characteristics. */
 	for (i_cascadebarrier=0; i_cascadebarrier<N_cascade_steps; i_cascadebarrier++){
-	    individual_population[i_id].cascade_barriers->PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
-	    individual_population[i_id].cascade_barriers->VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
-	    individual_population[i_id].cascade_barriers->condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	    individual_population[i_id].cascade_barriers.PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	    individual_population[i_id].cascade_barriers.VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
+	    individual_population[i_id].cascade_barriers.condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
 	}
 	
-	individual_population[i_id].cascade_barriers->p_will_use_PrEP = 0; /* Default value is 0. */
-	individual_population[i_id].cascade_barriers->p_will_use_VMMC = 0; /* Default value is 0. */
-	individual_population[i_id].cascade_barriers->p_will_use_condom = 0; /* Default value is 0. */
+	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0; /* Default value is 0. */
+	individual_population[i_id].cascade_barriers.p_will_use_VMMC = 0; /* Default value is 0. */
+	individual_population[i_id].cascade_barriers.p_will_use_condom = 0; /* Default value is 0. */
     }
 
 }
@@ -413,7 +413,7 @@ void alloc_pc_cohort_data(PC_cohort_data_struct **PC_cohort_data, int pc_enrolme
 
 
 void alloc_patch_memoryv2(patch_struct *patch){
-    int p,g,n;
+    int p,g;
     /*
      *patch = malloc(NPATCHES*sizeof(patch_struct));
     for (p=0; p<NPATCHES; p++){
@@ -452,15 +452,21 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
-	for(n=0;n<MAX_POP_SIZE;n++){
-	    patch[p].individual_population[n].cascade_barriers = malloc(sizeof(cascade_barrier_struct));
-	    if(patch[p].individual_population[n].cascade_barriers==NULL){
-		printf("Unable to allocate cascade_barriers in alloc_all_memory. Execution aborted.");
-		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-		fflush(stdout);
-		exit(1);
-	    }
-        }   
+	patch[p].individual_population[0].sex_risk=10;
+	/* for(n=0;n<MAX_POP_SIZE;n++){ */
+	
+	/*     patch[p].individual_population[n_id].cascade_barriers = malloc(sizeof(cascade_barrier_struct)); */
+	/*     if(patch[p].individual_population[n_id].cascade_barriers==NULL){ */
+	/* 	printf("Unable to allocate cascade_barriers in alloc_all_memory. Execution aborted."); */
+	/* 	printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+	/* 	fflush(stdout); */
+	/* 	exit(1); */
+	/*     } */
+	/*     if (n_id==0){ */
+	/* 	patch[p].individual_population[n_id].cascade_barriers->p_will_use_PrEP=0.1; */
+	/* 	printf("patch[%i].individual_population[n_id].cascade_barriers->p_will_use_PrEP=%lf\n",p,patch[p].individual_population[n_id].cascade_barriers->p_will_use_PrEP); */
+	/*     } */
+        /* }   */
 	
         patch[p].n_population = malloc(sizeof(population_size));
         if(patch[p].n_population==NULL)
@@ -1237,10 +1243,10 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
 {
 
     long i;
-    int g, a, r, n;
+    int g, a, r;
 
-    for(n=0;n<MAX_POP_SIZE;n++)
-	free(individual_population[n].cascade_barriers);
+    /* for(n=0;n<MAX_POP_SIZE;n++) */
+    /* 	free(individual_population[n].cascade_barriers); */
 
 
     

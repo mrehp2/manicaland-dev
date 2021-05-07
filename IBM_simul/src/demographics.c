@@ -636,7 +636,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     /* PrEP-related stuff: */
     new_adult->PrEP_cascade_status = NOTONPREP;
     for (i_barrier=0; i_barrier<N_cascade_steps; i_barrier++)
-	new_adult->cascade_barriers->PrEP_cascade_barriers[i_barrier] = -1;    /* FIXME */
+	new_adult->cascade_barriers.PrEP_cascade_barriers[i_barrier] = -1;    /* FIXME */
     new_adult->next_PrEP_event = PREP_UNAWARE;
     new_adult->idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     new_adult->idx_PrEP_event[1] = -1;

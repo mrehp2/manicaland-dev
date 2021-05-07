@@ -695,6 +695,8 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
     
     FILE * param_file;
     int g, ag, r, bg, i_run;
+    int npatches_minus_one = NPATCHES-1;
+
     char param_file_name[LONGSTRINGLENGTH];
     
     // This is a temporary var so as not to keep writing allparameters+i_run
@@ -758,6 +760,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
         check_if_cannot_read_param(checkreadok,
             "param_local->rel_rate_partnership_formation_between_patches");
 
+	
         for(ag = 0; ag < N_AGE; ag++){
 	    if (NPATCHES==1){ 	    /* If only 1 patch, then no mixing between patches. */
 		param_local->c_per_gender_between_patches[FEMALE][ag] = 0;
@@ -766,11 +769,11 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 	    else if (NPATCHES>1){
 		param_local->c_per_gender_between_patches[FEMALE][ag] =
 		    param_local->rel_rate_partnership_formation_between_patches *
-		    param_local->c_per_gender_within_patch[FEMALE][ag] / (NPATCHES-1);
+		    param_local->c_per_gender_within_patch[FEMALE][ag] / npatches_minus_one;
             
 		param_local->c_per_gender_between_patches[MALE][ag] =
 		    param_local->rel_rate_partnership_formation_between_patches *
-		    param_local->c_per_gender_within_patch[MALE][ag] / (NPATCHES-1);
+		    param_local->c_per_gender_within_patch[MALE][ag] / npatches_minus_one;
 	    }
 	    else{
 		printf("Error in value of NPATCHES. Exiting\n");

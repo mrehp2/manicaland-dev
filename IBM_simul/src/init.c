@@ -326,6 +326,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     int g, r, ag;
     int aa, a_unpd;
     long i_x;
+    int b; /* Cascade barrier index. */
 
     /* Here we work out the interpolation index/fraction for this time
      * (as this is the same for each age group). Note that initialisation normally occurs
@@ -445,7 +446,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     }
 
     person_template.PrEP_cascade_status = NOTONPREP;
-    person_template.cascade_barriers->PrEP_cascade_barriers[i] = -1;    /* FIXME */
+
     person_template.next_PrEP_event = PREP_UNAWARE;
     person_template.idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     person_template.idx_PrEP_event[1] = -1;
@@ -562,8 +563,18 @@ void set_up_population(int p, patch_struct *patch, population *pop){
                     patch[p].individual_population[patch[p].id_counter].DoD = -1;
                     if (patch[p].id_counter==FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH)
                         printf("Making individual %li in patch %d at start of simulation with gender %d, age group ag=%i aa=%i DoB = %lf\n",patch[p].id_counter,p,g,ag,aa,patch[p].individual_population[patch[p].id_counter].DoB);
+		    
 
-                    /* Now add this person to the correct age list, and then increment the number of people in that list by 1: */
+		    patch[p].individual_population[patch[p].id_counter].cascade_barriers.p_will_use_PrEP = 0.4;
+
+
+		    for(b=0;b<N_cascade_steps;b++){
+			patch[p].individual_population[patch[p].id_counter].cascade_barriers.PrEP_cascade_barriers[b] = 0;   
+		    }
+
+
+
+		    /* Now add this person to the correct age list, and then increment the number of people in that list by 1: */
                     if (aa<MAX_AGE-AGE_ADULT){
                         patch[p].age_list->age_list_by_gender[g]->age_group[aa][patch[p].age_list->age_list_by_gender[g]->number_per_age_group[aa]] = &patch[p].individual_population[patch[p].id_counter];
                         patch[p].age_list->age_list_by_gender[g]->number_per_age_group[aa] += 1;

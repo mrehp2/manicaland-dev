@@ -495,7 +495,7 @@ int main(int argc,char *argv[]){
             if(PRINT_EACH_RUN_OUTPUT == 1){
                 blank_debugging_files(file_data_store);
             }
-            
+
             for(p = 0; p < NPATCHES; p++){
                 /*********************************************************/
                 /*** Initializing population characteristics ***/
@@ -503,7 +503,9 @@ int main(int argc,char *argv[]){
                 
                 /* Initializing the population demographics (no partnerships). 
                 Note that set_up_population sets id_counter to 0. */
-                set_up_population(p, patch, pop);
+		printf("Setting up for patch %i\n",p);
+		fflush(stdout);
+		set_up_population(p, patch, pop);
 
                 /* Initializing free partnerships based on how many free partnerships individuals
                 have */
@@ -533,7 +535,7 @@ int main(int argc,char *argv[]){
 		create_mtct_templates(patch[p].mtct_hiv_template_no_art, patch[p].param);
 		
             }
-            
+
             /* Loop through multiple years of the simulation */
             for(year = patch[0].param->start_time_simul; year < patch[0].param->end_time_simul; year++){
                 

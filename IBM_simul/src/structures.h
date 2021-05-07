@@ -39,7 +39,7 @@
 typedef struct individual individual;
 typedef struct partnership partnership;
 
-typedef struct cascade_barrier_struct cascade_barrier_struct; /* Variables relating to barriers for prevention (Manicaland 2020/21 project). */
+//typedef struct cascade_barrier_struct cascade_barrier_struct; /* Variables relating to barriers for prevention (Manicaland 2020/21 project). */
 
 
 
@@ -49,6 +49,20 @@ struct partnership{
     individual* ptr[2];
     int duration_in_time_steps;
 };
+
+
+typedef struct{
+
+    double PrEP_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
+    double p_will_use_PrEP; /* Probability will use PrEP given barriers and individual characteristics. */
+    
+    double VMMC_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
+    double p_will_use_VMMC;
+    
+    double condom_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
+    double p_will_use_condom;
+    
+}  cascade_barrier_struct;
 
 
 struct individual{
@@ -98,7 +112,7 @@ struct individual{
     long debug_last_vmmc_event_index; /* Stores the first index of idx_vmmc_event for the last vmmc event to happen - so can check that two vmmc events do not happen to the same person in the same timestep. */
 
 
-    cascade_barrier_struct *cascade_barriers;
+    cascade_barrier_struct cascade_barriers;
     
     // Pangea outputs for Olli
     double PANGEA_t_prev_cd4stage; /* Time at which an individual last moved CD4 stage. Allows us to linearly estimate CD4 at ART initiation. */
@@ -176,18 +190,6 @@ struct individual{
 };
 
 
-struct cascade_barrier_struct{
-
-    double PrEP_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
-    double p_will_use_PrEP; /* Probability will use PrEP given barriers and individual characteristics. */
-    
-    double VMMC_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
-    double p_will_use_VMMC;
-    
-    double condom_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
-    double p_will_use_condom;
-    
-};
 
 
     

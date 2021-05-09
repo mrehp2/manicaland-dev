@@ -323,6 +323,8 @@ double hiv_transmission_probability(individual* HIVpos_partner, parameters *para
 }
 
 
+
+
 /* Function: hiv_acquisition()
 Determine whether a single individual in one (or more) serodiscordant partnerships gets
 infected in a timestep.  If the individual gets infected then update all relevant lists (they 

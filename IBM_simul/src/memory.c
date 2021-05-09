@@ -38,7 +38,7 @@
 void blank_individual_array(individual *individual_population, int id_counter){
     /* This is a blank template to make it easier to debug when we accidentally add people from previous runs who should not exist in the current run. */
 
-    int i_id, i_cascadebarrier;
+    int i_id, i_cascadebarrier, i_partner;
     individual blank_person_template;
 
     blank_person_template.HIV_status = DUMMYVALUE;
@@ -86,7 +86,9 @@ void blank_individual_array(individual *individual_population, int id_counter){
 	
 	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0; /* Default value is 0. */
 	individual_population[i_id].cascade_barriers.p_will_use_VMMC = 0; /* Default value is 0. */
-	individual_population[i_id].cascade_barriers.p_will_use_condom = 0; /* Default value is 0. */
+	for (i_partner=0; i_partner< MAX_PARTNERSHIPS_PER_INDIVIDUAL; i_partner++)
+	    individual_population[i_id].cascade_barriers.p_will_use_condom[i_partner] = 0; /* Default value is 0. */
+
     }
 
 }

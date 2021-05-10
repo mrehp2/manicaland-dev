@@ -362,10 +362,10 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define PREP_STOP_NOTNEEDED 5 // Stop PrEP (due to lower risk). 
 //#define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
 
-#define N_cascade_steps 3 // Number of 'barriers' (steps in cascade) for PrEP in Manicaland.
-#define INDEX_PREP_BARRIER_MOTIVATION 0 //
-#define INDEX_PREP_BARRIER_ACCESS 1 //
-#define INDEX_PREP_BARRIER_EFFECTIVEUSE 2 //
+
+#define MANICALAND_CASCADE 1 // 1 if use Manicaland cascade machinery, 0 otherwise.
+#define N_CASCADE_BARRIER_STEPS 3 // Number of 'barriers' (steps in cascade) for PrEP/VMMC/condom use in Manicaland.
+
 
 #define SAMPLE_INCLUDING_RESERVES 2.0 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).
 

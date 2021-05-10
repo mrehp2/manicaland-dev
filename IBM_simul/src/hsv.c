@@ -731,7 +731,6 @@ double get_ulcer_duration(){
     
     double g = exp(lgamma(1.5));
     double a = (7/365.0) /g;
-    double x;
 
 
 
@@ -742,6 +741,6 @@ double get_ulcer_duration(){
     /* 	printf("%12.10lf\n",x); */
     /* } */
 
-    x = gsl_ran_weibull(rng, a, 2);
-    return x;
+    t_ulcer_duration = gsl_ran_weibull(rng, a, 2);
+    return t_ulcer_duration;
 }

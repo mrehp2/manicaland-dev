@@ -53,13 +53,13 @@ struct partnership{
 
 typedef struct{
 
-    double PrEP_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
+    double PrEP_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
     double p_will_use_PrEP; /* Probability will use PrEP this timestep given barriers and individual characteristics. */
     
-    double VMMC_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
+    double VMMC_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
     double p_will_use_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
     
-    double condom_cascade_barriers[N_cascade_steps]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
+    double condom_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
 
     /* This is decided per partnership (based on the individual preferences of each person in the partnership), and remains fixed over the course of the partnership. */
     double p_will_use_condom[MAX_PARTNERSHIPS_PER_INDIVIDUAL];

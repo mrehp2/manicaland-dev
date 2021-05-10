@@ -78,7 +78,7 @@ void blank_individual_array(individual *individual_population, int id_counter){
         individual_population[i_id] = blank_person_template;
 
 	/* Manicaland cascade barrier-related characteristics. */
-	for (i_cascadebarrier=0; i_cascadebarrier<N_cascade_steps; i_cascadebarrier++){
+	for (i_cascadebarrier=0; i_cascadebarrier<N_CASCADE_BARRIER_STEPS; i_cascadebarrier++){
 	    individual_population[i_id].cascade_barriers.PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
 	    individual_population[i_id].cascade_barriers.VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
 	    individual_population[i_id].cascade_barriers.condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;

@@ -896,10 +896,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     long nprevalent_hsv2_f=0;
     long nprevalent_hsv2_check=0; /* Check of number of HSV-2 for debugging only. */
     
-    long Cumulative_n_mother_to_child_transmissions=0;
-    long N_hivpositive_children=0;
-    long N_childen=0;    /* Current number of children age 0..(AGE_ADULT-1). */
-    long Cumulative_n_mtct_deaths_from_aids=0;
+    //long Cumulative_n_mother_to_child_transmissions=0;
+    //long N_hivpositive_children=0;
+    //long N_childen=0;    /* Current number of children age 0..(AGE_ADULT-1). */
+    //long Cumulative_n_mtct_deaths_from_aids=0;
     
     /* FOR DEBUGGING ONLY */
     long N_men_noMC = 0;

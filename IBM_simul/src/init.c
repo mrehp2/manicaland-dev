@@ -38,6 +38,7 @@
 #include "demographics.h"
 #include "utilities.h"
 #include "debug.h"
+#include "cascades.h"
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -326,7 +327,6 @@ void set_up_population(int p, patch_struct *patch, population *pop){
     int g, r, ag;
     int aa, a_unpd;
     long i_x;
-    int b; /* Cascade barrier index. */
 
     /* Here we work out the interpolation index/fraction for this time
      * (as this is the same for each age group). Note that initialisation normally occurs
@@ -567,12 +567,10 @@ void set_up_population(int p, patch_struct *patch, population *pop){
                         printf("Making individual %li in patch %d at start of simulation with gender %d, age group ag=%i aa=%i DoB = %lf\n",patch[p].id_counter,p,g,ag,aa,patch[p].individual_population[patch[p].id_counter].DoB);
 		    
 
-		    patch[p].individual_population[patch[p].id_counter].cascade_barriers.p_will_use_PrEP = 0.4;
 
-
-		    for(b=0;b<N_cascade_steps;b++){
-			patch[p].individual_population[patch[p].id_counter].cascade_barriers.PrEP_cascade_barriers[b] = 0;   
-		    }
+		    /* Function initialises barriers (i.e. whether motivated, has access, use effectively). */
+		    if (MANICALAND_CASCADE==1)
+			initialise_cascade_barriers(&patch[p].individual_population[patch[p].id_counter] , patch[p].param->start_time_simul);
 
 
 
@@ -633,6 +631,8 @@ void set_up_population(int p, patch_struct *patch, population *pop){
             }
         }
     }
+
+    
     count_population_size_three_ways(patch, p, patch[p].param->start_time_simul);
     initialize_child_population(patch[p].param,patch[p].child_population,patch[p].n_population_stratified, patch[p].country_setting, patch[p].age_list);
 }

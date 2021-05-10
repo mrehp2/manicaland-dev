@@ -91,7 +91,7 @@ individual_death_AIDS()
 #include "init.h"
 #include "hiv.h"
 #include "debug.h"
-
+#include "cascades.h"
 
 double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     /* Calculate per-woman fertility rate based on age using UNPD rates
@@ -573,7 +573,6 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
  * Note that initialize_first_cascade_event_for_new_individual() is called by the parent function make_new_adults(), and adds the individual to the cascade if needed/schedules a new cascade event. 
  * Function returns: nothing. */
 void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, patch_struct *patch, int p, all_partnerships *overall_partnerships){
-    int i_barrier;
     int i;
     new_adult->id = patch[p].id_counter;        /* Set the id to be the value of patch[p].id_counter. */
 
@@ -633,10 +632,12 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     /* Only used in next_hiv_event() to make sure not trying to schedule an alread-scheduled HIV event, so we can give it a dummy value for all new adults regardless of CD4. */
     new_adult->debug_last_hiv_event_index = -1;
 
+
+    if (MANICALAND_CASCADE==1)
+	initialise_cascade_barriers(new_adult, t);
+
     /* PrEP-related stuff: */
     new_adult->PrEP_cascade_status = NOTONPREP;
-    for (i_barrier=0; i_barrier<N_cascade_steps; i_barrier++)
-	new_adult->cascade_barriers.PrEP_cascade_barriers[i_barrier] = -1;    /* FIXME */
     new_adult->next_PrEP_event = PREP_UNAWARE;
     new_adult->idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     new_adult->idx_PrEP_event[1] = -1;

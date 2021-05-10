@@ -1804,7 +1804,7 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
     /* Individual initiates PrEP and is fully adherent: */
     if (x<=p_becomes_adherent){
 	indiv->PrEP_cascade_status = ONPREP_ADHERENT;
-	printf("Indiv %li is now on PrEP at t=%lf\n",indiv->id,t);
+	//printf("Indiv %li is now on PrEP at t=%lf\n",indiv->id,t);
 	/* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
 	t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
 	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
@@ -1996,7 +1996,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 	    indiv->idx_PrEP_event[0] = -1;
 	    indiv->idx_PrEP_event[1] = -1;
 	    indiv->next_PrEP_event = PREP_NOEVENT;
-	    printf("Stopped PrEP for individual %li at time=%lf\n",indiv->id,t);
+	    //printf("Stopped PrEP for individual %li at time=%lf\n",indiv->id,t);
 	}
 	else{
             printf("ERROR: not sure why this person %ld with PrEP status=%d is in carry_out_PrEP_events_per_timestep(). Exiting\n",indiv->id,indiv->PrEP_cascade_status);
@@ -2009,3 +2009,37 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 }
 
 
+
+/* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. */
+void cancel_PrEP(individual *indiv){
+
+    /* /\* FOR DEBUGGING: *\/ */
+    /* if (cascade_events[i][indiv->idx_cascade_event[1]]->id!=indiv->id){ */
+    /* 	printf("ERROR: trying to swap out the wrong person in remove_from_cascade_events(). Trying to swap %li but in cascade_events[] the person is %li. Exiting\n",indiv->id,cascade_events[i][indiv->idx_cascade_event[1]]->id); */
+    /* 	printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+    /* 	fflush(stdout); */
+    /* 	exit(1); */
+    /* } */
+    /* if (n_cascade_events[i]>0){ */
+    /* 	individual *person_to_move; */
+	
+    /* 	person_to_move = cascade_events[i][n_cascade_events[i]-1]; */
+	
+    /* 	/\* Now replace the indiv with the person_to_move in cascade_events: *\/ */
+	
+    /* 	cascade_events[i][indiv->idx_cascade_event[1]] = person_to_move; */
+    /* 	/\* Update the details of person_to_move (note idx_cascade_event[0] remains the same): *\/ */
+    /* 	person_to_move->idx_cascade_event[1] = indiv->idx_cascade_event[1]; */
+    /* 	/\* We have removed one person: *\/ */
+    /* 	n_cascade_events[i]--; */
+    /* } */
+    
+    indiv->PrEP_cascade_status=NOTONPREP;
+
+    printf("individual %li died while on PrEP\n",indiv->id);
+    //PrEP_events[indiv->idx_PrEP_event[0]][indiv->idx_PrEP_event[1]]
+    //indiv->idx_PrEP_event[0] = -1;
+    //indiv->idx_PrEP_event[1] = -1;
+    //indiv->next_PrEP_event = PREP_NOEVENT;
+
+}

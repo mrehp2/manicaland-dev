@@ -430,9 +430,9 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
 	/* Now sort out condom use: */
 	for (i_allpartners=0; i_allpartners<susceptible->n_partners; i_allpartners++){
 	    if (susceptible->partner_pairs[i_allpartners]->ptr[partner_gender]->id==temp_HIVpos_partner->id){
-		/***************************************/
-		/* Now check that condom use lines up: */
-		check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_allpartners);
+
+		/* Use this to check that condom use is consistent - i.e. both partners have the same condom use for this partnership: */
+		//check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_allpartners);
 		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_allpartners]==1)
 		    PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= (1.0-patch[p].param->eff_condom);
 		
@@ -2738,6 +2738,10 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
 
     update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);    
     indiv->ART_status = ARTNAIVE;  /* Status changes as now known positive. */
+
+    /* If on PrEP (or waiting to start), then cancel PrEP events: */
+    if(indiv->PrEP_cascade_status>NOTONPREP)
+	cancel_PrEP(indiv);
     
     /* If ART has started then there are 3 possibilities for the next cascade event
      *  - drops out, waits until eligible, starts ART. */

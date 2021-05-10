@@ -517,7 +517,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
         for (r = 0; r < N_RISK; r++){
             /* Calculate number of men circumcised: (we do it here so we don't need to calculate twice for M/F). */
             n_men_circumcised_as_children = (int) round((patch[p].param->p_child_circ)*patch[p].n_population->pop_size_per_gender_age_risk[MALE][ag][r]);
-	    printf("Circumcising %i men out of %li age group %i risk gp %i %6.4lf\n",n_men_circumcised_as_children,patch[p].n_population->pop_size_per_gender_age_risk[MALE][ag][r],ag,r,patch[p].param->p_child_circ);
+
 
             n_pregnant_women = (int) floor(prop_pregnant_women * patch[p].n_population->pop_size_per_gender_age_risk[FEMALE][ag][r]);
             for (g = 0; g < N_GENDER; g++){

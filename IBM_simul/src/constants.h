@@ -225,7 +225,7 @@ gsl_rng * rng;
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
 /* Put this as a constant for now - determines if in simul.c we use PrEP intervention. Eventually will be part of counterfactual. */
-#define RUN_PREP_INTERVENTION 1
+#define RUN_PREP_INTERVENTION  0
 
 /************************************************************************/
 /*************** How age groups are structured in the IBM ***************/
@@ -298,9 +298,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
   0 = each person gets scheduled HIV tests sequentially.
   1 - we annually draw what percentage of pop gets tested and then draw a time to next test (which is uniform). */
 
-#define BACKGROUND_CIRCUMCISION_THROUGH_TESTING 0 /* Governs how background VMMS testing works. 
-						     1 - when a man gets a -ve HIV test, he is offered VMMC, which he may take with some propbability p_circ_nopopart.
-						     0 - each year we sweep through. */
+
 #define RUN_POPART 1
 #define YOUNGEST_AGE_SEED_WITH_HIV 18 // This gives the minimum age group index where we introduce HIV (1=18-22).
 #define OLDEST_AGE_SEED_WITH_HIV 30 // This gives the maximum age group index where we introduce HIV (2=23-30).
@@ -359,7 +357,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define START_PREP 2  // Initialise PrEP at some future timepoint.
 #define BECOME_PREP_FULLYADHERENT 3 // Semi-adherent PrEP user becomes fully adherent.
 #define BECOME_PREP_SEMIADHERENT 4 // Fully adherent PrEP user becomes semi-adherent.
-#define PREP_STOP_NOTNEEDED 5 // Stop PrEP (due to lower risk). 
+#define PREP_STOP 5 // Stop PrEP.
 //#define PREP_STOP_NOTABLE 6 // Stop PrEP (because no longer wants/able to). 
 
 

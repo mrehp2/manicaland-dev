@@ -87,7 +87,7 @@ void blank_individual_array(individual *individual_population, int id_counter){
 	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0; /* Default value is 0. */
 	individual_population[i_id].cascade_barriers.p_will_use_VMMC = 0; /* Default value is 0. */
 	for (i_partner=0; i_partner< MAX_PARTNERSHIPS_PER_INDIVIDUAL; i_partner++)
-	    individual_population[i_id].cascade_barriers.p_will_use_condom[i_partner] = 0; /* Default value is 0. */
+	    individual_population[i_id].cascade_barriers.use_condom_in_this_partnership[i_partner] = 0; /* Default value is 0. */
 
     }
 

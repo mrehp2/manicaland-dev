@@ -387,8 +387,9 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
      * Assumed to be heterosexual partners always: */
     int partner_gender = 1 - susceptible->gender;
 
-    int i; /* Index for summing over partners. */
-
+    int i; /* Index for summing over partners (index over partner_pairs_HIVpos[]). */
+    int i_allpartners; /* Index over partner_pairs[] and also use_condom_in_this_partnership[]. */
+    
     int infector_index; /* Index (in partner_pairs_HIVpos[]) of partner who infected the seroconverter. */
 
     /* The number of HIV+ partners of this susceptible. */
@@ -425,6 +426,24 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] = hiv_transmission_probability(temp_HIVpos_partner,
             patch[p].param);
 
+	/***************************/
+	/* Now sort out condom use: */
+	for (i_allpartners=0; i_allpartners<susceptible->n_partners; i_allpartners++){
+	    if (susceptible->partner_pairs[i_allpartners]->ptr[partner_gender]->id==temp_HIVpos_partner->id){
+		/***************************************/
+		/* Now check that condom use lines up: */
+		check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_allpartners);
+		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_allpartners]==1)
+		    PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= (1.0-patch[p].param->eff_condom);
+		
+	    }
+	}
+	
+	/***************************/	    
+	/* End of condom use code. */
+	/***************************/
+
+	
         // Add a multiplying factor for assortative risk mixing: high-high is twice as risky 
         // and low-low half as risky as other combinations 
         if(CHANGE_RR_BY_RISK_GROUP == 1){
@@ -2693,7 +2712,8 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
             calendar_outputs->N_calendar_HIV_tests_popart_negative[year_idx]++;
         }
 
-        if (indiv->gender==MALE && BACKGROUND_CIRCUMCISION_THROUGH_TESTING==1)
+	/* MANICALAND_CASCADE=0 means VMMC happens through HIV testing. If MANICALAND_CASCADE=1, then sweep through the population in simul.c to set a certain fraction to be VMMC each timestep. */
+        if (indiv->gender==MALE && MANICALAND_CASCADE==0)
             if (indiv->circ==UNCIRC)   /* Only if not already circumcised (and not waiting for VMMC): */
                 draw_if_VMMC(indiv,param,vmmc_events,n_vmmc_events,size_vmmc_events,t,is_popart);
         /* Rest of the code in this function is if test HIV+, so return. */

@@ -455,6 +455,10 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_adherent));
         check_if_cannot_read_param(checkreadok, "param_local->eff_prep_adherent");
 
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_condom));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_condom");
+	printf("eff_condom=%lf\n",param_local->eff_condom);
+	
 	checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
         check_if_cannot_read_param(checkreadok, "param_local->average_log_viral_load");
 

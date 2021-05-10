@@ -1804,18 +1804,22 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
     /* Individual initiates PrEP and is fully adherent: */
     if (x<=p_becomes_adherent){
 	indiv->PrEP_cascade_status = ONPREP_ADHERENT;
+	printf("Indiv %li is now on PrEP at t=%lf\n",indiv->id,t);
 	/* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
 	t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
 	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+
     }
     /* Individual initiates PrEP but only semi-adherent: */
     else{
 	indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
+	printf("Indiv %li is now semi-adherent on PrEP at t=%lf\n",indiv->id,t);
 	/* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
 	t_next_PrEP_event = draw_next_PrEP_event_from_semiadherent(indiv,t);
 	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
 	
     }
+
 }
 
 
@@ -1823,7 +1827,7 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 /* Decide what the next PrEP event will be for indiv who is currently adherent.
    Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
 double draw_next_PrEP_event_from_adherent(individual *indiv, double t){
-    indiv->next_PrEP_event = BECOME_PREP_SEMIADHERENT;
+    indiv->next_PrEP_event = PREP_STOP;
     return t + 1.0;
 }
 
@@ -1960,14 +1964,6 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
         indiv = patch[p].PrEP_events[array_index_for_PrEP_event][n];
         //printf("Person %ld with PrEP status=%d is in carry_out_PrEP_events_per_timestep.\n",indiv->id,indiv->PrEP_cascade_status);
         
-        /* Throw an error if this individual is male */
-        if (indiv->gender==MALE){
-            printf("ERROR: There is a man %ld in carry_out_PrEP_events_per_timestep. Exiting\n",indiv->id);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-        
         /* If this individual is dead or seroconverted to HIV+, move on to the next person.
         Note - we can set up a similar procedure to other lists to remove this person from this list. */
 	if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED){
@@ -1995,11 +1991,12 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
         }
 
 	/* No future need for PrEP (or no longer eligible due to age?). */
-	else if (indiv->next_PrEP_event==PREP_STOP_NOTNEEDED){
+	else if (indiv->next_PrEP_event==PREP_STOP){
 	    indiv->PrEP_cascade_status=NOTONPREP;
 	    indiv->idx_PrEP_event[0] = -1;
 	    indiv->idx_PrEP_event[1] = -1;
 	    indiv->next_PrEP_event = PREP_NOEVENT;
+	    printf("Stopped PrEP for individual %li at time=%lf\n",indiv->id,t);
 	}
 	else{
             printf("ERROR: not sure why this person %ld with PrEP status=%d is in carry_out_PrEP_events_per_timestep(). Exiting\n",indiv->id,indiv->PrEP_cascade_status);

@@ -1831,6 +1831,7 @@ void remove_dead_person_from_list_available_partners(double time_death, individu
  * and add their partners back to "list of available partners".
  * NOTE: This function can be used for either death from natural causes or HIV-related death 
  * (or indeed anything that removes an individual from all partnerships such as permanent migration if this is ever implemented).
+ * Function also updates the partner's use_condom_in_this_partnership[] array so that the order still reflects that of their partners. 
  * Function returns: nothing. */        
 void remove_dead_persons_partners(individual *dead_person, population_partners *pop_available_partners, 
         population_size_all_patches *n_pop_available_partners, double t){
@@ -1904,6 +1905,10 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
         /* Move the last (ie n_partners-1) partnership and associated condom use to the jth partnership - note if j=n_partners-1 this does nothing but that's OK. */
         a_partner->partner_pairs[j] = a_partner->partner_pairs[a_partner->n_partners-1];
         a_partner->partner_pairs[j] = a_partner->partner_pairs[a_partner->n_partners-1];
+
+	/* Do the same thing for partnership condom use: */
+	a_partner->cascade_barriers.use_condom_in_this_partnership[j] = a_partner->cascade_barriers.use_condom_in_this_partnership[a_partner->n_partners-1];
+	
         /* Now reduce partnerships by 1. */
         a_partner->n_partners--;    
         if(a_partner->patch_no != dead_person->patch_no)

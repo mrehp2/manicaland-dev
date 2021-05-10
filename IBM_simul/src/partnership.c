@@ -27,6 +27,7 @@
 #include "partnership.h"
 #include "utilities.h"
 #include "output.h"
+#include "cascades.h"
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -290,6 +291,10 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         }
     }
 
+    /* Initialise condom use for partnership: */
+    initialise_partnership_condom_use(ind1, ind2, t_form_partnership, pair->duration_in_time_steps *TIME_STEP);
+
+    
     
     /*if(ind1->id==5486)
     {
@@ -475,7 +480,11 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
             who->n_partners--;
             /* copying the last partner in place of this one - NOTE FOR DEBUGGING: AC does this the opposite way to MP who firstly swaps with the n-1 entry and then decreases n. */
             who->partner_pairs[index_partner] = who->partner_pairs[who->n_partners];
-            /* same within the list of HIV positive partners if the partner is HIV positive */
+
+	    /* Same for condom use - we just need to make sure that the index of the partner matches the index for the condom use of the pair. */
+	    who->cascade_barriers.use_condom_in_this_partnership[index_partner] = who->cascade_barriers.use_condom_in_this_partnership[who->n_partners];
+
+	    /* same within the list of HIV positive partners if the partner is HIV positive */
 
             if(who->HIV_status==0 && other->HIV_status>0) /* only bother if the couple is serodiscordant */
             {

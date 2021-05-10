@@ -6,5 +6,5 @@ proportion_seen_by_age[21] 0.15
 proportion_seen_by_age[22] 0.2
 proportion_seen_by_age[23] 0.12
 proportion_seen_by_age[24] 0.08
-p_becomes_PrEP_adherent_background 0.9 //
+p_becomes_PrEP_adherent_background 1.0 // Assumption - lower adherence is taken into account by reduced prep_efficacy.
 p_semiadherent_acts_covered_background 0.8 // Proportion of acts covered if using PrEP semi-adherently.

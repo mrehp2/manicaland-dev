@@ -2257,3 +2257,29 @@ void check_prep_uptake(double t, int t_step, patch_struct *patch, int p){
     }
 
 }
+
+
+
+
+/* Code to check that both partners have the same condom use for a given partnership (called in hiv.c). */
+void check_partnership_condom_use_consistent(individual *indiv1, individual *indiv2, int i_allpartners){
+    
+    int i_check;
+    int partner_gender = indiv2->gender;
+
+    for (i_check=0; i_check<indiv2->n_partners; i_check++){
+	if(indiv2->partner_pairs[i_check]->ptr[1-partner_gender]->id==indiv1->id){
+	    if(indiv1->cascade_barriers.use_condom_in_this_partnership[i_allpartners]!=indiv2->cascade_barriers.use_condom_in_this_partnership[i_check]){
+		printf("Error for partners %li and %li - condom use does not match. Exiting\n",indiv1->id,indiv2->id);
+		exit(1);
+	    }
+	    break;
+	}
+		}
+    if(indiv1->cascade_barriers.use_condom_in_this_partnership[i_allpartners]!=indiv2->cascade_barriers.use_condom_in_this_partnership[i_check]){
+	printf("Error2 for partners %li and %li - condom use does not match. Exiting\n",indiv1->id,indiv2->id);
+	exit(1);
+    }
+    //else
+    //	printf("Matched condom use %i for %li and %li\n",indiv1->cascade_barriers.use_condom_in_this_partnership[i_allpartners],indiv1->id,indiv2->id);
+}

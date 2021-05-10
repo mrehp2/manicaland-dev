@@ -290,7 +290,7 @@ int main(int argc,char *argv[]){
 
     /* Read all the parameter sets - there should be n_runs of them. */
     read_param(input_file_directory, allrunparameters, n_runs, patch);
-    
+
     for(i = 0; i < n_runs; i++){
         for(p = 0; p < NPATCHES; p++){
             for(ir = 1; ir < NCHIPSROUNDS; ir++){
@@ -364,6 +364,7 @@ int main(int argc,char *argv[]){
     file_struct *file_data_store;
     file_data_store = malloc(sizeof(file_struct));
 
+
     /* This stores the prevalence, prevalence by gender and age group, incidence, number of HIV
     tests ever done, number of CD4 tests ever done, number on ART, number on ART and HIV+ etc. */
     output_struct *output;
@@ -375,7 +376,7 @@ int main(int argc,char *argv[]){
     /* For debugging cascade counts - CHECK if these are supposed to be the same */
     create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
     create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
-    
+
     if(WRITE_CALIBRATION == 1){
 
         for(p = 0; p < NPATCHES; p++){
@@ -383,12 +384,13 @@ int main(int argc,char *argv[]){
         
             make_calibration_output_filename(calibration_output_filename[p], output_file_directory,
                 python_rng_seed, patch, p, rng_seed_offset, rng_seed_offset_PC, is_counterfactual);
-        
-            /* Blank the calibration file. NOTE - this needs to be done outside of the i_run loop (so
+
+	    /* Blank the calibration file. NOTE - this needs to be done outside of the i_run loop (so
             can't be done with  blank_debugging_files()) as only one of these files is generated for
             the whole set of runs. */
             blank_calibration_output_file(calibration_output_filename[p],
                 allrunparameters[p][0].DHS_params->NDHSROUNDS);
+	
         }
     }
     printf("*** Need to fix HSV-2 acquisition probability\n");
@@ -535,6 +537,7 @@ int main(int argc,char *argv[]){
 		create_mtct_templates(patch[p].mtct_hiv_template_no_art, patch[p].param);
 		
             }
+
 
             /* Loop through multiple years of the simulation */
             for(year = patch[0].param->start_time_simul; year < patch[0].param->end_time_simul; year++){

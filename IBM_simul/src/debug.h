@@ -72,4 +72,6 @@ void write_hazard_data(file_struct *, char *);
 void blank_hazard_file(file_struct *);
 void check_constants_consistency();
 void check_prep_uptake(double , int , patch_struct *, int );
+void check_partnership_condom_use_consistent(individual *, individual *, int );
+
 #endif /* DEBUG_H_ */

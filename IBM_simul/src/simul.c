@@ -32,6 +32,7 @@
 #include "debug.h"
 #include "output.h"
 #include "pc.h"
+#include "cascades.h"
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -994,63 +995,70 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	}
     }    
     
+
+
     /*********************************************************************/
-    /* 10. Carry out VMMC (if it has started in the country in question) */
+    /* 10a. Set up women to receive PrEP background                    */
     /*********************************************************************/
-    if(BACKGROUND_CIRCUMCISION_THROUGH_TESTING==0){
-	if(t0 >= patch[p].param->COUNTRY_VMMC_START && t_step==patch[p].param->COUNTRY_VMMC_START_timestep){
-	    /* Choose men to undergo VMMC, so as to match some annual uptake data: */
-	    printf("Set up VMMC schedule at t=%lf\n",t);
-	    //draw_annual_VMMC_schedule(t_step, t, patch, p);
+
+    if(MANICALAND_CASCADE==0){
+	if((t>=patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
+	    //printf("Starting PrEP background at t=%lf\n",t);
+	    schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params, patch, p, t);
 	}
     }
-	
-    
-    if(t >= patch[p].param->COUNTRY_VMMC_START){
-        carry_out_VMMC_events_per_timestep(t_step, t, patch, p);
+    else if(MANICALAND_CASCADE==1){
+	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
+	    draw_PrEP_through_barriers(t, patch, p);
+	}
     }
 
     /*********************************************************************/
-    /* 11a. Set up women to receive PrEP background                    */
-    /*********************************************************************/
-    
-    if((t>=patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
-	//printf("Starting PrEP background at t=%lf\n",t);
-        schedule_PrEP_background(patch[p].age_list, patch[p].PrEP_background_sample, patch[p].param->PrEP_background_params, patch, p, t);
-    }
-
-
-    /*********************************************************************/
-    /* 11b. Carry out PrEP background (if it has started)               */
+    /* 10b. Carry out PrEP background (if it has started)               */
     /*********************************************************************/
     
     if(t>=patch[p].param->PrEP_background_params->year_start_background+TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background){
-        carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p);
+	if(MANICALAND_CASCADE==0)
+	    carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p);
+	else if(MANICALAND_CASCADE==1)
+	    carry_out_PrEP_events_per_timestep(t,patch, p);
+
     }
+	
 
     /*********************************************************************/
-    /* 12a. Set up women to receive PrEP intervention                    */
+    /* 11a. Set up women to receive PrEP intervention                    */
     /*********************************************************************/
     
     if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention) && (RUN_PREP_INTERVENTION==1)){
 	//printf("Starting PrEP intervention at t=%lf\n",t);
-        schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
-
+	schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
+	
     }
 
     /*********************************************************************/
-    /* 12b. Carry out PrEP intervention (if it has started)               */
+    /* 11b. Carry out PrEP intervention (if it has started)               */
     /*********************************************************************/
     
     if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1)){
 	//printf("Carrying out PrEP intervention at t=%lf\n",t);
-        carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
+	carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
     }
-    
+
 
 
     //check_prep_uptake(t, t_step, patch, p);
 
+
+    /************************************************************************/
+    /* 12. VMMC (for Manicaland cascade - i.e. not part of HIV testing) */
+    /************************************************************************/
+    if(MANICALAND_CASCADE==1){
+	if(t >= patch[p].param->COUNTRY_VMMC_START){
+	    draw_VMMC_through_barriers(t, patch, p);
+	}
+    }
+    
     /************************************************************************/
     /* 13. HSV-2 introduction (at time param->start_time_hsv2) */
     /************************************************************************/

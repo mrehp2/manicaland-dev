@@ -62,7 +62,7 @@ typedef struct{
     double condom_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
 
     /* This is decided per partnership (based on the individual preferences of each person in the partnership), and remains fixed over the course of the partnership. */
-    double p_will_use_condom[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
+    int use_condom_in_this_partnership[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
     
 }  cascade_barrier_struct;
 
@@ -146,6 +146,9 @@ struct individual{
     int n_HIVpos_partners_outside; /* current number of HIV+ partners of this individual who are outside of the patch */
     partnership * partner_pairs_HIVpos[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; /* This is a list of the partnership pairs (with someone in the community) with an HIV+ partner that this individual is in at a certain time. */
 
+    /* For each partnership, this states if condoms will be used (or not). */
+    int condom_use[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
+    
     /* The two following are only updated for HSV2- individuals: */
     int n_HSV2pos_partners; /* current number of HSV2+ partners of this individual */
     partnership * partner_pairs_HSV2pos[MAX_PARTNERSHIPS_PER_INDIVIDUAL]; /* This is a list of the partnership pairs (with someone in the community) with an HSV2+ partner that this individual is in at a certain time. */
@@ -395,6 +398,8 @@ typedef struct {
     double eff_prep_semiadherent;
     double eff_prep_adherent;
 
+    double eff_condom;
+    
     /* Average log viral load - this is used in hiv transmission and MTCT */
     double average_log_viral_load;
 

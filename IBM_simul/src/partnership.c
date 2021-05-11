@@ -292,7 +292,7 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     }
 
     /* Initialise condom use for partnership: */
-    initialise_partnership_condom_use(ind1, ind2, t_form_partnership, pair->duration_in_time_steps *TIME_STEP);
+    get_partnership_condom_use(ind1, ind2, t_form_partnership, pair->duration_in_time_steps *TIME_STEP);
 
     
     

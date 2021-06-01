@@ -61,11 +61,11 @@ void hsv2_acquisition(individual* susceptible, double time_infect, patch_struct 
     file_struct *file_data_store, int t0, int t_step){
 
     
-    if(susceptible->id == FOLLOW_INDIVIDUAL && susceptible->patch_no == FOLLOW_PATCH){
-        printf("checking HSV-2 acquisition for adult %ld from patch %d at time %6.4f\n",
-            susceptible->id, susceptible->patch_no, time_infect);
-        fflush(stdout);
-    }
+    /* if(susceptible->id == FOLLOW_INDIVIDUAL && susceptible->patch_no == FOLLOW_PATCH){ */
+    /*     printf("checking HSV-2 acquisition for adult %ld from patch %d at time %6.4f\n", */
+    /*         susceptible->id, susceptible->patch_no, time_infect); */
+    /*     fflush(stdout); */
+    /* } */
     if(susceptible->HSV2_status!=HSV2_UNINFECTED){
         printf("ERROR: Trying to infect an HSV-2+ person %li in patch %i\n",
             susceptible->id, susceptible->patch_no);
@@ -105,6 +105,14 @@ void hsv2_acquisition(individual* susceptible, double time_infect, patch_struct 
 	total_hazard_per_timestep += hsv2_transmission_probability(susceptible, temp_HSV2pos_partner, patch[p].param) * TIME_STEP;
     }
 
+
+    if (susceptible->PrEP_cascade_status>WAITINGTOSTARTPREP){
+	if (susceptible->PrEP_cascade_status==ONPREP_ADHERENT)
+	    total_hazard_per_timestep = total_hazard_per_timestep * (1.0-patch[p].param->eff_prep_adherent_hsv2);
+	else if (susceptible->PrEP_cascade_status==ONPREP_SEMIADHERENT)
+	    total_hazard_per_timestep = total_hazard_per_timestep * (1.0-patch[p].param->eff_prep_semiadherent_hsv2);
+    }
+    
     
     double x = gsl_rng_uniform (rng);
     if(x <= total_hazard_per_timestep){

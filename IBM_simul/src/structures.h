@@ -67,6 +67,32 @@ typedef struct{
 }  cascade_barrier_struct;
 
 
+
+typedef struct{
+    double p_use_VMMC_young;
+    double p_use_VMMC_old;
+    double p_use_PrEP_F_young;
+    double p_use_PrEP_F_old;
+    double p_use_PrEP_M;
+    double p_use_cond_M_casual;
+    double p_use_cond_M_LT;
+    double p_use_cond_F_casual;
+    double p_use_cond_F_LT;
+    /* Post-intervention values: */
+    double p_use_VMMC_young_int;
+    double p_use_VMMC_old_int;
+    double p_use_PrEP_F_young_int;
+    double p_use_PrEP_F_old_int;
+    double p_use_PrEP_M_int;
+    double p_use_cond_M_casual_int;
+    double p_use_cond_M_LT_int;
+    double p_use_cond_F_casual_int;
+    double p_use_cond_F_LT_int;
+    
+}cascade_barrier_params;
+
+
+
 struct individual{
     long id; /* Unique identifier for each individual. */
     int gender; /* 0 = M, 1 = F. */
@@ -397,8 +423,11 @@ typedef struct {
 
     double eff_prep_semiadherent;
     double eff_prep_adherent;
+    double eff_prep_semiadherent_hsv2;
+    double eff_prep_adherent_hsv2;
 
     double eff_condom;
+    double eff_condom_hsv2;
     
     /* Average log viral load - this is used in hiv transmission and MTCT */
     double average_log_viral_load;
@@ -614,6 +643,10 @@ typedef struct {
     double t_get_vmmc_range[2];
     double t_vmmc_healing; /* Time for VMMC wound to heal after op, during which time susceptibility may be higher. */
 
+
+    cascade_barrier_params barrier_params;
+
+    
     //double prop_tested_by_chips[N_GENDER][NCHIPSROUNDS]; /* Proportion of population (by gender) visited by CHiPS each year. */
     chips_param_struct *chips_params;
     PC_param_struct *PC_params;

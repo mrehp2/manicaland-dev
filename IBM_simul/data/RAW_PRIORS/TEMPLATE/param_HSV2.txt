@@ -1,3 +1,5 @@
 mean_dur_hsv2event  0.1 10.0 0.1    // Duration of each HSV-2 stage. 
 average_annual_hazard_hsv2  0.05    // Assumption.
-
+eff_condom_hsv2 0.8 // Based on point estimate of Weller and Davis (2002). Could be higher/
+eff_prep_semiadherent_hsv2 0.5 // CHANGE!!!
+eff_prep_adherent_hsv2 0.75  // CHANGE!!!

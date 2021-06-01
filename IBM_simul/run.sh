@@ -2,7 +2,7 @@
 
 #seed=11
 seed=1
-nsamples=20 # chaneg for different nruns
+nsamples=3 # chaneg for different nruns
 #nsamples=1 # chaneg for different nruns
 nreps=1
 verbose=0

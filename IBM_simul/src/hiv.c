@@ -326,30 +326,9 @@ double hiv_transmission_probability(individual* HIVpos_partner, parameters *para
 
 
 /* Function: hiv_acquisition()
-Determine whether a single individual in one (or more) serodiscordant partnerships gets
-infected in a timestep.  If the individual gets infected then update all relevant lists (they 
-are removed from list of HIV- people in serodiscordant partnerships).  (Not currently 
-implemented - they will be added to list of people who are HIV+ with a time to next HIV 
-progression event scheduled.  If infected addition output is generated (update incident and 
-prevalent case counts, output phylogenetic data of interest). 
+Determine whether a single individual in one (or more) serodiscordant partnerships gets infected in a timestep.  If the individual gets infected then update all relevant lists (they are removed from list of HIV- people in serodiscordant partnerships).  (Not currently implemented - they will be added to list of people who are HIV+ with a time to next HIV progression event scheduled.  If infected addition output is generated (update incident and prevalent case counts, output phylogenetic data of interest). 
 
-Arguments
----------
-susceptible : pointer to an individual strucutre
-    Pointer to the susceptible individual
-time_infect : double
-    Time (in decimal years) of infection
-patch : pointer to a patch_struct structure
-    Patch structure including information on all patches
-p : int
-    Patch number where the susceptible individual resides
-overall_partnerships : pointer to an all_partnerships structure
-output : pointer to an output_struct structure
-debug : pointer to a debug_struct structure
-file_data_store : pointer to a file_struct structure
-
-Returns
--------
+Code implements prevention: VMMC, PrEP (both genders), condom use.
 */
 
 void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *patch, int p,
@@ -388,7 +367,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
     int partner_gender = 1 - susceptible->gender;
 
     int i; /* Index for summing over partners (index over partner_pairs_HIVpos[]). */
-    int i_allpartners; /* Index over partner_pairs[] and also use_condom_in_this_partnership[]. */
+    int i_cond_partners; /* Index over partner_pairs[] and also use_condom_in_this_partnership[]. */
     
     int infector_index; /* Index (in partner_pairs_HIVpos[]) of partner who infected the seroconverter. */
 
@@ -427,18 +406,18 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
             patch[p].param);
 
 	/***************************/
-	/* Now sort out condom use: */
-	for (i_allpartners=0; i_allpartners<susceptible->n_partners; i_allpartners++){
-	    if (susceptible->partner_pairs[i_allpartners]->ptr[partner_gender]->id==temp_HIVpos_partner->id){
+	/* Now sort out condom use. 
+	 We need to look up partnership condom use in the array cascade_barriers.use_condom_in_this_partnership[]. */
+	for (i_cond_partners=0; i_cond_partners<susceptible->n_partners; i_cond_partners++){
+	    if (susceptible->partner_pairs[i_cond_partners]->ptr[partner_gender]->id==temp_HIVpos_partner->id){
 
-		/* Use this to check that condom use is consistent - i.e. both partners have the same condom use for this partnership: */
-		//check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_allpartners);
-		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_allpartners]==1)
+		/* Use check_partnership_condom_use_consistent() to check that condom use is consistent - i.e. both partners have the same condom use for this partnership: */
+		//check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_cond_partners);
+		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_cond_partners]==1)
 		    PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= (1.0-patch[p].param->eff_condom);
 		
 	    }
 	}
-	
 	/***************************/	    
 	/* End of condom use code. */
 	/***************************/

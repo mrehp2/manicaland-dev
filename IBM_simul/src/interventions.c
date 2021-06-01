@@ -1782,12 +1782,12 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 
     /*  Because of the way we draw PrEP intervention visits at the beginning of the year, it is possible some people die or become HIV+ before they are visited. If this is the case then do nothing more. */
     if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED){
-	if (VERBOSE_OUTPUT==1){
-	    if(indiv->cd4 == DEAD)
-		printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
-	    else
-		printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
-	}
+	//if (VERBOSE_OUTPUT==1){
+	if(indiv->cd4 == DEAD)
+	    printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
+	else
+	    printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
+	//}
 	return;
     }
 
@@ -1969,13 +1969,13 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
         /* If this individual is dead or seroconverted to HIV+, move on to the next person.
         Note - we can set up a similar procedure to other lists to remove this person from this list. */
 	if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED){
-	    if (VERBOSE_OUTPUT==1){
-		if(indiv->cd4 == DEAD)
-		    printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
-		else
-		    printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
-		continue;
-	    }
+	    //if (VERBOSE_OUTPUT==1){
+	    if(indiv->cd4 == DEAD)
+		printf("individual %li died2 before receiving PrEP intervention.\n",indiv->id);
+	    else
+		printf("individual %li seroconverted2 before receiving PrEP intervention.\n",indiv->id);
+	    continue;
+	    //}
 	}
 
 
@@ -2039,8 +2039,8 @@ void cancel_PrEP(individual *indiv){
     /* } */
     
     indiv->PrEP_cascade_status=NOTONPREP;
-    if (VERBOSE_OUTPUT==1)
-	printf("individual %li died while on PrEP\n",indiv->id);
+    //if (VERBOSE_OUTPUT==1)
+    printf("individual %li died3 while on PrEP\n",indiv->id);
     //PrEP_events[indiv->idx_PrEP_event[0]][indiv->idx_PrEP_event[1]]
     //indiv->idx_PrEP_event[0] = -1;
     //indiv->idx_PrEP_event[1] = -1;

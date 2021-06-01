@@ -1352,7 +1352,10 @@ void print_hiv_params(parameters *param){
     printf("param->rr_circ_unhealed=%lg\n",param->rr_circ_unhealed);
     printf("param->eff_prep_semiadherent=%lg\n",param->eff_prep_semiadherent);
     printf("param->eff_prep_adherent=%lg\n",param->eff_prep_adherent);
+    printf("param->eff_prep_semiadherent_hsv2=%lg\n",param->eff_prep_semiadherent_hsv2);
+    printf("param->eff_prep_adherent_hsv2=%lg\n",param->eff_prep_adherent_hsv2);
     printf("param->eff_condom=%lg\n",param->eff_condom);
+    printf("param->eff_condom_hsv2=%lg\n",param->eff_condom_hsv2);
     printf("param->average_log_viral_load=%lg\n",param->average_log_viral_load);
     printf("param->average_annual_hazard=%lg\n",param->average_annual_hazard);
     printf("param->RRacute_trans=%lg\n",param->RRacute_trans);
@@ -1731,6 +1734,20 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
+    if (param->eff_prep_semiadherent_hsv2<0.00 || param->eff_prep_semiadherent_hsv2>0.8){
+        printf("Error: param->eff_prep_semiadherent_hsv2 is outside expected range [0.0,0.8]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->eff_prep_adherent_hsv2<0.7 || param->eff_prep_adherent_hsv2>1.0){
+        printf("Error: param->eff_prep_adherent_hsv2 is outside expected range [0.7,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
 
     if (param->eff_condom<0.5 || param->eff_condom>1.0){
         printf("Error: param->eff_condom is outside expected range [0.5,1]\nExiting\n");
@@ -1738,6 +1755,14 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+
+    if (param->eff_condom_hsv2<0.25 || param->eff_condom_hsv2>0.8){
+        printf("Error: param->eff_condom_hsv2 is outside expected range [0.25,0.8]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
     
     if (param->average_log_viral_load<3 || param->average_log_viral_load>6){
         printf("Error: param->average_log_viral_load is outside expected range [3,6]\nExiting\n");

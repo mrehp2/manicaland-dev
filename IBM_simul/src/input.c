@@ -117,6 +117,9 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 	    read_pc_future_params(patch_tag, param[p], n_runs);
         }
 
+	if (MANICALAND_CASCADE==1)
+	    read_cascade_barrier_params(patch_tag, param[p], n_runs);
+
 	
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
@@ -455,10 +458,10 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_adherent));
         check_if_cannot_read_param(checkreadok, "param_local->eff_prep_adherent");
 
+
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_condom));
         check_if_cannot_read_param(checkreadok, "param_local->eff_condom");
-	printf("eff_condom=%lf\n",param_local->eff_condom);
-	
+
 	checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
         check_if_cannot_read_param(checkreadok, "param_local->average_log_viral_load");
 
@@ -666,6 +669,18 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
             check_if_cannot_read_param(checkreadok, "param_local->mean_dur_hsv2event[hsv]");
         }
 
+
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_condom_hsv2));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_condom_hsv2");
+	printf("eff_condom_hsv2=%lf\n",param_local->eff_condom_hsv2);
+
+        checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_semiadherent_hsv2));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_prep_semiadherent_hsv2");
+
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_adherent_hsv2));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_prep_adherent_hsv2");
+	
+	
     }
     // Close parameter file
     fclose(param_file);
@@ -2504,6 +2519,116 @@ double read_PrEP_intervention_uptake_params(char *patch_tag, parameters *allrunp
     return time_start_prep_undiscretised;
 }
     
+
+
+void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+    /* Read initial condition parameter values from param_processed_patch$p_init.csv
+    
+    Parameters
+    ----------
+    file_directory: pointer to string
+        Ptr to name of the dir where the parameter file is stored
+    param: a pointer to the "parameters" struct
+        Structure where parameter values will be stored once read in from file
+    
+    Returns
+    -------
+    Nothing; reads in parameter values and populates a parameters struct
+    
+    */
+    
+    FILE *param_file;
+
+    int i_run;
+    
+    // This is a local temp variable we use so we don't have to keep 
+    // writing allparameters+i_run (or equivalently &allparameters[i_run]).
+    parameters *param_local;
+    int checkreadok;
+    /*******************  adding path before file name ********************/
+    char param_file_name[LONGSTRINGLENGTH];
+
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strcat(param_file_name, "barriers.csv");
+
+    /******************* opening parameter file ********************/
+    if((param_file = fopen(param_file_name, "r")) == NULL){
+        printf("Cannot open %s\n", param_file_name);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }else{
+        if(VERBOSE_OUTPUT == 1){
+            printf("Barrier parameters read from: %s:\n", param_file_name);
+        }
+    }
+
+    // Throw away the first line of the parameter file (the header)
+    fscanf(param_file, "%*[^\n]\n");
+
+    /******************* read parameters from each line i_run ********************/
+    for (i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+        
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_young));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_young");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_old));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_old");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_young));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_young");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_old));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_old");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_M));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_M");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_casual));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_casual");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_LT));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_LT");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_casual));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_casual");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_LT));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_LT");
+
+	
+    /* Post-intervention values: */
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_young_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_young_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_old_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_old_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_young_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_young_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_old_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_old_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_M_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_M_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_casual_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_casual_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_LT_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_LT_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_casual_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_casual_int");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_LT_int));
+        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_LT_int");
+    }
+    fclose(param_file);
+    return;
+}
 
 
 long get_python_seed(char *file_directory){

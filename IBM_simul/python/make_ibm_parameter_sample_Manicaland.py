@@ -28,6 +28,7 @@ param_popart.txt
 param_partnerships.txt
 param_PrEP_background.txt
 param_PrEP_intervention.txt
+param_barriers.txt
 Command-line arguments
 ----------------------
 indir
@@ -1035,7 +1036,7 @@ if __name__=="__main__":
 
     
     filename_list = ["param_init.txt", "param_demographics.txt", "param_times.txt", 
-                     "param_HIV.txt", "param_HSV2.txt", "param_cascade.txt", "param_partnerships.txt", "param_PrEP_background.txt", "param_PrEP_intervention.txt"]
+                     "param_HIV.txt", "param_HSV2.txt", "param_cascade.txt", "param_partnerships.txt", "param_PrEP_background.txt", "param_PrEP_intervention.txt","param_barriers.txt"]
 
     if COUNTRY in ["Zambia","SouthAfrica"]:
         filename_list+= ["param_popart.txt"]

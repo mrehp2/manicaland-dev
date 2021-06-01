@@ -195,6 +195,8 @@ gsl_rng * rng;
 #define DHS_AGE_RANGE_MAX 45  /* DHS runs from 15-59 so 45 age groups. */
 
 
+#define VMMC_MAX_AGE_CASCADE 40 /* Maximum age at which people get VMMC. */
+
 #define NCOHORTROUNDS 6 /* Number of rounds of Manicaland (or similar) cohort. */
 
 /************************************************************************/

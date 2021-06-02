@@ -224,6 +224,9 @@ gsl_rng * rng;
 #define MAX_AGE_PREP_INTERVENTION 24
 #define MAX_PREP_ONE_YEAR_AGE_SAMPLE MAX_POP_SIZE/40
 
+#define PREP_MAX_AGE_CASCADE 40 /* Maximum age at which people get PrEP. */
+
+
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
 /* Put this as a constant for now - determines if in simul.c we use PrEP intervention. Eventually will be part of counterfactual. */

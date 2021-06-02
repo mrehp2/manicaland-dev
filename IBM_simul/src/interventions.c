@@ -1973,7 +1973,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 	    if(indiv->cd4 == DEAD)
 		printf("individual %li died2 before receiving PrEP intervention.\n",indiv->id);
 	    else
-		printf("individual %li seroconverted2 before receiving PrEP intervention.\n",indiv->id);
+		printf("individual %li PrEP status %i seroconverted2 before receiving PrEP intervention.\n",indiv->id,indiv->PrEP_cascade_status);
 	    continue;
 	    //}
 	}
@@ -2040,7 +2040,7 @@ void cancel_PrEP(individual *indiv){
     
     indiv->PrEP_cascade_status=NOTONPREP;
     //if (VERBOSE_OUTPUT==1)
-    printf("individual %li died3 while on PrEP\n",indiv->id);
+    printf("individual %li is diagnosed HIV+ while on PrEP\n",indiv->id);
     //PrEP_events[indiv->idx_PrEP_event[0]][indiv->idx_PrEP_event[1]]
     //indiv->idx_PrEP_event[0] = -1;
     //indiv->idx_PrEP_event[1] = -1;

@@ -741,12 +741,22 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
     if (argc>3){
         *is_counterfactual = strtol(argv[3],NULL,10);
         /* Check that this only takes values 0 or 1: */
-        if (!(*is_counterfactual==NOT_COUNTERFACTUAL_RUN || *is_counterfactual==IS_COUNTERFACTUAL_RUN)){
-            printf("ERROR: 3rd argument (is_counterfactual) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+	if(MANICALAND_CASCADE==1){
+	    if (*is_counterfactual<NOT_COUNTERFACTUAL_RUN || *is_counterfactual>MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS){
+		printf("ERROR: 3rd argument (is_counterfactual) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
+	else{   
+	    if (!(*is_counterfactual==NOT_COUNTERFACTUAL_RUN || *is_counterfactual==IS_COUNTERFACTUAL_RUN)){
+		printf("ERROR: 3rd argument (is_counterfactual) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
     }
     else
         *is_counterfactual = NOT_COUNTERFACTUAL_RUN; /* Default value. */
@@ -894,87 +904,126 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
     /* First sort out the parts of the filename which are independent of patch number: */
     get_IBM_code_version(version,20);
 
-    if (is_counterfactual==NOT_COUNTERFACTUAL_RUN){
-        if (PCdata==0)
-            sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
-        else
-            sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_PConly.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
-    }
 
-    //Ann_out_CL01_SA_A_V1.2_patch0_RandX_RUn1_PCseed4_10.csv
-    else if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
-        if (PCdata==0)
-            sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_CF.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
-        else
-            sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_PConly_CF.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
-
-        printf("Making this run a counterfactual with label=%s\n",run_info_ending);
-    }
-    else{
-        printf("Unknown value for is_counterfactual=%i in make_output_label_struct(). Exiting\n",is_counterfactual);
-        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-        fflush(stdout);
-        exit(1);
-    }
-
-    for (p=0;p<NPATCHES;p++){
-        /* Add cluster number. Pad with a zero if needed: */
-        if (patch[p].community_id<=9)
-            sprintf(clusternumber,"_CL0%i",patch[p].community_id);
-        else if ((patch[p].community_id<100) && (patch[p].community_id>0))
-            sprintf(clusternumber,"_CL%i",patch[p].community_id);
-        else{
-            printf("Error - community_id is too large %i. Allowed values go from 1-99. Exiting. \n",patch[p].community_id);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-
-        /* community_info is the _COUNTRY_ARM_CODEVERSION_ data. */
-        if (patch[p].country_setting==ZAMBIA)
-            strcpy(community_info,"_Za_");
-        else if (patch[p].country_setting==SOUTH_AFRICA)
-            strcpy(community_info,"_SA_");
-	else if (patch[p].country_setting==ZIMBABWE)
-            strcpy(community_info,"_Zim_");
-	if (SETTING==SETTING_POPART){
-	    if (patch[p].trial_arm==ARM_A)
-		strcat(community_info,"A_");
-	    else if (patch[p].trial_arm==ARM_B)
-		strcat(community_info,"B_");
+    if (MANICALAND_CASCADE==0){
+	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN){
+	    if (PCdata==0)
+		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
 	    else
-		strcat(community_info,"C_");
+		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_PConly.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
 	}
-        strcat(community_info,version);
 
-        sprintf(patchinfo,"_patch%i",p);
+	//Ann_out_CL01_SA_A_V1.2_patch0_RandX_RUn1_PCseed4_10.csv
+	else if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
+	    if (PCdata==0)
+		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_CF.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
+	    else
+		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_PConly_CF.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
+	    
+	    printf("Making this run a counterfactual with label=%s\n",run_info_ending);
+	}
+    
 
+	for (p=0;p<NPATCHES;p++){
+	    /* Add cluster number. Pad with a zero if needed: */
+	    if (patch[p].community_id<=9)
+		sprintf(clusternumber,"_CL0%i",patch[p].community_id);
+	    else if ((patch[p].community_id<100) && (patch[p].community_id>0))
+		sprintf(clusternumber,"_CL%i",patch[p].community_id);
+	    else{
+		printf("Error - community_id is too large %i. Allowed values go from 1-99. Exiting. \n",patch[p].community_id);
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	
+	    /* community_info is the _COUNTRY_ARM_CODEVERSION_ data. */
+	    if (patch[p].country_setting==ZAMBIA)
+		strcpy(community_info,"_Za_");
+	    else if (patch[p].country_setting==SOUTH_AFRICA)
+		strcpy(community_info,"_SA_");
+	    else if (patch[p].country_setting==ZIMBABWE)
+		strcpy(community_info,"_Zim_");
+	    if (SETTING==SETTING_POPART){
+		if (patch[p].trial_arm==ARM_A)
+		    strcat(community_info,"A_");
+		else if (patch[p].trial_arm==ARM_B)
+		    strcat(community_info,"B_");
+		else
+		    strcat(community_info,"C_");
+	    }
+	    strcat(community_info,version);
+	
+	    sprintf(patchinfo,"_patch%i",p);
+	
+	
 
-        if (strlen(clusternumber)>LONGSTRINGLENGTH-1){
-            printf("Error - need to increase size of file_labels->filename_label_bypatch[p] as clusternumber[] in make_output_label_struct() is too long. Exiting\n");
-        }
-        strcpy(file_labels->filename_label_bypatch[p],clusternumber);
+	    if (strlen(clusternumber)>LONGSTRINGLENGTH-1){
+		printf("Error - need to increase size of file_labels->filename_label_bypatch[p] as clusternumber[] in make_output_label_struct() is too long. Exiting\n");
+	    }
+	    strcpy(file_labels->filename_label_bypatch[p],clusternumber);
+	    
+	    join_strings_with_check(file_labels->filename_label_bypatch[p], community_info, LONGSTRINGLENGTH, "community_info and filename_label_bypatch[] in make_output_label_struct()");
+	    join_strings_with_check(file_labels->filename_label_bypatch[p], patchinfo, LONGSTRINGLENGTH, "patchinfo and filename_label_bypatch[] in make_output_label_struct()");
+	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_bypatch[] in make_output_label_struct()");
+	    
+	    if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
+		printf("Making this run a counterfactual with label=%s\n",file_labels->filename_label_bypatch[p]);
+	    }
+	    /* These are just based on data from patch 0. */
+	    if (p==0){
+		strcpy(file_labels->filename_label_allpatches,community_info);
+		join_strings_with_check(file_labels->filename_label_allpatches, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct()");
+	    
+		/* Files e.g. duration_partnership_within_high_high_CL01_Za_A_V1.2_Rand10_Run2_0.csv. */
+		strcpy(file_labels->filename_label_allpatches_witharm_communityno,clusternumber);
+		join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, community_info, LONGSTRINGLENGTH-1, "community_info and filename_label_allpatches_witharm_communityno in make_output_label_struct()");
+		join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches_witharm_communityno in make_output_label_struct()");
+		
+	    }
+	}
+    }
 
-        join_strings_with_check(file_labels->filename_label_bypatch[p], community_info, LONGSTRINGLENGTH, "community_info and filename_label_bypatch[] in make_output_label_struct()");
-        join_strings_with_check(file_labels->filename_label_bypatch[p], patchinfo, LONGSTRINGLENGTH, "patchinfo and filename_label_bypatch[] in make_output_label_struct()");
-        join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_bypatch[] in make_output_label_struct()");
+    else if (MANICALAND_CASCADE==1){
+	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	    sprintf(run_info_ending,".csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOBARRIERS)
+	    sprintf(run_info_ending,"_NOBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOPREPBARRIERS)
+	    sprintf(run_info_ending,"_NOPREPBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOVMMCBARRIERS)
+	    sprintf(run_info_ending,"_NOVMMCBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS)
+	    sprintf(run_info_ending,"_NOCONDBARRIER.csv");
+	else{
+	    printf("Unknown value for is_counterfactual=%i in make_output_label_struct(). Exiting\n",is_counterfactual);
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	}
 
-        if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
-            printf("Making this run a counterfactual with label=%s\n",file_labels->filename_label_bypatch[p]);
-        }
-        /* These are just based on data from patch 0. */
-        if (p==0){
-            strcpy(file_labels->filename_label_allpatches,community_info);
-            join_strings_with_check(file_labels->filename_label_allpatches, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct()");
+	
+	for (p=0;p<NPATCHES;p++){
+	    if (patch[p].community_id<10)
+		sprintf(file_labels->filename_label_bypatch[p],"_CL0%i_Zim_patch%i_Rand%li_Run%i_%i",patch[p].community_id,p,python_rng_seed,i_run+1,rng_seed_offset);
+	    else
+		sprintf(file_labels->filename_label_bypatch[p],"_CL%i_Zim_patch%i_Rand%li_Run%i_%i",patch[p].community_id,p,python_rng_seed,i_run+1,rng_seed_offset);
+		
+	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
+	    printf("Making this run a Manicaland counterfactual with label=%s\n",file_labels->filename_label_bypatch[p]);
+	    
+	}
 
-            /* Files e.g. duration_partnership_within_high_high_CL01_Za_A_V1.2_Rand10_Run2_0.csv. */
-            strcpy(file_labels->filename_label_allpatches_witharm_communityno,clusternumber);
-            join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, community_info, LONGSTRINGLENGTH-1, "community_info and filename_label_allpatches_witharm_communityno in make_output_label_struct()");
-            join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches_witharm_communityno in make_output_label_struct()");
+	if (patch[p].community_id<10)
+	    sprintf(file_labels->filename_label_allpatches_witharm_communityno,"_CL0%i_Zim_Rand%li_Run%i_%i",patch[0].community_id,python_rng_seed,i_run+1,rng_seed_offset);
+	else
+	    sprintf(file_labels->filename_label_allpatches_witharm_communityno,"_CL%i_Zim_Rand%li_Run%i_%i",patch[0].community_id,python_rng_seed,i_run+1,rng_seed_offset);
 
-        }
+	join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
+	printf("Making this run a Manicaland counterfactual with allpatch label=%s\n",file_labels->filename_label_allpatches_witharm_communityno);
 
     }
+
 
 }
 
@@ -1255,45 +1304,72 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
     add_slash(output_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
 
     /* Add cluster number. Pad with a zero if needed: */
-    if (patch[p].community_id<=9)
-        sprintf(temp,"Calibration_output_CL0%i",patch[p].community_id);
-    else
-        sprintf(temp,"Calibration_output_CL%i",patch[p].community_id);
+    if (MANICALAND_CASCADE==0){
 
-    strcat(output_filename,temp);
-
-    if (patch[p].country_setting==ZAMBIA)
-        strcat(output_filename,"_Za_");
-    else if (patch[p].country_setting==SOUTH_AFRICA)
-	strcat(output_filename,"_SA_");
-    else if (patch[p].country_setting==ZIMBABWE)
-	strcat(output_filename,"_Zim_");
-    else{
-        printf("Error: Unknown country setting in make_calibration_output_filename(). exiting\n");
-	exit(1);
-    }
-
-    if (SETTING==SETTING_POPART){
-	if (patch[p].trial_arm==ARM_A)
-	    strcat(output_filename,"A_");
-	else if (patch[p].trial_arm==ARM_B)
-	    strcat(output_filename,"B_");
+	if (patch[p].community_id<=9)
+	    sprintf(temp,"Calibration_output_CL0%i",patch[p].community_id);
 	else
-	    strcat(output_filename,"C_");
-    }
+	    sprintf(temp,"Calibration_output_CL%i",patch[p].community_id);
 
-    strcat(output_filename,version);
+	strcat(output_filename,temp);
 
-    sprintf(temp,"_patch%i_",p);
-    strcat(output_filename,temp);
+	if (patch[p].country_setting==ZAMBIA)
+	    strcat(output_filename,"_Za_");
+	else if (patch[p].country_setting==SOUTH_AFRICA)
+	    strcat(output_filename,"_SA_");
+	else if (patch[p].country_setting==ZIMBABWE)
+	    strcat(output_filename,"_Zim_");
+	else{
+	    printf("Error: Unknown country setting in make_calibration_output_filename(). exiting\n");
+	    exit(1);
+	}
+
+	if (SETTING==SETTING_POPART){
+	    if (patch[p].trial_arm==ARM_A)
+		strcat(output_filename,"A_");
+	    else if (patch[p].trial_arm==ARM_B)
+		strcat(output_filename,"B_");
+	    else
+		strcat(output_filename,"C_");
+	}
+
+	strcat(output_filename,version);
+
+	sprintf(temp,"_patch%i_",p);
+	strcat(output_filename,temp);
 
 
-    if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
-        sprintf(temp,"Rand%li_PCseed%i_%i.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
-    else
-        sprintf(temp,"Rand%li_PCseed%i_%i_CF.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
-    strcat(output_filename,temp);
+	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	    sprintf(temp,"Rand%li_PCseed%i_%i.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
+	else
+	    sprintf(temp,"Rand%li_PCseed%i_%i_CF.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
+	strcat(output_filename,temp);
     //printf("output filename = %s\n",output_filename);
+    }
+    else if (MANICALAND_CASCADE==1){
+
+	if (patch[p].community_id<10)
+	    sprintf(temp,"Calibration_output_CL0%i_Zim_patch%i_Rand%li_%i",patch[p].community_id,p,python_rng_seed,rng_seed_offset);
+	else
+	    sprintf(temp,"Calibration_output_CL%i_Zim_patch%i_Rand%li_%i",patch[p].community_id,p,python_rng_seed,rng_seed_offset);
+	strcat(output_filename,temp);
+
+	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	    sprintf(temp,".csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOBARRIERS)
+	    sprintf(temp,"_NOBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOPREPBARRIERS)
+	    sprintf(temp,"_NOPREPBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOVMMCBARRIERS)
+	    sprintf(temp,"_NOVMMCBARRIER.csv");
+	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS)
+	    sprintf(temp,"_NOCONDBARRIER.csv");
+
+	strcat(output_filename,temp);
+
+	//printf("Calibration output filename = %s\n",output_filename);
+
+    }
 }
 
 /* Takes an existing string, counts the number of commas in it, and adds extra commas for padding

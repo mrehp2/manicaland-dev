@@ -1747,22 +1747,15 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 
 
 
-/* PrEP is allowed for both men and women. */
+/* Function 
+   PrEP is allowed for both men and women. */
 void start_PrEP_for_person(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t){
-    /* 
 
-    
-    Arguments
-    ---------
-    individual *indiv
-
-    -------    
-    Returns: Nothing;
-    */
 
     double t_next_PrEP_event;   /* Time of next PrEP event. */
     
-    
+    if (indiv->id==35027)
+	printf("STarting PrEP for 35027 at t=%lf\n",t);
     /* FOr debugging: */
     if(indiv->cd4 == DUMMYVALUE){
         printf("Trying to start PrEP for a non-existent person id=%ld !!! Exitin//g\n",indiv->id);
@@ -1780,15 +1773,26 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
     /*     exit(1); */
     /* } */
 
-    /*  Because of the way we draw PrEP intervention visits at the beginning of the year, it is possible some people die or become HIV+ before they are visited. If this is the case then do nothing more. */
     if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED){
 	//if (VERBOSE_OUTPUT==1){
-	if(indiv->cd4 == DEAD)
-	    printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
-	else
-	    printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
-	//}
-	return;
+	/*  Because of the way we draw PrEP intervention visits (for non-Manicaland) at the beginning of the year, it is possible some people die or become HIV+ before they are visited. If this is the case then do nothing more. */
+	if (MANICALAND_CASCADE==0){
+	    if(indiv->cd4 == DEAD)
+		printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
+	    else
+		printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
+	    //}
+	    return;
+	}
+	/* In the Manicaland cascade PrEP is done on a timestep basis so this shouldn't happen. */
+	else if (MANICALAND_CASCADE==1){
+	    if(indiv->cd4 == DEAD)
+		printf("Error: individual %li died before receiving PrEP intervention. Exiting\n",indiv->id);
+	    else
+		printf("Error: individual %li seroconverted before receiving PrEP intervention. Exiting\n",indiv->id);
+	    //}
+	    exit(1);
+	}
     }
 
 
@@ -1968,15 +1972,17 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
         
         /* If this individual is dead or seroconverted to HIV+, move on to the next person.
         Note - we can set up a similar procedure to other lists to remove this person from this list. */
-	if(indiv->cd4 == DEAD || indiv->HIV_status>UNINFECTED){
-	    //if (VERBOSE_OUTPUT==1){
-	    if(indiv->cd4 == DEAD)
+	if(indiv->cd4 == DEAD){
+	    /* For dead people, we don't need to do any new PrEP events (so use 'continue' to go to next person in the event list). */
+	    //if (VERBOSE_OUTPUT==1)
 		printf("individual %li died2 before receiving PrEP intervention.\n",indiv->id);
-	    else
-		printf("individual %li PrEP status %i seroconverted2 before receiving PrEP intervention.\n",indiv->id,indiv->PrEP_cascade_status);
 	    continue;
-	    //}
 	}
+	/* For people who've seroconverted, we still carry on as normal assigning them a new PrEP event: */
+	//if (VERBOSE_OUTPUT==1)
+	if(indiv->HIV_status>UNINFECTED)
+	    printf("individual %li PrEP status %i seroconverted2 before PrEP event %i at t=%lf.\n",indiv->id,indiv->PrEP_cascade_status,indiv->next_PrEP_event,t);
+
 
 
 	/* If uncircumcised but waiting for VMMC then at this timestep they get circumcised. */
@@ -2015,7 +2021,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 
 
 /* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. */
-void cancel_PrEP(individual *indiv){
+void cancel_PrEP(individual *indiv, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events){
 
     /* /\* FOR DEBUGGING: *\/ */
     /* if (cascade_events[i][indiv->idx_cascade_event[1]]->id!=indiv->id){ */
@@ -2037,10 +2043,10 @@ void cancel_PrEP(individual *indiv){
     /* 	/\* We have removed one person: *\/ */
     /* 	n_cascade_events[i]--; */
     /* } */
-    
+    printf("individual %li is diagnosed HIV+ while on PrEP status=%i\n",indiv->id,indiv->PrEP_cascade_status);
     indiv->PrEP_cascade_status=NOTONPREP;
     //if (VERBOSE_OUTPUT==1)
-    printf("individual %li is diagnosed HIV+ while on PrEP\n",indiv->id);
+    
     //PrEP_events[indiv->idx_PrEP_event[0]][indiv->idx_PrEP_event[1]]
     //indiv->idx_PrEP_event[0] = -1;
     //indiv->idx_PrEP_event[1] = -1;

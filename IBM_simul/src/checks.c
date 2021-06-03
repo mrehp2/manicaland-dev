@@ -39,6 +39,9 @@
 
 void check_partnership_formation(all_partnerships *overall_partnerships, parameters *param, 
     debug_struct *debug, file_struct *file_data_store){
+
+    /* For testing, we assume that this is not the counterfactual. */
+    int temp_is_counterfactual = 0;
     
     printf("-------------------------------------\n");
     printf("Check partnership formation:\n");
@@ -98,13 +101,13 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
 
     /* forming partnership between them and checking things are OK */
     new_partnership( indiv1, indiv3,param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+		     overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership( indiv1, indiv4, param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+        overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership( indiv2, indiv4, param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+        overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
 
     printf("- After partnership formation:\n");
@@ -146,6 +149,10 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
 
     int i;
 
+    /* For testing, we assume that this is not the counterfactual. */
+    int temp_is_counterfactual = 0;
+
+    
     printf("-------------------------------------\n");
     printf("Check partnership formation and HIV acquisition:\n");
 
@@ -228,13 +235,13 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
 
     /* forming partnership between them and checking things are OK */
     new_partnership(indiv1, indiv3, patch[p].param->start_time_simul, 
-        overall_partnerships, patch[p].param, debug, file_data_store);
+        overall_partnerships, patch[p].param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership(indiv1, indiv4, patch[p].param->start_time_simul, 
-        overall_partnerships, patch[p].param, debug, file_data_store);
+        overall_partnerships, patch[p].param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership(indiv2, indiv4, patch[p].param->start_time_simul, 
-        overall_partnerships, patch[p].param, debug, file_data_store);
+        overall_partnerships, patch[p].param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
 
     print_partnership(&overall_partnerships->partner_pairs[0]);
@@ -322,6 +329,11 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
     
     long initial_n_partnerships = *overall_partnerships->n_partnerships;
     int i;
+
+
+    /* For testing, we assume that this is not the counterfactual. */
+    int temp_is_counterfactual = 0;
+
     /* creating 2 women (indiv1 and indiv2) and 2 men (indiv3 and indiv4) */
 
     printf("-------------------------------------\n");
@@ -375,13 +387,13 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
 
     /* forming partnership between them and checking things are OK */
     new_partnership(indiv1, indiv3, param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+        overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership(indiv1, indiv4, param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+        overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
     new_partnership(indiv2, indiv4, param->start_time_simul, 
-        overall_partnerships, param, debug, file_data_store);
+        overall_partnerships, param, debug, file_data_store, temp_is_counterfactual);
     (*overall_partnerships->n_partnerships) ++;
 
     printf("- Before partnership dissolution:\n");

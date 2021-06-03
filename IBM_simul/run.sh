@@ -59,8 +59,9 @@ if [ -z "$1" ]; then
 
     #echo "NOT COUNTERFACTUAL"
     echo "********RUNNING IBM**********"
-    
-    $ibmdir/popart-simul.exe $outputdirectory $nruns
+
+    # Last argument: 0=not counterfactual, 1=full counterfactual, 2=PREP, 3=VMMC, 4=CONDOM barriers off.
+    $ibmdir/popart-simul.exe $outputdirectory $nruns 0
 
     # Now go and generate ART output files 
     # e.g. ART_distribution_CL05_Za_A_V1.2_patch0_Rand10_Run2_0.csv and

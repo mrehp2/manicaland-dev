@@ -46,7 +46,7 @@
 void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         all_partnerships *overall_partnerships,
         parameters *param, debug_struct *debug,
-        file_struct *file_data_store){
+		     file_struct *file_data_store, int is_counterfactual){
     /////// before calling this function one needs to check whether it is possible to form such a partnership
     /////// ie if ind1 and ind2 have some "free" partnerships,
     /////// are indeed of opposite sex,
@@ -292,7 +292,7 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     }
 
     /* Initialise condom use for partnership: */
-    get_partnership_condom_use(ind1, ind2, t_form_partnership, pair->duration_in_time_steps *TIME_STEP);
+    get_partnership_condom_use(ind1, ind2, t_form_partnership, pair->duration_in_time_steps *TIME_STEP, is_counterfactual);
 
     
     
@@ -761,7 +761,7 @@ void draw_nb_new_partnerships(patch_struct *patch, parameters *param, int patch_
 
 void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int r_f, int ag_m, 
     int r_m, int *n_non_matchable, all_partnerships *overall_partnerships, patch_struct *patch, 
-    int patch_f, int patch_m, debug_struct *debug, file_struct *file_data_store){
+    int patch_f, int patch_m, debug_struct *debug, file_struct *file_data_store, int is_counterfactual){
     
     /*
     Form a certain number of partnerships (n) between given age/risk groups in men and women, 
@@ -909,7 +909,7 @@ void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int 
                     
                     new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]],
                             popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]],
-                            time, overall_partnerships, param, debug, file_data_store);
+				    time, overall_partnerships, param, debug, file_data_store, is_counterfactual);
                     
                     (*overall_partnerships->n_partnerships) ++;
 
@@ -956,7 +956,7 @@ void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int 
             }else /* if the initially selected male was not already in a partnership with this female */
             {
                 /* form a partnership */
-                new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]], popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]], time, overall_partnerships, param, debug, file_data_store);
+                new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]], popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]], time, overall_partnerships, param, debug, file_data_store, is_counterfactual);
                 (*overall_partnerships->n_partnerships)++;
                 /* remove the corresponding idx_available_partnership right away, for females */
                 idx_found = 0;
@@ -1074,7 +1074,7 @@ void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int 
 
 void draw_new_partnerships(int time, all_partnerships *overall_partnerships, patch_struct *patch,
     parameters *param, int patch_f, int patch_m, debug_struct *debug, 
-    file_struct *file_data_store){
+			   file_struct *file_data_store, int is_counterfactual){
     // !!! here I kept param as an argument as we may want to generate a parameter set which is a
     // "mix" betwen the parameters of two patches if these are different
 
@@ -1145,7 +1145,7 @@ void draw_new_partnerships(int time, all_partnerships *overall_partnerships, pat
 
                     draw_n_new_partnerships(time, param->balanced_nb_f_to_m[ag_f][r_f][ag_m][r_m], 
                         param, ag_f, r_f, ag_m, r_m, &n_non_matchable, overall_partnerships, patch, 
-                        patch_f, patch_m, debug, file_data_store);
+					    patch_f, patch_m, debug, file_data_store, is_counterfactual);
                     
                     tmp = n_non_matchable;
                     /* if some of the pairs could not be formed because they were already in a partnership together and we couldn't find another suitable male for that female, we redraw the corresponding number of pairs */
@@ -1153,7 +1153,7 @@ void draw_new_partnerships(int time, all_partnerships *overall_partnerships, pat
                         index++;
                         draw_n_new_partnerships(time, n_non_matchable, param, ag_f, r_f, ag_m, r_m,
                             &tmp, overall_partnerships, patch, patch_f, patch_m, debug, 
-                            file_data_store);
+                            file_data_store, is_counterfactual);
                         
                         n_non_matchable = tmp;
                     }

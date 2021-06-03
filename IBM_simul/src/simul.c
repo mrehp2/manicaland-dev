@@ -153,7 +153,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
         
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
-						     debug, file_data_store);
+						     debug, file_data_store, is_counterfactual);
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/
@@ -287,7 +287,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
 void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_struct *patch,
     all_partnerships * overall_partnerships, output_struct *output, debug_struct *debug,
-    file_struct *file_data_store){
+						  file_struct *file_data_store, int is_counterfactual){
     /* Carry out processes associated with partnership dissolution (non-death related), partnership
     formation and HIV acquisition between serodiscordant partnerships.  
     
@@ -359,7 +359,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
             
             /* Draw partnerships between females in patch p and males in patch q */
             draw_new_partnerships(t, overall_partnerships, patch, patch[p].param, p, q, debug,
-                file_data_store);
+                file_data_store, is_counterfactual);
         }
     }
     
@@ -1009,7 +1009,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
     else if(MANICALAND_CASCADE==1){
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
-	    draw_PrEP_through_barriers(t, patch, p);
+	    draw_PrEP_through_barriers(t, patch, p, is_counterfactual);
 	}
     }
 
@@ -1055,7 +1055,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
-	    draw_VMMC_through_barriers(t, patch, p);
+	    draw_VMMC_through_barriers(t, patch, p, is_counterfactual);
 	}
     }
     

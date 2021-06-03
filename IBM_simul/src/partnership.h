@@ -21,7 +21,7 @@
 #include "structures.h"
 
 void new_partnership(individual* , individual* , int , all_partnerships *, parameters *, 
-    debug_struct *, file_struct *);
+		     debug_struct *, file_struct *, int);
 int time_to_partnership_dissolution(parameters *, int r_m, int r_f, int p_m, int p_f);
 void breakup(double, partnership*, all_partnerships *);
 void update_list_available_partners_breakup(double , partnership* , population_partners*, 
@@ -35,8 +35,8 @@ void update_list_susceptibles_in_serodiscordant_partnerships_breakup(partnership
 void update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(partnership* breakup, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
 void draw_nb_new_partnerships(patch_struct *, parameters *, int, int);
 void draw_n_new_partnerships(int , long, parameters *, int , int , int , int , int *,
-        all_partnerships *, patch_struct *, int , int , debug_struct *, file_struct *);
+        all_partnerships *, patch_struct *, int , int , debug_struct *, file_struct *, int);
 void draw_new_partnerships(int , all_partnerships *, patch_struct *, parameters *, int , int , 
-    debug_struct *, file_struct *);
+			   debug_struct *, file_struct *, int);
 
 #endif /* PARTNERSHIP_H_ */

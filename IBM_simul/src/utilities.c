@@ -1010,17 +1010,17 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 		sprintf(file_labels->filename_label_bypatch[p],"_CL%i_Zim_patch%i_Rand%li_Run%i_%i",patch[p].community_id,p,python_rng_seed,i_run+1,rng_seed_offset);
 		
 	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
-	    printf("Making this run a Manicaland counterfactual with label=%s\n",file_labels->filename_label_bypatch[p]);
+	    printf("Making this run a Manicaland run with label=%s\n",file_labels->filename_label_bypatch[p]);
 	    
-	}
+	}	
 
-	if (patch[p].community_id<10)
+	if (patch[0].community_id<10)
 	    sprintf(file_labels->filename_label_allpatches_witharm_communityno,"_CL0%i_Zim_Rand%li_Run%i_%i",patch[0].community_id,python_rng_seed,i_run+1,rng_seed_offset);
 	else
 	    sprintf(file_labels->filename_label_allpatches_witharm_communityno,"_CL%i_Zim_Rand%li_Run%i_%i",patch[0].community_id,python_rng_seed,i_run+1,rng_seed_offset);
 
 	join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
-	printf("Making this run a Manicaland counterfactual with allpatch label=%s\n",file_labels->filename_label_allpatches_witharm_communityno);
+	printf("Making this run a Manicaland run with allpatch label=%s\n",file_labels->filename_label_allpatches_witharm_communityno);
 
     }
 

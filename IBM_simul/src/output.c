@@ -872,6 +872,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     */
     
     int aa, a, g, r, ai;
+    int age;
     long n_id;
     long npositive_wrong=0;
     long nincident=0;
@@ -910,8 +911,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     /************************/
 
     long N_women_waiting_PrEP = 0;
-    long N_women_on_PrEP_adherent = 0;
-    long N_women_on_PrEP_semiadherent = 0;
+    long N_women_on_PrEP_adherent_under25 = 0;
+    long N_women_on_PrEP_adherent_25plus = 0;
+    long N_women_on_PrEP_semiadherent_under25 = 0;
+    long N_women_on_PrEP_semiadherent_25plus = 0;
     long N_men_on_PrEP_adherent = 0;
     long N_men_on_PrEP_semiadherent = 0;
     
@@ -1014,6 +1017,9 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     for (n_id = 0; n_id < patch[p].id_counter; n_id++){
         /* Check that the person is not dead: */
         if (patch[p].individual_population[n_id].cd4!=DEAD){
+
+	    age = (int) floor(year - patch[p].individual_population[n_id].DoB);
+	    
             /* Count number of peole currently alive who had an HIV test in the past year. */
             if ((year - patch[p].individual_population[n_id].time_last_hiv_test) <= 1.0){
                 NTestedLastYear++;
@@ -1062,10 +1068,18 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
             }else{ /* Else female */
 
 		/* PrEP outputs: */
-		if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_ADHERENT)
-		    N_women_on_PrEP_adherent++;
-		else if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_SEMIADHERENT)
-		    N_women_on_PrEP_semiadherent++;
+		if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_ADHERENT){
+		    if(age<=25)
+			N_women_on_PrEP_adherent_under25++;
+		    else
+			N_women_on_PrEP_adherent_25plus++;
+		}
+		else if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_SEMIADHERENT){
+		    if(age<=25)
+			N_women_on_PrEP_semiadherent_under25++;
+		    else
+			N_women_on_PrEP_semiadherent_25plus++;
+		}
 		else if (patch[p].individual_population[n_id].PrEP_cascade_status==WAITINGTOSTARTPREP)
 		    N_women_waiting_PrEP++;
 
@@ -1118,7 +1132,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     
     if(PCdata == 0){
         
-        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1149,15 +1163,17 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 N_men_MC/(1.0*npop_m),
 		N_men_VMMC,
 		N_women_waiting_PrEP,
-		N_women_on_PrEP_adherent,
-		N_women_on_PrEP_semiadherent,
+		N_women_on_PrEP_adherent_under25,
+		N_women_on_PrEP_adherent_25plus,
+		N_women_on_PrEP_semiadherent_under25,
+		N_women_on_PrEP_semiadherent_25plus,
 		N_men_on_PrEP_adherent,
 		N_men_on_PrEP_semiadherent,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
 	
     }else if(PCdata == 1){
-        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1188,8 +1204,10 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
                 N_men_MC/(1.0*npop_m),
 		N_men_VMMC,
 		N_women_waiting_PrEP,
-		N_women_on_PrEP_adherent,
-		N_women_on_PrEP_semiadherent,
+		N_women_on_PrEP_adherent_under25,
+		N_women_on_PrEP_adherent_25plus,
+		N_women_on_PrEP_semiadherent_under25,
+		N_women_on_PrEP_semiadherent_25plus,
 		N_men_on_PrEP_adherent,
 		N_men_on_PrEP_semiadherent,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
@@ -2806,7 +2824,7 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "NHIVTestedThisYear,NOnARTM,NNeedARTM,NOnARTF,NNeedARTF,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
-	    "PropMenCirc,NMenVMMC,N_women_waiting_PrEP,N_women_on_PrEP_adherent,N_women_on_PrEP_semiadherent,N_men_on_PrEP_adherent,N_men_on_PrEP_semiadherent,");    
+	    "PropMenCirc,NMenVMMC,N_women_waiting_PrEP,N_women_on_PrEP_adherent_under25,N_women_on_PrEP_adherent_25plus,N_women_on_PrEP_semiadherent_under25,N_women_on_PrEP_semiadherent_25plus,N_men_on_PrEP_adherent,N_men_on_PrEP_semiadherent,");    
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NindInSdPart,NDied_from_HIV,NHIV_pos_dead,N_dead,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
 	 "annual_incident_hsv2,nprevalent_hsv2_m,nprevalent_hsv2_f,nprevalent_hsv2_check,");

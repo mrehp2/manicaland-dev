@@ -8,19 +8,19 @@ import glob, sys, os, re, math
 def read_calibration_file(infilename):
     infile = open(infilename,"r")
     calibration_data_strings = infile.read().rstrip().splitlines()
-    header = [calibration_data_strings[0].rstrip(",").split(",")]
+    #header = [calibration_data_strings[0].rstrip(",").split(",")]
     calibration_data = []
     for line in calibration_data_strings[1:]:
         split_line = line.rstrip(",").split(",")
         calibration_data += [[int(x) for x in split_line]]
-    return [header,calibration_data]
+    return calibration_data
 
 
 def get_calibration_results_dirs(calibration_root_dir):
     possible_calibration_results_dirs = [x[0] for x in os.walk(calibration_root_dir)]
     # Now check that these are of the form "..../RESULTSX":
     checked_dirs = []
-    pattern = re.compile("^(RESULTS[1-9]+[0-9]*)")
+    pattern = re.compile("^(RESULTS[1-9]*[0-9]*)")
     for dir in possible_calibration_results_dirs:
         string_to_check = dir.split("/")[-1]
         if pattern.match(string_to_check):
@@ -32,7 +32,6 @@ def get_calibration_results_dirs(calibration_root_dir):
 def decompose(file_name):
     cluster_no = file_name.split("CL")[1].split("_")[0]
     country = file_name.split("_")[3].split("_")[0]
-    version = file_name.split("_")[4].split("_")[0].lstrip("V")
     patchno = file_name.split("_patch")[1].split("_")[0]
     rand = file_name.split("_Rand")[1].split("_")[0]
     if ("PCseed" in file_name):
@@ -41,25 +40,29 @@ def decompose(file_name):
         pcseed = -1
     randseed = file_name.split("_")[-1].rstrip(".csv")
 
-    return [cluster_no,country,version,patchno,rand, pcseed,randseed]
+    return [cluster_no,country,patchno,rand, pcseed,randseed]
 
 
     
 def check_calibration_files_consistent(dir_list):
-    #print "in check_calibration_files_consistent dir_list=",dir_list
+    print "in check_calibration_files_consistent dir_list=",dir_list
     checked_files = []
     for i in range(len(dir_list)):
         potential_calibration_files = glob.glob(dir_list[i]+"/Output/Calibration*.csv")
+        if potential_calibration_files==[]:
+            potential_calibration_files = glob.glob(dir_list[i]+"/Calibration*.csv")
         for j in range(len(potential_calibration_files)):
             # Get the filename:
             f_name = potential_calibration_files[j].split("/")[-1]
+
             if (i==0 and j==0):
                 # Check that the first filename is consistent with all the other filenames:
-                [community,country,version,patchno,rand,pcseed,randseed] = decompose(f_name)
+                [community,country,patchno,rand,pcseed,randseed] = decompose(f_name)
             else:
                 # if there is no "PCseed": 
                 if pcseed==-1:
-                    pattern = re.compile("Calibration_output_CL"+community+"_"+country+"_V"+version+"_patch"+patchno+"_Rand[1-9]+[0-9]*_[0-9]+.csv")
+                    pattern = re.compile("Calibration_output_CL"+community+"_"+country+"__patch"+patchno+"_Rand[1-9]+[0-9]*_[0-9]+.csv")
+
                     if not(pattern.match(f_name)):
                         print "Error: filename",f_name," does not match expected format with no pcseed"
                         sys.exit(1)
@@ -81,13 +84,6 @@ def add_slash(directory):
         return directory+"/"
 
 
-def make_age_grouping_dictionary(min_age,max_age, width):
-    # Use integer division:
-    offset = min_age/width   # This is the 0 group.
-    age_grouping_dictionary = {}
-    for a in range(min_age,max_age+1):
-        age_grouping_dictionary[a] = a/width - offset
-    return age_grouping_dictionary
     
 
 def test_condition(a,f,n,r,g,denominator):
@@ -99,35 +95,46 @@ def test_condition(a,f,n,r,g,denominator):
         return 1
     else:
         return 0
+
+
+def convert_sorted_to_dictionary(sorted_list):
+    output_dictionary = {}
+
+    # sorted_list is of the form: [(('10_PCseed0_0', 0), -1185011.544119031), (('10_PCseed0_0', 31), -1185180.2019216502)]
+    for entry in sorted_list:
+        output_dictionary[entry[0]] = entry[1]
+    return output_dictionary
         
+    
+########################################################
+###     Functions using IBM calibration files:      ####
+########################################################
 
-#################################################
-###      Read in IBM calibration files:      ####
-#################################################
 
-def read_ibm_calibration_files(calibration_root_dir):
+def get_calibration_filenames_and_check_headers(calibration_root_dir):
     # Ensure that the directory ends in "/":
     calibration_root_dir = add_slash(calibration_root_dir)
-
+    print "Dir=",calibration_root_dir
     # Get all the sub-directories where the Calibration*.csv files are:
     calibration_results_dirs = get_calibration_results_dirs(calibration_root_dir)
-    # Print where we're getting results from:
-    print calibration_results_dirs
+
     # Find the files in those sub-directories, and check that they are all named the right way e.g. Calibration_output_CL05_Zim_V2.0_patch0_Rand1_PCseed0_0.csv 
+    check_calibration_files_consistent(calibration_results_dirs)
     [calibration_files,community] = check_calibration_files_consistent(calibration_results_dirs)
 
     # Number of files
     nfiles = len(calibration_files)
     print "Number of IBM calibration files to read = ",nfiles
-    # Now read in the data and header from each file:
-    calibration_data = {}
-    for f in calibration_files:
-        calibration_data[f] =[]
+    # Now read in the header from each file:
 
-    
     header = [[] for i in range(nfiles)]
     for i in range(nfiles):
-        [header[i],calibration_data[calibration_files[i]]] = read_calibration_file(calibration_files[i])
+        f = calibration_files[i]
+        thisfile = open(f)
+        header[i] = [thisfile.readline().rstrip("\n").rstrip(",").split(",")]
+
+        thisfile.close()
+        
 
     # Check that all the headers match:
     for i in range(1,nfiles):
@@ -140,7 +147,9 @@ def read_ibm_calibration_files(calibration_root_dir):
     for i in header:
         full_header += i
     full_header_string = ",".join(full_header[0])
-    return [community,header[0][0],calibration_data,full_header_string]
+    return [community,header[0][0],calibration_files,full_header_string]
+
+
 
 # For survey data split things like "M25" or "F46" to be gender+age:
 def split_survey_datatype(instring):
@@ -150,10 +159,14 @@ def split_survey_datatype(instring):
     return [gender,age]
     
 
+
+
+
 # For IBM calibration file:
 def unpack_header(header):
+
     if (not(header[0]=="SampleNumber") or not(header[1]=="RepNumber") or not(header[2]=="RunNumber") or not(header[3]=="RandomSeed")):
-        print "error in header for IBM calibration file: first 4 entries should be SampleNumber, RepNumber, RunNumber, RandomSeed. Exiting\n"
+        print "error in header for IBM calibration file: first 4 entries should be SampleNumber, RepNumber, RunNumber, RandomSeed. Exiting\n",header
         sys.exit(1)
 
     surveytypes = {}
@@ -204,62 +217,6 @@ def unpack_header(header):
     return [surveytypes,lookup_table]
 
 
-
-
-def structure_ibm_data(model_data_array, header):
-    [ibm_datatypes,lookup_table] = unpack_header(header)
-    surveytypes = ibm_datatypes.keys()
-    ibm_data_structure = {}
-    #print model_data_array
-
-    # We make the storage dictionary here, so we can have it arranged by survey type etc:
-
-    for s in surveytypes:     # Look for different types of survey (DHS, CHiPs, cohort).
-        ibm_data_structure[s] = {}
-        for f in model_data_array.keys(): # Go through each Calibration.csv file:
-            ibm_data_structure[s][f] = []
-            nruns = len(model_data_array[f])
-            # Create an array of (blank) dictionaries - each element of the array is a run from a calibration file.
-            for n in range(nruns):
-                ibm_data_structure[s][f] += [{}]
-
-            #Now fill the array of dictionaries.
-            for n in range(nruns):        # Go through the runs in a single Calibration.csv file.                 
-                rounds = ibm_datatypes[s].keys()
-                for r in rounds:      # Rounds of the given survey type:
-                    ibm_data_structure[s][f][n][r] = {}                
-                    datatypes = ibm_datatypes[s][r].keys()
-                    for t in datatypes:   # Outcomes (prevalence, 90-90-90 etc collected in the survey).
-                        ibm_data_structure[s][f][n][r][t] = {}
-                        genders = ibm_datatypes[s][r][t].keys()
-                        for g in genders:
-                            ibm_data_structure[s][f][n][r][t][g] = {}
-                            # We do ages when we enter data into the structure.
-
-    
-    # Now we put the data from each Calibration file into ibm_data_structure:
-    for f in model_data_array.keys(): # Go through each Calibration.csv file:
-        nruns = len(model_data_array[f])
-        for n in range(nruns):        # Go through the runs in a single Calibration.csv file.
-            for s in surveytypes:     # Look for different types of survey (DHS, CHiPs, cohort).
-                rounds = ibm_datatypes[s].keys()
-                for r in rounds:      # Rounds of the given survey type:
-                    datatypes = ibm_datatypes[s][r].keys()
-                    for t in datatypes:   # Outcomes (prevalence, 90-90-90 etc collected in the survey).
-                        genders = ibm_datatypes[s][r][t].keys()
-                        for g in genders:
-                            ages = range(ibm_datatypes[s][r][t][g]['minage'],ibm_datatypes[s][r][t][g]['maxage']+1)
-                            for a in ages:
-                                dataname = s+r.replace("R","Round")+t+g+str(a)
-                                i = lookup_table[dataname]
-                                ibm_data_structure[s][f][n][r][t][g][a] = model_data_array[f][n][i]
-
-    return ibm_data_structure
-#for surevytype in :
-#        print surveytype,": rounds ",
-#    for r in ibm_datatypes[surveytype].keys():
-#        for t in ibm_datatypes[surveytype][r].keys():
-#            print ibm_datatypes[surveytype][r][t].keys()
 
     
 ###########################################################################
@@ -315,116 +272,108 @@ def read_survey_files(rounds):
     return [header,survey_data_store]
 
 
-def get_cohort_likelihood(survey_data,model_data, age_groupings, N_BESTFITS):
-    survey_rounds = survey_data.keys()
+##################################################
+###  Get best fits from a single file:         ###
+##################################################
 
-    model_data_files = model_data.keys()
-    model_data_runs = len(model_data[model_data_files[0]])
-    
-    model_data_rounds_dict = model_data[model_data_files[0]][0]
-    model_data_rounds = model_data_rounds_dict.keys()
+#def get_cohort_likelihood(survey_data,model_data, age_groupings, N_BESTFITS):
+def get_cohort_likelihood_bestfits_fromonerun(model_calibration_filename,  model_header,survey_data, survey_header, N_BESTFITS):
+#def structure_ibm_data(model_data_array, header):
 
-    model_data_datatypes_dict = model_data_rounds_dict[model_data_rounds[0]]
-    model_data_datatypes = model_data_datatypes_dict.keys()
-    
-    model_data_genders_dict = model_data_datatypes_dict[model_data_datatypes[0]]
-    model_data_genders = model_data_genders_dict.keys()
+    model_data = read_calibration_file(model_calibration_filename)
+    nruns = len(model_data)
 
-    model_data_age_dict = model_data_genders_dict[model_data_genders[0]]
-    model_data_age = model_data_age_dict.keys()
+    filekey = model_calibration_filename.split("_Rand")[1].rstrip(".csv")
+    #filekey = model_calibration_filename
+#####HERE
 
-    age_group_indices = []
-    for k in age_groupings.keys():
-        if not(age_groupings[k] in age_group_indices):
-            age_group_indices += [age_groupings[k]]
-    print age_group_indices
-    model_k = []
-    model_N = []
-    survey_k = []
-    survey_N = []
+    [ibm_datatypes,lookup_table] = unpack_header(model_header)
+    model_surveytypes = ibm_datatypes.keys()
 
-    for age_gp_index in age_group_indices:
-        model_k += [0]
-        model_N += [0]
-        survey_k += [0]
-        survey_N += [0]
+    survey_data_surveytypes = survey_data.keys()
 
-    print model_data_rounds
-    print model_data_datatypes
-    print model_data_genders
-    print model_data_age
-    
-    print survey_rounds
-    # Check that survey_rounds is a subset of model_data_rounds:
-    if not(set(survey_rounds) <= set(model_data_rounds)):
-        print "Error: IBM model data does not have the same rounds as the survey data"
+    if not(set(survey_data_surveytypes) <= set(model_surveytypes)):
+        print "Error:Some survey data surveytypes not included in model surveytypes. Exiting"
         sys.exit(1)
-        
-    # For each indicator, look up the denominator:
-    numerator_denominator = {"Npos":"Ntot", "Naware":"Npos", "NonART":"Naware"}
-    numerators = numerator_denominator.keys()
+
     
-    if not(set(numerator_denominator.keys()) <= set(model_data_datatypes)):
-        print "Error: IBM model data contains indicators not given in get_cohort_likelihood(). Need to extend numerator_denominator"
-        sys.exit(1)
-        
     # Store log-likelihoods:
     log_likelihood_by_round = {}
-    for f in model_data_files:
-        resultsdir = f.split("/")[-1]
-        for n in range(model_data_runs):
-            log_likelihood_by_round[(resultsdir,n)] = 0
+    for n in range(nruns):
+        log_likelihood_by_round[(filekey,n)] = 0
 
-    #print model_data["/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/RESULTS2/Calibration_output_CL05_Zim_V2.0_patch0_Rand10_PCseed0_0.csv"][1]["R1"]["Ntot"]["F"]
-                
-    # IBM data store format is ibm_data_structure[s][f][n][r][t][g][a].
-    for f in model_data_files:
-        resultsdir = f.split("/")[-1]
-        for n in range(model_data_runs):
-            for r in survey_rounds:
-                # Loop through survey types:
-                for numerator in numerators:
-                    denominator = numerator_denominator[numerator]
-                    #for t in  model_data_datatypes:
-                    for g in model_data_genders:
-                        for age_gp_index in age_group_indices:
-                            model_k[age_gp_index] = 0
-                            model_N[age_gp_index] = 0
-                            survey_k[age_gp_index] = 0
-                            survey_N[age_gp_index] = 0
-                        sum = 0
-                        for a in model_data_age:
-                            age_gp_index = age_groupings[a]
-                            model_k[age_gp_index] += model_data[f][n][r][numerator][g][a]
-                            model_N[age_gp_index] += model_data[f][n][r][denominator][g][a]
-                            survey_k[age_gp_index] += survey_data[r][numerator][g][a]
-                            survey_N[age_gp_index] += survey_data[r][denominator][g][a]
-                            if test_condition(a,f,n,r,g,denominator):
-                                sum += model_data[f][n][r][denominator][g][a]
-                                #print n,r,g,denominator,sum,age_gp_index,model_data[f][n][r][denominator][g][a]
-                       # print sum#print model_k[age_gp_index],model_N[age_gp_index]
+    # For each indicator, look up the denominator:
+    numerator_denominator = {"Npos":"Ntot", "Naware":"Npos", "NonART":"Naware"}
+    possible_numerators = numerator_denominator.keys()
+
+            
+
+    for n in range(nruns):        # Go through the runs in a single Calibration.csv file.                 
+        for s in survey_data_surveytypes:     # Look for different types of survey (DHS, CHiPs, cohort).
+            rounds = survey_data[s].keys()
+            for r in rounds:      # Rounds of the given survey type:
+                survey_numerators = list(set(possible_numerators).intersection(set(survey_data[s][r].keys())))
+
+                for t in survey_numerators:   # Outcomes (prevalence, 90-90-90 etc collected in the survey).
+                    denominator = numerator_denominator[t]
+
+                    genders = survey_data[s][r][t].keys()
+                    for g in genders:
+                        minage = max(min(survey_data[s][r][t][g]),15)
+                        if not(minage%5==0):
+                            minage = minage + (5-minage%5)
+                        maxage = max(survey_data[s][r][t][g])-5
+                        if not(maxage%5==0):
+                            maxage = maxage - maxage%5
+                        ages = range(minage,maxage,5)
+                        #    if not(set(survey_rounds) <= set(model_data_rounds)):
+                        #        print "Error: IBM model data does not have the same rounds as the survey data"
+                        #    if not(set(numerators) <= set(model_data_datatypes)):
+                        #        print "Error: IBM model data contains indicators not given in get_cohort_likelihood(). Need to extend numerator_denominator"
+                            
+                        model_k = 0
+                        model_N = 0
+                        survey_k = 0
+                        survey_N = 0
+                        for age_gp_start in ages:
+
+                            dataname_numerator_start = s+r.replace("R","Round")+t+g+str(age_gp_start)
+                            dataname_denominator_start = s+r.replace("R","Round")+denominator+g+str(age_gp_start)
+                            i_numerator_start = lookup_table[dataname_numerator_start]
+                            i_denominator_start = lookup_table[dataname_denominator_start]
+                            for a in range(5):
+                                #print filekey,n,i_numerator_start+a,a,age_gp_start
+                                model_k += model_data[n][i_numerator_start+a]
+                                model_N += model_data[n][i_denominator_start+a]
+
+                                survey_k += survey_data[s][r][t][g][a+age_gp_start]
+                                survey_N += survey_data[s][r][denominator][g][a+age_gp_start]
+                            log_likelihood_by_round[(filekey,n)] += calculate_log_likelihood(survey_k,survey_N,model_k,model_N)
+
+
+
                                 
-                        #
-                                                
-                        for age_gp_index in age_group_indices:
-                            #print "PP",g,age_gp_index, numerator,denominator
-                            log_likelihood_by_round[(f,n)] += calculate_log_likelihood(survey_k[age_gp_index],survey_N[age_gp_index],model_k[age_gp_index],model_N[age_gp_index])
-
-    #Print for debugging - checked that sorting works OK.
-    #for f in model_data_files:
-    #    for n in range(model_data_runs):
-    #        print f.split("/")[-2:-1],n,log_likelihood_by_round[(f,n)]
-
-    # Needs python3!
-    #res = dict(sorted(log_likelihood_by_round.items(), key = itemgetter(1), reverse = True)[:10])
 
     res = sorted( log_likelihood_by_round.items(), key=lambda pair: pair[1], reverse=True )[:N_BESTFITS]
-    return res
+    best_fits_likelihoods = convert_sorted_to_dictionary(res)
+    print best_fits_likelihoods
+    
+    best_fits_data = {}
+    for data_key in best_fits_likelihoods.keys():
+        n = data_key[1]
+        best_fits_data[data_key] = ",".join([str(x) for x in model_data[n]])
+    return [best_fits_likelihoods,best_fits_data]
         
 
 # Given k observed 'heads' out of N trials, calculate the associated log-likelihood (log to base e):
 def calculate_log_likelihood(survey_k, survey_N, model_k, model_N):
 
+    # Make a table of factorials here:
+    log_factorials = []
+    # Ramunajan's approximation is good to 10^-10 when N=50, so cap the exact calculation at 100:
+    for i in range(101):
+        log_factorials += [math.log(math.factorial(i))]
+        
     # If denominator is zero, then ignore this:
     if ((model_N==0) or (survey_N==0)):
         return 0
@@ -442,16 +391,17 @@ def calculate_log_likelihood(survey_k, survey_N, model_k, model_N):
         else:
             model_p = (model_k-0.5)/float(model_N)
 
-    #print model_k,model_N,model_p,survey_k,survey_N
+
     try:
-        log_likelihood = math.log(math.factorial(survey_k)) + survey_k*math.log(model_p)+(survey_N-survey_k)*math.log(1-model_p)-math.log(math.factorial(survey_N)) - math.log(math.factorial(survey_N-survey_k))
+        log_likelihood = log_factorials[survey_k] + survey_k*math.log(model_p)+(survey_N-survey_k)*math.log(1-model_p)-log_factorials[survey_N] - log_factorials[survey_N-survey_k]
+        #log_likelihood = math.log(math.factorial(survey_k)) + survey_k*math.log(model_p)+(survey_N-survey_k)*math.log(1-model_p)-math.log(math.factorial(survey_N)) - math.log(math.factorial(survey_N-survey_k))
     except:
-        print "XXX",model_k,model_N,model_p,survey_k,survey_N
-        print Ramunajan_approximation(survey_k)
-        print survey_k*math.log(model_p)
-        print (survey_N-survey_k)*math.log(1-model_p)
-        print Ramunajan_approximation(survey_N)
-        print Ramunajan_approximation(survey_N-survey_k)
+        #print "XXX",model_k,model_N,model_p,survey_k,survey_N
+        #print Ramunajan_approximation(survey_k)
+        #print survey_k*math.log(model_p)
+        #print (survey_N-survey_k)*math.log(1-model_p)
+        #print Ramunajan_approximation(survey_N)
+        #print Ramunajan_approximation(survey_N-survey_k)
         log_likelihood = Ramunajan_approximation(survey_k) + survey_k*math.log(model_p)+(survey_N-survey_k)*math.log(1-model_p) -Ramunajan_approximation(survey_N) - Ramunajan_approximation(survey_N-survey_k)
         # Use math.log10() for log_10.
 
@@ -469,40 +419,51 @@ def Ramunajan_approximation(N):
 ###      Main code:      ####
 #################################################
 
-calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2020_03_09/"
-[community, header, model_data_array,full_header_string] = read_ibm_calibration_files(calibration_root_dir)
+#from guppy import hpy
+
+#h = hpy() 
+
+calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_05_09/"
+#calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/"
+
+[community, ibm_data_header, all_model_calibration_filenames, full_header_string] = get_calibration_filenames_and_check_headers(calibration_root_dir)
+
+#[community, ibm_data_header, model_data_array,full_header_string] = read_ibm_calibration_files(calibration_root_dir)
 print "Finished reading in IBM calibration files. Community=",community
 
 
-# Find out what the IBM is storing - we will compare this against survey data later:
-ibm_datatypes = unpack_header(header)
-ibm_model_data_structured = structure_ibm_data(model_data_array,  header)
-
-
-
-
-
-
 #chips_survey_data_dir = "/home/mike/Dropbox (SPH Imperial College)/PoPART/Data:Stats/CHiPs data/"
-
-
 survey_data = {}
 rounds = [6]
 # For each type of data (cohort, DHS, CHiPS) etc we call read_survey_files:
-[header,survey_data["Cohort"]] = read_survey_files(rounds)
-#print survey_data
+[survey_data_header,survey_data["Cohort"]] = read_survey_files(rounds)
 
-#print ibm_model_data_structured
+N_BEST_RUNS_TO_GET = 10
 
-# Make 5 year age groups 10-14, 15-19, 20-24 etc up to 75-79.
-age_groupings = make_age_grouping_dictionary(10,79, 10)
+# We get the N_BEST_RUNS_TO_GET best fits from each file, then put all of those fits together and choose the N_BEST_RUNS_TO_GET best ones.
+# Approach is scalable memory-wise provided that N_BEST_RUNS_TO_GET is not close to 1000.
 
-# Last argument is number of best fits to get.
-likelihood_cohort = get_cohort_likelihood(survey_data["Cohort"],ibm_model_data_structured["Cohort"], age_groupings, 10)
-print "Finiahed calculating likelihoods"
+all_best_N_runs = {}
+all_best_N_runs_data = {}
+for f in all_model_calibration_filenames:
+    [this_run_bestfits_likelihood,this_run_bestfits_data] = get_cohort_likelihood_bestfits_fromonerun(f,  ibm_data_header,survey_data, survey_data_header, N_BEST_RUNS_TO_GET)
+    #print "Finished for ",f
+    print this_run_bestfits_likelihood
 
-best_model_calibration_filename = "Calibration_data_bestfits.csv"
-best_model_likelihood_filename = "goodfits.txt"
+    all_best_N_runs.update(this_run_bestfits_likelihood)
+    all_best_N_runs_data.update(this_run_bestfits_data)
+#print "All runs=",all_best_N_runs
+#print "Finiahed calculating likelihoods"
+
+for run in all_best_N_runs.keys():
+    print "run=",run,"likelihood=",all_best_N_runs[run]
+
+overall_best_runs_list = sorted(all_best_N_runs.items(), key=lambda pair: pair[1], reverse=True )[:N_BEST_RUNS_TO_GET]
+overall_best_runs = convert_sorted_to_dictionary(overall_best_runs_list)
+print overall_best_runs
+
+best_model_calibration_filename = calibration_root_dir+"Calibration_data_bestfits.csv"
+best_model_likelihood_filename = calibration_root_dir+"goodfits.txt"
 
 best_model_calibration_file = open(best_model_calibration_filename,"w")
 best_model_likelihood_file = open(best_model_likelihood_filename,"w")
@@ -511,10 +472,14 @@ best_model_calibration_data = full_header_string+"\n"
 best_model_likelihood_output = ""
 
 # Create file listing the files, lines and likelihoods of the best files:
-for i in likelihood_cohort:
-    best_model_likelihood_output += i[0][0]+" "+str(i[0][1])+" "+str(i[1])+"\n"
+for run in overall_best_runs.keys():
+    run_filename = run[0]
+    run_line = str(run[1])
+    likelihood = str(overall_best_runs[run])
+    best_model_likelihood_output += run_filename+" "+run_line+" "+likelihood+"\n"
 
-    best_model_calibration_data += ",".join([str(x) for x in model_data_array[i[0][0]][i[0][1]]])+"\n"
+    #best_model_calibration_data += ",".join([str(x) for x in model_data_array[i[0][0]][i[0][1]]])+"\n"
+    best_model_calibration_data += all_best_N_runs_data[run]+"\n"
 
 best_model_calibration_file.write(best_model_calibration_data)
 best_model_likelihood_file.write(best_model_likelihood_output)
@@ -523,6 +488,7 @@ best_model_calibration_file.close()
 best_model_likelihood_file.close()
 
 
+#print h.heap()
 
 # Call R to plot stuff:
-os.system("Rscript plot_by_age_gender.R")
+#os.system("Rscript plot_by_age_gender.R")

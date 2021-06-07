@@ -8,6 +8,8 @@ nreps=1
 verbose=0
 community=5
 
+resultsdir="results_2021_05_09/RESULTS$1/"
+
 # Calculate the overall number of simulations to perform (nreps * nsamples)
 nruns=`expr $nsamples \* $nreps`
 # Store current directory so easy to get back there:
@@ -93,5 +95,6 @@ fi
 # Post-process the calibration files to include sample and rep numbers in the csv files
 python python/calibration_add_sample_rep_numbers.py $outputdirectory/Output $nsamples $nreps
 mkdir -p results_2021_05_09/RESULTS$1
-rm -fr results_2021_05_09/RESULTS$1/Output/
-mv $outputdirectory/Output results_2021_05_09/RESULTS$1
+rm -fr $resultsdir/Output/
+mv $outputdirectory/Output $resultsdir
+cp $outputdirectory/*.* $resultsdir

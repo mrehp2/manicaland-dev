@@ -55,7 +55,7 @@ carry_out_processes_by_patch_by_time_step()
 int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct *patch,
     all_partnerships * overall_partnerships, output_struct *output, int rng_seed_offset, 
     int rng_seed_offset_PC, debug_struct *debug, file_struct *file_data_store, 
-    int is_counterfactual, int i_run){
+    int scenario_flag, int i_run){
     /* Main function for carrying out 
     
     
@@ -73,8 +73,9 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         Offset for the integer used to seed the random number generator in GSL used for PC sampling
     debug : pointer to a debug_struct
     file_data_store : pointer to a file_struct
-    is_counterfactual : int
-        Indicator for whether the counterfactual is being run or not (1 Yes, 0 No)
+    scenario_flag : int
+        For PopART this is an indicator for whether the counterfactual is being run or not (1 Yes, 0 No)
+	For Manicaland this is an indicator as to what barriers of PrEP/VMMC/Condoms exist (scenario_flag is a 3 digit number here).
     
     
     Returns
@@ -148,12 +149,12 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    //fflush(stdout);
             fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
 								 p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,
-								 file_data_store, is_counterfactual);
+								 file_data_store, scenario_flag);
         }
 
         
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
-						     debug, file_data_store, is_counterfactual);
+						     debug, file_data_store, scenario_flag);
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/
@@ -287,7 +288,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
 void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_struct *patch,
     all_partnerships * overall_partnerships, output_struct *output, debug_struct *debug,
-						  file_struct *file_data_store, int is_counterfactual){
+						  file_struct *file_data_store, int scenario_flag){
     /* Carry out processes associated with partnership dissolution (non-death related), partnership
     formation and HIV acquisition between serodiscordant partnerships.  
     
@@ -359,7 +360,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
             
             /* Draw partnerships between females in patch p and males in patch q */
             draw_new_partnerships(t, overall_partnerships, patch, patch[p].param, p, q, debug,
-                file_data_store, is_counterfactual);
+                file_data_store, scenario_flag);
         }
     }
     
@@ -418,7 +419,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
 int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_struct *fitting_data,
         patch_struct *patch, int p, all_partnerships * overall_partnerships, output_struct *output,
         int rng_seed_offset, int rng_seed_offset_PC, debug_struct *debug, 
-        file_struct *file_data_store, int is_counterfactual){
+        file_struct *file_data_store, int scenario_flag){
     /* This function calls a range of processes used in the simulation
     
     In the following order, this function calls the following processes: 
@@ -457,9 +458,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
         
     file_data_store : pointer to a file_struct structure
         
-    is_counterfactual : int
-        Indicator of whether this is for a counterfactual run or not.  This is used to determine
-        when to run the CHiPs intervention.  
+    scenario_flag : int
+        For PopART: indicator of whether this is for a counterfactual run or not.  This is used to determine when to run the CHiPs intervention.  
+	For Manicaland: this determines which of the PrEP/VMMC/condom barriers exist.
     
     */
     
@@ -603,7 +604,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	// intervention adopted from end of PopART onwards - for non-counterfactual only.  
 	if(
 	   (patch[p].trial_arm == ARM_C) && 
-	   (is_counterfactual == NOT_COUNTERFACTUAL_RUN)
+	   (scenario_flag == NOT_COUNTERFACTUAL_RUN)
 	   ){
 	    if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
             
@@ -627,7 +628,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	// In the case of a counterfactual run where we would like CHiPs rollout post-trial to occur
 	if(
 	   (patch[p].trial_arm == ARM_C) && 
-	   (is_counterfactual == IS_COUNTERFACTUAL_RUN) &&
+	   (scenario_flag == IS_COUNTERFACTUAL_RUN) &&
 	   (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
 	   ){
 	    if(is_start_of_chips_round(patch[p].param, t0, t_step, patch[p].trial_arm) == 1){
@@ -954,7 +955,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	   intervention adopted from end of PopART onwards. */
 	if(
 	   (patch[p].trial_arm == ARM_C) &&
-	   (is_counterfactual == NOT_COUNTERFACTUAL_RUN) && 
+	   (scenario_flag == NOT_COUNTERFACTUAL_RUN) && 
 	   (RUN_POPART == 1)
 	   ){
 	    if(POPART_FINISHED == 1 && t0 >= T_ROLLOUT_CHIPS_EVERYWHERE){
@@ -975,7 +976,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	/* In the case of a counterfactual run but we would like to simulate post-trial rollout */
 	if(
 	   (patch[p].trial_arm == ARM_C) &&
-	   (is_counterfactual == IS_COUNTERFACTUAL_RUN) && 
+	   (scenario_flag == IS_COUNTERFACTUAL_RUN) && 
 	   (RUN_POPART == 1) &&
 	   (ALLOW_COUNTERFACTUAL_ROLLOUT == 1)
 	   ){
@@ -1009,7 +1010,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
     else if(MANICALAND_CASCADE==1){
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
-	    draw_PrEP_through_barriers(t, patch, p, is_counterfactual);
+	    draw_PrEP_through_barriers(t, patch, p, scenario_flag);
 	}
     }
 
@@ -1055,7 +1056,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
-	    draw_VMMC_through_barriers(t, patch, p, is_counterfactual);
+	    draw_VMMC_through_barriers(t, patch, p, scenario_flag);
 	}
     }
     

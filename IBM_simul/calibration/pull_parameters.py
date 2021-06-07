@@ -49,7 +49,7 @@ for f in lhc_file_list:
     
     f_name = f.split("/")[-1]
     for n in run_numbers:
-        output_string += params[n]+"\n"
+        output_string += params[n+1]+"\n"
 
     #print output_string
     outfile = open(output_dir+f_name,"w")

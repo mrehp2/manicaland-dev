@@ -4965,3 +4965,416 @@ void write_art_status_by_age_sex(file_struct *file_data_store, output_struct *ou
     // Close the connection to the file
     fclose(file_data_store->ART_STATUS_BY_AGE_SEX_OUTPUT_FILE[p]);
 }
+
+
+
+
+/* Stores PrEP, VMMC and condom use cascades for Manicaland project. */
+/* void store_barrier_outputs(patch_struct *patch, int p, output_struct *output, int year){ */
+    
+/*     int aa, a, g, r, ai; */
+/*     int age; */
+/*     long n_id; */
+
+/*     long N_women_on_PrEP_adherent_under25 = 0; */
+/*     long N_women_on_PrEP_adherent_25plus = 0; */
+/*     long N_women_on_PrEP_semiadherent_under25 = 0; */
+/*     long N_women_on_PrEP_semiadherent_25plus = 0; */
+/*     long N_men_on_PrEP_adherent = 0; */
+/*     long N_men_on_PrEP_semiadherent = 0; */
+    
+
+/*     /\* Temporary store of data from current year. *\/ */
+/*     char temp_string[10000]; */
+/*     /\* Temporary store for single variable which gets strcat'd into temp_string. *\/ */
+/*     char temp_string2[50]; */
+/*     /\* Temporary store for pop size/incidence/prevalence by gender and age gp which gets strcat'd */
+/*     into temp_string. *\/ */
+/*     char temp_string3[1000]; */
+/*     char temp_string4[1000]; */
+/*     char temp_string5[1000]; */
+
+/*     for(g = 0; g < N_GENDER; g++){ */
+/*         for(aa = 15; aa < 25; aa++){ */
+/*             ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index; */
+/*             while (ai>(MAX_AGE-AGE_ADULT-1)){ */
+/*                 ai = ai - (MAX_AGE-AGE_ADULT); */
+/*             } */
+/*             npop_check += patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai]; */
+/*         } */
+/*         npop_check += patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group; */
+/*     } */
+
+/*     for(g = 0; g < N_GENDER; g++){ */
+/*         for(r = 0; r < N_RISK; r++){ */
+/*             for(aa = MINAGE_COUNTED; aa < MAX_AGE_COUNTED; aa++){ */
+/*                 ai = aa + patch[p].n_infected->youngest_age_group_index; */
+/*                 while(ai > (MAX_AGE - AGE_ADULT - 1)){ */
+/*                     ai = ai - (MAX_AGE - AGE_ADULT); */
+/*                 } */
+                
+/*                 /\* NOTE: if we are getting prevalence by age group we have to offset the aa by */
+/*                 n_infected->youngest_age_group_index. *\/ */
+/*                 npositive_wrong += patch[p].n_infected->pop_size_per_gender_age1_risk[g][ai][r]; */
+
+/*                 ai = aa + patch[p].n_newly_infected->youngest_age_group_index; */
+/*                 while (ai > (MAX_AGE - AGE_ADULT - 1)){ */
+/*                     ai = ai - (MAX_AGE - AGE_ADULT); */
+/*                 } */
+/*                 nincident += patch[p].n_newly_infected->pop_size_per_gender_age1_risk[g][ai][r]; */
+
+/*                 ai = aa + patch[p].n_infected_hsv2->youngest_age_group_index; */
+/*                 while (ai > (MAX_AGE - AGE_ADULT - 1)) */
+/*                     ai = ai - (MAX_AGE - AGE_ADULT); */
+/* 		if (g==MALE) */
+/* 		    nprevalent_hsv2_m += patch[p].n_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r]; */
+/* 		else */
+/* 		    nprevalent_hsv2_f += patch[p].n_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r]; */
+		
+
+/* 		ai = aa + patch[p].n_newly_infected_hsv2->youngest_age_group_index; */
+/*                 while (ai > (MAX_AGE - AGE_ADULT - 1)) */
+/*                     ai = ai - (MAX_AGE - AGE_ADULT); */
+/* 		annual_incident_hsv2 += patch[p].n_newly_infected_hsv2->pop_size_per_gender_age1_risk[g][ai][r]; */
+
+
+/* 	    } */
+/*             /\* Only count if we are counting the whole population, not just PC age groups. *\/ */
+/*             if (PCdata == 0){ */
+/*                 npositive_wrong += patch[p].n_infected->pop_size_oldest_age_group_gender_risk[g][r]; */
+/*                 nincident += patch[p].n_newly_infected->pop_size_oldest_age_group_gender_risk[g][r]; */
+/* 		if (g==MALE) */
+/* 		    nprevalent_hsv2_m += patch[p].n_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r]; */
+/* 		else */
+/* 		    nprevalent_hsv2_f += patch[p].n_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r]; */
+/* 		annual_incident_hsv2 += patch[p].n_newly_infected_hsv2->pop_size_oldest_age_group_gender_risk[g][r]; */
+
+/*             } */
+/*         } */
+/*     } */
+
+/*     /\* This if statement determines if we are just looking at PC stuff: *\/ */
+/*     //if (PCdata==0){ */
+/*     for (n_id = 0; n_id < patch[p].id_counter; n_id++){ */
+/*         /\* Check that the person is not dead: *\/ */
+/*         if (patch[p].individual_population[n_id].cd4!=DEAD){ */
+
+/* 	    age = (int) floor(year - patch[p].individual_population[n_id].DoB); */
+	    
+/*             /\* Count number of peole currently alive who had an HIV test in the past year. *\/ */
+/*             if ((year - patch[p].individual_population[n_id].time_last_hiv_test) <= 1.0){ */
+/*                 NTestedLastYear++; */
+/*             } */
+/*             /\* Gender-specific outputs derived here: *\/ */
+/*             if (patch[p].individual_population[n_id].gender == MALE){ */
+/*                 /\* Use a function here so easy to add extra stratifications to output: *\/ */
+/*                 update_annual_outputs_gender(&(patch[p].individual_population[n_id]), &npop_m, */
+/*                     &npositive_m, &NNeedART_m, &NArt_m, current_cd4_guidelines); */
+                
+/*                 /\* Count number of men who are currently circ: *\/ */
+/*                 if( */
+/*                 (patch[p].individual_population[n_id].circ == VMMC) || */
+/*                 (patch[p].individual_population[n_id].circ == VMMC_HEALING) ||  */
+/*                 (patch[p].individual_population[n_id].circ == TRADITIONAL_MC) */
+/*                 ){ */
+/*                     N_men_MC++; */
+/*                 } */
+                
+/*                 /\* Count number of men who are in different circ groups*\/ */
+/*                 if (patch[p].individual_population[n_id].circ == UNCIRC) */
+/*                     N_men_noMC++; */
+/*                 else if(patch[p].individual_population[n_id].circ == UNCIRC_WAITING_VMMC) */
+/*                     N_men_waitingVMMC++; */
+/*                 else if(patch[p].individual_population[n_id].circ == VMMC) */
+/*                     N_men_VMMC++; */
+/*                 else if(patch[p].individual_population[n_id].circ == VMMC_HEALING) */
+/*                     N_men_VMMC_healing++; */
+/*                 else if(patch[p].individual_population[n_id].circ == TRADITIONAL_MC) */
+/*                     N_men_TMC++; */
+/*                 else{ */
+/*                     printf("ERROR: Unknown circumcision status"); */
+/*                     printf("%i ", patch[p].individual_population[n_id].circ); */
+/*                     printf("for individual %li in patch %i. Exiting\n", n_id, p); */
+/*                     printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+/*                     fflush(stdout); */
+/*                     exit(1); */
+/*                 } */
+
+/* 		/\* PrEP outputs: *\/ */
+/* 		if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_ADHERENT) */
+/* 		    N_men_on_PrEP_adherent++; */
+/* 		else if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_SEMIADHERENT) */
+/* 		    N_men_on_PrEP_semiadherent++; */
+
+/*             }else{ /\* Else female *\/ */
+
+/* 		/\* PrEP outputs: *\/ */
+/* 		if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_ADHERENT){ */
+/* 		    if(age<=25) */
+/* 			N_women_on_PrEP_adherent_under25++; */
+/* 		    else */
+/* 			N_women_on_PrEP_adherent_25plus++; */
+/* 		} */
+/* 		else if (patch[p].individual_population[n_id].PrEP_cascade_status==ONPREP_SEMIADHERENT){ */
+/* 		    if(age<=25) */
+/* 			N_women_on_PrEP_semiadherent_under25++; */
+/* 		    else */
+/* 			N_women_on_PrEP_semiadherent_25plus++; */
+/* 		} */
+/* 		else if (patch[p].individual_population[n_id].PrEP_cascade_status==WAITINGTOSTARTPREP) */
+/* 		    N_women_waiting_PrEP++; */
+
+		
+/*                 update_annual_outputs_gender(&(patch[p].individual_population[n_id]), &npop_f, */
+/*                     &npositive_f, &NNeedART_f, &NArt_f, current_cd4_guidelines); */
+/*             } */
+            
+/*             /\* RiskGroup-specific outputs derived here: *\/ */
+/*             npop_r[(patch[p].individual_population[n_id]).sex_risk] += 1; */
+            
+/*             if ((patch[p].individual_population[n_id]).HIV_status > 0){ */
+/*                 (npos_r[(patch[p].individual_population[n_id]).sex_risk]) += 1; */
+/*             } */
+
+/* 	    /\* To validate HSV-2 prevalence output: *\/ */
+/* 	    if ((patch[p].individual_population[n_id]).HSV2_status > 0) */
+/* 		nprevalent_hsv2_check += 1; */
+	    
+/*         }else{ */
+/*             n_dead += 1; */
+/*             if (patch[p].individual_population[n_id].HIV_status > 0){ */
+/*                 npositive_dead += 1; */
+/*             } */
+/*         } */
+/*     } */
+
+/*     npop = npop_m + npop_f; */
+/*     npositive = npositive_m + npositive_f; */
+    
+/*     /\* Store number of positive people in n_infected_total: *\/ */
+/*     *n_infected_total = npositive; */
+
+/*     /\* Code not used:  */
+/*     if (patch[p].PANGEA_N_ANNUALINFECTIONS > 0){ */
+        
+/*         prop_annual_acute = patch[p].PANGEA_N_ANNUALACUTEINFECTIONS/ */
+/*             (1.0*patch[p].PANGEA_N_ANNUALINFECTIONS); */
+        
+/*     }else{ */
+/*         prop_annual_acute = 0.0; */
+/*     } */
+/*     *\/     */
+
+/*     if (npositive > 0){ */
+/*         prophivposonart = (NArt_m + NArt_f)/(1.0*npositive); */
+/*     }else{ */
+/*         prophivposonart = 0.0; */
+/*     } */
+    
+/*     if(PCdata == 0){ */
+        
+/*         sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,", */
+/*                 year, */
+/*                 npositive/(npop+0.0), */
+/*                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0), */
+/*                 npositive, */
+/*                 patch[p].n_newly_infected_total, */
+/*                 patch[p].n_newly_infected_total_from_outside, */
+/*                 patch[p].n_newly_infected_total_from_acute, */
+/*                 prophivposonart, */
+/*                 patch[p].PANGEA_N_ANNUALINFECTIONS, */
+/*                 npop, */
+/*                 npositive_m, */
+/*                 npop_m, */
+/*                 npositive_f, */
+/*                 npop_f, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14, */
+/*                 patch[p].cumulative_outputs->N_total_HIV_tests_nonpopart, */
+/*                 patch[p].cumulative_outputs->N_total_HIV_tests_popart, */
+/*                 patch[p].cumulative_outputs->N_total_CD4_tests_nonpopart, */
+/*                 patch[p].cumulative_outputs->N_total_CD4_tests_popart, */
+/*                 NTestedLastYear, */
+/*                 NArt_m, */
+/*                 NNeedART_m, */
+/*                 NArt_f, */
+/*                 NNeedART_f, */
+/*                 N_men_MC/(1.0*npop_m), */
+/* 		N_men_VMMC, */
+/* 		N_women_waiting_PrEP, */
+/* 		N_women_on_PrEP_adherent_under25, */
+/* 		N_women_on_PrEP_adherent_25plus, */
+/* 		N_women_on_PrEP_semiadherent_under25, */
+/* 		N_women_on_PrEP_semiadherent_25plus, */
+/* 		N_men_on_PrEP_adherent, */
+/* 		N_men_on_PrEP_semiadherent, */
+/*                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership, */
+/*                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check); */
+	
+/*     }else if(PCdata == 1){ */
+/*         sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,", */
+/*                 year, */
+/*                 npositive/(npop+0.0), */
+/*                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0), */
+/*                 npositive, */
+/*                 patch[p].n_newly_infected_total_pconly, */
+/*                 patch[p].n_newly_infected_total_from_outside_pconly, */
+/*                 patch[p].n_newly_infected_total_from_acute_pconly, */
+/*                 prophivposonart, */
+/*                 patch[p].PANGEA_N_ANNUALINFECTIONS, */
+/*                 npop, */
+/*                 npositive_m, */
+/*                 npop_m, */
+/*                 npositive_f, */
+/*                 npop_f, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14, */
+/* 		patch[p].cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14, */
+/*                 patch[p].cumulative_outputs->N_total_HIV_tests_nonpopart, */
+/*                 patch[p].cumulative_outputs->N_total_HIV_tests_popart, */
+/*                 patch[p].cumulative_outputs->N_total_CD4_tests_nonpopart, */
+/*                 patch[p].cumulative_outputs->N_total_CD4_tests_popart, */
+/*                 NTestedLastYear, */
+/*                 NArt_m, */
+/*                 NNeedART_m, */
+/*                 NArt_f, */
+/*                 NNeedART_f, */
+/*                 N_men_MC/(1.0*npop_m), */
+/* 		N_men_VMMC, */
+/* 		N_women_waiting_PrEP, */
+/* 		N_women_on_PrEP_adherent_under25, */
+/* 		N_women_on_PrEP_adherent_25plus, */
+/* 		N_women_on_PrEP_semiadherent_under25, */
+/* 		N_women_on_PrEP_semiadherent_25plus, */
+/* 		N_men_on_PrEP_adherent, */
+/* 		N_men_on_PrEP_semiadherent, */
+/*                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership, */
+/*                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check); */
+/*     } */
+    
+    
+/*     /\* I can't think of a neat way to do this but I would like each outcome for all risk groups */
+/*     together in the output file, so wrote this bit of ugly code (could make a function/macro). *\/ */
+    
+/*     for (r = 0; r < N_RISK; r++){ */
+/*         sprintf(temp_string2,"%6.4f,", npop_r[r]/(1.0*npop)); */
+/*         join_strings_with_check(temp_string, temp_string2, 10000,  */
+/*             "temp_string and temp_string2 in store_annual_outputs()"); */
+/*     } */
+/*     for(r = 0; r < N_RISK; r++){ */
+/*         sprintf(temp_string2, "%6.4f,", npos_r[r]/(1.0*npop_r[r])); */
+/*         join_strings_with_check(temp_string, temp_string2, 10000, */
+/*             "temp_string and temp_string2 in store_annual_outputs()"); */
+/*     } */
+    
+/*     for(r = 0; r < N_RISK; r++){ */
+/*         sprintf(temp_string2, "%li,", patch[p].n_newly_infected_total_by_risk[r]); */
+/*         join_strings_with_check(temp_string, temp_string2, 10000, */
+/*             "temp_string and temp_string2 in store_annual_outputs()"); */
+/*     } */
+    
+/*     for(r = 0; r < N_RISK; r++){ */
+/*         sprintf(temp_string2, "%li,", patch[p].n_died_from_HIV_by_risk[r]); */
+/*         join_strings_with_check(temp_string, temp_string2, 10000, */
+/*             "temp_string and temp_string2 in store_annual_outputs()"); */
+/*     } */
+    
+/*     /\* Population size and number of HIV+ and incident HIV+ by age and gender here: *\/ */
+/*     int tempcount_pop, tempcount_inc, tempcount_prev; */
+    
+/*     /\* Make sure these are blank: *\/ */
+/*     memset(temp_string3, '\0', sizeof(temp_string3)); */
+/*     memset(temp_string4, '\0', sizeof(temp_string4)); */
+/*     memset(temp_string5, '\0', sizeof(temp_string5)); */
+    
+/*     /\* Only store these if outputting everything for all age groups. *\/ */
+/*     if(PCdata == 0){ */
+/*         for(g = 0; g < N_GENDER; g++){ */
+/*             for(a = 0; a < N_AGE; a++){ */
+/*                 tempcount_pop = 0; */
+/*                 tempcount_inc = 0; */
+/*                 tempcount_prev = 0; */
+/*                 for(aa = (AGE_GROUPS_WITH_OLD[a]-AGE_ADULT);  */
+/*                     aa < (AGE_GROUPS_WITH_OLD[a+1] - AGE_ADULT);  */
+/*                     aa++){ */
+/*                     for(r = 0; r < N_RISK; r++){ */
+/*                         ai = aa + patch[p].n_population_oneyearagegroups->youngest_age_group_index; */
+/*                         while(ai > (MAX_AGE-AGE_ADULT-1)){ */
+/*                             ai = ai - (MAX_AGE-AGE_ADULT); */
+/*                         } */
+/*                         tempcount_pop += patch[p].n_population_oneyearagegroups->pop_size_per_gender_age1_risk[g][ai][r]; */
+
+/*                         ai = aa + patch[p].n_newly_infected->youngest_age_group_index; */
+/*                         while (ai>(MAX_AGE-AGE_ADULT-1)){ */
+/*                             ai = ai - (MAX_AGE-AGE_ADULT); */
+/*                         } */
+/*                         tempcount_inc += patch[p].n_newly_infected->pop_size_per_gender_age1_risk[g][ai][r]; */
+
+/*                         ai = aa + patch[p].n_infected->youngest_age_group_index; */
+/*                         while (ai > (MAX_AGE-AGE_ADULT-1)){ */
+/*                             ai = ai - (MAX_AGE-AGE_ADULT); */
+/*                         } */
+/*                         tempcount_prev += patch[p].n_infected->pop_size_per_gender_age1_risk[g][ai][r]; */
+/*                     } */
+/*                 } */
+/*                 if(a == N_AGE - 1){ */
+/*                     for (r = 0; r < N_RISK; r++){ */
+/*                         tempcount_pop += patch[p].n_population_oneyearagegroups->pop_size_oldest_age_group_gender_risk[g][r]; */
+/*                         tempcount_inc += patch[p].n_newly_infected->pop_size_oldest_age_group_gender_risk[g][r]; */
+/*                         tempcount_prev += patch[p].n_infected->pop_size_oldest_age_group_gender_risk[g][r]; */
+/*                     } */
+/*                 } */
+/*                 sprintf(temp_string2,"%d,",tempcount_pop); */
+/*                 join_strings_with_check(temp_string3, temp_string2, 1000,  */
+/*                     "temp_string3 and temp_string2 in store_annual_outputs()"); */
+
+/*                 sprintf(temp_string2,"%d,",tempcount_inc); */
+/*                 join_strings_with_check(temp_string4, temp_string2, 1000,  */
+/*                     "temp_string4 and temp_string2 in store_annual_outputs()"); */
+
+/*                 sprintf(temp_string2,"%d,",tempcount_prev); */
+/*                 join_strings_with_check(temp_string5, temp_string2, 1000,  */
+/*                     "temp_string5 and temp_string2 in store_annual_outputs()"); */
+/*             } */
+/*         } */
+/*         join_strings_with_check(temp_string, temp_string3, 10000,  */
+/*             "temp_string and temp_string3 in store_annual_outputs()"); */
+/*         join_strings_with_check(temp_string, temp_string4, 10000,  */
+/*             "temp_string and temp_string4 in store_annual_outputs()"); */
+/*         join_strings_with_check(temp_string, temp_string5, 10000,  */
+/*             "temp_string and temp_string5 in store_annual_outputs()"); */
+/*     } */
+
+/*     strcat(temp_string,"\n"); */
+    
+/*     /\* Add the string `temp_string` to the `output` structure (so as to be written to file)*\/ */
+/*     if(PCdata == 1){ */
+        
+/*         join_strings_with_check(output->annual_outputs_string_pconly[p],  */
+/*             temp_string, SIZEOF_annual_outputs_string_pconly,  */
+/*             "output->annual_outputs_string_pconly[p] and temp_string in store_annual_outputs()"); */
+/*     }else{ */
+        
+/*         join_strings_with_check(output->annual_outputs_string[p],  */
+/*             temp_string, SIZEOF_annual_outputs_string,  */
+/*             "output->annual_outputs_string[p] and temp_string in store_annual_outputs()"); */
+/*     } */
+    
+    
+/*     /\* These printf statement is not really needed any more, but keeping it for now as a simple way */
+/*     to compare outputs to make sure nothing has changed when running the model. *\/ */
+/*     if (VERBOSE_OUTPUT == 1){ */
+/*         printf("Prev= %6.4f Inc= %6.4f Pop_size= %li ",  */
+/*             npositive/(npop+0.0), N_NEW_INFECTIONS/(npop-npositive+0.0), npop); */
+        
+/*         printf("Npos= %li Nposdead= %li Ninc= %li",npositive, npositive_dead, N_NEW_INFECTIONS); */
+        
+/*         printf("Npos_AC = %li Ninc_AC = %li\n", npositive_wrong, nincident); */
+/*     } */
+/* } */
+
+//void write_PrEP_barrier_cascade(){
+//}

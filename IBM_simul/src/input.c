@@ -142,7 +142,7 @@ void read_patch_info(char *file_directory, patch_struct *patch){
     and `trial_arm` of the patch structure.  
     
     Note that trial_arm can be overwritten later on if we are in a counterfactual 
-    scenario (is_counterfactual = 1).
+    scenario (scenario_flag = 1 for POPART).
     
     Arguments
     ---------

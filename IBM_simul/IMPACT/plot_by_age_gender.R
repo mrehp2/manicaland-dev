@@ -176,7 +176,7 @@ group.survey.data  <- function(numerator.ungrouped, denominator.ungrouped, min.a
 
 
 
-infile = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_05_09/Calibration_data_bestfits.csv"
+infile = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output/Calibration_data_bestfits.csv"
 
 model.data <- read.csv(infile,header=T)
 nruns <- dim(model.data)[1]

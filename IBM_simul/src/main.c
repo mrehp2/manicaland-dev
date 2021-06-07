@@ -104,9 +104,9 @@ int main(int argc,char *argv[]){
     int p; /* Index over patches. */
     int g, a, r;
     
-    /* is_counterfactual = 1 if this is a counterfactual run (ie all patches set to be arm C) and
-    is_counterfactual=0 if this is not a counterfactual run (ie it is a normal run). */
-    int is_counterfactual;
+    /* For PopART: scenario_flag = 1 if this is a counterfactual run (ie all patches set to be arm C) and
+    scenario_flag=0 if this is not a counterfactual run (ie it is a normal run). */
+    int scenario_flag;
 
     /* patch is an array of structs that each contain a single geographical unit (ie a "patch").
     
@@ -170,7 +170,7 @@ int main(int argc,char *argv[]){
     }
     
     /* Now parse any other command line arguments: */
-    parse_command_line_arguments(argc, argv, &n_runs, &i_startrun, &n_startrun, &is_counterfactual,
+    parse_command_line_arguments(argc, argv, &n_runs, &i_startrun, &n_startrun, &scenario_flag,
         &rng_seed_offset, &rng_seed_offset_PC);
     
     /* Used in the output file name. */
@@ -286,7 +286,7 @@ int main(int argc,char *argv[]){
 
     /* Reads in all the parameters. Note that certain patch info (e.g. trial arm) is set here.
     In particular trial arm may be overwritten below if we are in a counterfactual scenario
-    (is_counterfactual==1). */
+    (scenario_flag==1). */
 
     /* Read all the parameter sets - there should be n_runs of them. */
     read_param(input_file_directory, allrunparameters, n_runs, patch);
@@ -303,7 +303,7 @@ int main(int argc,char *argv[]){
         }
     }
     
-    if(is_counterfactual == IS_COUNTERFACTUAL_RUN){
+    if(scenario_flag == IS_COUNTERFACTUAL_RUN){
         for(p = 0; p < NPATCHES; p++){
             patch[p].trial_arm = ARM_C;
         }
@@ -383,7 +383,7 @@ int main(int argc,char *argv[]){
             calibration_output_filename[p] = (char *)calloc(LONGSTRINGLENGTH, sizeof(char));
         
             make_calibration_output_filename(calibration_output_filename[p], output_file_directory,
-                python_rng_seed, patch, p, rng_seed_offset, rng_seed_offset_PC, is_counterfactual);
+                python_rng_seed, patch, p, rng_seed_offset, rng_seed_offset_PC, scenario_flag);
 
 	    /* Blank the calibration file. NOTE - this needs to be done outside of the i_run loop (so
             can't be done with  blank_debugging_files()) as only one of these files is generated for
@@ -486,7 +486,7 @@ int main(int argc,char *argv[]){
 
             /* Make file labels of appropriate form. These are used in generating filenames. */
             make_output_label_struct(file_labels, python_rng_seed, i_run, rng_seed_offset,
-                rng_seed_offset_PC, patch, is_counterfactual, 0);
+                rng_seed_offset_PC, patch, scenario_flag, 0);
 
             /* Generate the filenames based on these labels. */
             make_filenames_for_struct(file_labels, file_data_store, output_file_directory);
@@ -598,7 +598,7 @@ int main(int argc,char *argv[]){
                 
                 fit_flag = carry_out_processes(year, *fitting_data, patch, overall_partnerships,
                     output, rng_seed_offset, rng_seed_offset_PC, debug, file_data_store,
-					       is_counterfactual, i_run);
+					       scenario_flag, i_run);
 
                 /* If there was one or more criteria which were not fitted in the past year, then
                 stop this run and move on to the next parameter set. */

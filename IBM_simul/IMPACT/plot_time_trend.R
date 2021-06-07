@@ -56,14 +56,30 @@ require(RColorBrewer)
 
 
 
-make.annualoutput.filenames <- function(n.reps,rootdir){
+make.annualoutput.filenames <- function(n.reps,rootdir,scenario){
+    if(scenario==0){
+        file.tag <- ""
+    }else if (scenario==1){
+        file.tag <- "_NOBARRIER"
+    }else if (scenario==2){
+        file.tag <- "_NOPREPBARRIER"
+    }else if (scenario==3){
+        file.tag <- "_NOVMMCBARRIER"
+    }else if (scenario==4){
+        file.tag <- "_NOCONDBARRIER"
+    }
+    
     file.names <- rep("",n.reps)
     for (i in 1:n.reps)
     {
-        file.names[i] <- paste0(rootdir,"/Annual_outputs_CL05_Zim_patch0_Rand1_Run",as.character(i),"_0.csv")
+        file.names[i] <- paste0(rootdir,"/Annual_outputs_CL05_Zim_patch0_Rand1_Run",as.character(i),"_0",file.tag,".csv")
     }
     return(file.names)
 }
+
+
+
+
 
 calculate.annual.number.from.cumulative <- function(cumulative.var)
 {
@@ -521,17 +537,56 @@ plot.polygon <- function(t,ylowerpolygon,yupperpolygon,ymean,ylowerdotted,yupper
 
 
 # Multipurpose plot function for different barrier scenarios:
-plot.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,plot.filename,plot.legend,plot.title,y.axis.label)
+plot.one.scenario <- function(t,baseline.data,lq,uq,x.range,y.range,plot.filename,plot.legend,plot.title,y.axis.label)
 {
 
     if(!is.na(plot.filename)){
         pdf(plot.filename)
     }
+    
         
     plot.polygon(t=t,
                  ylowerpolygon=apply(baseline.data,1,quantile,lq),
                  yupperpolygon=apply(baseline.data,1,quantile,uq),
-                 ymean=rowMeans(baseline.data),
+                 ymean=apply(baseline.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=x.range,y.range=y.range,plot.title=plot.title,y.axis.label=y.axis.label)
+    
+
+    ## plot.polygon(t=t.opt,
+    ##              ylowerpolygon=apply(optimal.data,1,quantile,lq),
+    ##              yupperpolygon=apply(optimal.data,1,quantile,uq),
+    ##              ymean=rowMedians(optimal.data),
+    ##              ylowerdotted=NA,
+    ##              yupperdotted=NA,
+    ##              polygon.col=polygon.cols[3],lines.col=lines.cols[3],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
+
+    if(plot.legend==1)
+    {
+        legend("topleft",col=polygon.cols,legend=c("With barriers"),lty=1,lwd=4,bty="n",cex=1.1)
+    }
+    
+    if(!is.na(plot.filename)){
+        dev.off()
+    }
+
+}
+
+
+
+plot.two.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,plot.filename,plot.legend,plot.title,y.axis.label)
+{
+
+    if(!is.na(plot.filename)){
+        pdf(plot.filename)
+    }
+    
+        
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(baseline.data,1,quantile,lq),
+                 yupperpolygon=apply(baseline.data,1,quantile,uq),
+                 ymean=apply(baseline.data,1, median, na.rm = TRUE),
                  ylowerdotted=NA,
                  yupperdotted=NA,
                  polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=x.range,y.range=y.range,plot.title=plot.title,y.axis.label=y.axis.label)
@@ -540,7 +595,7 @@ plot.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,
     plot.polygon(t=t,
                  ylowerpolygon=apply(nobarrier.data,1,quantile,lq),
                  yupperpolygon=apply(nobarrier.data,1,quantile,uq),
-                 ymean=rowMeans(nobarrier.data),
+                 ymean=apply(baseline.data,1, median, na.rm = TRUE),
                  ylowerdotted=NA,
                  yupperdotted=NA,
                  polygon.col=polygon.cols[2],lines.col=lines.cols[2],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
@@ -548,7 +603,7 @@ plot.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,
     ## plot.polygon(t=t.opt,
     ##              ylowerpolygon=apply(optimal.data,1,quantile,lq),
     ##              yupperpolygon=apply(optimal.data,1,quantile,uq),
-    ##              ymean=rowMeans(optimal.data),
+    ##              ymean=rowMedians(optimal.data),
     ##              ylowerdotted=NA,
     ##              yupperdotted=NA,
     ##              polygon.col=polygon.cols[3],lines.col=lines.cols[3],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
@@ -556,6 +611,63 @@ plot.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,
     if(plot.legend==1)
     {
         legend("topleft",col=polygon.cols,legend=c("With barriers","No barrier scenario"),lty=1,lwd=4,bty="n",cex=1.1)
+    }
+    
+    if(!is.na(plot.filename)){
+        dev.off()
+    }
+
+}
+
+
+
+# Multipurpose plot function for different barrier scenarios:
+plot.four.scenarios <- function(t,baseline.data,scenario2.data,scenario3.data,scenario4.data,lq,uq,x.range,y.range,plot.filename,plot.legend,plot.title,y.axis.label)
+{
+
+    if(!is.na(plot.filename)){
+        pdf(plot.filename)
+    }
+    
+        
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(baseline.data,1,quantile,lq),
+                 yupperpolygon=apply(baseline.data,1,quantile,uq),
+                 ymean=apply(baseline.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=x.range,y.range=y.range,plot.title=plot.title,y.axis.label=y.axis.label)
+    
+
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(scenario2.data,1,quantile,lq),
+                 yupperpolygon=apply(scenario2.data,1,quantile,uq),
+                 ymean=apply(scenario2.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[2],lines.col=lines.cols[2],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
+
+
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(scenario3.data,1,quantile,lq),
+                 yupperpolygon=apply(scenario3.data,1,quantile,uq),
+                 ymean=apply(scenario3.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[3],lines.col=lines.cols[3],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
+    
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(scenario4.data,1,quantile,lq),
+                 yupperpolygon=apply(scenario4.data,1,quantile,uq),
+                 ymean=apply(scenario4.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[4],lines.col=lines.cols[4],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
+    
+
+    if(plot.legend==1)
+    {
+        legend("topleft",col=polygon.cols,legend=c("With barriers","No motivation barrier","No access barrier","No effective use barrier"),lty=1,lwd=4,bty="n",cex=1.1)
     }
     
     if(!is.na(plot.filename)){
@@ -574,10 +686,19 @@ plot.scenarios <- function(t,baseline.data,nobarrier.data,lq,uq,x.range,y.range,
 n.runs <- 10
 
 
-annualoutput.filenames <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output")
+# last 0 that this is the baseline cascade scenario:
+annualoutput.filenames <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",0)
+
+annualoutput.filenames.scenario2 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",3)
+annualoutput.filenames.scenario3 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",2)
+annualoutput.filenames.scenario4 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",1)
+
 
 all.data <- get.data.as.list(annualoutput.filenames)
 #data.run1 <- get.annual.output.model.data(annualoutput.filenames[1])
+all.data.scenario2 <- get.data.as.list(annualoutput.filenames.scenario2)
+all.data.scenario3 <- get.data.as.list(annualoutput.filenames.scenario3)
+all.data.scenario4 <- get.data.as.list(annualoutput.filenames.scenario4)
 
 
 
@@ -610,18 +731,34 @@ col <-  rainbow(length(age_groups_lab))
 
 
 polygon.cols<- c(brewer.pal(n = 11, name = "RdYlBu")[8], brewer.pal(n = 9, name = "Reds")[3], brewer.pal(n = 9, name = "Greens")[3], brewer.pal(n = 11, name = "BrBG")[4], brewer.pal(n = 11, name = "PuOr")[5])
+lines.cols<- c(brewer.pal(n = 11, name = "RdYlBu")[10], brewer.pal(n = 9, name = "Reds")[7], brewer.pal(n = 9, name = "Greens")[7], brewer.pal(n = 11, name = "BrBG")[2], brewer.pal(n = 11, name = "PuOr")[7])
 
 
 # These are the CIs we use for the shaded plot regions:
 lq <- 0.1
 uq <- 0.9
 
-t.range <- c(1980,2030)
+t.range <- c(2020,2030)
 
 #plot.scenarios(all.data$t,100*all.data$prevalence.store, all.data$prevalence.store,lq,uq,t.range,c(0.02,40),plot.filename="prevalence.pdf",plot.legend=1,plot.title="Overall prevalence","Prevalence (%)")
 
 
-plot.scenarios(all.data$t,100*all.data$prevalence.store, 100*all.data$prevalence.store,lq,uq,t.range,c(0,70),plot.filename=NA,plot.legend=1,plot.title="Overall prevalence","Prevalence (%)")
 
 
-plot.scenarios(all.data$t,100*all.data$incidence.store, 100*all.data$incidence.store,lq,uq,t.range,c(0,10),plot.filename=NA,plot.legend=1,plot.title="Overall incidence","Incidence (%)")
+
+
+plot.four.scenarios(all.data$t,100*all.data$prevalence.store, 100*all.data.scenario2$prevalence.store, 100*all.data.scenario3$prevalence.store, 100*all.data.scenario4$prevalence.store,lq,uq,t.range,c(0,20),plot.filename=NA,plot.legend=1,plot.title="Overall prevalence","Prevalence (%)")
+
+
+
+plot.one.scenario(all.data$t,100*all.data$incidence.store,lq,uq,c(2000,2040),c(0,3),plot.filename="incidence_trends_withbarriers.pdf",plot.legend=0,plot.title="Overall incidence (with barriers)","Incidence (%)")
+
+plot.one.scenario(all.data$t,100*all.data$prevalence.store,lq,uq,c(2000,2040),c(0,20),plot.filename="prevalence_trends_withbarriers.pdf",plot.legend=0,plot.title="Overall prevalence (with barriers)","Prevalence (%)")
+
+
+plot.four.scenarios(all.data$t,100*all.data$incidence.store, 100*all.data.scenario2$incidence.store, 100*all.data.scenario3$incidence.store, 100*all.data.scenario4$incidence.store,lq,uq,t.range,c(0,1.5),plot.filename="incidence_trends_scenarioplot.pdf",plot.legend=1,plot.title="Overall incidence","Incidence (%)")
+
+plot.four.scenarios(all.data$t,100*all.data$prevalence.store, 100*all.data.scenario2$prevalence.store, 100*all.data.scenario3$prevalence.store, 100*all.data.scenario4$prevalence.store,lq,uq,t.range,c(0,20),plot.filename="prevalence_trends_scenarioplot.pdf",plot.legend=1,plot.title="Overall prevalence","Prevalence (%)")
+
+
+

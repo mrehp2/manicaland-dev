@@ -721,7 +721,7 @@ int is_manicaland_cohort_time(int t0, int t_step, parameters *param){
  * By setting rng_seed_offset to be an integer which is not 0, this changes the C seed from param->rng_seed to param->rng_seed+rng_seed_offset.
  * */
 void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_startrun, 
-    int *n_startrun, int *is_counterfactual, int *rng_seed_offset, int *rng_seed_offset_PC){
+    int *n_startrun, int *scenario_flag, int *rng_seed_offset, int *rng_seed_offset_PC){
     // Argc is the number of arguments. Note that the first argument is the filename so argc is always >=1.
     if (argc == 1 || argc > 9){
         //printf("ERROR: Arguments must include the directory of the parameter files. Optional second argument: number of runs (default=1000). Optional third argument: run numebr to start at (default is 1). Optional fourth argument: directory where results are written. \nExiting\n");
@@ -739,19 +739,19 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
         *n_runs = 1000;
 
     if (argc>3){
-        *is_counterfactual = strtol(argv[3],NULL,10);
+        *scenario_flag = strtol(argv[3],NULL,10);
         /* Check that this only takes values 0 or 1: */
 	if(MANICALAND_CASCADE==1){
-	    if (*is_counterfactual<NOT_COUNTERFACTUAL_RUN || *is_counterfactual>MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS){
-		printf("ERROR: 3rd argument (is_counterfactual) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
+	    if (*scenario_flag<NOT_COUNTERFACTUAL_RUN || *scenario_flag>MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS){
+		printf("ERROR: 3rd argument (scenario_flag) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
 	    }
 	}
 	else{   
-	    if (!(*is_counterfactual==NOT_COUNTERFACTUAL_RUN || *is_counterfactual==IS_COUNTERFACTUAL_RUN)){
-		printf("ERROR: 3rd argument (is_counterfactual) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
+	    if (!(*scenario_flag==NOT_COUNTERFACTUAL_RUN || *scenario_flag==IS_COUNTERFACTUAL_RUN)){
+		printf("ERROR: 3rd argument (scenario_flag) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
@@ -759,7 +759,7 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
 	}
     }
     else
-        *is_counterfactual = NOT_COUNTERFACTUAL_RUN; /* Default value. */
+        *scenario_flag = NOT_COUNTERFACTUAL_RUN; /* Default value. */
 
 
     if (argc>4)
@@ -884,7 +884,7 @@ void join_strings_with_check(char *dest, char *src, int dest_array_size, char *e
 }
 
 
-void make_output_label_struct(file_label_struct *file_labels, long python_rng_seed, int i_run, int rng_seed_offset, int rng_seed_offset_PC, patch_struct *patch, int is_counterfactual, int PCdata){
+void make_output_label_struct(file_label_struct *file_labels, long python_rng_seed, int i_run, int rng_seed_offset, int rng_seed_offset_PC, patch_struct *patch, int scenario_flag, int PCdata){
     int p;
 
     char version[21];  /* 20 is arbitrary but note we have to change the 20 in the call to get_IBM_code_version() below if we change this. */
@@ -906,7 +906,7 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 
 
     if (MANICALAND_CASCADE==0){
-	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN){
+	if (scenario_flag==NOT_COUNTERFACTUAL_RUN){
 	    if (PCdata==0)
 		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
 	    else
@@ -914,7 +914,7 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 	}
 
 	//Ann_out_CL01_SA_A_V1.2_patch0_RandX_RUn1_PCseed4_10.csv
-	else if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
+	else if (scenario_flag==IS_COUNTERFACTUAL_RUN){
 	    if (PCdata==0)
 		sprintf(run_info_ending,"_Rand%li_Run%i_PCseed%i_%i_CF.csv",python_rng_seed,i_run+1,rng_seed_offset_PC,rng_seed_offset);
 	    else
@@ -967,7 +967,7 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 	    join_strings_with_check(file_labels->filename_label_bypatch[p], patchinfo, LONGSTRINGLENGTH, "patchinfo and filename_label_bypatch[] in make_output_label_struct()");
 	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_bypatch[] in make_output_label_struct()");
 	    
-	    if (is_counterfactual==IS_COUNTERFACTUAL_RUN){
+	    if (scenario_flag==IS_COUNTERFACTUAL_RUN){
 		printf("Making this run a counterfactual with label=%s\n",file_labels->filename_label_bypatch[p]);
 	    }
 	    /* These are just based on data from patch 0. */
@@ -985,21 +985,14 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
     }
 
     else if (MANICALAND_CASCADE==1){
-	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	if (scenario_flag==NOT_COUNTERFACTUAL_RUN)
 	    sprintf(run_info_ending,".csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOBARRIERS)
-	    sprintf(run_info_ending,"_NOBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOPREPBARRIERS)
-	    sprintf(run_info_ending,"_NOPREPBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOVMMCBARRIERS)
-	    sprintf(run_info_ending,"_NOVMMCBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS)
-	    sprintf(run_info_ending,"_NOCONDBARRIER.csv");
 	else{
-	    printf("Unknown value for is_counterfactual=%i in make_output_label_struct(). Exiting\n",is_counterfactual);
-		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-		fflush(stdout);
-		exit(1);
+	    int prep_cascade_scenario = scenario_flag/100;
+	    int VMMC_cascade_scenario = (scenario_flag/10)%10;
+	    int condom_cascade_scenario = scenario_flag%100;    
+
+	    sprintf(run_info_ending,"PrEP%i_VMMC%i_cond%i.csv",prep_cascade_scenario,VMMC_cascade_scenario,condom_cascade_scenario);
 	}
 
 	
@@ -1288,7 +1281,7 @@ void make_filenames_for_snapshot(char *output_filename, char *output_file_direct
 }
 
 /* Merge this with others above??? */
-void make_calibration_output_filename(char *output_filename, char *output_file_directory, long python_rng_seed, patch_struct *patch, int p, int rng_seed_offset, int rng_seed_offset_PC, int is_counterfactual){
+void make_calibration_output_filename(char *output_filename, char *output_file_directory, long python_rng_seed, patch_struct *patch, int p, int rng_seed_offset, int rng_seed_offset_PC, int scenario_flag){
 
     char temp[LONGSTRINGLENGTH];     /*  This is arbitrary - assume we never have stupidly long filenames! */
 
@@ -1339,7 +1332,7 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
 	strcat(output_filename,temp);
 
 
-	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	if (scenario_flag==NOT_COUNTERFACTUAL_RUN)
 	    sprintf(temp,"Rand%li_PCseed%i_%i.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
 	else
 	    sprintf(temp,"Rand%li_PCseed%i_%i_CF.csv",python_rng_seed,rng_seed_offset,rng_seed_offset_PC);
@@ -1354,20 +1347,18 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
 	    sprintf(temp,"Calibration_output_CL%i_Zim_patch%i_Rand%li_%i",patch[p].community_id,p,python_rng_seed,rng_seed_offset);
 	strcat(output_filename,temp);
 
-	if (is_counterfactual==NOT_COUNTERFACTUAL_RUN)
+	if (scenario_flag==NOT_COUNTERFACTUAL_RUN)
 	    sprintf(temp,".csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOBARRIERS)
-	    sprintf(temp,"_NOBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOPREPBARRIERS)
-	    sprintf(temp,"_NOPREPBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOVMMCBARRIERS)
-	    sprintf(temp,"_NOVMMCBARRIER.csv");
-	else if (is_counterfactual==MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS)
-	    sprintf(temp,"_NOCONDBARRIER.csv");
+	else{
+	    int prep_cascade_scenario = scenario_flag/100;
+	    int VMMC_cascade_scenario = (scenario_flag/10)%10;
+	    int condom_cascade_scenario = scenario_flag%100;    
 
+	    sprintf(temp,"PrEP%i_VMMC%i_cond%i.csv",prep_cascade_scenario,VMMC_cascade_scenario,condom_cascade_scenario);
+	}
 	strcat(output_filename,temp);
 
-	//printf("Calibration output filename = %s\n",output_filename);
+	printf("Calibration output filename = %s\n",output_filename);
 
     }
 }

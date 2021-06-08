@@ -1,0 +1,9 @@
+sex_ratio	0.50495 // UNPD WPP 2019 WPP2019_FERT_F02_SEX_RATIO_AT_BIRTH.xlsx gives 2015-2020 male-to-female ratio at birth as 1.02 male babies for every 1 female baby in Zimbabwe, so sex ratio is 1.02/2.02=0.50495.
+p_circ_nopopart 0.4    // The probability of background VMMC (when done as a scheduled event). For the cascades project we override this 
+initial_prop_13_17	0.1715 // Zimbabwe data, using UNPD WPP 2019 file WPP2019_POP_F07_1_POPULATION_BY_AGE_BOTH_SEXES.xlsx. See UNPD_initial_population_distribution_Zimbabwe.xlsx for calculation in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\Census_and_demographics\WPP2019.
+initial_prop_18_22	0.1497 // 
+initial_prop_23_30	0.1951 // 
+initial_prop_31_40	0.1860 // 
+initial_prop_41_50	0.1281  // 
+initial_prop_51_60	0.0911  // 
+initial_prop_61_and_older	0.0785  // Note that the rounded numbers from the Excel file sum to 1.0001 so subtract the 0.0001 from the largest age group (23-30) to make it sum to 1.

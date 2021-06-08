@@ -379,7 +379,7 @@ void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t
 
 void intervention_condom_cascade(patch_struct *patch, int p, double t, int cascade_scenario){
 
-    int condom_cascade_scenario = cascade_scenario%100;
+    int condom_cascade_scenario = cascade_scenario%10;
     printf("condom_cascade_scenario=%i\n",condom_cascade_scenario);
 
 

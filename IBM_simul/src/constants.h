@@ -356,7 +356,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 /* Codes for indiv->next_PrEP_event. */
 
-#define PREP_UNAWARE -1 // Person has never been offered PrEP (i.e. for new individuals).
+//#define PREP_UNAWARE -1 // Person has never been offered PrEP (i.e. for new individuals).
 #define PREP_NOEVENT 0 // Nothing ever going to happen (i.e. people with barriers not reached by intervention, or people for whom the next event would occur after the end of the simulation).
 #define PREP_AWARE 1 // Exposure to/aware of PrEP-related intervention.
 #define START_PREP 2  // Initialise PrEP at some future timepoint.
@@ -452,10 +452,12 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define MANICALAND_PREPBARRIER_2 2 /* 2 barriers in place (access, eff use). */
 #define MANICALAND_PREPBARRIER_1 3 /* 1 barrier in place (eff use). */
 #define MANICALAND_PREPBARRIER_0 4 /* With all barriers maximally mitigated. */
+
 #define MANICALAND_VMMCBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
 #define MANICALAND_VMMCBARRIER_2 2 /* 2 barriers in place (access, eff use). */
 #define MANICALAND_VMMCBARRIER_1 3 /* 1 barrier in place (eff use). */
 #define MANICALAND_VMMCBARRIER_0 4 /* With all barriers maximally mitigated. */
+
 #define MANICALAND_CONDBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
 #define MANICALAND_CONDBARRIER_2 2 /* 2 barriers in place (access, eff use). */
 #define MANICALAND_CONDBARRIER_1 3 /* 1 barrier in place (eff use). */

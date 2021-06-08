@@ -2720,8 +2720,8 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
 
     /* If on PrEP (or waiting to start), then cancel PrEP events: */
     if(indiv->PrEP_cascade_status>NOTONPREP){
-	printf("Calling cancel_PrEP for id=%li at t=%lf\n",indiv->id,t);
-	cancel_PrEP(indiv, cascade_events, n_cascade_events, size_cascade_events);
+	cancel_PrEP(indiv, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param);
+
     }
     
     /* If ART has started then there are 3 possibilities for the next cascade event

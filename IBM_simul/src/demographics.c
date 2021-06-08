@@ -638,7 +638,7 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 
     /* PrEP-related stuff: */
     new_adult->PrEP_cascade_status = NOTONPREP;
-    new_adult->next_PrEP_event = PREP_UNAWARE;
+    new_adult->next_PrEP_event = PREP_NOEVENT;
     new_adult->idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     new_adult->idx_PrEP_event[1] = -1;
 
@@ -2169,6 +2169,63 @@ void remove_from_vmmc_events(individual *indiv, individual ***vmmc_events, long 
 
 
 
+/* Function checks if we need to remove indiv from the list of scheduled PrEP events PrEP_events[] and 
+ * removes them if necessary. */
+void remove_from_PrEP_events(individual *indiv, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, parameters *param){
+
+    /* Don't need to do anything if before start of PrEP.  */
+    if (t<param->COUNTRY_T_PrEP_START)
+        return;
+
+    if (indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
+        printf("Individual %li is in remove_from_PrEP_events\n",indiv->id);
+    }
+
+    long i = indiv->idx_PrEP_event[0]; 
+
+    /* If not currently scheduled for any PrEP events then return. */
+    if (i==PREP_NOEVENT)
+        return;
+
+
+    /* FOR DEBUGGING: */
+    if (PrEP_events[i][indiv->idx_PrEP_event[1]]->id!=indiv->id){
+        printf("ERROR: trying to swap out the wrong person in remove_from_PrEP_events(). Trying to swap %li but in PrEP_events[] the person is %li. Exiting\n",indiv->id,PrEP_events[i][indiv->idx_PrEP_event[1]]->id);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
+        printf("Individual %ld at time %6.2f - removing from PrEP events\n",indiv->id,t);
+        fflush(stdout);
+    }
+
+    /* We want to swap out the last person in the array PrEP_events[i] for the indiv. */
+    individual *person_to_move;
+    person_to_move = PrEP_events[i][n_PrEP_events[i]-1];
+
+    if (person_to_move->id==FOLLOW_INDIVIDUAL && person_to_move->patch_no==FOLLOW_PATCH){
+        printf("Individual %li is person_to_move in remove_from_PrEP_events\n",person_to_move->id);
+    }
+
+    /* Now replace the indiv with the person_to_move in PrEP_events[]: */ 
+    PrEP_events[i][indiv->idx_PrEP_event[1]] = person_to_move;
+
+    /* Update the details of person_to_move (note idx_PrEP_event[0] remains the same): */
+    person_to_move->idx_PrEP_event[1] = indiv->idx_PrEP_event[1];
+
+    /* We have removed one person: */
+    n_PrEP_events[i]--; 
+
+    /* Set their PrEP status and next event to nothing: */
+    indiv->PrEP_cascade_status=NOTONPREP;
+    indiv->next_PrEP_event=PREP_NOEVENT;
+}
+
+
+
 /* Removes someone from the hsv2_pos_progression arrays.  */
 void remove_from_hsv2_pos_progression(individual *indiv, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, double t, parameters *param){
     if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
@@ -2415,7 +2472,11 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                         patch[p].n_cascade_events, patch[p].size_cascade_events, t, 
                         patch[p].param);
 		    
-		    
+
+		    /* Remove if person is doing something PrEP-wise: */
+		    if(person_dying->next_PrEP_event!=PREP_NOEVENT){
+			remove_from_PrEP_events(person_dying, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param);
+		    }		    
                     if(g == MALE){
                         remove_from_vmmc_events(person_dying, patch[p].vmmc_events,
                             patch[p].n_vmmc_events, patch[p].size_vmmc_events, t, patch[p].param);
@@ -2522,7 +2583,11 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
             remove_from_cascade_events(person_dying, patch[p].cascade_events,
                 patch[p].n_cascade_events, patch[p].size_cascade_events,t, patch[p].param);
             
-            
+	    /* Remove if person is doing something PrEP-wise: */
+	    if(person_dying->next_PrEP_event!=PREP_NOEVENT)
+		remove_from_PrEP_events(person_dying, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param);
+
+	    
             if(g == MALE){
                 remove_from_vmmc_events(person_dying, patch[p].vmmc_events, 
                     patch[p].n_vmmc_events, patch[p].size_vmmc_events, t, patch[p].param);

@@ -447,7 +447,7 @@ void set_up_population(int p, patch_struct *patch, population *pop){
 
     person_template.PrEP_cascade_status = NOTONPREP;
 
-    person_template.next_PrEP_event = PREP_UNAWARE;
+    person_template.next_PrEP_event = PREP_NOEVENT;
     person_template.idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     person_template.idx_PrEP_event[1] = -1;
 

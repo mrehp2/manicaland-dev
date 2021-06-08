@@ -990,7 +990,7 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 	else{
 	    int prep_cascade_scenario = scenario_flag/100;
 	    int VMMC_cascade_scenario = (scenario_flag/10)%10;
-	    int condom_cascade_scenario = scenario_flag%100;    
+	    int condom_cascade_scenario = scenario_flag%10;    
 
 	    sprintf(run_info_ending,"PrEP%i_VMMC%i_cond%i.csv",prep_cascade_scenario,VMMC_cascade_scenario,condom_cascade_scenario);
 	}
@@ -1352,7 +1352,7 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
 	else{
 	    int prep_cascade_scenario = scenario_flag/100;
 	    int VMMC_cascade_scenario = (scenario_flag/10)%10;
-	    int condom_cascade_scenario = scenario_flag%100;    
+	    int condom_cascade_scenario = scenario_flag%10;    
 
 	    sprintf(temp,"PrEP%i_VMMC%i_cond%i.csv",prep_cascade_scenario,VMMC_cascade_scenario,condom_cascade_scenario);
 	}

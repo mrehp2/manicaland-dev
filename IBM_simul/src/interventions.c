@@ -1754,8 +1754,6 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 
     double t_next_PrEP_event;   /* Time of next PrEP event. */
     
-    if (indiv->id==35027)
-	printf("STarting PrEP for 35027 at t=%lf\n",t);
     /* FOr debugging: */
     if(indiv->cd4 == DUMMYVALUE){
         printf("Trying to start PrEP for a non-existent person id=%ld !!! Exitin//g\n",indiv->id);
@@ -1841,7 +1839,8 @@ double draw_next_PrEP_event_from_adherent(individual *indiv, double t){
 /* Decide what the next PrEP event will be for indiv who is currently semi-adherent.
    Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
 double draw_next_PrEP_event_from_semiadherent(individual *indiv, double t){
-    indiv->next_PrEP_event = BECOME_PREP_FULLYADHERENT;
+    indiv->next_PrEP_event = PREP_STOP;
+    printf("Person %li was semiadherent on PrEP at t=%lf\n",indiv->id,t);
     return t + 1.0;
 }
 
@@ -2021,7 +2020,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 
 
 /* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. */
-void cancel_PrEP(individual *indiv, individual ***cascade_events, long *n_cascade_events, long *size_cascade_events){
+void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, parameters *param){
 
     /* /\* FOR DEBUGGING: *\/ */
     /* if (cascade_events[i][indiv->idx_cascade_event[1]]->id!=indiv->id){ */
@@ -2044,7 +2043,8 @@ void cancel_PrEP(individual *indiv, individual ***cascade_events, long *n_cascad
     /* 	n_cascade_events[i]--; */
     /* } */
     printf("individual %li is diagnosed HIV+ while on PrEP status=%i\n",indiv->id,indiv->PrEP_cascade_status);
-    indiv->PrEP_cascade_status=NOTONPREP;
+    remove_from_PrEP_events(indiv, PrEP_events, n_PrEP_events, size_PrEP_events, t, param);    
+	//indiv->PrEP_cascade_status=NOTONPREP;
     //if (VERBOSE_OUTPUT==1)
     
     //PrEP_events[indiv->idx_PrEP_event[0]][indiv->idx_PrEP_event[1]]

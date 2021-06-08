@@ -61,6 +61,7 @@ void remove_from_hiv_pos_progression(individual *, individual ***, long *, long 
     double, parameters *, population_size_one_year_age_hiv_by_stage_treatment *, int);
 void remove_from_cascade_events(individual *, individual ***, long *, long *, double, parameters *);
 void remove_from_vmmc_events(individual *, individual ***, long *, long *, double , parameters *);
+void remove_from_PrEP_events(individual *, individual ***, long *, long *, double , parameters *);
 void remove_from_hsv2_pos_progression(individual *indiv, individual ***hsv2_pos_progression, long *n_hsv2_pos_progression, long *size_hsv2_pos_progression, double t, parameters *param);
 void deaths_natural_causes(double, patch_struct *, int , all_partnerships *,  file_struct *);
 //void make_new_adults(double, patch_struct *, int , all_partnerships *, individual ***, long *, long *, individual ***, long *, long *, population_size_one_year_age_hiv_by_stage_treatment *);

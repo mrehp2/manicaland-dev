@@ -742,7 +742,7 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
         *scenario_flag = strtol(argv[3],NULL,10);
         /* Check that this only takes values 0 or 1: */
 	if(MANICALAND_CASCADE==1){
-	    if (*scenario_flag<NOT_COUNTERFACTUAL_RUN || *scenario_flag>MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS){
+	    if (*scenario_flag<111 || *scenario_flag>444){
 		printf("ERROR: 3rd argument (scenario_flag) must be 0 (not counterfactual) or 1 (counterfactual) only.\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);

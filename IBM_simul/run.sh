@@ -2,13 +2,13 @@
 
 #seed=11
 seed=1
-nsamples=1000 # chaneg for different nruns
+nsamples=3 # chaneg for different nruns
 #nsamples=1 # chaneg for different nruns
 nreps=1
 verbose=0
 community=5
 
-resultsdir="results_2021_05_09/RESULTS$1/"
+resultsdir="results/RESULTS$1/"
 
 # Calculate the overall number of simulations to perform (nreps * nsamples)
 nruns=`expr $nsamples \* $nreps`
@@ -62,8 +62,8 @@ if [ -z "$1" ]; then
     #echo "NOT COUNTERFACTUAL"
     echo "********RUNNING IBM**********"
 
-    # Last argument: 0=not counterfactual, 1=full counterfactual, 2=PREP, 3=VMMC, 4=CONDOM barriers off.
-    $ibmdir/popart-simul.exe $outputdirectory $nruns 0
+    # Last argument: 111=all barriers in place, 444 = no barriers
+    $ibmdir/popart-simul.exe $outputdirectory $nruns 111
 
     # Now go and generate ART output files 
     # e.g. ART_distribution_CL05_Za_A_V1.2_patch0_Rand10_Run2_0.csv and
@@ -94,7 +94,7 @@ fi
 
 # Post-process the calibration files to include sample and rep numbers in the csv files
 python python/calibration_add_sample_rep_numbers.py $outputdirectory/Output $nsamples $nreps
-mkdir -p results_2021_05_09/RESULTS$1
+mkdir -p $resultsdir
 rm -fr $resultsdir/Output/
 mv $outputdirectory/Output $resultsdir
 cp $outputdirectory/*.* $resultsdir

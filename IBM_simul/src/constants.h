@@ -442,15 +442,25 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define USECOXPH 1
 #define COXMODELBASELINESPVL 4.0
 
-/* Determines if this is a counterfactual run (i.e. set all arms to be arm C) or not. */
+/* Values for scenario_flag for PopART:
+   Determines if this is a counterfactual run (i.e. set all arms to be arm C) or not. */
 #define NOT_COUNTERFACTUAL_RUN 0
 #define IS_COUNTERFACTUAL_RUN 1
 
-/* Counferfactuals for Manicaland project: */
-#define MANICALAND_COUNTERFACTUAL_NOBARRIERS 1
-#define MANICALAND_COUNTERFACTUAL_NOPREPBARRIERS 2
-#define MANICALAND_COUNTERFACTUAL_NOVMMCBARRIERS 3
-#define MANICALAND_COUNTERFACTUAL_NOCONDOMBARRIERS 4
+/* Values for scenario_flag for Manicaland project: */
+#define MANICALAND_PREPBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
+#define MANICALAND_PREPBARRIER_2 2 /* 2 barriers in place (access, eff use). */
+#define MANICALAND_PREPBARRIER_1 3 /* 1 barrier in place (eff use). */
+#define MANICALAND_PREPBARRIER_0 4 /* With all barriers maximally mitigated. */
+#define MANICALAND_VMMCBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
+#define MANICALAND_VMMCBARRIER_2 2 /* 2 barriers in place (access, eff use). */
+#define MANICALAND_VMMCBARRIER_1 3 /* 1 barrier in place (eff use). */
+#define MANICALAND_VMMCBARRIER_0 4 /* With all barriers maximally mitigated. */
+#define MANICALAND_CONDBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
+#define MANICALAND_CONDBARRIER_2 2 /* 2 barriers in place (access, eff use). */
+#define MANICALAND_CONDBARRIER_1 3 /* 1 barrier in place (eff use). */
+#define MANICALAND_CONDBARRIER_0 4 /* With all barriers maximally mitigated. */
+
 
 /* Circumcision states for indiv->circ: */
 #define UNCIRC 0

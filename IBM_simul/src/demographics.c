@@ -3042,6 +3042,16 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
     patch[p].OUTPUT_NDIEDFROMHIV++;
     patch[p].n_died_from_HIV_by_risk[dead_person->sex_risk]++;
     
+
+
+    if(dead_person->next_PrEP_event!=PREP_NOEVENT){
+	remove_from_PrEP_events(dead_person, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param);
+    }		    
+    if(g == MALE){
+	remove_from_vmmc_events(dead_person, patch[p].vmmc_events,patch[p].n_vmmc_events, patch[p].size_vmmc_events, t, patch[p].param);
+    }
+
+
     // If cost-effectiveness output is being recorded, record the amount of time of mortality that
     // was accumulated in the current year from this individual that died an HIV-related death.  
     if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){

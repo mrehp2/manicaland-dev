@@ -652,7 +652,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /*      3. HIV testing                      */
     /********************************************/
     
-    // Has to be called before deaths_natural_causes() or individual_AIDS_death() in given t.s. 
+    // Has to be called before deaths_natural_causes() or individual_death_AIDS() in given t.s. 
     
     if(t >= patch[p].param->COUNTRY_HIV_TEST_START && t < (patch[p].param->COUNTRY_HIV_TEST_START + TIME_STEP) && DO_HIV_TESTING == 1){
         if(VERBOSE_OUTPUT == 1){
@@ -672,7 +672,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
         }
     }
-    // Again, this has to be called before deaths_natural_causes() or individual_AIDS_death() 
+    // Again, this has to be called before deaths_natural_causes() or individual_death_AIDS() 
     // in the given timestep
     if((HIVTESTSCHEDULE == 1) && (t0 >= 2006) && (t_step == 0) && DO_HIV_TESTING == 1){
          // Schedule these annually starting in 2007:
@@ -1067,7 +1067,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
     // Initial cases are drawn according to the params `initial_prop_hsv2infected in the parameters structure.
     if((t0 >= patch[p].param->start_time_hsv2_discretised_year) && (t0 <= (patch[p].param->start_time_hsv2_discretised_year)) && (t_step==patch[p].param->start_time_hsv2_discretised_timestep)){
-	printf("Seeding HSV-2 at t=%lf\n",t0+t_step*TIME_STEP);
+
+	//printf("Seeding HSV-2 at t=%lf\n",t0+t_step*TIME_STEP);
+
         // For all but the age group 80+ (which is in a separate part of the age_list struct)
         for(g = 0; g < N_GENDER; g++){
             

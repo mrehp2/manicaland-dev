@@ -505,8 +505,8 @@ int main(int argc,char *argv[]){
                 
                 /* Initializing the population demographics (no partnerships). 
                 Note that set_up_population sets id_counter to 0. */
-		printf("Setting up for patch %i\n",p);
-		fflush(stdout);
+		//printf("Setting up for patch %i\n",p);
+		//fflush(stdout);
 		set_up_population(p, patch, pop);
 
                 /* Initializing free partnerships based on how many free partnerships individuals

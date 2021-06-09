@@ -599,7 +599,8 @@ void get_setting(patch_struct *patch){
     }
     else if(SETTING==SETTING_MANICALAND){
 	for(p = 0; p < NPATCHES; p++){
-	    printf("Setting: Zimbabwe\n");
+	    if(VERBOSE_OUTPUT == 1)
+		printf("Setting: Zimbabwe\n");
 	    patch[p].country_setting = ZIMBABWE;
 	}
     }
@@ -781,7 +782,6 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
         *rng_seed_offset_PC = strtol(argv[8],NULL,10);
     else
         *rng_seed_offset_PC = 0;
-    printf("Offset for PC is %i\n",*rng_seed_offset_PC);
 
     if (*i_startrun>*n_runs){
         printf("ERROR: 4th argument (i_startrun) must be <= 2nd argument (n_runs).\nExiting\n");
@@ -1013,7 +1013,6 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 	    sprintf(file_labels->filename_label_allpatches_witharm_communityno,"_CL%i_Zim_Rand%li_Run%i_%i",patch[0].community_id,python_rng_seed,i_run+1,rng_seed_offset);
 
 	join_strings_with_check(file_labels->filename_label_allpatches_witharm_communityno, run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
-	printf("Making this run a Manicaland run with allpatch label=%s\n",file_labels->filename_label_allpatches_witharm_communityno);
 
     }
 
@@ -1358,7 +1357,6 @@ void make_calibration_output_filename(char *output_filename, char *output_file_d
 	}
 	strcat(output_filename,temp);
 
-	printf("Calibration output filename = %s\n",output_filename);
 
     }
 }

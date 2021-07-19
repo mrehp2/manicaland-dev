@@ -456,8 +456,11 @@ int main(int argc,char *argv[]){
                     check_if_parameters_plausible(patch[p].param);
 		    if (SETTING==SETTING_POPART){
 			check_if_popart_parameters_plausible(patch[p].param);
+		    } 
+		    if (SETTING==SETTING_MANICALAND){
+			check_if_manicaland_prevention_cascade_parameters_plausible(patch[p].param);
 		    }
-                }else{
+               }else{
                     printf("The function check_if_parameters_plausible() is switched off for");
                     printf(" debugging. Please change CHECKPARAMS in constants.h to have value 1");
                     printf(" when finished. \n");
@@ -507,7 +510,7 @@ int main(int argc,char *argv[]){
                 Note that set_up_population sets id_counter to 0. */
 		//printf("Setting up for patch %i\n",p);
 		//fflush(stdout);
-		set_up_population(p, patch, pop);
+		set_up_population(p, patch, pop, scenario_flag);
 
                 /* Initializing free partnerships based on how many free partnerships individuals
                 have */

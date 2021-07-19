@@ -53,13 +53,18 @@ struct partnership{
 
 typedef struct{
 
-    double PrEP_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
+    //double PrEP_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
     double p_will_use_PrEP; /* Probability will use PrEP this timestep given barriers and individual characteristics. */
     
-    double VMMC_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
-    double p_will_use_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
+    //double VMMC_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
+    /* Personal preference for using condom with long-term and short-term partners. 
+*/
+    double p_want_to_use_condom_long_term_partner;
+    double p_want_to_use_condom_short_term_partner;
     
-    double condom_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
+    double p_will_get_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
+    
+    //double condom_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
 
     /* This is decided per partnership (based on the individual preferences of each person in the partnership), and remains fixed over the course of the partnership. */
     int use_condom_in_this_partnership[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
@@ -69,25 +74,21 @@ typedef struct{
 
 
 typedef struct{
-    double p_use_VMMC_young;
-    double p_use_VMMC_old;
-    double p_use_PrEP_F_young;
-    double p_use_PrEP_F_old;
-    double p_use_PrEP_M;
-    double p_use_cond_M_casual;
-    double p_use_cond_M_LT;
-    double p_use_cond_F_casual;
-    double p_use_cond_F_LT;
-    /* Post-intervention values: */
-    double p_use_VMMC_young_int;
-    double p_use_VMMC_old_int;
-    double p_use_PrEP_F_young_int;
-    double p_use_PrEP_F_old_int;
-    double p_use_PrEP_M_int;
-    double p_use_cond_M_casual_int;
-    double p_use_cond_M_LT_int;
-    double p_use_cond_F_casual_int;
-    double p_use_cond_F_LT_int;
+    /* N_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
+    /* The 2 is the number of interventions (i=0-no intervention, i=1-with prevention barrier intervention). */
+    double p_use_VMMC[N_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_PrEP[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
+
+    double p_use_cond_casual[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
+    double p_use_cond_LT[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
+
+    /* Indicate what kind of intervention is happening for each barrier. */
+    int i_VMMC_barrier_intervention_flag;
+    int i_PrEP_barrier_intervention_flag;
+    int i_condom_barrier_intervention_flag;
+
+    /* Time (in years) when intervention starts. */
+    double t_start_prevention_cascade_intervention;
     
 }cascade_barrier_params;
 
@@ -415,7 +416,8 @@ typedef struct {
                             (expect CHIPS_END_TIMESTEP[n] = CHIPS_END_TIMESTEP[n+1] -1 if the next CHIPS round starts immediately aftet the last one). */
 
     /********** hiv **********/
-    double p_child_circ; /* probability of being traditionnally circumcised as a child */
+    double p_child_circ_trad; /* probability of being traditionally circumcised as a child */
+    double p_child_circ_vmmc; /* probability of getting VMMC as a child */
 
     double eff_circ_vmmc;         /* Effectiveness of VMMC circumcision.  */
     double eff_circ_tmc;         /* Effectiveness of traditional male circumcision.  */
@@ -643,7 +645,7 @@ typedef struct {
     double t_get_vmmc_range[2];
     double t_vmmc_healing; /* Time for VMMC wound to heal after op, during which time susceptibility may be higher. */
 
-
+    /* Manicaland prevention cascade barrier parameters: */
     cascade_barrier_params barrier_params;
 
     
@@ -782,6 +784,23 @@ typedef struct {
 typedef struct {
     age_list_element *age_list_by_gender[N_GENDER];
 } age_list_struct;
+
+
+
+/* Keeps track of whose birthday occurs each timestep.
+   Allows us to trigger age-related events (here it would be the transition of barrier states).
+   Question - what should we choose as the array size?
+   Suppose we look at one specific timestep. The probability that any one person has a birthday on that timestep is (1/N_TIME_STEP_PER_YEAR), so we can treat it as binomial. The probability that the number of people with birthday on that timestep is below some limit M is then the cumulative distribution of the binomial. 
+   R has a function pbinom() that does cumulativer binomial probability. 
+   1-pbinom(1300,50000,1/48) = 2.88658e-15
+   So the probability of getting more than 1300 people with the same birthday timestep in a population of 50,000 is around 3*10^-15. 
+   Note that we are working with MAX_POP_SIZE so this is big.
+   I'm guessing that M=2*MAX_POP_SIZE/N_TIME_STEP_PER_YEAR would have a tiny probability of ever being exceeded (note that roughly 0.5*MAX_POP_SIZE in each gender).
+*/
+typedef struct {
+    individual *birthday_list_by_gender[N_GENDER][2*MAX_POP_SIZE/N_TIME_STEP_PER_YEAR];
+} birthday_list_struct;
+
 
 
 /* This structure contains a list (n_child) of the number of children to be born at each timestep.

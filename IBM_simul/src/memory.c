@@ -38,7 +38,7 @@
 void blank_individual_array(individual *individual_population, int id_counter){
     /* This is a blank template to make it easier to debug when we accidentally add people from previous runs who should not exist in the current run. */
 
-    int i_id, i_cascadebarrier, i_partner;
+    int i_id, i_partner;
     individual blank_person_template;
 
     blank_person_template.HIV_status = DUMMYVALUE;
@@ -77,17 +77,20 @@ void blank_individual_array(individual *individual_population, int id_counter){
     for (i_id=0;i_id<id_counter;i_id++){
         individual_population[i_id] = blank_person_template;
 
-	/* Manicaland cascade barrier-related characteristics. */
-	for (i_cascadebarrier=0; i_cascadebarrier<N_CASCADE_BARRIER_STEPS; i_cascadebarrier++){
-	    individual_population[i_id].cascade_barriers.PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
-	    individual_population[i_id].cascade_barriers.VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
-	    individual_population[i_id].cascade_barriers.condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE;
-	}
-	
-	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0; /* Default value is 0. */
-	individual_population[i_id].cascade_barriers.p_will_use_VMMC = 0; /* Default value is 0. */
+	/* /\* Manicaland prevention cascade barrier-related characteristics. *\/ */
+	/* for (i_cascadebarrier=0; i_cascadebarrier<N_CASCADE_BARRIER_STEPS; i_cascadebarrier++){ */
+	/*     individual_population[i_id].cascade_barriers.PrEP_cascade_barriers[i_cascadebarrier] = DUMMYVALUE; */
+	/*     individual_population[i_id].cascade_barriers.VMMC_cascade_barriers[i_cascadebarrier] = DUMMYVALUE; */
+	/*     individual_population[i_id].cascade_barriers.condom_cascade_barriers[i_cascadebarrier] = DUMMYVALUE; */
+	/* } */
+
+	/* Default value for each of these is 0. */
+	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0; 
+	individual_population[i_id].cascade_barriers.p_will_get_VMMC = 0; 
+	individual_population[i_id].cascade_barriers.p_want_to_use_condom_long_term_partner = 0;
+	individual_population[i_id].cascade_barriers.p_want_to_use_condom_short_term_partner = 0;
 	for (i_partner=0; i_partner< MAX_PARTNERSHIPS_PER_INDIVIDUAL; i_partner++)
-	    individual_population[i_id].cascade_barriers.use_condom_in_this_partnership[i_partner] = 0; /* Default value is 0. */
+	    individual_population[i_id].cascade_barriers.use_condom_in_this_partnership[i_partner] = 0;
 
     }
 

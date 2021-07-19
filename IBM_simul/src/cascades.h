@@ -27,12 +27,12 @@
 //#include "debug.h"
 
 
-void initialise_cascade_barriers(individual *indiv, double t);
+void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params barrier_params, int scenario_flag);
 void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int cascade_scenario);
 void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int cascade_scenario);
 void generate_individual_VMMC_probability(individual *indiv, double t, int VMMC_cascade_scenario);
 void generate_individual_PrEP_probability(individual *indiv, double t, int PrEP_cascade_scenario);
-double generate_individual_condom_preference(individual *indiv, double t, double t_partnership, int condom_cascade_scenario);
+//double generate_individual_condom_preference(individual *indiv, double t, double t_partnership, int condom_cascade_scenario);
 double get_partner_cascade_probability_condom(individual *indiv1, individual *indiv2, double t, double t_partnership, int condom_cascade_scenario);
 void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership, int cascade_scenario);
 void intervention_condom_cascade(patch_struct *patch, int p, double t, int is_counterfactual);

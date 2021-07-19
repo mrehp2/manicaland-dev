@@ -321,7 +321,7 @@ void set_population_count_stratified(stratified_population_size *n_population_st
  * them gender, DoB, riskiness, etc.
  * NOTE: It assigns "-1" to variables such as SPVL and CD4 which will be initialized if the individual 
  * gets HIV, and it sets the numbers of current partners to zero as we initialize partnerships later on. */
-void set_up_population(int p, patch_struct *patch, population *pop){
+void set_up_population(int p, patch_struct *patch, population *pop, int scenario_flag){
 
     int i;
     int g, r, ag;
@@ -515,8 +515,9 @@ void set_up_population(int p, patch_struct *patch, population *pop){
 
 
         for (r = 0; r < N_RISK; r++){
-            /* Calculate number of men circumcised: (we do it here so we don't need to calculate twice for M/F). */
-            n_men_circumcised_as_children = (int) round((patch[p].param->p_child_circ)*patch[p].n_population->pop_size_per_gender_age_risk[MALE][ag][r]);
+            /* Calculate number of men circumcised by traditional circumcision: (we do it here so we don't need to calculate twice for M/F). 
+	       Assume we never need to initialisethe population at a time when VMMC was available (i.e. always initialise before 2010ish). */
+            n_men_circumcised_as_children = (int) round((patch[p].param->p_child_circ_trad)*patch[p].n_population->pop_size_per_gender_age_risk[MALE][ag][r]);
 
 
             n_pregnant_women = (int) floor(prop_pregnant_women * patch[p].n_population->pop_size_per_gender_age_risk[FEMALE][ag][r]);
@@ -568,9 +569,9 @@ void set_up_population(int p, patch_struct *patch, population *pop){
 		    
 
 
-		    /* Function initialises barriers (i.e. whether motivated, has access, use effectively). */
+		    /* Function initialises barriers (i.e. probability of getting PrEP, VMMC, using condoms, when each method is available). */
 		    if (MANICALAND_CASCADE==1)
-			initialise_cascade_barriers(&patch[p].individual_population[patch[p].id_counter] , patch[p].param->start_time_simul);
+			set_prevention_cascade_barriers(&patch[p].individual_population[patch[p].id_counter] , patch[p].param->start_time_simul, patch[p].param->barrier_params, scenario_flag);
 
 
 

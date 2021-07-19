@@ -440,8 +440,11 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
     for(i_run = 0; i_run < n_runs; i_run++){
         param_local = allrunparameters + i_run;
 
-        checkreadok = fscanf(param_file,"%lg", &(param_local->p_child_circ));
-        check_if_cannot_read_param(checkreadok, "param_local->p_child_circ");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->p_child_circ_trad));
+        check_if_cannot_read_param(checkreadok, "param_local->p_child_circ_trad");
+
+        checkreadok = fscanf(param_file,"%lg", &(param_local->p_child_circ_vmmc));
+        check_if_cannot_read_param(checkreadok, "param_local->p_child_circ_vmmc");
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->eff_circ_vmmc));
         check_if_cannot_read_param(checkreadok, "param_local->eff_circ_vmmc");
@@ -2540,6 +2543,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
     FILE *param_file;
 
     int i_run;
+    int i_barrier_intervention; /* Loop over barrier intervention (no intervention/with intervention). */
     
     // This is a local temp variable we use so we don't have to keep 
     // writing allparameters+i_run (or equivalently &allparameters[i_run]).
@@ -2569,63 +2573,88 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
     /******************* read parameters from each line i_run ********************/
     for (i_run = 0; i_run < n_runs; i_run++){
         param_local = allrunparameters + i_run;
-        
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_young));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_young");
+	checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.t_start_prevention_cascade_intervention));
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_old));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_old");
+	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
+	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
+	    
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_young));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_young");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_old));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_old");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_M));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_M");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
+	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_casual));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_casual");
+	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_LT));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_LT");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_casual));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_casual");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_LT));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_LT");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
 
-	
-    /* Post-intervention values: */
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_young_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_young_int");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_old_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_old_int");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_young_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_young_int");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_F_old_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_F_old_int");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
+	}
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_M_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_M_int");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_casual_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_casual_int");
-
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_M_LT_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_M_LT_int");
-
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_casual_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_casual_int");
-
-        checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_F_LT_int));
-        check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_F_LT_int");
     }
+
+
+    for (i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+
+	printf("%lf\n",param_local->barrier_params.t_start_prevention_cascade_intervention);
+
+	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	    if(i_barrier_intervention==1)
+		printf("Now intervention\n");
+		
+	    printf("%lf\n",param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+
+	    printf("%lf\n",param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+    
+	    printf("----------\n");
+	}
+    }
+
+
     fclose(param_file);
     return;
 }

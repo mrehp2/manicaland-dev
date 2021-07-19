@@ -792,6 +792,29 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
 }
 
 
+
+void get_prevention_cascade_scenario(int scenario_flag, parameters *param){
+
+    param->barrier_params.i_VMMC_barrier_intervention_flag = (scenario_flag/10)%10;
+    if (param->barrier_params.i_VMMC_barrier_intervention_flag<0 || param->barrier_params.i_VMMC_barrier_intervention_flag>1){
+	printf("Error - i_VMMC_barrier_intervention_flag=%i\n",param->barrier_params.i_VMMC_barrier_intervention_flag);
+	exit(1);
+    }
+    
+    param->barrier_params.i_PrEP_barrier_intervention_flag = scenario_flag/100;
+    if (param->barrier_params.i_PrEP_barrier_intervention_flag<0 || param->barrier_params.i_PrEP_barrier_intervention_flag>1){
+	printf("Error - i_PrEP_barrier_intervention_flag=%i\n",param->barrier_params.i_PrEP_barrier_intervention_flag);
+	exit(1);
+    }
+    
+    param->barrier_params.i_condom_barrier_intervention_flag = scenario_flag%10;
+    if (param->barrier_params.i_condom_barrier_intervention_flag<0 || param->barrier_params.i_condom_barrier_intervention_flag>1){
+	printf("Error - i_condom_barrier_intervention_flag=%i\n",param->barrier_params.i_condom_barrier_intervention_flag);
+	exit(1);
+    }
+}
+
+
 void get_IBM_code_version(char *version, int stringlength){
    /* Return version number to the character string `version`.  
     
@@ -1411,7 +1434,8 @@ void print_demographic_params(parameters *param){
 
 void print_hiv_params(parameters *param){
     int icd4, spvl;
-    printf("param->p_child_circ=%lg\n",param->p_child_circ);
+    printf("param->p_child_circ_trad=%lg\n",param->p_child_circ_trad);
+    printf("param->p_child_circ_vmmc=%lg\n",param->p_child_circ_vmmc);
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
     printf("param->rr_circ_unhealed=%lg\n",param->rr_circ_unhealed);
@@ -1757,8 +1781,14 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->p_child_circ<0 || param->p_child_circ>1){
-        printf("Error: param->p_child_circ is outside expected range [0,1]\nExiting\n");
+    if (param->p_child_circ_trad<0 || param->p_child_circ_trad>1){
+        printf("Error: param->p_child_circ_trad is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->p_child_circ_vmmc<0 || param->p_child_circ_vmmc>1){
+        printf("Error: param->p_child_circ_vmmc is outside expected range [0,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2672,6 +2702,57 @@ void check_if_parameters_plausible(parameters *param){
 }
 
 
+void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *param){
+    /* Function goes through the manicaland prevention cascade barrier parameters. */
+    int i_barrier_group, i_barrier_intervention;
+
+    if (param->barrier_params.t_start_prevention_cascade_intervention<2020 || param->barrier_params.t_start_prevention_cascade_intervention>2030){
+	printf("Error:param->barrier_params.t_start_prevention_cascade_intervention is outside expected range [2020,2030]\nExiting\n");
+	printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	fflush(stdout);
+	exit(1);
+    }
+
+    for (i_barrier_group=0; i_barrier_group<N_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
+	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	    if (param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]>0.8){
+		printf("Error:param->barrier_params.p_use_VMMC is outside expected range [0,0.8]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
+    }
+    
+
+
+    for (i_barrier_group=0; i_barrier_group<N_PREVENTIONBARRIER_GROUPS*N_GENDER; i_barrier_group++){
+	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	    if (param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]>0.2){
+		printf("Error:param->barrier_params.p_use_PrEP[][] is outside expected range [0,0.2]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	    if (param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]>0.7){
+		printf("Error:param->barrier_params.p_use_cond_casual[][] is outside expected range [0,0.7]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+
+	    if (param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]>0.7){
+		printf("Error:param->barrier_params.p_use_cond_LT[][] is outside expected range [0,0.7]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	    
+
+	}
+    }
+    
+}
 
 
 

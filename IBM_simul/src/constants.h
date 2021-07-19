@@ -367,7 +367,15 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 
 #define MANICALAND_CASCADE 1 // 1 if use Manicaland cascade machinery, 0 otherwise.
-#define N_CASCADE_BARRIER_STEPS 3 // Number of 'barriers' (steps in cascade) for PrEP/VMMC/condom use in Manicaland.
+
+/* Use this to define/access the p_use_X[] for each prevention method X (PrEP/VMMC/condoms) in cascade_barrier_params substructure. */
+#define N_PREVENTIONBARRIER_GROUPS 2 // Number of groups (for *each* gender) that we subdivide the population into, for each prevention method.
+#define i_PREVENTIONBARRIER_YOUNG_M 0
+#define i_PREVENTIONBARRIER_OLD_M 1
+#define i_PREVENTIONBARRIER_YOUNG_F 2
+#define i_PREVENTIONBARRIER_OLD_F 3
+
+//#define N_CASCADE_BARRIER_STEPS 3 // Number of 'barriers' (steps in cascade) for PrEP/VMMC/condom use in Manicaland.
 
 
 #define SAMPLE_INCLUDING_RESERVES 2.0 // We make the PrEP/VMMC intervention/background samples 20% larger than the number we want, so that there are some 'reserves' - people with the same characteristics who are also eligible for PrEP/etc but who won't get it unless the original people become ineligible for some reason (e.g. HIV-seroconverting, dying etc).

@@ -1,18 +1,29 @@
-p_use_cond_M_casual 0.35  // Condom pre-intervention M casual partnership
-p_use_cond_M_LT 0.2  // Condom pre-intervention M long-term partnership
-p_use_cond_F_casual 0.3  // Condom pre-intervention F casual partnership
-p_use_cond_F_LT 0.15  // Condom pre-intervention F long-term partnership
-p_use_cond_M_casual_int 0.5  // Condom post-intervention M casual partnership
-p_use_cond_M_LT_int 0.3  // Condom post-intervention M long-term partnership
-p_use_cond_F_casual_int 0.5  // Condom post-intervention F casual partnership
-p_use_cond_F_LT_int 0.25  // Condom post-intervention F long-term partnership
-p_use_PrEP_F_young 0.005  // PrEP pre-intervention F aged <25
-p_use_PrEP_F_old 0.001  // PrEP pre-intervention F aged 25+
-p_use_PrEP_M 0.001  // PrEP pre-intervention M 
-p_use_PrEP_F_young_int 0.2  // PrEP post-intervention F aged <25
-p_use_PrEP_F_old_int 0.1  // PrEP post-intervention F aged 25+
-p_use_PrEP_M_int 0.05  // PrEP post-intervention M 
-p_use_VMMC_young 0.05  // VMMC pre-intervention M aged <25
-p_use_VMMC_old 0.02  // VMMC pre-intervention M aged 25+
-p_use_VMMC_young_int 0.2  // VMMC post-intervention M aged <25
-p_use_VMMC_old_int 0.1  // VMMC post-intervention M aged 25+
+t_start_prevention_cascade_intervention 2021.0 // If there is a barrier cascade intervention, this is the time (in years) when it starts.
+p_use_VMMC_young 0.05  // VMMC pre-intervention M aged 15-29
+p_use_VMMC_old 0.02  // VMMC pre-intervention M aged 30+
+p_use_PrEP_M_young 0.001  // PrEP pre-intervention M aged 15-29
+p_use_PrEP_M_old 0.002  // PrEP pre-intervention M aged 30+
+p_use_PrEP_F_young 0.003  // PrEP pre-intervention F aged 15-24
+p_use_PrEP_F_old 0.004  // PrEP pre-intervention F aged 25+
+p_use_cond_casual_M_young 0.005  // Casual partner condom use pre-intervention M aged 15-29
+p_use_cond_casual_M_old 0.006  // Casual partner condom use pre-intervention M aged 30+
+p_use_cond_casual_F_young 0.007  // Casual partner condom use pre-intervention F aged 15-24
+p_use_cond_casual_F_old 0.008  // Casual partner condom use pre-intervention F aged 25+
+p_use_cond_LT_M_young 0.009  // Long-term partner condom use pre-intervention M aged 15-29
+p_use_cond_LT_M_old 0.010  // Long-term partner condom use pre-intervention M aged 30+
+p_use_cond_LT_F_young 0.011  // Long-term partner condom use pre-intervention F aged 15-24
+p_use_cond_LT_F_old 0.012  // Long-term partner condom use pre-intervention F aged 25+
+p_use_VMMC_young_int 0.11  // VMMC post-intervention M aged 15-29
+p_use_VMMC_old_int 0.12  // VMMC post-intervention M aged 30+
+p_use_PrEP_M_young_int 0.13  // PrEP post-intervention M aged 15-29
+p_use_PrEP_M_old_int 0.14  // PrEP post-intervention M aged 30+
+p_use_PrEP_F_young_int 0.15  // PrEP post-intervention F aged 15-24
+p_use_PrEP_F_old_int 0.16  // PrEP post-intervention F aged 25+
+p_use_cond_casual_M_young_int 0.17  // Casual partner condom use post-intervention M aged 15-29
+p_use_cond_casual_M_old_int 0.18  // Casual partner condom use post-intervention M aged 30+
+p_use_cond_casual_F_young_int 0.19  // Casual partner condom use post-intervention F aged 15-24
+p_use_cond_casual_F_old_int 0.20  // Casual partner condom use post-intervention F aged 25+
+p_use_cond_LT_M_young_int 0.21  // Long-term partner condom use post-intervention M aged 15-29
+p_use_cond_LT_M_old_int 0.22  // Long-term partner condom use post-intervention M aged 30+
+p_use_cond_LT_F_young_int 0.23  // Long-term partner condom use post-intervention F aged 15-24
+p_use_cond_LT_F_old_int 0.24  // Long-term partner condom use post-intervention F aged 25+

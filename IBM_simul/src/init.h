@@ -33,7 +33,7 @@ void set_population_all_strata_count_one_year_zero(population_size_one_year_age_
 void set_population_count_stratified(stratified_population_size*, population_size*);
 void set_population_count_stratified_zero(stratified_population_size*);
 void initialize_child_population(parameters *, child_population_struct *, stratified_population_size *, int, age_list_struct *);
-void set_up_population(int, patch_struct *, population *);
+void set_up_population(int, patch_struct *, population *, int );
 void init_available_partnerships(int , patch_struct *, all_partnerships *,population *);
 void init_cumulative_counters(cumulative_outputs_struct *);
 void init_calendar_counters(calendar_outputs_struct *);

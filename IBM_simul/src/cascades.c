@@ -48,22 +48,12 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 	i_VMMC_intervention_running_flag = 0;
 	i_PrEP_intervention_running_flag = 0;
 	i_condom_intervention_running_flag = 0;
-	if (i_condom_intervention_running_flag!=0)
-	    printf("i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
-	//printf("1: i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
     }
     else{
 	i_VMMC_intervention_running_flag = barrier_params.i_VMMC_barrier_intervention_flag;
 	i_PrEP_intervention_running_flag = barrier_params.i_PrEP_barrier_intervention_flag;
 	i_condom_intervention_running_flag = barrier_params.i_condom_barrier_intervention_flag;
-	//printf("2: i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
-	if (i_condom_intervention_running_flag!=0)
-	    printf("i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
-	if (barrier_params.i_condom_barrier_intervention_flag!=0)
-	    printf("Hey\n");
     }
-    double zz=barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag]+1;
-    //printf("a=%lf\n",barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag]);
 
     
     /* If under 15 then shouldn't get these (VMMC in under-15 is carried out when people enter the model, so separate from this): 

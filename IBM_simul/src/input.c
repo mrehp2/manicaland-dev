@@ -2625,34 +2625,6 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
     }
 
 
-    for (i_run = 0; i_run < n_runs; i_run++){
-        param_local = allrunparameters + i_run;
-
-	printf("%lf\n",param_local->barrier_params.t_start_prevention_cascade_intervention);
-
-	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
-	    if(i_barrier_intervention==1)
-		printf("Now intervention\n");
-		
-	    printf("%lf\n",param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-
-	    printf("%lf\n",param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	    printf("%lf\n",param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
-    
-	    printf("----------\n");
-	}
-    }
 
 
     fclose(param_file);

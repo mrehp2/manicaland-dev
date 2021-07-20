@@ -812,6 +812,7 @@ void get_prevention_cascade_scenario(int scenario_flag, parameters *param){
 	printf("Error - i_condom_barrier_intervention_flag=%i\n",param->barrier_params.i_condom_barrier_intervention_flag);
 	exit(1);
     }
+
 }
 
 
@@ -1689,6 +1690,38 @@ void print_prep_params(parameters *param){
 }
 
 
+void print_prevention_cascade_params(parameters *param){
+
+    int i_barrier_intervention;
+    
+    printf("%lf\n",param->barrier_params.t_start_prevention_cascade_intervention);
+
+    for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	if(i_barrier_intervention==1)
+	    printf("Now intervention\n");
+		
+	printf("%lf\n",param->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+
+	printf("%lf\n",param->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
+	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+    
+	printf("----------\n");
+    }
+}
+
+
+
 void print_param_struct(patch_struct *patch, int p){
 
     printf("------------------------------------------------------------------------------------\n");
@@ -1712,8 +1745,12 @@ void print_param_struct(patch_struct *patch, int p){
     printf("***Time parameters***\n");
     print_time_params(patch[p].param);
     printf("\n");
-    printf("***Cascade parameters***\n");
+    printf("***HIV care cascade parameters***\n");
     print_cascade_params(patch[p].param);
+    printf("\n");
+
+    printf("***Manicaland HIV prevention cascade parameters***\n");
+    print_prevention_cascade_params(patch[p].param);
     printf("\n");
 
     if (SETTING==SETTING_POPART){

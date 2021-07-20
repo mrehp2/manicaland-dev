@@ -54,7 +54,7 @@ endif
 # Compilation options and libraries to be used
 
 # In general use this:
-CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
+CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 
 
 #For gprof use this:
 #CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg

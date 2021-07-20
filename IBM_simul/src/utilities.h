@@ -53,6 +53,7 @@ int get_chips_round(parameters *, int , int );
 int is_start_of_chips_round(parameters *, int , int , int);
 int is_manicaland_cohort_time(int , int , parameters *);
 void parse_command_line_arguments(int , char **, int *, int *, int *, int *, int *, int *);
+void get_prevention_cascade_scenario(int , parameters *);
 void get_IBM_code_version(char *, int );
 void add_slash(char *);
 void join_strings_with_check(char *, char *, int , char *);

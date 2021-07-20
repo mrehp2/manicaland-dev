@@ -310,6 +310,7 @@ int main(int argc,char *argv[]){
         printf("Making this run a counterfactual\n");
     }
 
+    
     /* Get country: country_setting values are 1 for Zambia, 2 for South Africa, 3 for Zimbabwe.
     There are constants defined in constants.h for this.
 
@@ -477,6 +478,10 @@ int main(int argc,char *argv[]){
                 
                 /* Set this to zero - determines where we are in the array fitting_data[]. */
                 patch[p].i_fit = 0;
+
+		if (SETTING==SETTING_MANICALAND)
+		    get_prevention_cascade_scenario(scenario_flag,patch[p].param);
+
             } // END for(p = 0; p < NPATCHES; p++)
             
             if(VERBOSE_OUTPUT == 1){

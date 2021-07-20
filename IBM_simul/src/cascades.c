@@ -40,21 +40,32 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
 
-    int i_VMMC_barrier_intervention_flag;
-    int i_PrEP_barrier_intervention_flag;
-    int i_condom_barrier_intervention_flag;
+    int i_VMMC_intervention_running_flag;
+    int i_PrEP_intervention_running_flag;
+    int i_condom_intervention_running_flag;
     
     if (t<barrier_params.t_start_prevention_cascade_intervention){
-	i_VMMC_barrier_intervention_flag = 0;
-	i_PrEP_barrier_intervention_flag = 0;
-	i_condom_barrier_intervention_flag = 0;
+	i_VMMC_intervention_running_flag = 0;
+	i_PrEP_intervention_running_flag = 0;
+	i_condom_intervention_running_flag = 0;
+	if (i_condom_intervention_running_flag!=0)
+	    printf("i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
+	//printf("1: i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
     }
     else{
-	i_VMMC_barrier_intervention_flag = barrier_params.i_VMMC_barrier_intervention_flag;
-	i_PrEP_barrier_intervention_flag = barrier_params.i_PrEP_barrier_intervention_flag;
-	i_condom_barrier_intervention_flag = barrier_params.i_condom_barrier_intervention_flag;
+	i_VMMC_intervention_running_flag = barrier_params.i_VMMC_barrier_intervention_flag;
+	i_PrEP_intervention_running_flag = barrier_params.i_PrEP_barrier_intervention_flag;
+	i_condom_intervention_running_flag = barrier_params.i_condom_barrier_intervention_flag;
+	//printf("2: i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
+	if (i_condom_intervention_running_flag!=0)
+	    printf("i_condom_intervention_running_flag=%i\n",i_condom_intervention_running_flag);
+	if (barrier_params.i_condom_barrier_intervention_flag!=0)
+	    printf("Hey\n");
     }
+    double zz=barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag]+1;
+    //printf("a=%lf\n",barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag]);
 
+    
     /* If under 15 then shouldn't get these (VMMC in under-15 is carried out when people enter the model, so separate from this): 
      Age 55+*/
     if (age<15){
@@ -62,53 +73,53 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 	indiv->cascade_barriers.p_will_get_VMMC = 0;
 	/* Assume that condom use is the same as for people in the 15-X group (otherwise we end up with the weird effect that people can be sexually active but will not use a condom until age 15). */
 	if(g==MALE){
-	    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_barrier_intervention_flag];
-	    indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_condom_barrier_intervention_flag];
+	    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag];
+	    indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag];
 	}
 	else{
-	    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_condom_barrier_intervention_flag];
-	    indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_condom_barrier_intervention_flag];
+	    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_condom_intervention_running_flag];
+	    indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_condom_intervention_running_flag];
 	}
     }
     
     else{
 	if (g==FEMALE){
 	    if(age<=24){
-		indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_PrEP_barrier_intervention_flag];	
-		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_condom_barrier_intervention_flag];
-		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_condom_barrier_intervention_flag];
+		indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_PrEP_intervention_running_flag];	
+		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_condom_intervention_running_flag];
+		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_condom_intervention_running_flag];
 	    }
 	    else{
 		/* PrEP has an upper age limit: */
 		if(age<55)
-		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_PrEP_barrier_intervention_flag];
+		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_PrEP_intervention_running_flag];
 		else
 		    /* Assume age > 55 don't use PrEP. */
 		    indiv->cascade_barriers.p_will_use_PrEP = 0;
-		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_condom_barrier_intervention_flag];
-		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_condom_barrier_intervention_flag];
+		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_condom_intervention_running_flag];
+		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_condom_intervention_running_flag];
 	    }
 	}
 	/* Male: */
 	else{
 	    if(age<=29){
-		indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_PrEP_barrier_intervention_flag];	
-		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_barrier_intervention_flag];
-		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_condom_barrier_intervention_flag];
-		indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_VMMC_barrier_intervention_flag];
+		indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_PrEP_intervention_running_flag];	
+		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag];
+		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_condom_intervention_running_flag];
+		indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_VMMC_intervention_running_flag];
 	    }
 	    else{
 		/* PrEP and VMMC have an upper age limit: */
 		if(age<55){
-		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_PrEP_barrier_intervention_flag];
-		    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_VMMC_barrier_intervention_flag];		    
+		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_PrEP_intervention_running_flag];
+		    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_VMMC_intervention_running_flag];		    
 		}
 		else{
 		    indiv->cascade_barriers.p_will_use_PrEP = 0;
 		    indiv->cascade_barriers.p_will_get_VMMC = 0;		    
 		}
-		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_condom_barrier_intervention_flag];
-		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_condom_barrier_intervention_flag];;
+		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_condom_intervention_running_flag];
+		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_condom_intervention_running_flag];
 	    }
 	}
     }

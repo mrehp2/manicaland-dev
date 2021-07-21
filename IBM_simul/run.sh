@@ -62,8 +62,8 @@ if [ -z "$1" ]; then
     #echo "NOT COUNTERFACTUAL"
     echo "********RUNNING IBM**********"
 
-    # Last argument: 111=all barriers in place, 444 = no barriers
-    $ibmdir/popart-simul.exe $outputdirectory $nruns 111
+    # Last argument: 000=all barriers in place, 111 = remove barriers at parametrically specified time (currently 2021). Order is PrEP/VMMC/condoms.
+    $ibmdir/popart-simul.exe $outputdirectory $nruns 000
 
     # Now go and generate ART output files 
     # e.g. ART_distribution_CL05_Za_A_V1.2_patch0_Rand10_Run2_0.csv and

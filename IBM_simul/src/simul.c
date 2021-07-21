@@ -1010,7 +1010,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
     else if(MANICALAND_CASCADE==1){
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
-	    draw_PrEP_through_barriers(t, patch, p, scenario_flag);
+	    draw_PrEP_through_barriers(t, patch, p);
 	}
     }
 
@@ -1026,26 +1026,29 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 
     }
 	
-
-    /*********************************************************************/
-    /* 11a. Set up women to receive PrEP intervention                    */
-    /*********************************************************************/
-    
-    if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention) && (RUN_PREP_INTERVENTION==1)){
-	//printf("Starting PrEP intervention at t=%lf\n",t);
-	schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
-	
+    /* If not Manicaland prevention cascade project, then we can introduce an intervention (PrEP channel operating in addition to background PrEP channel).
+       For Manicaland prevention cascade we do not allow this. */
+    if(MANICALAND_CASCADE==0){
+	if (RUN_PREP_INTERVENTION==1){
+	    /***************************************************************/
+	    /* 11a. Set up women to receive PrEP intervention              */
+	    /***************************************************************/
+	    if((t>=patch[p].param->PrEP_intervention_params->year_start_intervention) && (t_step==patch[p].param->PrEP_intervention_params->timestep_start_intervention)){
+		//printf("Starting PrEP intervention at t=%lf\n",t);
+		schedule_PrEP_intervention(patch[p].age_list, patch[p].PrEP_intervention_sample, patch[p].param->PrEP_intervention_params, patch, p);
+		
+	    }
+	    
+	    /***************************************************************/
+	    /* 11b. Carry out PrEP intervention (if it has started)        */
+	    /***************************************************************/
+	    
+	    if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background )){
+		//printf("Carrying out PrEP intervention at t=%lf\n",t);
+		carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
+	    }
+	}
     }
-
-    /*********************************************************************/
-    /* 11b. Carry out PrEP intervention (if it has started)               */
-    /*********************************************************************/
-    
-    if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background ) && (RUN_PREP_INTERVENTION==1)){
-	//printf("Carrying out PrEP intervention at t=%lf\n",t);
-	carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
-    }
-
 
 
     //check_prep_uptake(t, t_step, patch, p);
@@ -1056,7 +1059,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
-	    draw_VMMC_through_barriers(t, patch, p, scenario_flag);
+	    draw_VMMC_through_barriers(t, patch, p);
 	}
     }
     

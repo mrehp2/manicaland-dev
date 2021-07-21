@@ -121,7 +121,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 /* Function that at each timestep (or multiple of a timestep) goes through the male population (up to age VMMC_MAX_AGE_PREVENTION_CASCADE) using the age_groups list (men only).
    Function is called in simul.c when MANICALAND_CASCADE==1.
 */
-void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenario_flag){
+void draw_VMMC_through_barriers(double t, patch_struct *patch, int p){
     int aa, ai, i;
     int number_per_age_group;
 
@@ -131,21 +131,15 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenar
     double p_will_get_VMMC_per_timestep;
 
 
-    int VMMC_cascade_scenario = (scenario_flag/10)%10;
-    if (VMMC_cascade_scenario<1 || VMMC_cascade_scenario>4){
-	printf("Error - VMMC_cascade_scenario=%i\n",VMMC_cascade_scenario);
-	exit(1);
-    }
     /* Really not expecting that we would *ever* want to model circumcision happening to 80 year olds... */
     if (VMMC_MAX_AGE_PREVENTION_CASCADE>79)
 	printf("Need to modify this function to include oldest age group.\n");
     for(aa = 0; aa < (VMMC_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){
-
 	ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index + aa;            
 	while(ai > (MAX_AGE - AGE_ADULT - 1))
-	    ai = ai - (MAX_AGE - AGE_ADULT);
-            
+	    ai = ai - (MAX_AGE - AGE_ADULT);            
 	number_per_age_group = patch[p].age_list->age_list_by_gender[MALE]->number_per_age_group[ai];
+	/* Go through each person in the age list: */
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
 
@@ -155,7 +149,7 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenar
 		x = gsl_rng_uniform (rng);
 		/* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
 		if(x <= p_will_get_VMMC_per_timestep){
-		    indiv->circ = VMMC;
+		    indiv->circ = VMMC; /* Immediate VMMC (ignore healing period). */
 		}
 	    }
 	}
@@ -168,7 +162,7 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenar
 /* Function that at each timestep (or multiple of a timestep) goes through the population (up to age X_M, X_F):
    Function is called in simul.c when MANICALAND_CASCADE==1.
 */
-void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int scenario_flag){
+void draw_PrEP_through_barriers(double t, patch_struct *patch, int p){
     int aa, ai, g, i;
     int number_per_age_group;
 
@@ -177,15 +171,11 @@ void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int scenar
     double x;
     double p_will_use_PrEP_per_timestep;
 
-    int PrEP_cascade_scenario = scenario_flag/100;
-    if (PrEP_cascade_scenario<1 || PrEP_cascade_scenario>4){
-	printf("Error - PrEP_cascade_scenario=%i\n",PrEP_cascade_scenario);
-	exit(1);
-    }
-
     /* No reason why we would ever expect PrEP to be offered to very old people. */
     if (PREP_MAX_AGE_PREVENTION_CASCADE>79)
 	printf("Need to modify this function to include oldest age group.\n");
+
+    /* Allow PrEP for men and women here: */
     for(g = 0; g < N_GENDER; g++){    
 	for(aa = 0; aa < (PREP_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){
 	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            

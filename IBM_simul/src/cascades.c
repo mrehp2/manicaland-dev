@@ -82,7 +82,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 	    }
 	    else{
 		/* PrEP has an upper age limit: */
-		if(age<55)
+		if(age<(PREP_MAX_AGE_PREVENTION_CASCADE+1))
 		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_PrEP_intervention_running_flag];
 		else
 		    /* Assume age > 55 don't use PrEP. */
@@ -101,14 +101,14 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 	    }
 	    else{
 		/* PrEP and VMMC have an upper age limit: */
-		if(age<55){
+		if(age<(PREP_MAX_AGE_PREVENTION_CASCADE+1))
 		    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_PrEP_intervention_running_flag];
-		    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_VMMC_intervention_running_flag];		    
-		}
-		else{
+		else
 		    indiv->cascade_barriers.p_will_use_PrEP = 0;
-		    indiv->cascade_barriers.p_will_get_VMMC = 0;		    
-		}
+		if(age<(VMMC_MAX_AGE_PREVENTION_CASCADE+1))
+		    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_VMMC_intervention_running_flag];		    
+		else
+		    indiv->cascade_barriers.p_will_get_VMMC = 0;
 		indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_condom_intervention_running_flag];
 		indiv->cascade_barriers.p_want_to_use_condom_short_term_partner = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_condom_intervention_running_flag];
 	    }
@@ -118,7 +118,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 
 
 
-/* Function that at each timestep (or multiple of a timestep) goes through the male population (up to age VMMC_MAX_AGE_CASCADE) using the age_groups list (men only).
+/* Function that at each timestep (or multiple of a timestep) goes through the male population (up to age VMMC_MAX_AGE_PREVENTION_CASCADE) using the age_groups list (men only).
    Function is called in simul.c when MANICALAND_CASCADE==1.
 */
 void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenario_flag){
@@ -137,9 +137,9 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenar
 	exit(1);
     }
     /* Really not expecting that we would *ever* want to model circumcision happening to 80 year olds... */
-    if (VMMC_MAX_AGE_CASCADE>79)
+    if (VMMC_MAX_AGE_PREVENTION_CASCADE>79)
 	printf("Need to modify this function to include oldest age group.\n");
-    for(aa = 0; aa < (VMMC_MAX_AGE_CASCADE - AGE_ADULT); aa++){
+    for(aa = 0; aa < (VMMC_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){
 
 	ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index + aa;            
 	while(ai > (MAX_AGE - AGE_ADULT - 1))
@@ -184,10 +184,10 @@ void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int scenar
     }
 
     /* No reason why we would ever expect PrEP to be offered to very old people. */
-    if (PREP_MAX_AGE_CASCADE>79)
+    if (PREP_MAX_AGE_PREVENTION_CASCADE>79)
 	printf("Need to modify this function to include oldest age group.\n");
     for(g = 0; g < N_GENDER; g++){    
-	for(aa = 0; aa < (PREP_MAX_AGE_CASCADE - AGE_ADULT); aa++){
+	for(aa = 0; aa < (PREP_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){
 	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
 	    while(ai > (MAX_AGE - AGE_ADULT - 1))
 		ai = ai - (MAX_AGE - AGE_ADULT);
@@ -371,7 +371,7 @@ void intervention_condom_cascade(patch_struct *patch, int p, double t, int casca
 
 /*     /\* Go through everyone - modify if we only reach certain age groups etc. *\/ */
 /*     for(g = 0; g < N_GENDER; g++){     */
-/* 	for(aa = 0; aa < (PREP_MAX_AGE_CASCADE - AGE_ADULT); aa++){ */
+/* 	for(aa = 0; aa < (PREP_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){ */
 /* 	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;             */
 /* 	    while(ai > (MAX_AGE - AGE_ADULT - 1)) */
 /* 		ai = ai - (MAX_AGE - AGE_ADULT); */
@@ -396,7 +396,7 @@ void intervention_condom_cascade(patch_struct *patch, int p, double t, int casca
 /*     individual *indiv; */
 
 /*     /\* Go through all men - modify if we only reach certain age groups etc. *\/ */
-/*     for(aa = 0; aa < (VMMC_MAX_AGE_CASCADE - AGE_ADULT); aa++){ */
+/*     for(aa = 0; aa < (VMMC_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){ */
 /* 	ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index + aa;             */
 /* 	while(ai > (MAX_AGE - AGE_ADULT - 1)) */
 /* 	    ai = ai - (MAX_AGE - AGE_ADULT); */

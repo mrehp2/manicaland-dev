@@ -195,8 +195,6 @@ gsl_rng * rng;
 #define DHS_AGE_RANGE_MAX 45  /* DHS runs from 15-59 so 45 age groups. */
 
 
-#define VMMC_MAX_AGE_CASCADE 40 /* Maximum age at which people get VMMC. */
-
 #define NCOHORTROUNDS 6 /* Number of rounds of Manicaland (or similar) cohort. */
 
 /************************************************************************/
@@ -217,15 +215,20 @@ gsl_rng * rng;
 /************************************************************************/
 /****************** Manicaland cascade constants  ***********************/
 /************************************************************************/
+
+/* These aren't used in the current PrEP implementation, but keep so easy to modify. These assume we are creating a PrEp sample each timestep.
+*/
 #define MIN_AGE_PREP_BACKGROUND 18 /* PrEP offered to 18-24 year olds. */
 #define MAX_AGE_PREP_BACKGROUND 24
 /* We allow the intervention to be targeted to different groups. */
 #define MIN_AGE_PREP_INTERVENTION 18 /* PrEP offered to 18-24 year olds. */
 #define MAX_AGE_PREP_INTERVENTION 24
 #define MAX_PREP_ONE_YEAR_AGE_SAMPLE MAX_POP_SIZE/40
+/********************************************************/
 
-#define PREP_MAX_AGE_CASCADE 40 /* Maximum age at which people get PrEP. */
+#define PREP_MAX_AGE_PREVENTION_CASCADE 55 /* Maximum age at which people get PrEP in the Manicaland Prevention Cascade project. */
 
+#define VMMC_MAX_AGE_PREVENTION_CASCADE 55 /* Maximum age at which people get VMMC in the Manicaland Prevention Cascade project. */
 
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 

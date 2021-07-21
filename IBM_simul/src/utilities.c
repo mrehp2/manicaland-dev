@@ -743,8 +743,8 @@ void parse_command_line_arguments(int argc, char **argv, int *n_runs, int *i_sta
         *scenario_flag = strtol(argv[3],NULL,10);
         /* Check that this only takes values 0 or 1: */
 	if(MANICALAND_CASCADE==1){
-	    if (*scenario_flag<000 || *scenario_flag>11){
-		printf("ERROR: 3rd argument (scenario_flag) must be between 0000 (no intervention) and 111 (interventions on PrEP/VMMC/condoms) only.\nExiting\n");
+	    if (*scenario_flag<000 || *scenario_flag>111){
+		printf("ERROR: 3rd argument (scenario_flag) must be between 000 (no intervention) and 111 (interventions on PrEP/VMMC/condoms) only. Scenario_flag=%i\nExiting\n",*scenario_flag);
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
@@ -813,6 +813,8 @@ void get_prevention_cascade_scenario(int scenario_flag, parameters *param){
 	exit(1);
     }
 
+    printf("Scenarios: PrEP = %i VMMC = %i, condoms=%i \n",param->barrier_params.i_PrEP_barrier_intervention_flag,param->barrier_params.i_VMMC_barrier_intervention_flag,param->barrier_params.i_condom_barrier_intervention_flag);
+    
 }
 
 

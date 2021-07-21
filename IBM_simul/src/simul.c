@@ -360,7 +360,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
             
             /* Draw partnerships between females in patch p and males in patch q */
             draw_new_partnerships(t, overall_partnerships, patch, patch[p].param, p, q, debug,
-                file_data_store, scenario_flag);
+                file_data_store);
         }
     }
     

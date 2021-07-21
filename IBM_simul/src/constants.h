@@ -455,21 +455,6 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define NOT_COUNTERFACTUAL_RUN 0
 #define IS_COUNTERFACTUAL_RUN 1
 
-/* Values for scenario_flag for Manicaland project: */
-#define MANICALAND_PREPBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
-#define MANICALAND_PREPBARRIER_2 2 /* 2 barriers in place (access, eff use). */
-#define MANICALAND_PREPBARRIER_1 3 /* 1 barrier in place (eff use). */
-#define MANICALAND_PREPBARRIER_0 4 /* With all barriers maximally mitigated. */
-
-#define MANICALAND_VMMCBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
-#define MANICALAND_VMMCBARRIER_2 2 /* 2 barriers in place (access, eff use). */
-#define MANICALAND_VMMCBARRIER_1 3 /* 1 barrier in place (eff use). */
-#define MANICALAND_VMMCBARRIER_0 4 /* With all barriers maximally mitigated. */
-
-#define MANICALAND_CONDBARRIER_3 1 /* all 3 barriers in place (motivation, access, effective use). */
-#define MANICALAND_CONDBARRIER_2 2 /* 2 barriers in place (access, eff use). */
-#define MANICALAND_CONDBARRIER_1 3 /* 1 barrier in place (eff use). */
-#define MANICALAND_CONDBARRIER_0 4 /* With all barriers maximally mitigated. */
 
 
 /* Circumcision states for indiv->circ: */

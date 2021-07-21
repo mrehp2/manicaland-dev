@@ -38,6 +38,7 @@
 */
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params barrier_params, int scenario_flag){
     int age = (int) floor(t-indiv->DoB);
+
     int g = indiv->gender;
 
     int i_VMMC_intervention_running_flag;
@@ -150,8 +151,6 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p, int scenar
 
 	    /* Only circumcise uncircumcised HIV- men (ignore TMC). */
 	    if (indiv->circ==UNCIRC && indiv->HIV_status==UNINFECTED){
-		/* Function sets indiv->cascade_barriers.p_will_get_VMMC. */
-		generate_individual_VMMC_probability(indiv, t, VMMC_cascade_scenario);
 		p_will_get_VMMC_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_get_VMMC,TIME_STEP);
 		x = gsl_rng_uniform (rng);
 		/* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
@@ -197,8 +196,6 @@ void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int scenar
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 		if (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED){
-		    /* Function sets indiv->cascade_barriers.p_will_use_PrEP, the annual probability. */
-		    generate_individual_PrEP_probability(indiv, t, PrEP_cascade_scenario);
 		    /* Now convert to a per-timestep probability: */
 		    p_will_use_PrEP_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_use_PrEP,TIME_STEP);
 		    x = gsl_rng_uniform (rng);
@@ -216,193 +213,14 @@ void draw_PrEP_through_barriers(double t, patch_struct *patch, int p, int scenar
 
 
 
-/* Based on Louisa Moorhouse's analysis of Manicaland cascade, derive the individual's probability of using prevention methods:
- - PrEP
- - VMMC (men only)
- - condoms (we take the geometric average of M+F to get the per-partnership probability). Note - could perhaps look at whether agency/negotiation is a barrier... */
 
-
-/* Customise this function to use Louisa's parameters and cascade barriers. 
-   Called by draw_VMMC_through_barriers(). */
-void generate_individual_VMMC_probability(individual *indiv, double t, int VMMC_cascade_scenario){
-
-    /* Run with barriers in place: */
-    if (t<2021 || VMMC_cascade_scenario==MANICALAND_VMMCBARRIER_3){
-	if (t - indiv->DoB < 25)
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.05;
-	else
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.02;
-    }
-    /* Scenarios with reduced barriers: */
-    else if (VMMC_cascade_scenario==MANICALAND_VMMCBARRIER_2){
-	if (t - indiv->DoB < 25)
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.08;
-	else
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.03;
-    }
-    else if (VMMC_cascade_scenario==MANICALAND_VMMCBARRIER_1){
-	if (t - indiv->DoB < 25)
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.10;
-	else
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.04;
-    }
-    else if (VMMC_cascade_scenario==MANICALAND_VMMCBARRIER_0){
-	if (t - indiv->DoB < 25)
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.2;
-	else
-	    indiv->cascade_barriers.p_will_get_VMMC = 0.1;
-    }
-    else{
-	printf("Error: unknown VMMC cascade scenario %i. Exiting\n",VMMC_cascade_scenario);
-	exit(1);
-    }
-}	
-
-
-/* Customise this function to use Louisa's parameters. 
-   Probabilities are on the per-year timescale. 
-   Called by draw_PrEP_through_barriers(). */
-void generate_individual_PrEP_probability(individual *indiv, double t, int PrEP_cascade_scenario){
-
-    /* Run with barriers in place: */
-    if (t<2021 || PrEP_cascade_scenario==MANICALAND_PREPBARRIER_3){
-	if (indiv->gender==FEMALE){
-	    if (t - indiv->DoB < 25)
-		indiv->cascade_barriers.p_will_use_PrEP = 0.005;
-	    else
-		indiv->cascade_barriers.p_will_use_PrEP = 0.001;
-	}
-	/* Men: */
-	else{ 
-	    indiv->cascade_barriers.p_will_use_PrEP = 0.001;
-	}	
-    }
-    /* Scenarios with reduced barriers: */
-    else if (PrEP_cascade_scenario==MANICALAND_PREPBARRIER_2){
-	if (indiv->gender==FEMALE){
-	    if (t - indiv->DoB < 25)
-		indiv->cascade_barriers.p_will_use_PrEP = 0.2;
-	    else
-		indiv->cascade_barriers.p_will_use_PrEP = 0.1;
-	}
-	/* Men: */
-	else{ 
-	    indiv->cascade_barriers.p_will_use_PrEP = 0.05;
-	}	
-    }
-    else if (PrEP_cascade_scenario==MANICALAND_PREPBARRIER_1){
-	if (indiv->gender==FEMALE){
-	    if (t - indiv->DoB < 25)
-		indiv->cascade_barriers.p_will_use_PrEP = 0.25;
-	    else
-		indiv->cascade_barriers.p_will_use_PrEP = 0.13;
-	}
-	/* Men: */
-	else{ 
-	    indiv->cascade_barriers.p_will_use_PrEP = 0.06;
-	}	
-    }
-    else if (PrEP_cascade_scenario==MANICALAND_PREPBARRIER_0){
-	if (indiv->gender==FEMALE){
-	    if (t - indiv->DoB < 25)
-		indiv->cascade_barriers.p_will_use_PrEP = 0.5;
-	    else
-		indiv->cascade_barriers.p_will_use_PrEP = 0.3;
-	}
-	/* Men: */
-	else{ 
-	    indiv->cascade_barriers.p_will_use_PrEP = 0.1;
-	}	
-    }	    
-    else{
-	printf("Error: unknown PrEP cascade scenario %i. Exiting\n",PrEP_cascade_scenario);
-	exit(1);
-    }    
-}
-
-
-/* Function no longer used (13/07/2021). */
-/* /\* Customise this function to use Louisa's parameters.  */
-/*    Function calculates an *individual's* probability of using condoms all the time in a given partnership. */
-/*    The actual probability of use of  condom is the geometric mean of the two partners' individual probabiliites. */
-/*    Called by get_partner_cascade_probability_condom(). *\/ */
-/* double generate_individual_condom_preference(individual *indiv, double t, double duration_partnership, int condom_cascade_scenario){ */
-/*     double p_use_condom_indiv; */
-
-/*     /\* Run with barriers in place: *\/ */
-/*     if (t<2021 || condom_cascade_scenario==MANICALAND_CONDBARRIER_3){ */
-/* 	if (indiv->gender==MALE){ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.35; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.2; */
-/* 	} */
-/* 	else{ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.3; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.15; */
-/* 	} */
-/*     } */
-/*     /\* Scenarios with reduced barriers: *\/ */
-/*     else if (condom_cascade_scenario==MANICALAND_CONDBARRIER_2){ */
-/* 	if (indiv->gender==MALE){ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.35; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.2; */
-/* 	} */
-/* 	else{ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.3; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.15; */
-/* 	} */
-/*     } */
-/*     else if (condom_cascade_scenario==MANICALAND_CONDBARRIER_1){ */
-/* 	if (indiv->gender==MALE){ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.35; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.2; */
-/* 	} */
-/* 	else{ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.3; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.15; */
-/* 	} */
-/*     } */
-/*     else if (condom_cascade_scenario==MANICALAND_CONDBARRIER_0){ */
-/* 	if (indiv->gender==MALE){ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.5; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.3; */
-/* 	} */
-/* 	else{ */
-/* 	    if (duration_partnership<1) */
-/* 		p_use_condom_indiv = 0.5; */
-/* 	    else */
-/* 		p_use_condom_indiv = 0.25; */
-/* 	} */
-/*     }	     */
-/*     else{ */
-/* 	printf("Error: unknown condom cascade scenario %i. Exiting\n",condom_cascade_scenario); */
-/* 	exit(1); */
-/*     }     */
-
-    
-	
-/*     return p_use_condom_indiv; */
-/* } */
 
        
 
 /* This function returns the geometric mean of the individual-level preferences to generate a partner-level probability. 
    Make no assumptions about gender - so could be used for MSM in future. 
 */
-double get_partner_cascade_probability_condom(individual *indiv1, individual *indiv2, double t, double duration_partnership, int condom_cascade_scenario){
+double get_partner_cascade_probability_condom(individual *indiv1, individual *indiv2, double t, double duration_partnership){
 
     /* Individual-level preferences for using condom: */
     double p_use_condom1, p_use_condom2;
@@ -426,16 +244,13 @@ double get_partner_cascade_probability_condom(individual *indiv1, individual *in
 
 /* Function uses individual-level condom barriers to determine if a partnership will use a condom (or not).
    Function called when a partnership is formed in new_partnership(), and also when there is an intervention to modify condom barriers in function intervention_condom_cascade(). */
-void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership, int cascade_scenario){
+void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership){
     double p_use_condom, x;
 
-    int condom_cascade_scenario = cascade_scenario%10;
-    if (condom_cascade_scenario<1 || condom_cascade_scenario>4){
-	printf("Error - condom_cascade_scenario=%i\n",condom_cascade_scenario);
-	exit(1);
-    }
+    /* Works out the partnership probability of using a condom given the individual-level preferences for using a condom (takes the geometric means of them). */
+    p_use_condom = get_partner_cascade_probability_condom(indiv1, indiv2, t, duration_partnership);
 
-    p_use_condom = get_partner_cascade_probability_condom(indiv1, indiv2, t, duration_partnership, condom_cascade_scenario);
+    /* Now draw a random number to see if they will use condoms: */
     x = gsl_rng_uniform (rng);
     if (x<p_use_condom){
 	indiv1->cascade_barriers.use_condom_in_this_partnership[indiv1->n_partners-1] = 1;
@@ -489,7 +304,7 @@ void intervention_condom_cascade(patch_struct *patch, int p, double t, int casca
 		    partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 		    if (id< partner->id){
 			duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
-			get_partnership_condom_use(indiv, partner, t, duration_partnership, cascade_scenario);
+			get_partnership_condom_use(indiv, partner, t, duration_partnership);
 			
 		    }
 		}

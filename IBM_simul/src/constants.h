@@ -66,6 +66,8 @@
 
 #define WRITE_HIVSURVIVAL_OUTPUT 0 /*  Generates the files HIVsurvival_individualdata.csv - containing DoB, DoD, gender, date first on ART etc for all HIV+ in simulation. */
 
+#define WRITE_NEW_MALE_CIRCUMCISION_STATUS 1 /* Generates a file that outputs circumcision status (VMMC/TMC/not circ) among young adults aged AGE_ADULT each year. Allows us to check that we have the right % VMMC/TMC/uncircumcised entering the system. */
+
 /************************************************************************/
 /******************* Printing out more or less stuff - mostly for debugging - change eventually ******************/
 /************************************************************************/

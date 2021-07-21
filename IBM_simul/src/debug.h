@@ -73,5 +73,7 @@ void blank_hazard_file(file_struct *);
 void check_constants_consistency();
 void check_prep_uptake(double , int , patch_struct *, int );
 void check_partnership_condom_use_consistent(individual *, individual *, int );
+void update_new_male_circumcision_file(int , int , char *);
+void write_to_new_male_circumcision_file(patch_struct *, int , char *, int );
 
 #endif /* DEBUG_H_ */

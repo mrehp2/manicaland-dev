@@ -441,6 +441,11 @@ int main(int argc,char *argv[]){
                 }
             }
 
+	    /* Use to check circumcision status is correctly initialised in new adult males. */
+	    if(WRITE_NEW_MALE_CIRCUMCISION_STATUS==1)
+		update_new_male_circumcision_file(i_run,(i_startrun - 1),output_file_directory);
+
+	    
             /* This copies the address of the i_run th parameter set in allrunparameters into param.
             param now points to the same thing as allrunparameters[i_run] (rather than making param
             a copy of allrunparameters[i_run]).  Note that the way this is done, if we modify
@@ -735,6 +740,11 @@ int main(int argc,char *argv[]){
                         }
                     }
 
+		    /* Write circumcision status of new males to check distribution is OK. */
+		    if(WRITE_NEW_MALE_CIRCUMCISION_STATUS==1)
+			write_to_new_male_circumcision_file(patch, p, output_file_directory, year);
+
+		    
                     /* Store information needed for Calibration.csv file:
                     This part of the code writes a small set of information (prevalence, incidence)
                     into a file called Calibration...csv.  In that file is stored the prevalence

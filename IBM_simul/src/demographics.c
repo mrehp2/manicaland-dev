@@ -737,10 +737,15 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
         if (gsl_ran_bernoulli(rng,(param->p_child_circ_trad))==1)
             new_adult->circ = TRADITIONAL_MC;
 	/* Need to adjust probability as this is those who aren't TMC: */
-        else if (gsl_ran_bernoulli(rng,(param->p_child_circ_vmmc/(1.0-param->p_child_circ_trad)))==1) 
-	    new_adult->circ = VMMC;
-        else
-            new_adult->circ = UNCIRC;
+        else if(t>param->COUNTRY_VMMC_START){
+	    if (gsl_ran_bernoulli(rng,(param->p_child_circ_vmmc/(1.0-param->p_child_circ_trad)))==1) 
+		new_adult->circ = VMMC;
+	    else
+		new_adult->circ = UNCIRC;
+	}
+	else
+	    new_adult->circ = UNCIRC;
+	
     }
     else
         new_adult->circ = 0;   /* Women - set to zero. */   

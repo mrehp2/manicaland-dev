@@ -2283,3 +2283,68 @@ void check_partnership_condom_use_consistent(individual *indiv1, individual *ind
     //else
     //	printf("Matched condom use %i for %li and %li\n",indiv1->cascade_barriers.use_condom_in_this_partnership[i_allpartners],indiv1->id,indiv2->id);
 }
+
+
+void update_new_male_circumcision_file(int i_run, int i_start, char *output_dir){
+    char output_filename[LONGSTRINGLENGTH];
+    strncpy(output_filename, output_dir, LONGSTRINGLENGTH);
+    FILE *MALE_CIRC_FILE;
+
+    add_slash(output_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
+
+    strcat(output_filename, "New_male_circumcision_overtime.csv");
+    printf("Writing to =%s\n",output_filename);
+    if(i_run==i_start)
+	MALE_CIRC_FILE = fopen(output_filename,"w");
+    else
+	MALE_CIRC_FILE = fopen(output_filename,"a");
+    
+
+    fprintf(MALE_CIRC_FILE,"Run %i\n",i_run);
+    fclose(MALE_CIRC_FILE);
+}
+
+
+void write_to_new_male_circumcision_file(patch_struct *patch, int p, char *output_dir, int year){
+    char output_filename[LONGSTRINGLENGTH];
+    FILE *MALE_CIRC_FILE;
+
+    strncpy(output_filename, output_dir, LONGSTRINGLENGTH);
+
+    add_slash(output_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
+    strcat(output_filename, "New_male_circumcision_overtime.csv");
+
+    individual *indiv;
+    int i;
+    int n_uncirc = 0;
+    int n_tmc = 0;
+    int n_vmmc =0;
+    
+    int ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index+1;            
+    while(ai > (MAX_AGE - AGE_ADULT - 1))
+	ai = ai - (MAX_AGE - AGE_ADULT);
+            
+    int number_youngest_age_group = patch[p].age_list->age_list_by_gender[MALE]->number_per_age_group[ai];
+    printf("Number in youngest age group=%i\n",number_youngest_age_group);
+    for(i = 0; i < number_youngest_age_group; i++){
+	indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
+	if (indiv->circ==UNCIRC)
+	    n_uncirc++;
+	else if (indiv->circ==TRADITIONAL_MC)
+	    n_tmc++;
+	else if (indiv->circ==VMMC)
+	    n_vmmc++;
+	else{
+	    printf("Error: Unknown circumcision status for individual %li. exiting\n",indiv->id);
+	    fflush(stdout);
+	    exit(1);
+	}
+    }
+
+
+    
+    MALE_CIRC_FILE = fopen(output_filename,"a");
+
+    fprintf(MALE_CIRC_FILE,"%i %i %i %i\n",year, n_uncirc, n_tmc, n_vmmc);
+    fclose(MALE_CIRC_FILE);
+}

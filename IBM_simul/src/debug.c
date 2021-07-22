@@ -2325,7 +2325,7 @@ void write_to_new_male_circumcision_file(patch_struct *patch, int p, char *outpu
 	ai = ai - (MAX_AGE - AGE_ADULT);
             
     int number_youngest_age_group = patch[p].age_list->age_list_by_gender[MALE]->number_per_age_group[ai];
-    printf("Number in youngest age group=%i\n",number_youngest_age_group);
+
     for(i = 0; i < number_youngest_age_group; i++){
 	indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
 	if (indiv->circ==UNCIRC)

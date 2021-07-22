@@ -592,7 +592,11 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
 
     /* Assign a date of birth. Note: we currently assume that people do not enter the adult population aged 13.0, but instead 13.99, otherwise there are problems when ageing. 
      * As it is we ensure this way that someone who enters the population at the last timestep is aged 14.0 when they are aged to the next year-group one timestep later. */
-    new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);      
+    new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);
+
+    /* Calculate the birthday timestep for this person. I've checked in code_snippets, and this is about 10% faster than using modf(). */
+    patch[p].individual_population[patch[p].id_counter].birthday_timestep = (int) floor(N_TIME_STEP_PER_YEAR*(new_adult->DoB - floor(new_adult->DoB)));
+    
     new_adult->DoD = -1;
     /* Assign a sex risk group: */
     new_adult->sex_risk = draw_sex_risk(new_adult->gender,param);  

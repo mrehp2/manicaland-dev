@@ -335,7 +335,7 @@ void set_up_population(int p, patch_struct *patch, population *pop, int scenario
     int y0;
     double f;
     get_unpd_time_indices(patch[p].param->start_time_simul, &y0, &f);
-
+    
     /* For debugging : */
     patch[p].DEBUG_NBIRTHS = 0;
     patch[p].DEBUG_NNEWADULTS = 0;
@@ -557,6 +557,11 @@ void set_up_population(int p, patch_struct *patch, population *pop, int scenario
                      * the group. So use make_DoB() to assign uniform DoB consistent with age group ag: */                  
 
                     patch[p].individual_population[patch[p].id_counter].DoB = make_DoB(ag, patch[p].param->start_time_simul, &aa);
+
+		    /* Calculate the birthday timestep for this person. I've checked in code_snippets, and this is about 10% faster than using modf(). */
+		    patch[p].individual_population[patch[p].id_counter].birthday_timestep = (int) floor(N_TIME_STEP_PER_YEAR*(patch[p].individual_population[patch[p].id_counter].DoB - floor(patch[p].individual_population[patch[p].id_counter].DoB)));
+		    // Checked that this works OK.
+		    //printf("Birthday timestep = %i at DoB=%8.6lf\n",patch[p].individual_population[patch[p].id_counter].birthday_timestep,patch[p].individual_population[patch[p].id_counter].DoB);
                     // Use code below to test different ways of getting age_group index:
                     //if (aa!=get_age_index(individual_population[patch[p].id_counter].DoB, param->start_time_simul)||aa!=get_age_indexv2(individual_population[patch[p].id_counter].DoB, patch[p].param->start_time_simul, patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index))
                     //  printf("ERROR:::In make_DoB aa = %i, calc = %i v2 = %i\n",aa,get_age_index(individual_population[patch[p].id_counter].DoB, param->start_time_simul),get_age_indexv2(individual_population[patch[p].id_counter].DoB, param->start_time_simul, patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index));

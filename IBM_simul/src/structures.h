@@ -98,6 +98,7 @@ struct individual{
     long id; /* Unique identifier for each individual. */
     int gender; /* 0 = M, 1 = F. */
     double DoB;  /* Date of birth (stored as double). */
+    int birthday_timestep; /* The timestep (i.e. week) when someone's birthday occurs. Used to allow age thresholds (e.g. HIV prevention cascade probabilities change when someone reaches 15. */
     double DoD;  /* Date of death (stored as double). */
     //////// think about comparative efficiency of DoB versus age ////////
 

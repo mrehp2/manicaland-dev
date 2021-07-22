@@ -729,7 +729,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
     // Making new adults (from the child_population) and adding them to the individual_population,
     // n_population, and other lists (available partners, etc.). */
-    make_new_adults(t, patch, p, overall_partnerships, scenario_flag);
+    make_new_adults(t, t_step, patch, p, overall_partnerships, scenario_flag);
 
 
     

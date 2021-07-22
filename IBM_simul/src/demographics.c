@@ -572,7 +572,7 @@ void add_hiv_info_for_new_hiv_positive_adult(individual *new_adult, int hivstatu
  * Function arguments: pointer to new person to be created, current time (for generating a DoB), hiv status of the person (for MTCT), and a pointer to the param structure (to get probabilities such as gender, MMC, etc).
  * Note that initialize_first_cascade_event_for_new_individual() is called by the parent function make_new_adults(), and adds the individual to the cascade if needed/schedules a new cascade event. 
  * Function returns: nothing. */
-void create_new_individual(individual *new_adult, double t, parameters *param, int hivstatus, patch_struct *patch, int p, all_partnerships *overall_partnerships, int scenario_flag){
+void create_new_individual(individual *new_adult, double t, int t_step, parameters *param, int hivstatus, patch_struct *patch, int p, all_partnerships *overall_partnerships, int scenario_flag){
     int i;
     new_adult->id = patch[p].id_counter;        /* Set the id to be the value of patch[p].id_counter. */
 
@@ -595,7 +595,8 @@ void create_new_individual(individual *new_adult, double t, parameters *param, i
     new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);
 
     /* Calculate the birthday timestep for this person. I've checked in code_snippets, and this is about 10% faster than using modf(). */
-    patch[p].individual_population[patch[p].id_counter].birthday_timestep = (int) floor(N_TIME_STEP_PER_YEAR*(new_adult->DoB - floor(new_adult->DoB)));
+    patch[p].individual_population[patch[p].id_counter].birthday_timestep = t_step;
+
     
     new_adult->DoD = -1;
     /* Assign a sex risk group: */
@@ -2639,7 +2640,7 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
  * Children are assigned by hivstatus, but other characteristics (gender, risk, etc) assigned by create_new_individual() function.
  * Function arguments: pointers to child_population, the individual population, size of the population, age_list, params. Current time t.
  * Function returns: nothing. */
-void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *overall_partnerships, int scenario_flag){
+void make_new_adults(double t, int t_step, patch_struct *patch, int p, all_partnerships *overall_partnerships, int scenario_flag){
     int i_mtct_hiv_status; /* Index over MTCT HIV states (HIV-, HIV+ not on ART etc). */
 
     
@@ -2674,7 +2675,7 @@ void make_new_adults(double t, patch_struct *patch, int p, all_partnerships *ove
         while (patch[p].child_population[i_mtct_hiv_status].n_child[patch[p].child_population[i_mtct_hiv_status].debug_tai]>0){
             /* This adds an individual (HIV-) to individual_population: */
 
-            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, i_mtct_hiv_status, patch, p, overall_partnerships, scenario_flag);
+            create_new_individual((patch[p].individual_population+patch[p].id_counter), t, t_step, patch[p].param, i_mtct_hiv_status, patch, p, overall_partnerships, scenario_flag);
 
             if (t>=patch[p].param->COUNTRY_HIV_TEST_START)
                 initialize_first_cascade_event_for_new_individual((patch[p].individual_population+patch[p].id_counter), t, patch[p].param, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, patch[p].n_infected_by_all_strata);

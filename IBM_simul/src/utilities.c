@@ -813,7 +813,7 @@ void get_prevention_cascade_scenario(int scenario_flag, parameters *param){
 	exit(1);
     }
 
-    printf("Scenarios: PrEP = %i VMMC = %i, condoms=%i \n",param->barrier_params.i_PrEP_barrier_intervention_flag,param->barrier_params.i_VMMC_barrier_intervention_flag,param->barrier_params.i_condom_barrier_intervention_flag);
+    //printf("Scenarios: PrEP = %i VMMC = %i, condoms=%i \n",param->barrier_params.i_PrEP_barrier_intervention_flag,param->barrier_params.i_VMMC_barrier_intervention_flag,param->barrier_params.i_condom_barrier_intervention_flag);
     
 }
 

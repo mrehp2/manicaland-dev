@@ -476,6 +476,8 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
+
+
     
     // Determine if the current time is within the final CHiPs round or not.  The variable
     // `POPART_FINISHED` takes value 1 after the end of the final CHiPs round. Once
@@ -1052,19 +1054,37 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 
 
     //check_prep_uptake(t, t_step, patch, p);
-
-
     /************************************************************************/
     /* 12. VMMC (for Manicaland cascade - i.e. not part of HIV testing) */
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
 	    draw_VMMC_through_barriers(t, patch, p);
+
 	}
     }
+
+
+
+    /************************************************************************/
+    /* 13. Prevention cascade intervention (for Manicaland)                 */
+    /************************************************************************/
+    if(MANICALAND_CASCADE==1){
+	
+	int year_prevention_cascade_intervention = (int) floor(patch[p].param->barrier_params.t_start_prevention_cascade_intervention);
+
+	if(t0==year_prevention_cascade_intervention){
+	    int tstep_prevention_cascade_intervention = (int) floor((patch[p].param->barrier_params.t_start_prevention_cascade_intervention-year_prevention_cascade_intervention)*N_TIME_STEP_PER_YEAR);
+
+	    if(t_step==tstep_prevention_cascade_intervention)
+		printf("Running prevention cascade intervention at t=%lf\n",t);
+	}
+    }
+
+    
     
     /************************************************************************/
-    /* 13. HSV-2 introduction (at time param->start_time_hsv2) */
+    /* 14. HSV-2 introduction (at time param->start_time_hsv2) */
     /************************************************************************/
 
     // This loop seeds HSV-2 once in the simulation at t = param->start_time_hsv2
@@ -1108,7 +1128,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
                         
 
 	/******************************************/
-	/* 14. Progressing (HSV-2)                */
+	/* 15. Progressing (HSV-2)                */
 	/******************************************/
     
 	if(t>=patch[p].param->start_time_hsv2){        

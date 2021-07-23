@@ -955,14 +955,12 @@ int main(int argc,char *argv[]){
                 }
             }
             
-            printf("-------------------------------------Simulated a total of: ");
+            printf("-----------------------------Simulated a total of: ");
             for(p = 0; p < NPATCHES; p++){
                 printf("%ld ", patch[p].id_counter);
             }
             printf(" individuals per patch \n");
-	    printf("XXX\n");
-	    for (i=0; i<patch[0].id_counter; i++)
-		printf("%i\n",patch[0].individual_population[i].birthday_timestep);
+
 	    
             /*****************************************************/
             /*** SOME MEMORY CHECKS                            ***/

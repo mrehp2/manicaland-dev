@@ -232,6 +232,8 @@ gsl_rng * rng;
 
 #define VMMC_MAX_AGE_PREVENTION_CASCADE 55 /* Maximum age at which people get VMMC in the Manicaland Prevention Cascade project. */
 
+#define PREP_VMMC_MIN_AGE_PREVENTION_CASCADE 15 /* Assume neither PrEP nor VMMC offered below age 15. */
+
 #define N_PREP_INTERVENTION_TIMESTEPS N_TIME_STEP_PER_YEAR    /* Assume that intervention can last at most 1 year (can be a single timestep though). Note that this is the maximum numbr of timesteps. The ACTUAL number of timesteps is read in parametrically into PrEP_intervention_params->n_timesteps_in_intervention. */
 
 /* Put this as a constant for now - determines if in simul.c we use PrEP intervention. Eventually will be part of counterfactual. */

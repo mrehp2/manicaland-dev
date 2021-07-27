@@ -30,7 +30,7 @@
 //#include "pc.h"
 
 
-void set_VMMC_prevention_cascade(individual *indiv, int age, double p_use_VMMC[N_PREVENTIONBARRIER_GROUPS][2], int i_VMMC_intervention_running_flag){
+void assign_individual_VMMC_prevention_cascade(individual *indiv, int age, double p_use_VMMC[N_PREVENTIONBARRIER_GROUPS][2], int i_VMMC_intervention_running_flag){
     /* If under 15 then shouldn't get VMMC (VMMC in under-15 is carried out when people enter the model, so separate from this): */
     if (age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 	indiv->cascade_barriers.p_will_get_VMMC = 0;
@@ -44,7 +44,7 @@ void set_VMMC_prevention_cascade(individual *indiv, int age, double p_use_VMMC[N
 }
 
 
-void set_PrEP_prevention_cascade(individual *indiv, int age, int g, double p_use_PrEP[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], int i_PrEP_intervention_running_flag){
+void assign_individual_PrEP_prevention_cascade(individual *indiv, int age, int g, double p_use_PrEP[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], int i_PrEP_intervention_running_flag){
 
     /* If under 15 then shouldn't get PrEP: */
     if (age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
@@ -74,7 +74,7 @@ void set_PrEP_prevention_cascade(individual *indiv, int age, int g, double p_use
 
 
 
-void set_condom_prevention_cascade(individual *indiv, int age, int g, double p_use_cond_LT[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], double p_use_cond_casual[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], int i_condom_intervention_running_flag){
+void assign_individual_condom_prevention_cascade(individual *indiv, int age, int g, double p_use_cond_LT[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], double p_use_cond_casual[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], int i_condom_intervention_running_flag){
     
     if (g==FEMALE){
 	if(age<=24){
@@ -127,11 +127,11 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     }
 
     if(g==MALE)
-	set_VMMC_prevention_cascade(indiv, age, barrier_params.p_use_VMMC, i_VMMC_intervention_running_flag);
+	assign_individual_VMMC_prevention_cascade(indiv, age, barrier_params.p_use_VMMC, i_VMMC_intervention_running_flag);
 
-    set_PrEP_prevention_cascade(indiv, age, g, barrier_params.p_use_PrEP, i_PrEP_intervention_running_flag);
+    assign_individual_PrEP_prevention_cascade(indiv, age, g, barrier_params.p_use_PrEP, i_PrEP_intervention_running_flag);
 
-    set_condom_prevention_cascade(indiv, age, g, barrier_params.p_use_cond_LT, barrier_params.p_use_cond_casual, i_condom_intervention_running_flag);
+    assign_individual_condom_prevention_cascade(indiv, age, g, barrier_params.p_use_cond_LT, barrier_params.p_use_cond_casual, i_condom_intervention_running_flag);
 
 }
 
@@ -272,7 +272,9 @@ void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t
 }
 
 
-/* Goes through everyone, and calls function set_VMMC_cascade() to update their VMMC prevention cascade barriers in response to an intervention. 
+
+
+/* Goes through everyone, and calls function assign_individual_VMMC_cascade() to update their VMMC prevention cascade barriers in response to an intervention. 
  */
 void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 
@@ -304,14 +306,14 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
 	    age = (int) floor(t-indiv->DoB);
-	    set_VMMC_prevention_cascade(indiv, age, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);
+	    assign_individual_VMMC_prevention_cascade(indiv, age, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);
 	}
 	
     }
 }
 
 
-/* Goes through everyone, and calls function set_PrEP_cascade to update their PrEP prevention cascade barriers in response to an intervention. 
+/* Goes through everyone, and calls function assign_individual_PrEP_cascade to update their PrEP prevention cascade barriers in response to an intervention. 
  */
 void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 
@@ -344,7 +346,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 		age = (int) floor(t-indiv->DoB);
-		set_PrEP_prevention_cascade(indiv, age, g, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+		assign_individual_PrEP_prevention_cascade(indiv, age, g, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
 	    }
 	    
 	}
@@ -362,15 +364,11 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
  - loop through population.
  - for each partnership, update the condom use
  - *** */
-void intervention_condom_cascade(patch_struct *patch, int p, double t, int cascade_scenario){
-
-    int condom_cascade_scenario = cascade_scenario%10;
-    printf("condom_cascade_scenario=%i\n",condom_cascade_scenario);
-
-
-    /* First update peoples individual cascade barriers (motivation, access, effective use). */
-    //update_all_individual_condom_cascades(patch, p, t);
-    /* Now loop through the list of alive people, and look at partnerships: */
+void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p){
+    /* Loop through the list of alive people via age_list.
+       For each person, update their condom cascade barrier params.
+       Then loop through again and look at partnerships for that person - update condom use if the id of the partner is < the id of that person. Note we need 2 loops as we can't guarantee that the age of the second person is less than that of the first (it is for new individuals, but not at the start of the simulation).
+    */
     int aa, ai, g, i, i_partners;
     int number_per_age_group;
 
@@ -380,7 +378,37 @@ void intervention_condom_cascade(patch_struct *patch, int p, double t, int casca
     long id;
     int n_partners;
     double duration_partnership;
+    int age;
 
+    /* Store scenario for easier readability. */
+    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+    
+    /* Go through everyone - modify if we only reach certain age groups etc. */
+    for(g = 0; g < N_GENDER; g++){    
+	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);
+            
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	    for(i = 0; i < number_per_age_group; i++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+		age = (int) floor(t-indiv->DoB);
+		assign_individual_condom_prevention_cascade(indiv,age,indiv->gender,patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual,intervention_scenario);
+	    }
+	}
+	/* Now oldest age group: */
+	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
+	for(i = 0; i < number_per_age_group; i++){
+	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
+	    /* Probably could just use MAX_AGE rather than calculating age, but might generate a weird bug if we ever did change age dependency/MAX_AGE. */
+	    age = (int) floor(t-indiv->DoB);
+	    assign_individual_condom_prevention_cascade(indiv,age,indiv->gender,patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual,intervention_scenario);
+	}
+
+    }
+
+    
     /* Go through everyone - modify if we only reach certain age groups etc. */
     for(g = 0; g < N_GENDER; g++){    
 	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
@@ -395,15 +423,18 @@ void intervention_condom_cascade(patch_struct *patch, int p, double t, int casca
 		n_partners = indiv->n_partners;
 		/* Now check this person's partnerships: */
 		for (i_partners=0; i_partners<n_partners; i_partners++){
-		    partner = indiv->partner_pairs[i_partners]->ptr[1-g];
-		    if (id< partner->id){
-			duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
-			get_partnership_condom_use(indiv, partner, t, duration_partnership);
 
+		    /* Only update if they're not consistently using condoms already: */
+		    if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==0){
+			partner = indiv->partner_pairs[i_partners]->ptr[1-g];
+			if (id< partner->id){
+
+			    duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
 			
-			//set_condom_prevention_cascade(indiv,age,g,i_condom_intervention_running_flag);			
-			
-		    }
+			    get_partnership_condom_use(indiv, partner, t, duration_partnership);
+			}
+		    }		    
+
 		}
 	    }
 	}

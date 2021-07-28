@@ -1012,7 +1012,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
     else if(MANICALAND_CASCADE==1){
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
-	    draw_PrEP_through_barriers(t, patch, p);
+	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
 	}
     }
 
@@ -1059,7 +1059,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
-	    draw_VMMC_through_barriers(t, patch, p);
+	    sweep_pop_for_VMMC_per_timestep_given_barriers(t, patch, p);
 
 	}
     }

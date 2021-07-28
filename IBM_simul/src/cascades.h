@@ -32,10 +32,10 @@ void assign_individual_PrEP_prevention_cascade(individual *indiv, int age, int g
 void assign_individual_condom_prevention_cascade(individual *indiv, int age, int g, double p_use_cond_LT[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], double p_use_cond_casual[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2], int i_condom_intervention_running_flag);
 
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params barrier_params, int scenario_flag);
-void draw_VMMC_through_barriers(double t, patch_struct *patch, int p);
-void draw_PrEP_through_barriers(double t, patch_struct *patch, int p);
+void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patch, int p);
+void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patch, int p);
 
-double get_partner_cascade_probability_condom(individual *indiv1, individual *indiv2, double t, double t_partnership);
+double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, double t_partnership);
 void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership);
 
 void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p);

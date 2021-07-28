@@ -30,6 +30,9 @@
 //#include "pc.h"
 
 
+
+/* Functions assign the probability of getting VMMC / PrEP (2nd function) / condom preferences (3rd function) based on characteristics (age, sex) as well as whether there's an intervention to remove barriers and increase usage at that time. */
+
 void assign_individual_VMMC_prevention_cascade(individual *indiv, int age, double p_use_VMMC[N_PREVENTIONBARRIER_GROUPS][2], int i_VMMC_intervention_running_flag){
     /* If under 15 then shouldn't get VMMC (VMMC in under-15 is carried out when people enter the model, so separate from this): */
     if (age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
@@ -100,6 +103,8 @@ void assign_individual_condom_prevention_cascade(individual *indiv, int age, int
     }
 }
 
+
+
 /* This function sets the probability of effectively using a method given the cascade barriers experienced by a person.
    Function is called in set_up_population() in init.c and create_new_individual() in demographics.c when MANICALAND_CASCADE==1.
    ***It will also be called when the person transitions age groups (i.e. reaches 15 and 25/30 for F/M. ***
@@ -137,10 +142,10 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 
 
 
-/* Function that at each timestep (or multiple of a timestep) goes through the male population (up to age VMMC_MAX_AGE_PREVENTION_CASCADE) using the age_groups list (men only).
+/* Function that at each timestep (or multiple of a timestep) goes through the male population (up to age VMMC_MAX_AGE_PREVENTION_CASCADE) using the age_groups list (men only) to decide who gets VMMC given their individual probabilities (determined implicitly by cascade barriers).
    Function is called in simul.c when MANICALAND_CASCADE==1.
 */
-void draw_VMMC_through_barriers(double t, patch_struct *patch, int p){
+void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patch, int p){
     int aa, ai, i;
     int number_per_age_group;
 
@@ -178,10 +183,10 @@ void draw_VMMC_through_barriers(double t, patch_struct *patch, int p){
 
 
 
-/* Function that at each timestep (or multiple of a timestep) goes through the population (up to age X_M, X_F):
+/* Function that at each timestep (or multiple of a timestep) goes through the population (up to age X_M, X_F) to decide who gets PrEP given their individual probabilities (determined implicitly by cascade barriers).
    Function is called in simul.c when MANICALAND_CASCADE==1.
 */
-void draw_PrEP_through_barriers(double t, patch_struct *patch, int p){
+void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patch, int p){
     int aa, ai, g, i;
     int number_per_age_group;
 
@@ -229,7 +234,7 @@ void draw_PrEP_through_barriers(double t, patch_struct *patch, int p){
 /* This function returns the geometric mean of the individual-level preferences to generate a partner-level probability. 
    Make no assumptions about gender - so could be used for MSM in future. 
 */
-double get_partner_cascade_probability_condom(individual *indiv1, individual *indiv2, double t, double duration_partnership){
+double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, double duration_partnership){
 
     /* Individual-level preferences for using condom: */
     double p_use_condom1, p_use_condom2;
@@ -257,7 +262,7 @@ void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t
     double p_use_condom, x;
 
     /* Works out the partnership probability of using a condom given the individual-level preferences for using a condom (takes the geometric means of them). */
-    p_use_condom = get_partner_cascade_probability_condom(indiv1, indiv2, t, duration_partnership);
+    p_use_condom = calculate_partnership_condom_cascade_probability(indiv1, indiv2, t, duration_partnership);
 
     /* Now draw a random number to see if they will use condoms: */
     x = gsl_rng_uniform (rng);

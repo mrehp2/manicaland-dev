@@ -1077,6 +1077,8 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    int tstep_prevention_cascade_intervention = (int) floor((patch[p].param->barrier_params.t_start_prevention_cascade_intervention-year_prevention_cascade_intervention)*N_TIME_STEP_PER_YEAR);
 
 	    if(t_step==tstep_prevention_cascade_intervention){
+		prevention_cascade_intervention_VMMC(t, patch, p);
+		prevention_cascade_intervention_PrEP(t, patch, p);
 		printf("Running prevention cascade intervention at t=%lf\n",t);
 	    }
 	}

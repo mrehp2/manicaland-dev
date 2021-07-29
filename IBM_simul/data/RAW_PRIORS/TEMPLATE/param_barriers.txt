@@ -1,5 +1,5 @@
 t_start_prevention_cascade_intervention 2021.0 // If there is a barrier cascade intervention, this is the time (in years) when it starts.
-p_use_VMMC_young 0.05  // VMMC pre-intervention M aged 15-29
+p_use_VMMC_young 0.05  // Annual probability of getting VMMC pre-intervention M aged 15-29
 p_use_VMMC_old 0.02  // VMMC pre-intervention M aged 30+
 p_use_PrEP_M_young 0.001  // PrEP pre-intervention M aged 15-29
 p_use_PrEP_M_old 0.002  // PrEP pre-intervention M aged 30+

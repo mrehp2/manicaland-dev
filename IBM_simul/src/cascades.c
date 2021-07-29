@@ -279,7 +279,8 @@ void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t
 
 
 
-/* Goes through everyone, and calls function assign_individual_VMMC_cascade() to update their VMMC prevention cascade barriers in response to an intervention. 
+/* This function represents an intervention that increases the probability that an individual will get VMMC from time t onwards (by reducing barriers).
+   Function goes through everyone (using age_list), and calls function assign_individual_VMMC_cascade() to update their VMMC prevention cascade barriers in response to the intervention. 
  */
 void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 
@@ -318,7 +319,8 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 }
 
 
-/* Goes through everyone, and calls function assign_individual_PrEP_cascade to update their PrEP prevention cascade barriers in response to an intervention. 
+/* This function represents an intervention that increases the probability that an individual will get PrEP from time t onwards (by reducing barriers).
+   Function goes through everyone (using age group), and calls function assign_individual_PrEP_cascade to update their PrEP prevention cascade barriers in response to the intervention. 
  */
 void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 
@@ -360,20 +362,137 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 }
 
 
+
+
+/* Function called when a condom barrier prevention intervention occurs, potentially changing condom use in existing partnerships (*starting condom use in partnership where condoms were not used before*).
+   Function called by ******. */
+void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, double duration_partnership){
+    double p_use_condom_partnerM_preintervention;
+    double p_use_condom_partnerM_postintervention;
+    double p_use_condom_partnerF_preintervention;
+    double p_use_condom_partnerF_postintervention;
     
+    double change_in_p_use_condom; /* We want to calculate what the extra probability of using a condom is; */
+    double x;  /* RV to see if condom is used or not. */
+
+    int i_partner1, i_partner2; /* Indices for use_condom_in_this_partnership[] array. */ 
+    int ageM, ageF; /* Ages of the male and female partner. */
+    int g1 = indiv1->gender; /* Sex of partner 1. */
+    long check_id;
+    
+    if(g1==MALE){
+	ageM = (int) floor(t-indiv1->DoB);
+	ageF = (int) floor(t-indiv2->DoB);
+    }
+    else{	
+	ageM = (int) floor(t-indiv1->DoB);
+	ageF = (int) floor(t-indiv2->DoB);
+    }
+
+    
+    if (duration_partnership<1.0){
+	if(ageM<=29){
+	    p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][0];
+	    p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][1];
+	}
+	else{
+	    p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][0];
+	    p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][1];
+	}
+
+	if(ageF<=24){
+	    p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][0];
+	    p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][1];
+	}
+	else{
+	    p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][0];
+	    p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][1];
+	}
+    }
+    /* Long-term partnership: */
+    else{
+	if(ageM<=29){
+	    p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][0];
+	    p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][1];
+	}
+	else{
+	    p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][0];
+	    p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][1];
+	}
+
+	if(ageF<=24){
+	    p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][0];
+	    p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][1];
+	}
+	else{
+	    p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][0];
+	    p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][1];
+	}
+    }
+
+    /* Look at change in probability: */
+    change_in_p_use_condom = sqrt(p_use_condom_partnerM_postintervention*p_use_condom_partnerF_postintervention) - sqrt(p_use_condom_partnerM_preintervention*p_use_condom_partnerF_preintervention);
+    if (change_in_p_use_condom<0 || change_in_p_use_condom>1){
+	printf("Error: change in probability of using condom from intervention = %6.4lf. Exiting\n",change_in_p_use_condom);
+	exit(1);
+    }
+    
+    /* Now draw a random number to see if they will use condoms: */
+    x = gsl_rng_uniform (rng);
+    if (x<change_in_p_use_condom){
+	/* Need to find the array indices for these two (the indices for use_condom_in_this_partnership[] and partner_pairs[] are set up to be the same): */
+	i_partner1 = 0;
+	while(1){
+	    check_id = indiv1->partner_pairs[i_partner1]->ptr[1-g1]->id;
+	    if(check_id==indiv2->id)
+		break;
+	    else
+		i_partner1++;
+	    if(i_partner1>=indiv1->n_partners){
+		printf("Error - run out of partners for partner 1 in update_partnership_condom_use_in_response_to_intervention(). Exiting\n");
+		exit(1);
+	    }
+	}
+	i_partner2 = 0;
+	while(1){
+	    check_id = indiv2->partner_pairs[i_partner2]->ptr[g1]->id;
+	    if(check_id==indiv1->id)
+		break;
+	    else
+		i_partner2++;
+	    if(i_partner2>=indiv2->n_partners){
+		printf("Error - run out of partners for partner 2 in update_partnership_condom_use_in_response_to_intervention(). Exiting\n");
+		exit(1);
+	    }
+	}
+
+	/* Check that condom use matches: */
+	if(indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1]!=0 || indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2]!=0){
+	    printf("Error in update_partnership_condom_use_in_response_to_intervention() - condom use in partners 1+2 not equal to zero prior to intervention. Exiting\n");
+	    exit(1);
+	}
+	
+	indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1] = 1;
+	indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2] = 1;
+    }
+
+}
+
+
 
 
     
-/* Not currently used (13/07/2021). 
-***Note - need to repurpose function:
- - loop through population.
- - for each partnership, update the condom use
- - *** */
+/* Function corresponds to an intervention that increases each individual's preference for using a condom (by reducing barriers).
+   Thus any new partnerships will have a higher probability of using a condom.
+   In addition this function increases the probability of using a condom for existing partnerhips.
+   ***Right now, if a partnerships is using a condom, then they will continue to do so. If not, then there is a probability that they will start to use it. 
+   
+   
+   Function loops through the list of alive people via age_list *TWICE*.
+   Firstly, loop through the list of alive people. For each person, update their individual condom cascade barrier params.
+   Then, loop through again and look at partnerships for each person - update condom use if the id of the partner is < the id of that person. 
+   Note we need 2 loops as we can't guarantee that the age of the second person is less than that of the first (it is for new individuals, but not at the start of the simulation). */
 void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p){
-    /* Loop through the list of alive people via age_list.
-       For each person, update their condom cascade barrier params.
-       Then loop through again and look at partnerships for that person - update condom use if the id of the partner is < the id of that person. Note we need 2 loops as we can't guarantee that the age of the second person is less than that of the first (it is for new individuals, but not at the start of the simulation).
-    */
     int aa, ai, g, i, i_partners;
     int number_per_age_group;
 
@@ -388,7 +507,8 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
     /* Store scenario for easier readability. */
     int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
     
-    /* Go through everyone - modify if we only reach certain age groups etc. */
+    /* First - go through everyone, and alter their individual preference for condoms.
+      */
     for(g = 0; g < N_GENDER; g++){    
 	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
 	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            

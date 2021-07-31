@@ -595,7 +595,13 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
     new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);
 
     /* Store the birthday timestep for this person.  */
-    patch[p].individual_population[patch[p].id_counter].birthday_timestep = t_step;
+    printf("Time=%lf tstep=%i DoB=%lf\n",t,t_step,new_adult->DoB);
+
+    /* Because of the way we calculate DoB, we need to add 1 to the current timestep: */
+    if(t_step<N_TIME_STEP_PER_YEAR)
+	patch[p].individual_population[patch[p].id_counter].birthday_timestep = t_step+1;
+    else
+	patch[p].individual_population[patch[p].id_counter].birthday_timestep = 0;
 
     new_adult->DoD = -1;
     /* Assign a sex risk group: */

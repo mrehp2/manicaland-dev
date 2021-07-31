@@ -586,37 +586,49 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 }
 
 
+
+void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g)
+{
+
+    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+
+    int aa, ai, i;
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+    int number_per_age_group;
+    int age;
+    /* Subtract 1 because the age_list cohort 'age a' is 'people who are aged a at the start of the year (so would be age a+1 on their birthday during the year)' . */
+    aa = (age_to_update-1) - AGE_ADULT;
+    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+    while(ai > (MAX_AGE - AGE_ADULT - 1))
+	ai = ai - (MAX_AGE - AGE_ADULT);
+            
+    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+    for(i = 0; i < number_per_age_group; i++){
+	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	if(indiv->birthday_timestep==t_step){
+	    age = (int) floor(t-indiv->DoB);
+	    assign_individual_PrEP_prevention_cascade(indiv, age, indiv->gender, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+	}
+    }
+}
+
 /* Carried out at each timestep to check for people passing age thresholds related to PrEP prevention cascade barriers.
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
 void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
-
-    int aa, ai, g, i;
-    int number_per_age_group;
-    int age;
-    
-    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-
-    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
-    individual *indiv;
-    double age_check;
+    int g;
     
     /* Go through everyone - modify if we only reach certain age groups etc. */
     for(g = 0; g < N_GENDER; g++){
-	aa = PREP_VMMC_MIN_AGE_PREVENTION_CASCADE - AGE_ADULT;
-	ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
-	while(ai > (MAX_AGE - AGE_ADULT - 1))
-	    ai = ai - (MAX_AGE - AGE_ADULT);
-            
-	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
-	for(i = 0; i < number_per_age_group; i++){
-	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-	    if(indiv->birthday_timestep==t_step){
-		age = (int) floor(t-indiv->DoB);
-		age_check = t-indiv->DoB;
-		printf("At t=%lf tstep=%i DoB=%lf birthday_step=%i age=%lf\n",t,t_step,indiv->DoB,indiv->birthday_timestep,age_check);
-		assign_individual_PrEP_prevention_cascade(indiv, age, indiv->gender, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
-	    }
-	}
-
+	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE, g);
     }
+
+
+    /* Now 25 year old women: */
+    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 25, FEMALE);
+
+    /* Now 30 year old men: */
+    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 30, MALE);
+
 }

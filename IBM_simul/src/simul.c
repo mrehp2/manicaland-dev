@@ -1081,8 +1081,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    if(t_step==tstep_prevention_cascade_intervention){
 		prevention_cascade_intervention_VMMC(t, patch, p);
 		prevention_cascade_intervention_PrEP(t, patch, p);
-		prevention_cascade_intervention_condom(t, patch, p);
+		//prevention_cascade_intervention_condom(t, patch, p);
 		printf("Running prevention cascade intervention at t=%lf\n",t);
+		printf("*** need to restart condom prevention cascade intervention***\n");
 	    }
 	}
     }

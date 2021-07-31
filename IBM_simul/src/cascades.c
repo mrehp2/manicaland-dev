@@ -587,8 +587,45 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 
 
 
-void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g)
-{
+void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update){
+
+    int intervention_scenario = patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag;
+
+    int aa, ai, i;
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+    int number_per_age_group;
+    int age;
+    /* Subtract 1 because the age_list cohort 'age a' is 'people who are aged a at the start of the year (so would be age a+1 on their birthday during the year)' . */
+    aa = (age_to_update-1) - AGE_ADULT;
+    ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index + aa;            
+    while(ai > (MAX_AGE - AGE_ADULT - 1))
+	ai = ai - (MAX_AGE - AGE_ADULT);
+            
+    number_per_age_group = patch[p].age_list->age_list_by_gender[MALE]->number_per_age_group[ai];
+    for(i = 0; i < number_per_age_group; i++){
+	indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
+	if(indiv->birthday_timestep==t_step){
+	    age = (int) floor(t-indiv->DoB);
+	    assign_individual_VMMC_prevention_cascade(indiv, age, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);	    
+	}
+    }
+}
+
+/* Carried out at each timestep to check for people passing age thresholds related to VMMC prevention cascade barriers.
+   Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
+void update_individual_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
+    
+    /* Go through 15 year old men. */
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE);
+    /* Now 30 year old men: */
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, 30);
+
+}
+
+
+void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
     int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
 

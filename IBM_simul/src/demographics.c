@@ -594,10 +594,8 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
      * As it is we ensure this way that someone who enters the population at the last timestep is aged 14.0 when they are aged to the next year-group one timestep later. */
     new_adult->DoB = t - AGE_ADULT - (N_TIME_STEP_PER_YEAR-1)/(1.0*N_TIME_STEP_PER_YEAR);
 
-    /* Store the birthday timestep for this person.  */
-    printf("Time=%lf tstep=%i DoB=%lf\n",t,t_step,new_adult->DoB);
-
-    /* Because of the way we calculate DoB, we need to add 1 to the current timestep: */
+    /* Store the birthday timestep for this person.  
+       Because of the way we calculate DoB, we need to add 1 to the current timestep: */
     if(t_step<N_TIME_STEP_PER_YEAR)
 	patch[p].individual_population[patch[p].id_counter].birthday_timestep = t_step+1;
     else

@@ -1011,6 +1011,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	}
     }
     else if(MANICALAND_CASCADE==1){
+	/*Need to do this before start of PrEP otherwise older people have wrong cascade probabilities as they pass the age threshold before the start of PrEP. */
+	update_individual_PrEPbarriers_from_ageing(t, t_step, patch, p);
+
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
 	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
 	}
@@ -1060,7 +1063,6 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     if(MANICALAND_CASCADE==1){
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
 	    sweep_pop_for_VMMC_per_timestep_given_barriers(t, patch, p);
-
 	}
     }
 
@@ -1079,6 +1081,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    if(t_step==tstep_prevention_cascade_intervention){
 		prevention_cascade_intervention_VMMC(t, patch, p);
 		prevention_cascade_intervention_PrEP(t, patch, p);
+		prevention_cascade_intervention_condom(t, patch, p);
 		printf("Running prevention cascade intervention at t=%lf\n",t);
 	    }
 	}

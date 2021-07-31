@@ -553,10 +553,8 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 		    if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==0){
 			partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 			if (id< partner->id){
-
 			    duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
-			
-			    get_partnership_condom_use(indiv, partner, t, duration_partnership);
+			    update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, duration_partnership);				    //get_partnership_condom_use(indiv, partner, t, duration_partnership);
 			}
 		    }		    
 
@@ -566,15 +564,59 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 	/* Now oldest age group: */
 	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
 	for(i = 0; i < number_per_age_group; i++){
-	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
-	    /* ***I don't know what this does! */
-	    /* for(b=0;b<N_CASCADE_BARRIER_STEPS;b++){ */
-	    /* 	indiv->cascade_barriers.condom_cascade_barriers[b] = 1;    */
-	    /* } */
+	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	    id = indiv->id;
+	    n_partners = indiv->n_partners;
+	    /* Now check this person's partnerships: */
+	    for (i_partners=0; i_partners<n_partners; i_partners++){
+
+		/* Only update if they're not consistently using condoms already: */
+		if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==0){
+		    partner = indiv->partner_pairs[i_partners]->ptr[1-g];
+		    if (id< partner->id){
+			duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
+			update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, duration_partnership);				//get_partnership_condom_use(indiv, partner, t, duration_partnership);
+		    }		    
+
+		}
+	    }
 	}
 
     }
 }
 
 
+/* Carried out at each timestep to check for people passing age thresholds related to PrEP prevention cascade barriers.
+   Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
+void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
 
+    int aa, ai, g, i;
+    int number_per_age_group;
+    int age;
+    
+    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+    double age_check;
+    
+    /* Go through everyone - modify if we only reach certain age groups etc. */
+    for(g = 0; g < N_GENDER; g++){
+	aa = PREP_VMMC_MIN_AGE_PREVENTION_CASCADE - AGE_ADULT;
+	ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	while(ai > (MAX_AGE - AGE_ADULT - 1))
+	    ai = ai - (MAX_AGE - AGE_ADULT);
+            
+	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	for(i = 0; i < number_per_age_group; i++){
+	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	    if(indiv->birthday_timestep==t_step){
+		age = (int) floor(t-indiv->DoB);
+		age_check = t-indiv->DoB;
+		printf("At t=%lf tstep=%i DoB=%lf birthday_step=%i age=%lf\n",t,t_step,indiv->DoB,indiv->birthday_timestep,age_check);
+		assign_individual_PrEP_prevention_cascade(indiv, age, indiv->gender, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+	    }
+	}
+
+    }
+}

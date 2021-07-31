@@ -43,6 +43,8 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p);
 
 void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, double duration_partnership);
 void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p);
-//void intervention_condom_cascade(patch_struct *patch, int p, double t, int is_counterfactual);
+
+void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p);
+
 
 #endif /* CASCADES_H_ */

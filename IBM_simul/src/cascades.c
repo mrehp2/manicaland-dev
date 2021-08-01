@@ -450,6 +450,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 		i_partner1++;
 	    if(i_partner1>=indiv1->n_partners){
 		printf("Error - run out of partners for partner 1 in update_partnership_condom_use_in_response_to_intervention(). Exiting\n");
+		printf("%li %li %li\n",indiv1->id,check_id,indiv2->id);
 		exit(1);
 	    }
 	}
@@ -462,6 +463,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 		i_partner2++;
 	    if(i_partner2>=indiv2->n_partners){
 		printf("Error - run out of partners for partner 2 in update_partnership_condom_use_in_response_to_intervention(). Exiting\n");
+		printf("%li %li %li\n",indiv1->id,check_id,indiv2->id);
 		exit(1);
 	    }
 	}
@@ -564,7 +566,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 	/* Now oldest age group: */
 	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
 	for(i = 0; i < number_per_age_group; i++){
-	    indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
 	    id = indiv->id;
 	    n_partners = indiv->n_partners;
 	    /* Now check this person's partnerships: */
@@ -660,7 +662,6 @@ void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_stru
     for(g = 0; g < N_GENDER; g++){
 	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE, g);
     }
-
 
     /* Now 25 year old women: */
     update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 25, FEMALE);

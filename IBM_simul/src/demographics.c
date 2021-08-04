@@ -1920,7 +1920,6 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
 
         /* Move the last (ie n_partners-1) partnership and associated condom use to the jth partnership - note if j=n_partners-1 this does nothing but that's OK. */
         a_partner->partner_pairs[j] = a_partner->partner_pairs[a_partner->n_partners-1];
-        a_partner->partner_pairs[j] = a_partner->partner_pairs[a_partner->n_partners-1];
 
 	/* Do the same thing for partnership condom use: */
 	a_partner->cascade_barriers.use_condom_in_this_partnership[j] = a_partner->cascade_barriers.use_condom_in_this_partnership[a_partner->n_partners-1];

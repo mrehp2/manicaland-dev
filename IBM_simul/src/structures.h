@@ -60,7 +60,7 @@ typedef struct{
     /* Personal preference for using condom with long-term and short-term partners. 
 */
     double p_want_to_use_condom_long_term_partner;
-    double p_want_to_use_condom_short_term_partner;
+    double p_want_to_use_condom_casual_partner;
     
     double p_will_get_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
     
@@ -74,13 +74,13 @@ typedef struct{
 
 
 typedef struct{
-    /* N_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
+    /* N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
     /* The 2 is the number of interventions (i=0-no intervention, i=1-with prevention barrier intervention). */
-    double p_use_VMMC[N_PREVENTIONBARRIER_GROUPS][2];
-    double p_use_PrEP[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
+    double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
 
-    double p_use_cond_casual[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
-    double p_use_cond_LT[N_PREVENTIONBARRIER_GROUPS*N_GENDER][2];
+    double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS][2];
 
     /* Indicate what kind of intervention is happening for each barrier. */
     int i_VMMC_barrier_intervention_flag;

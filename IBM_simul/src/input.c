@@ -2544,7 +2544,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 
     int i_run;
     int i_barrier_intervention; /* Loop over barrier intervention (no intervention/with intervention). */
-    
+    int i_barrier_group; /* Loop over the different sub-populations for that particular prevention method. */
     // This is a local temp variable we use so we don't have to keep 
     // writing allparameters+i_run (or equivalently &allparameters[i_run]).
     parameters *param_local;
@@ -2576,49 +2576,26 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.t_start_prevention_cascade_intervention));
 
 	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
+	    for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]));
+		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
+	    }
 	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
+	    for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[][]");
+	    }
 	    
+	    for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]));
+		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[][]");
+	    }
 
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
+	    for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
+		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
+	    }
 
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
-	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
-
-	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]");
-
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]");
 	}
 
 

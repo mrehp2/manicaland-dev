@@ -376,11 +376,28 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define MANICALAND_CASCADE 1 // 1 if use Manicaland cascade machinery, 0 otherwise.
 
 /* Use this to define/access the p_use_X[] for each prevention method X (PrEP/VMMC/condoms) in cascade_barrier_params substructure. */
-#define N_PREVENTIONBARRIER_GROUPS 2 // Number of groups (for *each* gender) that we subdivide the population into, for each prevention method.
-#define i_PREVENTIONBARRIER_YOUNG_M 0
-#define i_PREVENTIONBARRIER_OLD_M 1
-#define i_PREVENTIONBARRIER_YOUNG_F 2
-#define i_PREVENTIONBARRIER_OLD_F 3
+#define N_PrEP_PREVENTIONBARRIER_GROUPS 8 // Number of groups that we subdivide the population into, for PrEP.
+#define i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M 0
+#define i_PrEP_PREVENTIONBARRIER_YOUNG_M 1
+#define i_PrEP_PREVENTIONBARRIER_OLD_M 2
+#define i_PrEP_PREVENTIONBARRIER_TOO_OLD_M 3
+#define i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F 4
+#define i_PrEP_PREVENTIONBARRIER_YOUNG_F 5
+#define i_PrEP_PREVENTIONBARRIER_OLD_F 6
+#define i_PrEP_PREVENTIONBARRIER_TOO_OLD_F 7
+
+#define N_VMMC_PREVENTIONBARRIER_GROUPS 4 // Number of groups that we subdivide the population into, for VMMC.
+#define i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M 0
+#define i_VMMC_PREVENTIONBARRIER_YOUNG_M 1
+#define i_VMMC_PREVENTIONBARRIER_OLD_M 2
+#define i_VMMC_PREVENTIONBARRIER_TOO_OLD_M 3
+
+#define N_COND_PREVENTIONBARRIER_GROUPS 4 // Number of groups that we subdivide the population into, for condoms (with both casual and long-term partners).
+#define i_COND_PREVENTIONBARRIER_YOUNG_M 0
+#define i_COND_PREVENTIONBARRIER_OLD_M 1
+#define i_COND_PREVENTIONBARRIER_YOUNG_F 2
+#define i_COND_PREVENTIONBARRIER_OLD_F 3
+
 
 //#define N_CASCADE_BARRIER_STEPS 3 // Number of 'barriers' (steps in cascade) for PrEP/VMMC/condom use in Manicaland.
 

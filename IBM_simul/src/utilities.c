@@ -1694,29 +1694,27 @@ void print_prep_params(parameters *param){
 
 void print_prevention_cascade_params(parameters *param){
 
-    int i_barrier_intervention;
+    int i_barrier_intervention, i_barrier_group;
     
     printf("%lf\n",param->barrier_params.t_start_prevention_cascade_intervention);
 
     for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
 	if(i_barrier_intervention==1)
 	    printf("Now intervention\n");
-		
-	printf("%lf\n",param->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
 
-	printf("%lf\n",param->barrier_params.p_use_VMMC[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_PrEP[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_casual[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_M][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_YOUNG_F][i_barrier_intervention]);
-	printf("%lf\n",param->barrier_params.p_use_cond_LT[i_PREVENTIONBARRIER_OLD_F][i_barrier_intervention]);
+	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
+	    printf("param->barrier_params.p_use_PrEP[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]);
+
+
+	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
+	    printf("param->barrier_params.p_use_VMMC[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
+
+
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
+	    printf("param->barrier_params.p_use_cond_casual[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]);
+	
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
+	    printf("param->barrier_params.p_use_cond_LT[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]);
     
 	printf("----------\n");
     }
@@ -2752,8 +2750,23 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 	exit(1);
     }
 
-    for (i_barrier_group=0; i_barrier_group<N_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+    
+
+
+    for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	
+	/* PrEP: */
+	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
+	    if (param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]>0.2){
+		printf("Error:param->barrier_params.p_use_PrEP[][] is outside expected range [0,0.2]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
+
+	/* VMMC: */
+	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
 	    if (param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]>0.8){
 		printf("Error:param->barrier_params.p_use_VMMC is outside expected range [0,0.8]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -2761,18 +2774,11 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 		exit(1);
 	    }
 	}
-    }
-    
 
 
-    for (i_barrier_group=0; i_barrier_group<N_PREVENTIONBARRIER_GROUPS*N_GENDER; i_barrier_group++){
-	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
-	    if (param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]>0.2){
-		printf("Error:param->barrier_params.p_use_PrEP[][] is outside expected range [0,0.2]\nExiting\n");
-		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-		fflush(stdout);
-		exit(1);
-	    }
+	
+	/* Condoms: */
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
 	    if (param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]>0.7){
 		printf("Error:param->barrier_params.p_use_cond_casual[][] is outside expected range [0,0.7]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -2786,11 +2792,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 		fflush(stdout);
 		exit(1);
 	    }
-	    
-
 	}
     }
-    
 }
 
 

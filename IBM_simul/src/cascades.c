@@ -41,7 +41,7 @@ int index_HIV_prevention_cascade_PrEP(int age, int g){
     /* Put female first as more efficient: */
 
     if(g==FEMALE){
-	if(age<=PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+	if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 	    return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
 	else if(age<=24)
 	    return i_PrEP_PREVENTIONBARRIER_YOUNG_F;
@@ -51,7 +51,7 @@ int index_HIV_prevention_cascade_PrEP(int age, int g){
 	    return i_PrEP_PREVENTIONBARRIER_TOO_OLD_F;
     }
     else if(g==MALE){
-	if(age<=PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+	if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 	    return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M;
 	else if(age<=29)
 	    return i_PrEP_PREVENTIONBARRIER_YOUNG_M;
@@ -73,7 +73,7 @@ int index_HIV_prevention_cascade_PrEP(int age, int g){
    Current characteristics are age, sex.
 */
 int index_HIV_prevention_cascade_VMMC(int age){
-    if(age<=PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 	return i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M;
     else if(age<=29)
 	return i_VMMC_PREVENTIONBARRIER_YOUNG_M;

@@ -86,6 +86,14 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     
     int p, t_step, fit_flag;
     int icd4, i, r;
+
+    if (i_run==0 && t0==1900){
+	//if (t0==1900){	
+	printf("printting prevention cascade params for run 0\n");
+	print_prevention_cascade_params(patch[0].param);
+    }
+
+
     
     // Reset the counters for newly infected individuals
     for(p = 0; p < NPATCHES; p++){

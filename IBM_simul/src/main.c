@@ -291,6 +291,7 @@ int main(int argc,char *argv[]){
     /* Read all the parameter sets - there should be n_runs of them. */
     read_param(input_file_directory, allrunparameters, n_runs, patch);
 
+
     for(i = 0; i < n_runs; i++){
         for(p = 0; p < NPATCHES; p++){
             for(ir = 1; ir < NCHIPSROUNDS; ir++){

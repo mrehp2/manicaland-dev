@@ -76,7 +76,8 @@ void print_cascade_params(parameters *);
 void print_chips_params(parameters *);
 void print_init_params(parameters *);
 void print_prep_params(parameters *);
-    
+void print_prevention_cascade_params(parameters *);
+
 void print_param_struct(patch_struct *, int);
 void check_if_parameters_plausible(parameters *);
 void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *);

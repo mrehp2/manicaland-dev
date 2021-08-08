@@ -414,7 +414,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
     int ageM, ageF; /* Ages of the male and female partner. */
     int g1 = indiv1->gender; /* Sex of partner 1. */
     long check_id;
-    
+
     if(g1==MALE){
 	ageM = (int) floor(t-indiv1->DoB);
 	ageF = (int) floor(t-indiv2->DoB);
@@ -426,27 +426,27 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 
     
     if (duration_partnership<1.0){
-	p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][0];
-	p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][1];
+    	p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][0];
+    	p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][1];
 	
-	p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageF,FEMALE)][0];
-	p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageF,FEMALE)][1];
+    	p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageF,FEMALE)][0];
+    	p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(ageF,FEMALE)][1];
     }
     /* Long-term partnership: */
     else{
-	p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageM,MALE)][0];
-	p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageM,MALE)][1];
+    	p_use_condom_partnerM_preintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageM,MALE)][0];
+    	p_use_condom_partnerM_postintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageM,MALE)][1];
 	
-	p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageF,FEMALE)][0];
-	p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageF,FEMALE)][1];
+    	p_use_condom_partnerF_preintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageF,FEMALE)][0];
+    	p_use_condom_partnerF_postintervention = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(ageF,FEMALE)][1];
     }
 
     /* Look at change in probability: */
     change_in_p_use_condom = sqrt(p_use_condom_partnerM_postintervention*p_use_condom_partnerF_postintervention) - sqrt(p_use_condom_partnerM_preintervention*p_use_condom_partnerF_preintervention);
     if (change_in_p_use_condom<0 || change_in_p_use_condom>1){
-	printf("Error: change in probability of using condom from intervention = %6.4lf. Exiting\n",change_in_p_use_condom);
-	exit(1);
-    }
+    	printf("Error: change in probability of using condom from intervention = %6.4lf. Exiting\n",change_in_p_use_condom);
+    	exit(1);
+    }    
     
     /* Now draw a random number to see if they will use condoms: */
     x = gsl_rng_uniform (rng);

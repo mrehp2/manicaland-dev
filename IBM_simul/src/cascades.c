@@ -517,7 +517,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
     double duration_partnership;
 
     /* Store scenario for easier readability. */
-    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+    int intervention_scenario = patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
     
     /* First - go through everyone, and alter their individual preference for condoms.
       */
@@ -623,7 +623,7 @@ void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_st
 
 /* Carried out at each timestep to check for people passing age thresholds related to VMMC prevention cascade barriers.
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
-void update_individual_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
+void update_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
     
     /* Go through 15 year old men. */
     update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE);
@@ -652,14 +652,19 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
     for(i = 0; i < number_per_age_group; i++){
 	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 	if(indiv->birthday_timestep==t_step){
-	    assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+	    /* For PrEP (not VMMC - where we assume men can be circumcised prior to sexual debut, and not for condoms, where it doesn't matter as you can't use a condom until sexual debut), you can't get PrEP until sexual debut. 
+	       So only modify for people who've ever had sex (i.e. >0 partners).
+	       Use a separate function to update probability for individuals when they have sexual debut. 
+ */
+	    if (indiv->n_lifetime_partners>0)
+		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
 	}
     }
 }
 
 /* Carried out at each timestep to check for people passing age thresholds related to PrEP prevention cascade barriers.
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
-void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
+void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
     int g;
     
     /* Go through everyone - modify if we only reach certain age groups etc. */
@@ -674,3 +679,48 @@ void update_individual_PrEPbarriers_from_ageing(double t, int t_step, patch_stru
     update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 30, MALE);
 
 }
+
+
+
+
+void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
+
+    int intervention_scenario = patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
+
+    int aa, ai, i;
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+    int number_per_age_group;
+    /* Subtract 1 because the age_list cohort 'age a' is 'people who are aged a at the start of the year (so would be age a+1 on their birthday during the year)' . */
+    aa = (age_to_update-1) - AGE_ADULT;
+    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+    while(ai > (MAX_AGE - AGE_ADULT - 1))
+	ai = ai - (MAX_AGE - AGE_ADULT);
+            
+    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+    for(i = 0; i < number_per_age_group; i++){
+	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	if(indiv->birthday_timestep==t_step){
+	    /* Assumption - condom use in *existing* partnerships does not change when people pass this age threshold. We therefore do not need an equivalent function to update_partnership_condom_use_in_response_to_intervention(). */
+	    assign_individual_condom_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual, intervention_scenario);
+	}
+    }
+}
+
+/* Carried out at each timestep to check for people passing age thresholds related to condom prevention cascade barriers.
+   Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
+void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
+    int g;
+    
+    /* Go through everyone - modify if we only reach certain age groups etc: */
+
+    /* 25 year old women: */
+    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 25, FEMALE);
+
+    /* Now 30 year old men: */
+    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 30, MALE);
+
+}
+
+

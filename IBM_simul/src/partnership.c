@@ -162,6 +162,19 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         }
     }
 
+
+    if(SETTING==SETTING_MANICALAND){
+	printf("Assigning PrEP now to %li or %li\n",ind1->id, ind2->id);
+	/* At sexual debut, we change the probabilities of getting PrEP.
+	   Condom use doesn't matter. 
+	   For now, assume VMMC can also be independent of sexual debut. */
+	if(ind1->n_lifetime_partners==0)
+	    assign_individual_PrEP_prevention_cascade(t_form_partnership, ind1, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
+	if(ind2->n_lifetime_partners==0)
+	    assign_individual_PrEP_prevention_cascade(t_form_partnership, ind2, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
+    }
+
+    
     // This is for debug to check that all partnerships are broken up at some point
     /*if(t_form_partnership + pair->t_dissolve*TIME_STEP>param->end_time_simul)
     {
@@ -182,8 +195,11 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         ind1->n_HIVpos_partners ++;
         ind1->partner_pairs_HIVpos[ind1->n_HIVpos_partners-1] = pair;
     }
+
     ind1->n_lifetime_partners++;
 
+
+    
     ind2->n_partners++;
     ind2->partner_pairs[ind2->n_partners-1] = pair;
     if(ind1->HIV_status>0 && ind2->HIV_status==0)  /* then we need to tell ind2 that he has a new HIV partner */

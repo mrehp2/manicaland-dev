@@ -11,6 +11,8 @@ p_use_PrEP_F_too_young 0.0  // PrEP pre-intervention F aged <15 - assumed zero.
 p_use_PrEP_F_young 0.003  // PrEP pre-intervention F aged 15-24
 p_use_PrEP_F_old 0.004  // PrEP pre-intervention F aged 25-55
 p_use_PrEP_F_too_old 0.0  // PrEP pre-intervention F aged >55 - assumed zero.
+p_use_PrEP_M_neversex 0.0 // PrEP pre-intervention M if never had sex
+p_use_PrEP_F_neversex 0.0 // PrEP pre-intervention F if never had sex
 p_use_cond_casual_M_young 0.005  // Casual partner condom use pre-intervention M aged <=29
 p_use_cond_casual_M_old 0.006  // Casual partner condom use pre-intervention M aged 30+
 p_use_cond_casual_F_young 0.007  // Casual partner condom use pre-intervention F aged <=24
@@ -31,6 +33,8 @@ p_use_PrEP_F_too_young_int 0.0  // PrEP post-intervention F aged <15 - assumed z
 p_use_PrEP_F_young_int 0.15  // PrEP post-intervention F aged 15-24
 p_use_PrEP_F_old_int 0.16  // PrEP post-intervention F aged 25-55
 p_use_PrEP_F_too_old_int 0.0  // PrEP post-intervention F aged >55 - assumed zero
+p_use_PrEP_M_neversex_int 0.0 // PrEP post-intervention M if never had sex
+p_use_PrEP_F_neversex_int 0.0 // PrEP post-intervention F if never had sex
 p_use_cond_casual_M_young_int 0.17  // Casual partner condom use post-intervention M aged <=29
 p_use_cond_casual_M_old_int 0.18  // Casual partner condom use post-intervention M aged 30+
 p_use_cond_casual_F_young_int 0.19  // Casual partner condom use post-intervention F aged <=24

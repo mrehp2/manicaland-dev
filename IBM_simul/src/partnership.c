@@ -162,18 +162,11 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         }
     }
 
-
-    if(SETTING==SETTING_MANICALAND){
-	printf("Assigning PrEP now to %li or %li\n",ind1->id, ind2->id);
-	/* At sexual debut, we change the probabilities of getting PrEP.
-	   Condom use doesn't matter. 
-	   For now, assume VMMC can also be independent of sexual debut. */
-	if(ind1->n_lifetime_partners==0)
-	    assign_individual_PrEP_prevention_cascade(t_form_partnership, ind1, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
-	if(ind2->n_lifetime_partners==0)
-	    assign_individual_PrEP_prevention_cascade(t_form_partnership, ind2, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
-    }
-
+    /* If either partner is having first sex, then set up any necessary first sex characteristics: */
+    if(ind1->n_lifetime_partners==0)
+	set_first_sex_characteristics(t_form_partnership, ind1, param);
+    if(ind2->n_lifetime_partners==0)
+	set_first_sex_characteristics(t_form_partnership, ind2, param);
     
     // This is for debug to check that all partnerships are broken up at some point
     /*if(t_form_partnership + pair->t_dissolve*TIME_STEP>param->end_time_simul)
@@ -1184,5 +1177,23 @@ void draw_new_partnerships(int time, all_partnerships *overall_partnerships, pat
                 }
             }
         }
+    }
+}
+
+
+
+/* Set up characteristics for individual at first sex: */
+void set_first_sex_characteristics(double t, individual *indiv, parameters *param){
+	
+
+    /* For Manicaland, we need to set up the HIV prevention cascade characteristics. Note that we currently set both VMMC and condoms at entry to sexually active pop (the former as can get VMMC before sexual debut, the latter because condom use only starts when have a sexual partner, so before it just represents a future preference). 
+     */
+       
+    if(SETTING==SETTING_MANICALAND){
+	//printf("Assigning PrEP now to %li\n",indiv->id);
+	/* At sexual debut, we change the probabilities of getting PrEP.
+	   Condom use doesn't matter. 
+	   For now, assume VMMC can also be independent of sexual debut. */
+	assign_individual_PrEP_prevention_cascade(t, indiv, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
     }
 }

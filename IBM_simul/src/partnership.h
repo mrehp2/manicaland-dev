@@ -39,4 +39,6 @@ void draw_n_new_partnerships(int , long, parameters *, int , int , int , int , i
 void draw_new_partnerships(int , all_partnerships *, patch_struct *, parameters *, int , int , 
 			   debug_struct *, file_struct *);
 
+void set_first_sex_characteristics(double , individual *, parameters *);
+
 #endif /* PARTNERSHIP_H_ */

@@ -214,11 +214,13 @@ void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patc
 
 	    /* Only circumcise uncircumcised HIV- men (ignore TMC). */
 	    if (indiv->circ==UNCIRC && indiv->HIV_status==UNINFECTED){
-		p_will_get_VMMC_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_get_VMMC,TIME_STEP);
-		x = gsl_rng_uniform (rng);
-		/* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
-		if(x <= p_will_get_VMMC_per_timestep){
-		    indiv->circ = VMMC; /* Immediate VMMC (ignore healing period). */
+		if(indiv->cascade_barriers.p_will_get_VMMC>0){
+		    p_will_get_VMMC_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_get_VMMC,TIME_STEP);
+		    x = gsl_rng_uniform (rng);
+		    /* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
+		    if(x <= p_will_get_VMMC_per_timestep){
+			indiv->circ = VMMC; /* Immediate VMMC (ignore healing period). */
+		    }
 		}
 	    }
 	}
@@ -255,14 +257,16 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 		if (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED){
-		    /* Now convert to a per-timestep probability: */
-		    p_will_use_PrEP_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_use_PrEP,TIME_STEP);
-		    x = gsl_rng_uniform (rng);
+		    if(indiv->cascade_barriers.p_will_use_PrEP>0){
+			/* Now convert to a per-timestep probability: */
+			p_will_use_PrEP_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_use_PrEP,TIME_STEP);
+			x = gsl_rng_uniform (rng);
 
-		    if(x <= p_will_use_PrEP_per_timestep){
-			start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+			if(x <= p_will_use_PrEP_per_timestep){
+			    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
 			// PrEP status is set in start_PrEP_for_person(). Use below if we want to force all individuals to be adherent. 
 			//indiv->PrEP_cascade_status = ONPREP_ADHERENT;
+			}
 		    }
 		}
 	    }

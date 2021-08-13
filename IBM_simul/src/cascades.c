@@ -639,6 +639,8 @@ void update_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
     update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE);
     /* Now 30 year old men: */
     update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, 30);
+    /* Now 56 year old men: */
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, VMMC_MAX_AGE_PREVENTION_CASCADE+1);
 
 }
 
@@ -678,6 +680,8 @@ void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
     int g;
     
     /* Go through everyone - modify if we only reach certain age groups etc. */
+
+    /* Firstly 15 year old men+women: */
     for(g = 0; g < N_GENDER; g++){
 	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE, g);
     }
@@ -687,6 +691,10 @@ void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
 
     /* Now 30 year old men: */
     update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 30, MALE);
+
+    /* Now 56 year old men+women: */
+    for(g = 0; g < N_GENDER; g++)
+	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_MAX_AGE_PREVENTION_CASCADE+1, g);
 
 }
 
@@ -721,7 +729,6 @@ void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_
 /* Carried out at each timestep to check for people passing age thresholds related to condom prevention cascade barriers.
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
 void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
-    int g;
     
     /* Go through everyone - modify if we only reach certain age groups etc: */
 

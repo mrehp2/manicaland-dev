@@ -2348,3 +2348,105 @@ void write_to_new_male_circumcision_file(patch_struct *patch, int p, char *outpu
     fprintf(MALE_CIRC_FILE,"%i %i %i %i\n",year, n_uncirc, n_tmc, n_vmmc);
     fclose(MALE_CIRC_FILE);
 }
+
+
+
+
+/* Write the HIV prevention cascade barriers for each person, along with whether they are currently using that method (for condoms it will be % of current partners using a condom with). */
+void write_prevention_cascade_barriers(double t, patch_struct *patch, int p, int i_run){
+
+    int aa, ai, g, i;
+    int number_per_age_group;
+
+
+
+    int N_partners_LT;
+    int N_partners_casual;
+    int N_partners_condom_used_LT;
+    int N_partners_condom_used_casual;
+
+    int i_partners;
+    
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+    FILE *PREVENTION_CASCADE_INDIV_BARRIER_FILE;
+    char output_filename[80];
+    
+    /* Write to correct file: */
+    sprintf(output_filename,"HIVPrevCasc_Indiv_run%i_t%i.csv",i_run+1,(int)floor(t));
+    PREVENTION_CASCADE_INDIV_BARRIER_FILE = fopen(output_filename,"w");
+   
+	
+    
+    if (PREVENTION_CASCADE_INDIV_BARRIER_FILE == NULL){
+        printf("Cannot open HIV_prevention_cascade_indiv_barrier_output file\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
+    // Write the header line
+    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"id,Age,Sex,n_lifetime_partners,PrEP_status,Circ_status,prop_partners_LT_cond,prop_partners_casual_cond,p_will_use_PrEP,p_will_get_VMMC,p_want_to_use_condom_long_term_partner,p_want_to_use_condom_casual_partner\n");
+
+
+    /* Loop through population: */
+    for(g = 0; g < N_GENDER; g++){    
+	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);
+            
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	    for(i = 0; i < number_per_age_group; i++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+
+		N_partners_LT = 0;
+		N_partners_casual = 0;
+		N_partners_condom_used_LT = 0;		
+		N_partners_condom_used_casual = 0;
+
+		for(i_partners=0; i_partners<indiv->n_partners; i_partners++){
+		    if(indiv->partner_pairs[i_partners]->duration_in_time_steps>N_TIME_STEP_PER_YEAR){
+			N_partners_condom_used_LT += indiv->cascade_barriers.use_condom_in_this_partnership[i_partners];
+			N_partners_LT++;
+		    }
+		    else{
+			N_partners_condom_used_casual += indiv->cascade_barriers.use_condom_in_this_partnership[i_partners];
+			N_partners_casual++;
+		    }
+		}
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,",indiv->id);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",t-indiv->DoB);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%s,",(indiv->gender==MALE)?"M":"F");
+
+		//		printf("N_partners_LT=%i\n",N_partners_LT);
+		//printf("N_partners_condom_used_LT=%i\n",N_partners_condom_used_LT);
+		//printf("f1=%6.4lf\n",(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1);
+		//printf("N_partners_casual=%i\n",N_partners_casual);
+		//printf("N_partners_condom_used_casual=%i\n",N_partners_condom_used_casual);
+		//printf("f2=%6.4lf\n",(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%i,%i,",indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%8.6lf,%8.6lf,",(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",indiv->cascade_barriers.p_will_use_PrEP);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",(indiv->gender==MALE)?indiv->cascade_barriers.p_will_get_VMMC:0);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",indiv->cascade_barriers.p_want_to_use_condom_long_term_partner);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf\n",indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+
+		//fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,t-indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_condom_used_LT>0)?N_partners_LT/(1.0*N_partners_LT):-1,(N_partners_condom_used_casual>0)?N_partners_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,indiv->cascade_barriers.p_will_get_VMMC,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+	    }
+	}
+
+			
+	/* Now oldest age group: */
+	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
+	for(i = 0; i < number_per_age_group; i++){
+	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
+	    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,t-indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,(indiv->gender==MALE)?indiv->cascade_barriers.p_will_get_VMMC:0,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+	}
+    }
+	    
+			
+    fclose(PREVENTION_CASCADE_INDIV_BARRIER_FILE);
+    
+}

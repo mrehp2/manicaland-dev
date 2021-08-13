@@ -1335,6 +1335,7 @@ typedef struct{
     FILE *ART_STATUS_BY_AGE_SEX_OUTPUT_FILE[NPATCHES];
     char filename_art_status_by_age_sex_output[NPATCHES][LONGSTRINGLENGTH];
     
+    
 } file_struct;
 
 #endif

@@ -5377,6 +5377,3 @@ void write_art_status_by_age_sex(file_struct *file_data_store, output_struct *ou
 /* } */
 
 
-void write_prevention_cascade(){
-    
-}

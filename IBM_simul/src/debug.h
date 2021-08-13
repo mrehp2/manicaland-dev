@@ -76,4 +76,6 @@ void check_partnership_condom_use_consistent(individual *, individual *, int );
 void update_new_male_circumcision_file(int , int , char *);
 void write_to_new_male_circumcision_file(patch_struct *, int , char *, int );
 
+void write_prevention_cascade_barriers(double , patch_struct *, int , int );
+
 #endif /* DEBUG_H_ */

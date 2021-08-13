@@ -150,6 +150,16 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset);
 	    }
         }
+
+
+	/* Output HIV prevention cascade barriers for patch 0 at specific timesteps. */
+        if (SETTING==SETTING_MANICALAND){
+	    if(t0 + t_step*TIME_STEP==2020 || t0 + t_step*TIME_STEP==2022){
+		printf("Writing HIV cascade at t=%lf\n",t0+t_step*TIME_STEP);
+		write_prevention_cascade_barriers(t0+t_step*TIME_STEP, patch, 0,i_run);
+	    }
+	}
+
 	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){

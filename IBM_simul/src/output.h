@@ -92,4 +92,9 @@ void write_chips_data_visit(patch_struct *, int , file_struct *, output_struct *
 void write_chips_data_annual(patch_struct *, int , int , int , int , file_struct *);
 void write_cost_effectiveness_outputs(file_struct *, output_struct *, int);
 void write_art_status_by_age_sex(file_struct *, output_struct *, int);
+
+void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indiv, long N_LT_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_LTpartner[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_casual_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_casualpartner[N_COND_PREVENTIONBARRIER_GROUPS][2]);
+void store_HIV_prevention_barrier_outputs(patch_struct *, int , output_struct *, int );
+void write_population_HIVpreventioncascade(file_struct *, output_struct *, int );
+
 #endif /* OUTPUT_H_ */

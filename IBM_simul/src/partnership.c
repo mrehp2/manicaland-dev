@@ -1194,6 +1194,9 @@ void set_first_sex_characteristics(double t, individual *indiv, parameters *para
 	/* At sexual debut, we change the probabilities of getting PrEP.
 	   Condom use doesn't matter. 
 	   For now, assume VMMC can also be independent of sexual debut. */
+	if(indiv->id==FOLLOW_INDIVIDUAL)
+	    printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i due to sexual debut\n",t,indiv->id,(int) floor(t-indiv->DoB));
+	
 	assign_individual_PrEP_prevention_cascade(t, indiv, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
     }
 }

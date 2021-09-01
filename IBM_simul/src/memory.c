@@ -239,6 +239,10 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
         SIZEOF_cost_effectiveness_outputs_string*sizeof(char));
     memset(output->art_status_by_age_sex_outputs_string[p], '\0',
         (N_TIME_STEP_PER_YEAR/OUTPUTTIMESTEP)*SIZEOF_calibration_outputs*sizeof(char));
+
+    /* Only store for patch '0': */
+    if(p==0)
+	memset(output->HIV_prevention_barrier_outputs_string, '\0', SIZEOF_HIV_prevention_barrier_outputs_string*sizeof(char));
 }
 
 //void alloc_pop_memory(population **pop, parameters **allrunparameters, int n_runs){
@@ -285,6 +289,9 @@ void alloc_output_memory(output_struct **output)
             (char *)calloc(SIZEOF_cost_effectiveness_outputs_string, sizeof(char));
         (*output)->art_status_by_age_sex_outputs_string[p] = (char *)calloc((N_TIME_STEP_PER_YEAR/OUTPUTTIMESTEP)*SIZEOF_calibration_outputs, sizeof(char));
     }
+    
+    (*output)->HIV_prevention_barrier_outputs_string = (char *)calloc(SIZEOF_HIV_prevention_barrier_outputs_string, sizeof(char));
+
 }
 
 /* Allows us to blank cohort data for PC0, PC12N or PC24N at start of a run. */
@@ -1488,6 +1495,8 @@ void free_output_memory(output_struct *output){
         free(output->cost_effectiveness_outputs_string[p]);
         free(output->art_status_by_age_sex_outputs_string[p]);
     }
+    
+    free(output->HIV_prevention_barrier_outputs_string);
     free(output->phylogenetics_output_string);
     free(output->hazard_output_string);
 

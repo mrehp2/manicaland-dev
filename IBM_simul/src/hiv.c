@@ -413,7 +413,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
 
 		/* Use check_partnership_condom_use_consistent() to check that condom use is consistent - i.e. both partners have the same condom use for this partnership: */
 		check_partnership_condom_use_consistent(susceptible, temp_HIVpos_partner, i_cond_partners);
-		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_cond_partners]==1)
+		if (susceptible->cascade_barriers.use_condom_in_this_partnership[i_cond_partners]==USECOND)
 		    PER_PARTNERSHIP_HAZARD_TEMPSTORE[i] *= (1.0-patch[p].param->eff_condom);
 		
 	    }

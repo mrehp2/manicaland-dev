@@ -1221,6 +1221,12 @@ void make_filenames_for_struct(file_label_struct *file_labels,
     concatenate_filename(file_data_store->filename_hazard_output,
         output_file_directory, file_labels->filename_label_bypatch[0],
         "Hazards");
+
+
+    /* Output for HIV prevention cascade - note that we only want from patch 0. */
+    concatenate_filename(file_data_store->filename_prevention_cascade_status_output,
+        output_file_directory, file_labels->filename_label_bypatch[0],
+        "HIVpreventioncascade");
 }
 
 

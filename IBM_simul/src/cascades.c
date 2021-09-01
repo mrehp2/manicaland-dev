@@ -316,12 +316,12 @@ void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t
     /* Now draw a random number to see if they will use condoms: */
     x = gsl_rng_uniform (rng);
     if (x<p_use_condom){
-	indiv1->cascade_barriers.use_condom_in_this_partnership[indiv1->n_partners-1] = 1;
-	indiv2->cascade_barriers.use_condom_in_this_partnership[indiv2->n_partners-1] = 1;
+	indiv1->cascade_barriers.use_condom_in_this_partnership[indiv1->n_partners-1] = USECOND;
+	indiv2->cascade_barriers.use_condom_in_this_partnership[indiv2->n_partners-1] = USECOND;
     }
     else{
-	indiv1->cascade_barriers.use_condom_in_this_partnership[indiv1->n_partners-1] = 0;
-	indiv2->cascade_barriers.use_condom_in_this_partnership[indiv2->n_partners-1] = 0;
+	indiv1->cascade_barriers.use_condom_in_this_partnership[indiv1->n_partners-1] = NOCOND;
+	indiv2->cascade_barriers.use_condom_in_this_partnership[indiv2->n_partners-1] = NOCOND;
     }	
 }
 
@@ -490,13 +490,14 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 	}
 
 	/* Check that condom use matches: */
-	if(indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1]!=0 || indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2]!=0){
+	if(indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1]!=NOCOND || indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2]!=NOCOND){
 	    printf("Error in update_partnership_condom_use_in_response_to_intervention() - condom use in partners 1+2 not equal to zero prior to intervention. Exiting\n");
 	    exit(1);
 	}
-	
-	indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1] = 1;
-	indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2] = 1;
+
+	/* Now set condom use in partnership to be 'use condom': */
+	indiv1->cascade_barriers.use_condom_in_this_partnership[i_partner1] = USECOND;
+	indiv2->cascade_barriers.use_condom_in_this_partnership[i_partner2] = USECOND;
     }
 
 }
@@ -570,7 +571,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 		for (i_partners=0; i_partners<n_partners; i_partners++){
 
 		    /* Only update if they're not consistently using condoms already: */
-		    if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==0){
+		    if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==NOCOND){
 			partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 			if (id< partner->id){
 			    duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
@@ -591,7 +592,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 	    for (i_partners=0; i_partners<n_partners; i_partners++){
 
 		/* Only update if they're not consistently using condoms already: */
-		if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==0){
+		if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==NOCOND){
 		    partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 		    if (id< partner->id){
 			duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
@@ -626,7 +627,9 @@ void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_st
     for(i = 0; i < number_per_age_group; i++){
 	indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
 	if(indiv->birthday_timestep==t_step){
-	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);	    
+	    if(indiv->id==FOLLOW_INDIVIDUAL)
+		printf("Modifying VMMC HIV prevention cascade probability at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);
 	}
     }
 }
@@ -668,8 +671,12 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
 	       So only modify for people who've ever had sex (i.e. >0 partners).
 	       Use a separate function to update probability for individuals when they have sexual debut. 
  */
-	    if (indiv->n_lifetime_partners>0)
+	    if (indiv->n_lifetime_partners>0){
+		if(indiv->id==FOLLOW_INDIVIDUAL)
+		    printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+		
 		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+	    }
 	}
     }
 }

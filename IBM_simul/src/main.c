@@ -706,7 +706,10 @@ int main(int argc,char *argv[]){
                             n_infected_total + p, year + 1, 0);
                         store_annual_partnerships_outputs(patch, p, output, overall_partnerships,
                             n_infected_total + p, year+1, 1);
-                        }
+		    }
+
+		    if(MANICALAND_CASCADE==1)
+			store_HIV_prevention_barrier_outputs(patch, p, output, year+1);
 
                     /* Print the sexual network every year for 5 years (used in DSMB 2016). */
                     if(
@@ -850,6 +853,8 @@ int main(int argc,char *argv[]){
                             }
                         }
                     }
+		    if(MANICALAND_CASCADE==1)
+			write_population_HIVpreventioncascade(file_data_store, output, p);
                 }
             }
             

@@ -110,7 +110,7 @@
 
 #define WRITE_PARTNERSHIPS_AT_PC0 0 /* Generates Distr_n_lifetime_partners and Distr_n_partners_lastyear csv files. NEEDED FOR ReadAnnualOutputs-knitr.Rnw.  */
 
-#define FOLLOW_INDIVIDUAL -1 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
+#define FOLLOW_INDIVIDUAL 2776 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
 
 #define FOLLOW_PATCH 0 //1
 
@@ -228,9 +228,9 @@ gsl_rng * rng;
 #define MAX_PREP_ONE_YEAR_AGE_SAMPLE MAX_POP_SIZE/40
 /********************************************************/
 
-#define PREP_MAX_AGE_PREVENTION_CASCADE 55 /* Maximum age at which people get PrEP in the Manicaland Prevention Cascade project. */
+#define PREP_MAX_AGE_PREVENTION_CASCADE 54 /* Maximum age at which people get PrEP in the Manicaland Prevention Cascade project. */
 
-#define VMMC_MAX_AGE_PREVENTION_CASCADE 55 /* Maximum age at which people get VMMC in the Manicaland Prevention Cascade project. */
+#define VMMC_MAX_AGE_PREVENTION_CASCADE 54 /* Maximum age at which people get VMMC in the Manicaland Prevention Cascade project. */
 
 #define PREP_VMMC_MIN_AGE_PREVENTION_CASCADE 15 /* Assume neither PrEP nor VMMC offered below age 15. */
 
@@ -360,6 +360,11 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define WAITINGTOSTARTPREP 1
 #define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes PrEP but not every risky act is protected. 
 #define ONPREP_ADHERENT 3      // PrEP at full efficacy.
+
+
+/* Codes for indiv->use_condom_in_this_partnership: */
+#define NOCOND 0
+#define USECOND 1
 
 /* Codes for indiv->next_PrEP_event. */
 
@@ -513,6 +518,7 @@ double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
 #define SIZEOF_annual_outputs_tempstore 100000
 #define SIZEOF_calibration_outputs 3000000
 #define SIZEOF_cost_effectiveness_outputs_string 3000000
+#define SIZEOF_HIV_prevention_barrier_outputs_string 100000
 /* To avoid excessive writing to disk, only write out these data every NRUNSPERWRITETOFILE runs. Don't set too big to avoid excessive memory usage. */
 #define NRUNSPERWRITETOFILE 100
 #define OUTPUTTIMESTEP 4 // Store data in timestep_outputs_string every OUTPUTTIMESTEP timestep to reduce size of file.

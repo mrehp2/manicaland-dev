@@ -1166,6 +1166,9 @@ typedef struct{ /* structure which contains all the strings that are outputted *
     char *cost_effectiveness_outputs_string[NPATCHES];
     char *art_status_by_age_sex_outputs_string[NPATCHES];
 
+    /* Use in a single patch only for now. */
+    char *HIV_prevention_barrier_outputs_string;
+
     long NCHIPS_VISITED[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
     long NCHIPS_HIVPOS[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
     long NCHIPS_HIVAWARE[NPATCHES][N_GENDER][MAX_AGE-AGE_CHIPS+1][NCHIPSROUNDS];
@@ -1334,7 +1337,10 @@ typedef struct{
     /* ART_status outputs*/
     FILE *ART_STATUS_BY_AGE_SEX_OUTPUT_FILE[NPATCHES];
     char filename_art_status_by_age_sex_output[NPATCHES][LONGSTRINGLENGTH];
-    
+
+    /* HIV prevention cascade outputs. Only make for patch 0: */
+    FILE *PREVENTION_CASCADE_STATUS_OUTPUT_FILE;
+    char filename_prevention_cascade_status_output[LONGSTRINGLENGTH];
     
 } file_struct;
 

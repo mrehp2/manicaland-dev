@@ -2352,8 +2352,8 @@ void write_to_new_male_circumcision_file(patch_struct *patch, int p, char *outpu
 
 
 
-/* Write the HIV prevention cascade barriers for each person, along with whether they are currently using that method (for condoms it will be % of current partners using a condom with). */
-void write_prevention_cascade_barriers(double t, patch_struct *patch, int p, int i_run){
+/* For each person, write their HIV prevention cascade barriers, along with whether they are currently using that method (for condoms it will be % of current partners using a condom with). */
+void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patch, int p, int i_run){
 
     int aa, ai, g, i;
     int number_per_age_group;
@@ -2417,7 +2417,7 @@ void write_prevention_cascade_barriers(double t, patch_struct *patch, int p, int
 		    }
 		}
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,",indiv->id);
-		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",t-indiv->DoB);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%i,",(int) floor(t-indiv->DoB));
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%s,",(indiv->gender==MALE)?"M":"F");
 
 		//		printf("N_partners_LT=%i\n",N_partners_LT);
@@ -2442,7 +2442,7 @@ void write_prevention_cascade_barriers(double t, patch_struct *patch, int p, int
 	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
-	    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,t-indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,(indiv->gender==MALE)?indiv->cascade_barriers.p_will_get_VMMC:0,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+	    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%i,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,(int) floor(t-indiv->DoB),(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,(indiv->gender==MALE)?indiv->cascade_barriers.p_will_get_VMMC:0,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
 	}
     }
 	    

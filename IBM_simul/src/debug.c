@@ -187,6 +187,7 @@ void print_age_list(age_list_struct *age_list){
 
 /* Function checks that age_list structure is correct at a given time t. 
    Function prints out the DoBs of people on the age list as a csv (each line is one age year cohort) if PRINT_LIST==1.
+   Otherwise just checks that ai matches get_age_index_correct() for each person in age_list.
 */
 void check_age_list(patch_struct *patch, int p, double t, int PRINT_LIST){
     int aa,ai;
@@ -196,9 +197,9 @@ void check_age_list(patch_struct *patch, int p, double t, int PRINT_LIST){
     /* Pointer to individual - we are just assigning another pointer to this pointer so no need to allocate memory. */
     individual *indiv;
 
-    FILE *CHECK_AGE_LIST;    
+    FILE *CHECK_AGE_LIST_FILE;    
     if(PRINT_LIST==1){
-	CHECK_AGE_LIST = fopen("check_age_list_temp.csv","w");
+	CHECK_AGE_LIST_FILE = fopen("check_age_list_temp.csv","w");
     }
     
     // Loop through genders
@@ -206,7 +207,7 @@ void check_age_list(patch_struct *patch, int p, double t, int PRINT_LIST){
 	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
 
 	    if(PRINT_LIST==1)
-		fprintf(CHECK_AGE_LIST,"Sex%sAgeCohort%i,",(g==MALE)?"M":"F",aa+AGE_ADULT);
+		fprintf(CHECK_AGE_LIST_FILE,"Sex%sAgeCohort%i,",(g==MALE)?"M":"F",aa+AGE_ADULT);
 						      
 	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
 	    while(ai > (MAX_AGE - AGE_ADULT - 1))
@@ -226,17 +227,17 @@ void check_age_list(patch_struct *patch, int p, double t, int PRINT_LIST){
 		//    printf("Correct indexing for ai=%i and get_age_index_correct()=%i when DoB=%6.4lf at t=%lf. Exiting\n",ai,i_age,indiv->DoB,t);
 		
 		if(PRINT_LIST==1)
-		    fprintf(CHECK_AGE_LIST,"%6.4lf,",indiv->DoB);
+		    fprintf(CHECK_AGE_LIST_FILE,"%6.4lf,",indiv->DoB);
 
 	    }
 	    if(PRINT_LIST==1)
-		fprintf(CHECK_AGE_LIST,"\n");
+		fprintf(CHECK_AGE_LIST_FILE,"\n");
 	}
     }
 
 	
     if(PRINT_LIST==1)
-	fclose(CHECK_AGE_LIST);
+	fclose(CHECK_AGE_LIST_FILE);
 }
 
 	

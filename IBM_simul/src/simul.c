@@ -260,12 +260,13 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    }
 
 	    /* Output HIV prevention cascade barriers for patch 0 at specific timesteps. */
-	    
-	    if(t0 + t_step*TIME_STEP==2018 || t0 + t_step*TIME_STEP==2020 || t0 + t_step*TIME_STEP==2022){
-		printf("Writing individual HIV cascades at t=%lf\n",t0+t_step*TIME_STEP);
-		write_individual_HIVpreventioncascade_barriers(t0+t_step*TIME_STEP, patch, 0,i_run);
-	    }
 
+	    if(DEBUG_HIV_PREVENTION_CASCADES==1){
+		if(t0 + t_step*TIME_STEP==2018 || t0 + t_step*TIME_STEP==2020 || t0 + t_step*TIME_STEP==2022){
+		    printf("Writing individual HIV cascades at t=%lf\n",t0+t_step*TIME_STEP);
+		    write_individual_HIVpreventioncascade_barriers(t0+t_step*TIME_STEP, patch, 0,i_run);
+		}
+	    }
 	    
 	}
 

@@ -750,9 +750,10 @@ int main(int argc,char *argv[]){
 
 
 		    /* If we are calling check_age_list now, then we need to use (year+1) since we have called age_population_by_one_year() already - which moves everyone to the next age group. */
-		    if(year==2019 && p==0 && i_run==0)
-			check_age_list(patch, 0, (float) year+1, 1);
-			
+		    if (CHECK_AGE_LIST==1){
+			if(year==2019 && p==0 && i_run==0)
+			    check_age_list(patch, 0, (float) year+1, 1);
+		    }
 		    
                     /* Store information needed for Calibration.csv file:
                     This part of the code writes a small set of information (prevalence, incidence)

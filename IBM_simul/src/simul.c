@@ -152,13 +152,6 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
         }
 
 
-	/* Output HIV prevention cascade barriers for patch 0 at specific timesteps. */
-        if (SETTING==SETTING_MANICALAND){
-	    if(t0 + t_step*TIME_STEP==2018 || t0 + t_step*TIME_STEP==2020 || t0 + t_step*TIME_STEP==2022){
-		printf("Writing individual HIV cascades at t=%lf\n",t0+t_step*TIME_STEP);
-		write_individual_HIVpreventioncascade_barriers(t0+t_step*TIME_STEP, patch, 0,i_run);
-	    }
-	}
 
 	
         // Carry out main processes
@@ -265,7 +258,18 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		    }
 		}
 	    }
+
+	    /* Output HIV prevention cascade barriers for patch 0 at specific timesteps. */
+	    
+	    if(t0 + t_step*TIME_STEP==2018 || t0 + t_step*TIME_STEP==2020 || t0 + t_step*TIME_STEP==2022){
+		printf("Writing individual HIV cascades at t=%lf\n",t0+t_step*TIME_STEP);
+		write_individual_HIVpreventioncascade_barriers(t0+t_step*TIME_STEP, patch, 0,i_run);
+	    }
+
+	    
 	}
+
+	
 	
     }
     
@@ -494,8 +498,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
-    printf("t=%lf\n",t);
-
+    
     
     // Determine if the current time is within the final CHiPs round or not.  The variable
     // `POPART_FINISHED` takes value 1 after the end of the final CHiPs round. Once
@@ -1086,6 +1089,13 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     }
 
 
+    /************************************************************************/
+    /* 13. Condom use update (for Manicaland cascade, when reach 25/30 for F/M) */
+    /************************************************************************/
+    if(MANICALAND_CASCADE==1){
+	update_condombarriers_from_ageing(t, t_step, patch, p);
+    }
+    
 
     /************************************************************************/
     /* 13. Prevention cascade intervention (for Manicaland)                 */

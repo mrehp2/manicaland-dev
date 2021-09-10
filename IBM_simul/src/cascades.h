@@ -31,9 +31,9 @@ int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex);
 int index_HIV_prevention_cascade_VMMC(int age);
 int index_HIV_prevention_cascade_condom(int age, int g);
 
-void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2], int i_PrEP_intervention_running_flag);
-void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2], int i_VMMC_intervention_running_flag);
-void assign_individual_condom_prevention_cascade(double t, individual *indiv, double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS][2], double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS][2], int i_condom_intervention_running_flag);
+void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_PrEP_intervention_running_flag);
+void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_VMMC_intervention_running_flag);
+void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_condom_intervention_running_flag);
 
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params barrier_params, int scenario_flag);
 

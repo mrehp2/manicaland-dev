@@ -43,7 +43,7 @@
  * function arguments: pointer to the pair and the 2 individuals, time of partnership formation, pointer to partnership lists, poiter to parameters.
  * Function returns: nothing */
 
-void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
+void new_partnership(individual* ind1, individual* ind2, double t_form_partnership,
         all_partnerships *overall_partnerships,
         parameters *param, debug_struct *debug,
 		     file_struct *file_data_store){
@@ -119,8 +119,9 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
 
     if(CHECK_AGE_AND_RISK_ASSORTATIVITY == 1)
     {
-        debug->age_of_partners_at_partnership_formation[t_form_partnership - param->start_time_simul][age_f][age_m] ++;
-        debug->risk_of_partners_at_partnership_formation[t_form_partnership - param->start_time_simul][risk_f][risk_m] ++;
+	int year_form_partnership = (int) floor(t_form_partnership);
+        debug->age_of_partners_at_partnership_formation[year_form_partnership - param->start_time_simul][age_f][age_m] ++;
+        debug->risk_of_partners_at_partnership_formation[year_form_partnership - param->start_time_simul][risk_f][risk_m] ++;
     }
 
     /* duration (in number of time steps) of the partnership */
@@ -162,11 +163,6 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
         }
     }
 
-    /* If either partner is having first sex, then set up any necessary first sex characteristics: */
-    if(ind1->n_lifetime_partners==0)
-	set_first_sex_characteristics(t_form_partnership, ind1, param);
-    if(ind2->n_lifetime_partners==0)
-	set_first_sex_characteristics(t_form_partnership, ind2, param);
     
     // This is for debug to check that all partnerships are broken up at some point
     /*if(t_form_partnership + pair->t_dissolve*TIME_STEP>param->end_time_simul)
@@ -206,6 +202,14 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     }
     ind2->n_lifetime_partners++;
 
+
+    /* If either partner is having first sex (so this is their first partner), then set up any necessary first sex characteristics: */
+    if(ind1->n_lifetime_partners==1)
+	set_first_sex_characteristics(t_form_partnership, ind1, param);
+    if(ind2->n_lifetime_partners==1)
+	set_first_sex_characteristics(t_form_partnership, ind2, param);
+
+    
     /* Now HSV-2: */
         if(ind2->HSV2_status>HSV2_UNINFECTED && ind1->HSV2_status==HSV2_UNINFECTED) /* then we need to tell ind1 that he has a new HSV-2 partner */
     {
@@ -230,7 +234,7 @@ void new_partnership(individual* ind1, individual* ind2, int t_form_partnership,
     }
 
     /* adding this partnership to planned_breakups and n_planned_breakups */
-    int time_breakup = N_TIME_STEP_PER_YEAR*(t_form_partnership- param->start_time_simul) + pair->duration_in_time_steps ;
+    int time_breakup = (int) (floor(N_TIME_STEP_PER_YEAR*(t_form_partnership- param->start_time_simul)) + pair->duration_in_time_steps);
     if(time_breakup<MAX_N_YEARS*N_TIME_STEP_PER_YEAR)
     {
 
@@ -768,7 +772,7 @@ void draw_nb_new_partnerships(patch_struct *patch, parameters *param, int patch_
 }
 
 
-void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int r_f, int ag_m, 
+void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, int r_f, int ag_m, 
     int r_m, int *n_non_matchable, all_partnerships *overall_partnerships, patch_struct *patch, 
     int patch_f, int patch_m, debug_struct *debug, file_struct *file_data_store){
     
@@ -783,7 +787,7 @@ void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int 
     
     Parameters
     ----------
-    time : int
+    time : double
         the time of partnership formation
     
     n : long
@@ -1081,7 +1085,7 @@ void draw_n_new_partnerships(int time, long n, parameters *param, int ag_f, int 
 }
 
 
-void draw_new_partnerships(int time, all_partnerships *overall_partnerships, patch_struct *patch,
+void draw_new_partnerships(double time, all_partnerships *overall_partnerships, patch_struct *patch,
     parameters *param, int patch_f, int patch_m, debug_struct *debug, 
 			   file_struct *file_data_store){
     // !!! here I kept param as an argument as we may want to generate a parameter set which is a
@@ -1093,7 +1097,7 @@ void draw_new_partnerships(int time, all_partnerships *overall_partnerships, pat
 
     Arguments
     ---------
-    time : int
+    time : double
         the time of partnership formation
     overall_partnerships : pointer to all_partnerships struct
     
@@ -1197,6 +1201,6 @@ void set_first_sex_characteristics(double t, individual *indiv, parameters *para
 	if(indiv->id==FOLLOW_INDIVIDUAL)
 	    printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i due to sexual debut\n",t,indiv->id,(int) floor(t-indiv->DoB));
 	
-	assign_individual_PrEP_prevention_cascade(t, indiv, param->barrier_params.p_use_PrEP, param->barrier_params.i_PrEP_barrier_intervention_flag);
+	assign_individual_PrEP_prevention_cascade(t, indiv, param->barrier_params, (t<param->barrier_params.t_start_prevention_cascade_intervention) ? 0:param->barrier_params.i_PrEP_barrier_intervention_flag);
     }
 }

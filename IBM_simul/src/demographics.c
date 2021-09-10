@@ -596,10 +596,10 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
 
     /* Store the birthday timestep for this person.  
        Because of the way we calculate DoB, we need to add 1 to the current timestep: */
-    if(t_step<N_TIME_STEP_PER_YEAR)
-	patch[p].individual_population[patch[p].id_counter].birthday_timestep = t_step+1;
+    if(t_step<(N_TIME_STEP_PER_YEAR-1))
+	new_adult->birthday_timestep = t_step+1;
     else
-	patch[p].individual_population[patch[p].id_counter].birthday_timestep = 0;
+	new_adult->birthday_timestep = 0;
 
     new_adult->DoD = -1;
     /* Assign a sex risk group: */
@@ -612,8 +612,10 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
     new_adult->n_lifetimeminusoneyear_partners_outside = 0;
     new_adult->n_partnersminusoneyear = 0;
     // For debugging:
-    if(new_adult->id==FOLLOW_INDIVIDUAL && new_adult->patch_no==FOLLOW_PATCH)
-        printf("New adult DoB = %f %li\n",new_adult->DoB,new_adult->id); 
+    if(new_adult->id==FOLLOW_INDIVIDUAL && new_adult->patch_no==FOLLOW_PATCH){
+        printf("New adult DoB = %f %li\n",new_adult->DoB,new_adult->id);
+	printf("Birthday timestep=%i\n",new_adult->birthday_timestep);
+    }
 
     new_adult->time_to_delivery = -1;  /* Not pregnant when enters population. */
 
@@ -1000,6 +1002,9 @@ void update_age_list_new_adult(age_list_struct *age_list, individual *individual
     int yi = age_list->age_list_by_gender[g]->youngest_age_group_index; /* Temporary store so we don't have to keep referring to this index the long way. */
 
     /* Add the pointer to the new adult to the youngest age group: */
+    if(individual_ptr->id==FOLLOW_INDIVIDUAL)
+	printf("Assigning id=%li to age_list->age_list_by_gender[%i]->age_group[%i][%li]\n",individual_ptr->id,g,yi,age_list->age_list_by_gender[g]->number_per_age_group[yi]);
+    
     age_list->age_list_by_gender[g]->age_group[yi][age_list->age_list_by_gender[g]->number_per_age_group[yi]] = individual_ptr;
 
     /* Adds one to the count of youngest age group. */
@@ -1073,7 +1078,8 @@ int get_age_index(double DoB, double start_simul){ /// Do we ever use this?
 //}
 
 
-int get_age_indexv2(double DoB, double t, int youngest_age_group_index){ /// Do we ever use this? Not currently used except as a check - may use as a 'standard method' later on. */
+/* MP 06/09/2021: I think this now agrees with ai in age_list. */
+int get_age_index_correct(double DoB, double t, int youngest_age_group_index){ /// Do we ever use this? Not currently used except as a check - may use as a 'standard method' later on. */
     int ai;
     int aa = (int) floor(floor(t) - DoB) - AGE_ADULT;
 

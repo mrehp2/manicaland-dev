@@ -41,7 +41,7 @@ void initialize_first_cascade_event_for_new_individual(individual *, double,
 void update_age_list_new_adult(age_list_struct *, individual *);
 void update_age_list_death(age_list_struct *, int, int, long, double , int);
 int get_age_index(double , double );
-int get_age_indexv2(double , double , int);
+int get_age_index_correct(double , double , int);
 int get_age_group(double , double , const int [], int);
 int get_age_group_unpd(double , double );
 void update_n_population_ageing_by_one_year(patch_struct *patch, int p);

@@ -126,28 +126,35 @@ int index_HIV_prevention_cascade_condom(int age, int g){
 /* Functions assign the probability of getting PrEP / VMMC / condom preferences
    based on characteristics (currently age, sex) as well as whether there's an intervention to remove barriers and increase usage at that time. */
 
-void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2], int i_PrEP_intervention_running_flag){
+void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_PrEP_intervention_running_flag){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
-    indiv->cascade_barriers.p_will_use_PrEP = p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)][i_PrEP_intervention_running_flag];	
+    if(indiv->id==FOLLOW_INDIVIDUAL){
+	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
+	printf("Age=%i gender=%i n_partners=%li\n",age,g,indiv->n_lifetime_partners);
+    }
+    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)][i_PrEP_intervention_running_flag];    if(indiv->id==FOLLOW_INDIVIDUAL)
+	printf("Following change, PrEP probability is now %lf\n",indiv->cascade_barriers.p_will_use_PrEP);
+
+	
 }
 
 
-void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2], int i_VMMC_intervention_running_flag){
+void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_VMMC_intervention_running_flag){
 
     int age = (int) floor(t-indiv->DoB);    
-    indiv->cascade_barriers.p_will_get_VMMC = p_use_VMMC[index_HIV_prevention_cascade_VMMC(age)][i_VMMC_intervention_running_flag];
+    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[index_HIV_prevention_cascade_VMMC(age)][i_VMMC_intervention_running_flag];
 }
 
 
 
 
-void assign_individual_condom_prevention_cascade(double t, individual *indiv, double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS][2], double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS][2], int i_condom_intervention_running_flag){
+void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_condom_intervention_running_flag){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
     
-    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
-    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
+    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
+    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
 
 }
 
@@ -176,12 +183,16 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 	i_condom_intervention_running_flag = barrier_params.i_condom_barrier_intervention_flag;
     }
 
+    
     if(indiv->gender==MALE)
-	assign_individual_VMMC_prevention_cascade(t, indiv, barrier_params.p_use_VMMC, i_VMMC_intervention_running_flag);
+	assign_individual_VMMC_prevention_cascade(t, indiv, barrier_params, i_VMMC_intervention_running_flag);
 
-    assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params.p_use_PrEP, i_PrEP_intervention_running_flag);
+    if(indiv->id==FOLLOW_INDIVIDUAL)
+	printf("Modifying PrEP HIV prevention cascade probability in set_preventon_cascade_barriers() at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+    
+    assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params, i_PrEP_intervention_running_flag);
 
-    assign_individual_condom_prevention_cascade(t, indiv, barrier_params.p_use_cond_LT, barrier_params.p_use_cond_casual, i_condom_intervention_running_flag);
+    assign_individual_condom_prevention_cascade(t, indiv, barrier_params, i_condom_intervention_running_flag);
 
 }
 
@@ -359,7 +370,7 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 	
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
-	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);
+	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
 	}
 	
     }
@@ -379,7 +390,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
     
     /* Store scenario for easier readability. */
     int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-
+    printf("Intervention scenario = %i\n",intervention_scenario);
     /* PrEP unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
     if(PREP_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
 	printf("Code issue - prevention_cascade_intervention_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
@@ -398,7 +409,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 	
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
 	    }
 	    
 	}
@@ -541,7 +552,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-		assign_individual_condom_prevention_cascade(t, indiv,patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual,intervention_scenario);
+		assign_individual_condom_prevention_cascade(t, indiv,patch[p].param->barrier_params,intervention_scenario);
 	    }
 	}
 	/* Now oldest age group: */
@@ -549,7 +560,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
 
-	    assign_individual_condom_prevention_cascade(t, indiv,patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual,intervention_scenario);
+	    assign_individual_condom_prevention_cascade(t, indiv,patch[p].param->barrier_params,intervention_scenario);
 	}
 
     }
@@ -610,7 +621,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 
 void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update){
 
-    int intervention_scenario = patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag;
+    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag;
 
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
@@ -628,8 +639,8 @@ void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_st
 	indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
 	if(indiv->birthday_timestep==t_step){
 	    if(indiv->id==FOLLOW_INDIVIDUAL)
-		printf("Modifying VMMC HIV prevention cascade probability at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
-	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_VMMC, intervention_scenario);
+		printf("Modifying VMMC HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+	    assign_individual_VMMC_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
 	}
     }
 }
@@ -637,21 +648,26 @@ void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_st
 /* Carried out at each timestep to check for people passing age thresholds related to VMMC prevention cascade barriers.
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
 void update_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
+    /* Note that this is a little more complicated.
+       age_list is the list of people whose birthdays lie between YYYY+TIME_STEP and (YYYY+1). So we split this up correspondingly.
+    */
+    int offset=(t_step==0)?1:0;
     
     /* Go through 15 year old men. */
-    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE);
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE+offset);
     /* Now 30 year old men: */
-    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, 30);
-    /* Now 56 year old men: */
-    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, VMMC_MAX_AGE_PREVENTION_CASCADE+1);
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, 30+offset);
+    /* Now 56 year old men (the +1 is to make it 56): */
+    update_specific_age_VMMCbarriers_from_ageing(t, t_step, patch, p, VMMC_MAX_AGE_PREVENTION_CASCADE+1+offset);
 
 }
 
 
 void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
-    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-
+    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+    if(t==2019 && g==MALE)
+	printf("Updating PrEP barriers for age %i sex=%i at t=%lf t_step=%i\n",age_to_update,g,t,t_step);
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
     individual *indiv;
@@ -665,7 +681,12 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
             
     number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
     for(i = 0; i < number_per_age_group; i++){
+
+	if(t==2019 && g==MALE && age_to_update==15)
+	    printf("ZZAai=%i i=%i\n",ai,i);
+	
 	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+	
 	if(indiv->birthday_timestep==t_step){
 	    /* For PrEP (not VMMC - where we assume men can be circumcised prior to sexual debut, and not for condoms, where it doesn't matter as you can't use a condom until sexual debut), you can't get PrEP until sexual debut. 
 	       So only modify for people who've ever had sex (i.e. >0 partners).
@@ -673,9 +694,9 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
  */
 	    if (indiv->n_lifetime_partners>0){
 		if(indiv->id==FOLLOW_INDIVIDUAL)
-		    printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+		    printf("Modifying PrEP HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
 		
-		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_PrEP, intervention_scenario);
+		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
 	    }
 	}
     }
@@ -685,23 +706,30 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
    Function uses age_list to get birth year cohorts, then birthday_timestep to check if it's their birthday in that timestep. */
 void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p){
     int g;
+
+    /* Note that this is a little more complicated.
+       age_list is the list of people whose birthdays lie between YYYY+TIME_STEP and (YYYY+1). So we split this up correspondingly.
+    */
+    int offset=(t_step==0)?1:0;
+    
+
     
     /* Go through everyone - modify if we only reach certain age groups etc. */
 
     /* Firstly 15 year old men+women: */
     for(g = 0; g < N_GENDER; g++){
-	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE, g);
+	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_VMMC_MIN_AGE_PREVENTION_CASCADE+offset, g);
     }
 
     /* Now 25 year old women: */
-    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 25, FEMALE);
+    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 25+offset, FEMALE);
 
     /* Now 30 year old men: */
-    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 30, MALE);
+    update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, 30+offset, MALE);
 
-    /* Now 56 year old men+women: */
+    /* Now 56 year old men+women (the +1 is to make it 56): */
     for(g = 0; g < N_GENDER; g++)
-	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_MAX_AGE_PREVENTION_CASCADE+1, g);
+	update_specific_age_PrEPbarriers_from_ageing(t, t_step, patch, p, PREP_MAX_AGE_PREVENTION_CASCADE+1+offset, g);
 
 }
 
@@ -710,7 +738,7 @@ void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
 
 void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
-    int intervention_scenario = patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
+    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
 
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
@@ -728,7 +756,7 @@ void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_
 	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 	if(indiv->birthday_timestep==t_step){
 	    /* Assumption - condom use in *existing* partnerships does not change when people pass this age threshold. We therefore do not need an equivalent function to update_partnership_condom_use_in_response_to_intervention(). */
-	    assign_individual_condom_prevention_cascade(t, indiv, patch[p].param->barrier_params.p_use_cond_LT,patch[p].param->barrier_params.p_use_cond_casual, intervention_scenario);
+	    assign_individual_condom_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
 	}
     }
 }
@@ -739,11 +767,21 @@ void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch
     
     /* Go through everyone - modify if we only reach certain age groups etc: */
 
+    /* Note that this is a little more complicated.
+       age_list is the list of people whose birthdays lie between YYYY+TIME_STEP and (YYYY+1). So we split this up correspondingly.
+    */
+    int offset=(t_step==0)?1:0;
+    
+
+    
+    /* Go through everyone - modify if we only reach certain age groups etc. */
+
+ 
     /* 25 year old women: */
-    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 25, FEMALE);
+    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 25+offset, FEMALE);
 
     /* Now 30 year old men: */
-    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 30, MALE);
+    update_specific_age_condombarriers_from_ageing(t, t_step, patch, p, 30+offset, MALE);
 
 }
 

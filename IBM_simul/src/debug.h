@@ -24,6 +24,7 @@
 
 void find_in_age_list(double ,individual* , age_list_struct *, parameters *);
 void print_age_list(age_list_struct *);
+void check_age_list(patch_struct *, int , double , int );
 void count_population_by_going_through_indiv(patch_struct *, long *, long *);
 void count_population_by_going_through_age_list(patch_struct *, long *, long *);
 void count_population_using_n_population(population_size *, long *, long *);

@@ -4968,7 +4968,7 @@ void write_art_status_by_age_sex(file_struct *file_data_store, output_struct *ou
 
 
 
-void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indiv, long N_LT_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_LTpartner[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_casual_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_casualpartner[N_COND_PREVENTIONBARRIER_GROUPS][2]){
+void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indiv, long N_LT_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_LTpartner[N_COND_PREVENTIONBARRIER_GROUPS][3], long N_casual_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2], long N_alwaysusecondom_with_casualpartner[N_COND_PREVENTIONBARRIER_GROUPS][3]){
 
     int c; /* c is in the index for condom priority groups. */
     int n_partners, i_partners; /* Number of partners of individual, and an index looping over partners. */
@@ -5018,8 +5018,10 @@ void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indi
 	N_LT_partnerships_use_condom[c][1] += n_partners_LT_usecond_indiv;
 	/* Count LT partnerships where condoms not used. */
 	N_LT_partnerships_use_condom[c][0] += (n_partners_LT_indiv-n_partners_LT_usecond_indiv);
-
     }
+    else  /* Count as 'no current LT partners: */
+	N_alwaysusecondom_with_LTpartner[c][2]++;
+    
 
     /* Only need to update casual counters if have casual partners: */
     if(n_partners_casual_indiv>0){
@@ -5039,6 +5041,9 @@ void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indi
 	N_casual_partnerships_use_condom[c][0] += (n_partners_casual_indiv-n_partners_casual_usecond_indiv);
 
     }
+    else  /* Count as 'no current casual partners: */
+	N_alwaysusecondom_with_casualpartner[c][2]++;
+    
 
 
 }
@@ -5062,9 +5067,9 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
     long N_LT_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2];
     long N_casual_partnerships_use_condom[N_COND_PREVENTIONBARRIER_GROUPS][2];
     
-    /*For people in LT/casual partnerships, count whether they are using condoms for all current partnerships (1) or not (0). */
-    long N_alwaysusecondom_with_LTpartner[N_COND_PREVENTIONBARRIER_GROUPS][2];
-    long N_alwaysusecondom_with_casualpartner[N_COND_PREVENTIONBARRIER_GROUPS][2];
+    /*For people in LT/casual partnerships, count whether they are using condoms for all current partnerships (1) or not (0). (2) means not in a LT/casual partnership. */
+    long N_alwaysusecondom_with_LTpartner[N_COND_PREVENTIONBARRIER_GROUPS][3];
+    long N_alwaysusecondom_with_casualpartner[N_COND_PREVENTIONBARRIER_GROUPS][3];
 
 
     /* Temporary store of data from current year. */
@@ -5094,6 +5099,8 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	for(j=0; j<2; j++){
 	    N_LT_partnerships_use_condom[c][j] = 0;
 	    N_casual_partnerships_use_condom[c][j] = 0;
+	}
+	for(j=0; j<3; j++){
 	    N_alwaysusecondom_with_LTpartner[c][j] = 0;
 	    N_alwaysusecondom_with_casualpartner[c][j] = 0;
 	}
@@ -5170,7 +5177,7 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	    join_strings_with_check(temp_string, temp_string2, 10000, "temp_string and temp_string2 in store_HIV_prevention_barrier_outputs()");
 	}
 
-	for(j=0; j<2; j++){
+	for(j=0; j<3; j++){
 	    sprintf(temp_string2, "%li,", N_alwaysusecondom_with_LTpartner[i][j]);
     join_strings_with_check(temp_string, temp_string2, 10000, "temp_string and temp_string2 in store_HIV_prevention_barrier_outputs()");
 	}
@@ -5180,8 +5187,8 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	    join_strings_with_check(temp_string, temp_string2, 10000, "temp_string and temp_string2 in store_HIV_prevention_barrier_outputs()");
 	}
 
-	for(j=0; j<2; j++){
-	    sprintf(temp_string2, "%li,", N_alwaysusecondom_with_casualpartner[i][j]);
+	for(j=0; j<3; j++){
+	    (j==2 && i==(N_COND_PREVENTIONBARRIER_GROUPS-1)) ?  sprintf(temp_string2, "%li\n", N_alwaysusecondom_with_casualpartner[i][j]) : sprintf(temp_string2, "%li,", N_alwaysusecondom_with_casualpartner[i][j]);
 	    join_strings_with_check(temp_string, temp_string2, 10000, "temp_string and temp_string2 in store_HIV_prevention_barrier_outputs()");
 	}	    
 
@@ -5193,7 +5200,7 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
     join_strings_with_check(output->HIV_prevention_barrier_outputs_string, 
         temp_string, SIZEOF_HIV_prevention_barrier_outputs_string, 
         "output->HIV_prevention_barrier_outputs_string and temp_string in store_HIV_prevention_barrier_outputs()");
-
+    
     
 
 }
@@ -5318,7 +5325,7 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    exit(1);
 	}
 
-	for(j=0; j<=ONPREP_ADHERENT; j++){
+	for(j=0; j<=TRADITIONAL_MC; j++){
 	    switch(j){
 
 	    case UNCIRC:
@@ -5387,8 +5394,8 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    }
 	}
 
-	for(j=0; j<2; j++){
-	    switch(j){ /* Number of people who always do/don't use condoms in LT partnerships: */
+	for(j=0; j<3; j++){
+	    switch(j){ /* Number of people who always do/don't use condoms in LT partnerships/don't have LT partners at present: */
 	    case 0: 
 		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
 			"Npeople_AlwaysCondLT_%s[n],", group_text);
@@ -5396,6 +5403,10 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    case 1:
 		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
 			"Npeople_AlwaysCondLT_%s[y],", group_text);
+		break;
+	    case 2:
+		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
+			"Npeople_NocurrentLT_%s,", group_text);
 		break;
 	    default:
 		printf("Error - unknown value of j in write_population_HIVpreventioncascade(). Exiting\n");
@@ -5419,8 +5430,8 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    }
 	}
 
-	for(j=0; j<2; j++){
-	    switch(j){ /* Number of people who always do/don't use condoms in casual partnerships: */
+	for(j=0; j<3; j++){
+	    switch(j){ /* Number of people who always do/don't use condoms in casual partnerships/don't have casual partners at present: */
 	    case 0: 
 		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
 			"Npeople_AlwaysCondCasual_%s[n],", group_text);
@@ -5428,6 +5439,10 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    case 1:
 		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
 			"Npeople_AlwaysCondCasual_%s[y],", group_text);
+		break;
+	    case 2:
+		fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE,
+			"Npeople_NocurrentCasual_%s,", group_text);
 		break;
 	    default:
 		printf("Error - unknown value of j in write_population_HIVpreventioncascade(). Exiting\n");
@@ -5438,7 +5453,7 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
     }
 
     
-    fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE, "%s\n", output->HIV_prevention_barrier_outputs_string);
+    fprintf(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE, "\n%s\n", output->HIV_prevention_barrier_outputs_string);
     
     // Close the connection to the file
     fclose(file_data_store->PREVENTION_CASCADE_STATUS_OUTPUT_FILE);

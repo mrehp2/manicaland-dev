@@ -85,7 +85,7 @@ void find_in_age_list(double t,individual* person_to_find, age_list_struct *age_
     }
     
     int ai_age_calcv1 = get_age_index(person_to_find->DoB, param->start_time_simul);
-    int ai_age_calcv2 = get_age_indexv2(person_to_find->DoB, t, 
+    int ai_age_calcv2 = get_age_index_correct(person_to_find->DoB, t, 
         age_list->age_list_by_gender[g]->youngest_age_group_index);
     
     /* Looking for the person_to_find in the age_list --> 
@@ -181,6 +181,65 @@ void print_age_list(age_list_struct *age_list){
         }
     }
 }
+
+
+
+
+/* Function checks that age_list structure is correct at a given time t. 
+   Function prints out the DoBs of people on the age list as a csv (each line is one age year cohort) if PRINT_LIST==1.
+*/
+void check_age_list(patch_struct *patch, int p, double t, int PRINT_LIST){
+    int aa,ai;
+    int i, number_per_age_group, g;
+
+    int i_age;
+    /* Pointer to individual - we are just assigning another pointer to this pointer so no need to allocate memory. */
+    individual *indiv;
+
+    FILE *CHECK_AGE_LIST;    
+    if(PRINT_LIST==1){
+	CHECK_AGE_LIST = fopen("check_age_list_temp.csv","w");
+    }
+    
+    // Loop through genders
+    for(g = 0; g < N_GENDER; g++){
+	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
+
+	    if(PRINT_LIST==1)
+		fprintf(CHECK_AGE_LIST,"Sex%sAgeCohort%i,",(g==MALE)?"M":"F",aa+AGE_ADULT);
+						      
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);            
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+
+	    /* Go through each person in the age list: */
+	    for(i = 0; i < number_per_age_group; i++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+
+		i_age = get_age_index_correct(indiv->DoB, t, patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index);
+
+		if(ai!=i_age){
+		    printf("Error - mismatch in indexing for ai=%i and get_age_index_correct()=%i when DoB=%6.4lf at t=%lf. Exiting\n",ai,i_age,indiv->DoB,t);
+		}
+		//else
+		//    printf("Correct indexing for ai=%i and get_age_index_correct()=%i when DoB=%6.4lf at t=%lf. Exiting\n",ai,i_age,indiv->DoB,t);
+		
+		if(PRINT_LIST==1)
+		    fprintf(CHECK_AGE_LIST,"%6.4lf,",indiv->DoB);
+
+	    }
+	    if(PRINT_LIST==1)
+		fprintf(CHECK_AGE_LIST,"\n");
+	}
+    }
+
+	
+    if(PRINT_LIST==1)
+	fclose(CHECK_AGE_LIST);
+}
+
+	
 
 
 void count_population_by_going_through_indiv(patch_struct *patch, long *n_m_indiv, long *n_f_indiv){

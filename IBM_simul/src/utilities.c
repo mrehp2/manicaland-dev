@@ -813,7 +813,7 @@ void get_prevention_cascade_scenario(int scenario_flag, parameters *param){
 	exit(1);
     }
 
-    //printf("Scenarios: PrEP = %i VMMC = %i, condoms=%i \n",param->barrier_params.i_PrEP_barrier_intervention_flag,param->barrier_params.i_VMMC_barrier_intervention_flag,param->barrier_params.i_condom_barrier_intervention_flag);
+    //printf("Intervention scenarios: PrEP = %i VMMC = %i, condoms = %i \n",param->barrier_params.i_PrEP_barrier_intervention_flag,param->barrier_params.i_VMMC_barrier_intervention_flag,param->barrier_params.i_condom_barrier_intervention_flag);
     
 }
 
@@ -1028,8 +1028,9 @@ void make_output_label_struct(file_label_struct *file_labels, long python_rng_se
 	    else
 		sprintf(file_labels->filename_label_bypatch[p],"_CL%i_Zim_patch%i_Rand%li_Run%i_%i",patch[p].community_id,p,python_rng_seed,i_run+1,rng_seed_offset);
 		
-	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");	    
-	    printf("Making this run a Manicaland run with label=%s\n",file_labels->filename_label_bypatch[p]);
+	    join_strings_with_check(file_labels->filename_label_bypatch[p], run_info_ending, LONGSTRINGLENGTH, "run_info_ending and filename_label_allpatches in make_output_label_struct() for Manicaland");
+	    if(VERBOSE_OUTPUT)
+		printf("Making this run a Manicaland run with label=%s\n",file_labels->filename_label_bypatch[p]);
 	    
 	}	
 

@@ -688,7 +688,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
             draw_initial_hiv_tests(patch[p].param, patch[p].age_list, t, patch[p].cascade_events, 
                 patch[p].n_cascade_events, patch[p].size_cascade_events);
         }else{
-	    printf("Setting up initial HIV cascade events at t=%lf\n",t);
+	    if(VERBOSE_OUTPUT)
+		printf("Setting up initial HIV cascade events at t=%lf\n",t);
+		
             /// The difference between this function and the draw_initial_hiv_tests() function is
             // that these are drawn up to a set time, when HIV tests are redrawn
 	    // Note - only need to call this if the first test is before 2005 - otherwise the following years if statement will capture this. 
@@ -1112,7 +1114,10 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		prevention_cascade_intervention_VMMC(t, patch, p);
 		prevention_cascade_intervention_PrEP(t, patch, p);
 		prevention_cascade_intervention_condom(t, patch, p);
-		printf("Running prevention cascade intervention at t=%lf\n",t);
+		if(VERBOSE_OUTPUT || PRINT_HIV_PREVENTION_CASCADE_INFO){
+		    printf("Running prevention cascade intervention at t=%lf. ",t);
+		    printf("Intervention scenarios: PrEP = %i VMMC = %i, condoms = %i \n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,patch[p].param->barrier_params.i_condom_barrier_intervention_flag);
+		}
 		//printf("*** need to restart condom prevention cascade intervention***\n");
 	    }
 	}

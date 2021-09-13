@@ -390,7 +390,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
     
     /* Store scenario for easier readability. */
     int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-    printf("Intervention scenario = %i\n",intervention_scenario);
+
     /* PrEP unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
     if(PREP_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
 	printf("Code issue - prevention_cascade_intervention_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
@@ -666,8 +666,7 @@ void update_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
 void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
     int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-    if(t==2019 && g==MALE)
-	printf("Updating PrEP barriers for age %i sex=%i at t=%lf t_step=%i\n",age_to_update,g,t,t_step);
+
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
     individual *indiv;

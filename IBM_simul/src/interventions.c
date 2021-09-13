@@ -1979,7 +1979,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 	}
 	/* For people who've seroconverted, we still carry on as normal assigning them a new PrEP event: */
 	//if (VERBOSE_OUTPUT==1)
-	if(indiv->HIV_status>UNINFECTED)
+	if(indiv->HIV_status>UNINFECTED && PRINT_HIV_PREVENTION_CASCADE_INFO==1)
 	    printf("individual %li PrEP status %i seroconverted2 before PrEP event %i at t=%lf.\n",indiv->id,indiv->PrEP_cascade_status,indiv->next_PrEP_event,t);
 
 

@@ -342,7 +342,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
     double temp_hazard;   /* Store hazard including reduced susceptibility from VMMC if needed - used when we want to output - print to file - hazards from everyone over time. */
     
     if(susceptible->id == FOLLOW_INDIVIDUAL && susceptible->patch_no == FOLLOW_PATCH){
-        printf("checking HIV acquisition for adult %ld from patch %d at time %6.4f\n",
+        printf("Looking to see if adult %ld from patch %d at time %6.4f gets HIV in function hiv_acquisition() - they have 1 or more HIV+ partners.\n",
             susceptible->id, susceptible->patch_no, time_infect);
         fflush(stdout);
     }
@@ -2253,7 +2253,7 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
     p_test = malloc(N_GENDER*sizeof(double));
     double t_gap;
 
-    // Draw probability that an indiv is tested in the next testing window,store it in p_test
+    // Draw probability that an indiv with some given characteristics (currently sex only) is tested in the next testing window (probability also depends on current time),store it in p_test
     probability_get_hiv_test_in_next_window(p_test, &t_gap, country_setting, year, 
         param->COUNTRY_HIV_TEST_START, param);
     
@@ -2274,15 +2274,17 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
                     (age_list->age_list_by_gender[g]->age_group[aa][k]->id == FOLLOW_INDIVIDUAL) &&
                     (age_list->age_list_by_gender[g]->age_group[aa][k]->patch_no == FOLLOW_PATCH)
                     ){
+                        if(age_list->age_list_by_gender[g]->age_group[aa][k]->next_cascade_event==-1 && age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[0]==-1 && age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[1]==-1)
+                        printf("No new HIV test scheduled for adult %ld in year %i\n", age_list->age_list_by_gender[g]->age_group[aa][k]->id,year);
+			else{
+			    printf("Scheduling new HIV test for adult %ld, ", 
+				   age_list->age_list_by_gender[g]->age_group[aa][k]->id);
                         
-                        printf("Scheduling new HIV test for adult %ld, ", 
-                            age_list->age_list_by_gender[g]->age_group[aa][k]->id);
-                        
-                        printf("gender = %d (event type %i) at time index %li array index = %li\n", 
-                        g, age_list->age_list_by_gender[g]->age_group[aa][k]->next_cascade_event,
-                        age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[0],
-                        age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[1]);
-                        
+			    printf("gender = %d (event type %i) at time index %li array index = %li\n", 
+				   g, age_list->age_list_by_gender[g]->age_group[aa][k]->next_cascade_event,
+				   age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[0],
+				   age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[1]);
+                        }
                         fflush(stdout);
                     }
                 }

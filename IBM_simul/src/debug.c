@@ -2478,6 +2478,7 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
 		}
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,",indiv->id);
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%i,",(int) floor(t-indiv->DoB));
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",indiv->DoB);
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%s,",(indiv->gender==MALE)?"M":"F");
 
 		//		printf("N_partners_LT=%i\n",N_partners_LT);

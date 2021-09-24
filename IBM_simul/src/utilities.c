@@ -2764,8 +2764,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 	
 	/* PrEP: */
 	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]>0.2){
-		printf("Error:param->barrier_params.p_use_PrEP[][] is outside expected range [0,0.2]\nExiting\n");
+	    if (param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]>0.4){
+		printf("Error:param->barrier_params.p_use_PrEP[][] is outside expected range [0,0.4]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
@@ -2786,8 +2786,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 	
 	/* Condoms: */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]>0.7){
-		printf("Error:param->barrier_params.p_use_cond_casual[][] is outside expected range [0,0.7]\nExiting\n");
+	    if (param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]>1.0){
+		printf("Error:param->barrier_params.p_use_cond_casual[][] is outside expected range [0,1.0]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);

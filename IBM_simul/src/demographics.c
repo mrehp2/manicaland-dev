@@ -2204,8 +2204,8 @@ void remove_from_PrEP_events(individual *indiv, individual ***PrEP_events, long 
 
     long i = indiv->idx_PrEP_event[0]; 
 
-    /* If not currently scheduled for any PrEP events then return. */
-    if (i==PREP_NOEVENT)
+    /* If not currently scheduled for any PrEP events, or if the event is after the end of the simulation then return. */
+    if (i==PREP_NOEVENT || i==EVENTAFTERENDSIMUL)
         return;
 
 

@@ -156,6 +156,11 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
+	if(i_run==2 && t0>2038){
+	    printf("Running2 carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
+	    fflush(stdout);
+	}
+	    
 	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
 	    //fflush(stdout);
             fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
@@ -163,9 +168,17 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 								 file_data_store, scenario_flag);
         }
 
+	if(i_run==2 && t0>2038){
+	    printf("Running0 carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
+	    fflush(stdout);
+	}
         
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
 						     debug, file_data_store, scenario_flag);
+	if(i_run==2 && t0>2038){
+	    printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
+	    fflush(stdout);
+	}
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/
@@ -499,8 +512,8 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
-    
-    
+
+
     // Determine if the current time is within the final CHiPs round or not.  The variable
     // `POPART_FINISHED` takes value 1 after the end of the final CHiPs round. Once
     // PopART finishes assume that test-and-treat continues like the last CHiPs round.

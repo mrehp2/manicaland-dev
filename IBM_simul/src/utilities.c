@@ -2488,6 +2488,15 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+
+
+    if ((param->end_time_simul - fmin(param->COUNTRY_HIV_TEST_START,param->PrEP_background_params->year_start_background))>=MAX_N_YEARS){
+        printf("Error:Simulation may exceed MAX_N_YEARS\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
     if (param->COUNTRY_HIV_TEST_START<1970 || param->COUNTRY_HIV_TEST_START>2010){
         printf("Error:param->COUNTRY_HIV_TEST_START is outside expected range [1970,2010]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);

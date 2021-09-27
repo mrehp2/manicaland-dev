@@ -1762,6 +1762,12 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
         exit(1);
     }
 
+    if(indiv->id == FOLLOW_INDIVIDUAL){
+	printf("In function start_PrEP_for_person id=%li current PrEP status=%i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,t);
+	fflush(stdout);
+    }
+
+    
     /* double age = t-indiv->DoB; */
     /* /\* Add 1 to make sure we didn't schedule when they were eligible: *\/ */
     /* if((age>(MAX_AGE_PREP_INTERVENTION+1) && age>(MAX_AGE_PREP_BACKGROUND+1)) || (age<MIN_AGE_PREP_INTERVENTION && age<MIN_AGE_PREP_BACKGROUND)){ */
@@ -1919,7 +1925,7 @@ void schedule_generic_PrEP_event(individual *indiv, parameters *param, individua
     else{ // If PrEP event lies after end of the simulation.  
         
         /* If next event scheduled for after the end of the simulation set to be dummy entries. */
-        indiv->idx_PrEP_event[0] = -1;
+        indiv->idx_PrEP_event[0] = EVENTAFTERENDSIMUL;
         indiv->idx_PrEP_event[1] = -1;
 	indiv->next_PrEP_event = PREP_NOEVENT;
         if (indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
@@ -1967,6 +1973,12 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
     
     for(n=0; n<n_events; n++){
         indiv = patch[p].PrEP_events[array_index_for_PrEP_event][n];
+
+	if(indiv->id == FOLLOW_INDIVIDUAL){
+	    printf("In function carry_out_PrEP_events_per_timestep() id=%li current PrEP status=%i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,t);
+	    fflush(stdout);
+	}
+	
         //printf("Person %ld with PrEP status=%d is in carry_out_PrEP_events_per_timestep.\n",indiv->id,indiv->PrEP_cascade_status);
         
         /* If this individual is dead or seroconverted to HIV+, move on to the next person.
@@ -2043,7 +2055,7 @@ void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_even
     /* 	n_cascade_events[i]--; */
     /* } */
     printf("individual %li is diagnosed HIV+ while on PrEP status=%i\n",indiv->id,indiv->PrEP_cascade_status);
-    remove_from_PrEP_events(indiv, PrEP_events, n_PrEP_events, size_PrEP_events, t, param);    
+    remove_from_PrEP_events(indiv, PrEP_events, n_PrEP_events, size_PrEP_events, t, param);
 	//indiv->PrEP_cascade_status=NOTONPREP;
     //if (VERBOSE_OUTPUT==1)
     

@@ -2151,7 +2151,7 @@ void remove_from_vmmc_events(individual *indiv, individual ***vmmc_events, long 
     long i = indiv->idx_vmmc_event[0]; 
 
     /* If not currently scheduled for any VMMC events then return. */
-    if (i==NOEVENT)
+    if (i==NOEVENT || i==EVENTAFTERENDSIMUL)
         return;
 
 

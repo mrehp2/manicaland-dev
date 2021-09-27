@@ -1081,7 +1081,7 @@ void schedule_generic_vmmc_event(individual *indiv, parameters *param, individua
     }else{ // If VMMC event lies after end of the simulation.  
         
         /* If next event scheduled for after the end of the simulation set to be dummy entries. */
-        indiv->idx_vmmc_event[0] = -1;
+        indiv->idx_vmmc_event[0] = EVENTAFTERENDSIMUL;
         indiv->idx_vmmc_event[1] = -1;
         if (indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
             printf("No VMMC event scheduled for %ld as event lies after end of the simulation.\n",

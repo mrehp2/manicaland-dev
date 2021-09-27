@@ -156,29 +156,16 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
-	if(i_run==2 && t0>2038){
-	    printf("Running2 carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
-	    fflush(stdout);
-	}
-	    
 	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
 	    //fflush(stdout);
             fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
 								 p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,
 								 file_data_store, scenario_flag);
         }
-
-	if(i_run==2 && t0>2038){
-	    printf("Running0 carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
-	    fflush(stdout);
-	}
+	
         
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
 						     debug, file_data_store, scenario_flag);
-	if(i_run==2 && t0>2038){
-	    printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
-	    fflush(stdout);
-	}
         
         // store_timestep_outputs() is called at the end of this timestep, 
         // so time = t+TIME_STEP.*/

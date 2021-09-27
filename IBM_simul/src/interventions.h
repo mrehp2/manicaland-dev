@@ -40,13 +40,13 @@ void schedule_PrEP_intervention(age_list_struct *, PrEP_intervention_sample_stru
 int get_prep_eligibility(individual *);
 void carry_out_PrEP_background_events_per_timestep(int , int , patch_struct *, int );
 void carry_out_PrEP_intervention_events_per_timestep(int , int , patch_struct *, int );
-void start_PrEP_for_person(individual *, parameters *, individual ***, long *, long *, double );
+void start_PrEP_for_person(individual *, parameters *, individual ***, long *, long *, cumulative_outputs_struct *, double );
 int overcome_PrEP_cascade_barriers(individual *);   
 double draw_next_PrEP_event_from_adherent(individual *, double );
 double draw_next_PrEP_event_from_semiadherent(individual *, double );
 void schedule_generic_PrEP_event(individual *, parameters *, individual ***, long *, long *, double , double );
 void carry_out_PrEP_events_per_timestep(double , patch_struct *, int );
-void cancel_PrEP(individual *, individual ***, long *, long *, double, parameters *);
+void cancel_PrEP(individual *, individual ***, long *, long *, double, parameters *, cumulative_outputs_struct *);
 
 
 #endif /* INTERVENTIONS_H_ */

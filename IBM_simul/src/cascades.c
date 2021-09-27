@@ -274,7 +274,7 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 			x = gsl_rng_uniform (rng);
 
 			if(x <= p_will_use_PrEP_per_timestep){
-			    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+			    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
 			// PrEP status is set in start_PrEP_for_person(). Use below if we want to force all individuals to be adherent. 
 			//indiv->PrEP_cascade_status = ONPREP_ADHERENT;
 			}

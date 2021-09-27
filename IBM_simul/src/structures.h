@@ -941,6 +941,9 @@ typedef struct{
     long N_total_ever_started_ART_nonpopart;
     long N_total_ever_started_ART_popart;
 
+    long N_total_seroconvert_before_starting_PrEP;
+    long N_total_seroconvert_while_on_PrEP;
+    
     cumulative_outputs_MTCT_struct *cumulative_outputs_MTCT;
 
 } cumulative_outputs_struct;

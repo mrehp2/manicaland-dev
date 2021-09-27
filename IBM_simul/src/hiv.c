@@ -703,7 +703,7 @@ void inform_partners_of_seroconversion_and_update_list_serodiscordant_partnershi
             // Note: temp_partner->n_HIVpos_partners is the number of HIV+ partners
             // of this partner (prior to the current seroconversion).
 
-            // Add the current serconverter to the array of HIVpos partners of temp_partner
+            // Add the current seroconverter to the array of HIVpos partners of temp_partner
             temp_partner->partner_pairs_HIVpos[temp_partner->n_HIVpos_partners] =
                 seroconverter->partner_pairs[i];
             
@@ -2722,7 +2722,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
 
     /* If on PrEP (or waiting to start), then cancel PrEP events: */
     if(indiv->PrEP_cascade_status>NOTONPREP){
-	cancel_PrEP(indiv, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param);
+	cancel_PrEP(indiv, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, patch[p].param, cumulative_outputs);
 
     }
     

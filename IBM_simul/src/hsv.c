@@ -203,7 +203,7 @@ void inform_partners_of_hsv2seroconversion_and_update_list_hsv2serodiscordant_pa
             // Note: temp_partner->n_HSV2pos_partners is the number of HSV2+ partners
             // of this partner (prior to the current seroconversion).
 
-            // Add the current serconverter to the array of HSV2pos partners of temp_partner
+            // Add the current seroconverter to the array of HSV2pos partners of temp_partner
             temp_partner->partner_pairs_HSV2pos[temp_partner->n_HSV2pos_partners] =
                 seroconverter->partner_pairs[i];
             

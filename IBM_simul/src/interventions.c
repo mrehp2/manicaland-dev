@@ -1638,7 +1638,7 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 		//if (indiv->id==26812){
 		//   printf("Starting PrEP for 26812 ap=%i\n",ap);
 		//}
-		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
 		//printf("BStartijng PrEP for id=%li\n",indiv->id);
 
 		j+=1;
@@ -1727,7 +1727,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    if (prep_eligible==1){
 
 		/* They start PrEP due to intervention: */
-		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t);
+		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
 		j+=1;
 	    }
 	    else{
@@ -1749,7 +1749,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 
 /* Function 
    PrEP is allowed for both men and women. */
-void start_PrEP_for_person(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t){
+void start_PrEP_for_person(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, cumulative_outputs_struct *cumulative_outputs, double t){
 
 
     double t_next_PrEP_event;   /* Time of next PrEP event. */
@@ -1784,8 +1784,8 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 	    if(indiv->cd4 == DEAD)
 		printf("individual %li died before receiving PrEP intervention.\n",indiv->id);
 	    else
-		printf("individual %li seroconverted before receiving PrEP intervention.\n",indiv->id);
-	    //}
+		cumulative_outputs->N_total_seroconvert_before_starting_PrEP++;
+
 	    return;
 	}
 	/* In the Manicaland cascade PrEP is done on a timestep basis so this shouldn't happen. */
@@ -1991,8 +1991,11 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 	}
 	/* For people who've seroconverted, we still carry on as normal assigning them a new PrEP event: */
 	//if (VERBOSE_OUTPUT==1)
-	if(indiv->HIV_status>UNINFECTED && PRINT_HIV_PREVENTION_CASCADE_INFO==1)
-	    printf("individual %li PrEP status %i seroconverted2 before PrEP event %i at t=%lf.\n",indiv->id,indiv->PrEP_cascade_status,indiv->next_PrEP_event,t);
+	if(indiv->HIV_status>UNINFECTED){
+	    patch[p].cumulative_outputs->N_total_seroconvert_before_starting_PrEP++;
+	    if(PRINT_HIV_PREVENTION_CASCADE_INFO==1)
+		printf("individual %li PrEP status %i seroconverted2 before PrEP event %i at t=%lf.\n",indiv->id,indiv->PrEP_cascade_status,indiv->next_PrEP_event,t);
+	}
 
 
 
@@ -2032,7 +2035,7 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p){
 
 
 /* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. */
-void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, parameters *param){
+void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, parameters *param, cumulative_outputs_struct *cumulative_outputs){
 
     /* /\* FOR DEBUGGING: *\/ */
     /* if (cascade_events[i][indiv->idx_cascade_event[1]]->id!=indiv->id){ */
@@ -2054,7 +2057,8 @@ void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_even
     /* 	/\* We have removed one person: *\/ */
     /* 	n_cascade_events[i]--; */
     /* } */
-    printf("individual %li is diagnosed HIV+ while on PrEP status=%i\n",indiv->id,indiv->PrEP_cascade_status);
+    //printf("individual %li is diagnosed HIV+ while on PrEP status=%i\n",indiv->id,indiv->PrEP_cascade_status);
+    cumulative_outputs->N_total_seroconvert_while_on_PrEP++;
     remove_from_PrEP_events(indiv, PrEP_events, n_PrEP_events, size_PrEP_events, t, param);
 	//indiv->PrEP_cascade_status=NOTONPREP;
     //if (VERBOSE_OUTPUT==1)

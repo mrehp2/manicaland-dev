@@ -1132,7 +1132,7 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
     
     if(PCdata == 0){
         
-        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string, "%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1169,11 +1169,13 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
 		N_women_on_PrEP_semiadherent_25plus,
 		N_men_on_PrEP_adherent,
 		N_men_on_PrEP_semiadherent,
+                patch[p].cumulative_outputs->N_total_seroconvert_before_starting_PrEP,
+                patch[p].cumulative_outputs->N_total_seroconvert_while_on_PrEP,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
 	
     }else if(PCdata == 1){
-        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+        sprintf(temp_string,"%i,%8.6f,%8.6f,%li,%li,%li,%li,%8.6f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%6.4f,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
                 year,
                 npositive/(npop+0.0),
                 patch[p].PANGEA_N_ANNUALINFECTIONS/(npop - npositive + 0.0),
@@ -1210,6 +1212,8 @@ void store_annual_outputs(patch_struct *patch, int p, output_struct *output,
 		N_women_on_PrEP_semiadherent_25plus,
 		N_men_on_PrEP_adherent,
 		N_men_on_PrEP_semiadherent,
+                patch[p].cumulative_outputs->N_total_seroconvert_before_starting_PrEP,
+                patch[p].cumulative_outputs->N_total_seroconvert_while_on_PrEP,
                 *overall_partnerships->n_susceptible_in_serodiscordant_partnership,
                 patch[p].OUTPUT_NDIEDFROMHIV,npositive_dead,n_dead,annual_incident_hsv2, nprevalent_hsv2_m, nprevalent_hsv2_f, nprevalent_hsv2_check);
     }
@@ -2824,7 +2828,8 @@ void write_annual_outputs(file_struct *file_data_store, output_struct *output, i
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
         "NHIVTestedThisYear,NOnARTM,NNeedARTM,NOnARTF,NNeedARTF,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
-	    "PropMenCirc,NMenVMMC,N_women_waiting_PrEP,N_women_on_PrEP_adherent_under25,N_women_on_PrEP_adherent_25plus,N_women_on_PrEP_semiadherent_under25,N_women_on_PrEP_semiadherent_25plus,N_men_on_PrEP_adherent,N_men_on_PrEP_semiadherent,");    
+	    "PropMenCirc,NMenVMMC,N_women_waiting_PrEP,N_women_on_PrEP_adherent_under25,N_women_on_PrEP_adherent_25plus,N_women_on_PrEP_semiadherent_under25,N_women_on_PrEP_semiadherent_25plus,N_men_on_PrEP_adherent,N_men_on_PrEP_semiadherent,N_seroconvert_before_starting_PrEP,N_total_seroconvert_while_on_PrEP,");
+    
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],"NindInSdPart,NDied_from_HIV,NHIV_pos_dead,N_dead,");
     fprintf(file_data_store->ANNUAL_OUTPUT_FILE[p],
 	 "annual_incident_hsv2,nprevalent_hsv2_m,nprevalent_hsv2_f,nprevalent_hsv2_check,");

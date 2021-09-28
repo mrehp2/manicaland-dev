@@ -8,6 +8,9 @@ data.t1 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2
 data.t2 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2020.csv"),header=T,sep=",")
 data.t3 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2022.csv"),header=T,sep=",")
 
+data.t1 <- data.t1[seq(1,10000),]
+data.t2 <- data.t2[seq(1,10000),]
+data.t3 <- data.t3[seq(1,10000),]
 
 
 df.circ <- function(circ,sex){

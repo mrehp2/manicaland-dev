@@ -2447,7 +2447,7 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
     }
     
     // Write the header line
-    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"id,Age,Sex,n_lifetime_partners,PrEP_status,Circ_status,prop_partners_LT_cond,prop_partners_casual_cond,p_will_use_PrEP,p_will_get_VMMC,p_want_to_use_condom_long_term_partner,p_want_to_use_condom_casual_partner\n");
+    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"id,Age,DoB,Sex,n_lifetime_partners,PrEP_status,Circ_status,prop_partners_LT_cond,prop_partners_casual_cond,p_will_use_PrEP,p_will_get_VMMC,p_want_to_use_condom_long_term_partner,p_want_to_use_condom_casual_partner\n");
 
 
     /* Loop through population: */

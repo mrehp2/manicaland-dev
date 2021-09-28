@@ -1,1 +1,1 @@
-initial_adult_population_size 500 // FIXME.
+initial_adult_population_size 100 // FIXME.

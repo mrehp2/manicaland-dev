@@ -2575,29 +2575,68 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
         param_local = allrunparameters + i_run;
 	checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.t_start_prevention_cascade_intervention));
 
-	for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
-	    for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]));
-		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
-	    }
+	//for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
+	/* Use this to just read in the pre-intervention values, with a multiplier for post-intervention: */
+	i_barrier_intervention=0;
+
+	
+	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
+	}
 	    
-	    for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]));
+	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[][]");
-	    }
+	}
 	    
-	    for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]));
-		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[][]");
-	    }
-
-	    for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-		checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
-		check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
-	    }
-
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[][]");
 	}
 
+	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
+	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention];
+	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
+	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
+	}
+
+    
+	/**** Now the intervention: */
+	double rr_HIV_prevention_cascade_intervention;
+
+	
+	checkreadok = fscanf(param_file,"%lg",&(rr_HIV_prevention_cascade_intervention));
+	check_if_cannot_read_param(checkreadok,"rr_HIV_prevention_cascade_intervention");
+
+	double rr_HIV_prevention_cascade_intervention_condom = rr_HIV_prevention_cascade_intervention;
+	double rr_HIV_prevention_cascade_intervention_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS] = {0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0,0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0,0,0};
+	double rr_HIV_prevention_cascade_intervention_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS] = {0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0};
+
+	
+	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    param_local->barrier_params.p_use_VMMC[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_VMMC[i_barrier_group]) * (1-param_local->barrier_params.p_use_VMMC[i_barrier_group][0]);
+	}
+	    
+	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    param_local->barrier_params.p_use_PrEP[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_PrEP[i_barrier_group]) * (1.0-param_local->barrier_params.p_use_PrEP[i_barrier_group][0]);
+	}
+
+	/* No need to change condom use groups: */
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
+	    param_local->barrier_params.p_use_cond_casual[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_condom) * (1-param_local->barrier_params.p_use_cond_casual[i_barrier_group][0]);
+	}
+
+	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
+	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][1] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][1];
+	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
+	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
+	}
+
+    
+	
 
     }
 

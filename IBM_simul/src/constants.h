@@ -64,7 +64,7 @@
 
 #define CHECK_AGE_LIST 0 // if 1 then write a file for run 1, patch 0, called check_age_list_temp.csv, in the current directory that contains the DoB of each alive person as a csv (each row is an age-year cohort, containing all the individuals in that element of age_list)
 
-#define DEBUG_HIV_PREVENTION_CASCADES 0 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
+#define DEBUG_HIV_PREVENTION_CASCADES 1 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
 
 #define WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS 0 // if 1 then writes files of the form Annual_partnerships_outputs_*.csv
 
@@ -399,11 +399,12 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define i_PrEP_PREVENTIONBARRIER_NEVERSEX_F 9
 
 
-#define N_VMMC_PREVENTIONBARRIER_GROUPS 4 // Number of groups that we subdivide the population into, for VMMC.
+#define N_VMMC_PREVENTIONBARRIER_GROUPS 5 // Number of groups that we subdivide the population into, for VMMC.
 #define i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M 0
 #define i_VMMC_PREVENTIONBARRIER_YOUNG_M 1
 #define i_VMMC_PREVENTIONBARRIER_OLD_M 2
 #define i_VMMC_PREVENTIONBARRIER_TOO_OLD_M 3
+#define i_VMMC_PREVENTIONBARRIER_NEVERSEX_M 4
 
 #define N_COND_PREVENTIONBARRIER_GROUPS 4 // Number of groups that we subdivide the population into, for condoms (with both casual and long-term partners).
 #define i_COND_PREVENTIONBARRIER_YOUNG_M 0

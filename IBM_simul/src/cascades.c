@@ -35,7 +35,7 @@
 
 
 /* Function converts individual-level characteristics into an index for barrier_params parameter arrays (p_use_PrEP).
-   Current characteristics are age, sex.
+   Current characteristics are age, sex, number of partners (if this is zero, then never had sex - so variable is called ever_have_sex here, and should be treated as boolean).
 */
 int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex){
     /* Put female first as more efficient: */
@@ -76,10 +76,12 @@ int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex){
 
 
 /* Function converts individual-level characteristics into an index for barrier_params parameter arrays (p_use_VMMC).
-   Current characteristics are age, sex.
+   Current characteristics are age, number of partners (if this is zero, then never had sex - so variable is called ever_have_sex here, and should be treated as boolean).
 */
-int index_HIV_prevention_cascade_VMMC(int age){
-    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+int index_HIV_prevention_cascade_VMMC(int age, int ever_had_sex){
+    if(ever_had_sex==0)
+	return i_VMMC_PREVENTIONBARRIER_NEVERSEX_M;
+    else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 	return i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M;
     else if(age<=29)
 	return i_VMMC_PREVENTIONBARRIER_YOUNG_M;
@@ -143,7 +145,7 @@ void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, casc
 void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_VMMC_intervention_running_flag){
 
     int age = (int) floor(t-indiv->DoB);    
-    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[index_HIV_prevention_cascade_VMMC(age)][i_VMMC_intervention_running_flag];
+    indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)][i_VMMC_intervention_running_flag];
 }
 
 
@@ -687,16 +689,12 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
 	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 	
 	if(indiv->birthday_timestep==t_step){
-	    /* For PrEP (not VMMC - where we assume men can be circumcised prior to sexual debut, and not for condoms, where it doesn't matter as you can't use a condom until sexual debut), you can't get PrEP until sexual debut. 
-	       So only modify for people who've ever had sex (i.e. >0 partners).
-	       Use a separate function to update probability for individuals when they have sexual debut. 
- */
-	    if (indiv->n_lifetime_partners>0){
-		if(indiv->id==FOLLOW_INDIVIDUAL)
-		    printf("Modifying PrEP HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
+	    
+	    if(indiv->id==FOLLOW_INDIVIDUAL)
+		printf("Modifying PrEP HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
 		
-		assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
-	    }
+	    assign_individual_PrEP_prevention_cascade(t, indiv, patch[p].param->barrier_params, intervention_scenario);
+	    
 	}
     }
 }

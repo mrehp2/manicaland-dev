@@ -2613,7 +2613,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	/* Can't be bothered to make this one an array :-) */
 	double rr_HIV_prevention_cascade_intervention_condom = rr_HIV_prevention_cascade_intervention;
 	double rr_HIV_prevention_cascade_intervention_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS] = {0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0,0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0,0,0};
-	double rr_HIV_prevention_cascade_intervention_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS] = {0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0};
+	double rr_HIV_prevention_cascade_intervention_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS] = {0,rr_HIV_prevention_cascade_intervention,rr_HIV_prevention_cascade_intervention,0,0};
 
 	
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    

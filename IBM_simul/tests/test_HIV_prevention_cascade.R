@@ -3,14 +3,52 @@
 
 rm(list=ls())
 
-run <- 3
-data.t1 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2018.csv"),header=T,sep=",")
-data.t2 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2020.csv"),header=T,sep=",")
-data.t3 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t2022.csv"),header=T,sep=",")
 
-data.t1 <- data.t1[seq(1,10000),]
-data.t2 <- data.t2[seq(1,10000),]
-data.t3 <- data.t3[seq(1,10000),]
+
+#####################################
+# Functions: 
+#####################################
+
+rr.reduction <- function(a.param, this.RR){
+    intervention.param <- 1 - (1-this.RR)*(1-a.param)
+    return(intervention.param)
+}
+
+
+make.intervention.params <- function(this.run.params, RR){
+    # Make a new dataframe with the same structure:
+    intervention.params <- data.frame(this.run.params)
+    # Set values to NA for easier debugging (i.e. make sure I didn't forget one):
+    intervention.params[,] <- NA
+    no.RR <- 0 # No change if too young/old to receive:
+
+    intervention.params$p_use_VMMC_too_young <- rr.reduction(this.run.params$p_use_VMMC_too_young, no.RR)
+    intervention.params$p_use_VMMC_young <- rr.reduction(this.run.params$p_use_VMMC_young, RR)
+    intervention.params$p_use_VMMC_old <- rr.reduction(this.run.params$p_use_VMMC_old, RR)
+    intervention.params$p_use_VMMC_too_old <- rr.reduction(this.run.params$p_use_VMMC_too_old, no.RR)
+    intervention.params$p_use_VMMC_neversex <- rr.reduction(this.run.params$p_use_VMMC_neversex, no.RR)
+    
+    intervention.params$p_use_PrEP_M_too_young <- rr.reduction(this.run.params$p_use_PrEP_M_too_young, no.RR)
+    intervention.params$p_use_PrEP_M_young <- rr.reduction(this.run.params$p_use_PrEP_M_young, RR)
+    intervention.params$p_use_PrEP_M_old <- rr.reduction(this.run.params$p_use_PrEP_M_old, RR)
+    intervention.params$p_use_PrEP_M_too_old <- rr.reduction(this.run.params$p_use_PrEP_M_too_old, no.RR)
+    
+    intervention.params$p_use_PrEP_F_too_young <- rr.reduction(this.run.params$p_use_PrEP_F_too_young, no.RR)
+    intervention.params$p_use_PrEP_F_young <- rr.reduction(this.run.params$p_use_PrEP_F_young, RR)
+    intervention.params$p_use_PrEP_F_old <- rr.reduction(this.run.params$p_use_PrEP_F_old, RR)
+    intervention.params$p_use_PrEP_F_too_old <- rr.reduction(this.run.params$p_use_PrEP_F_too_old, no.RR)
+
+    intervention.params$p_use_PrEP_M_neversex <- rr.reduction(this.run.params$p_use_PrEP_M_neversex, no.RR)
+    intervention.params$p_use_PrEP_F_neversex <- rr.reduction(this.run.params$p_use_PrEP_F_neversex, no.RR)
+
+    intervention.params$p_use_cond_casual_M_young <- rr.reduction(this.run.params$p_use_cond_casual_M_young, RR)
+    intervention.params$p_use_cond_casual_M_old <- rr.reduction(this.run.params$p_use_cond_casual_M_old, RR)
+    intervention.params$p_use_cond_casual_F_young <- rr.reduction(this.run.params$p_use_cond_casual_F_young, RR)
+    intervention.params$p_use_cond_casual_F_old <- rr.reduction(this.run.params$p_use_cond_casual_F_old, RR)
+
+    return(intervention.params)
+}
+
 
 
 df.circ <- function(circ,sex){
@@ -20,6 +58,518 @@ df.circ <- function(circ,sex){
     circ[circ %in% 4] <- "Traditional MC"
     return(circ)
 }
+
+
+
+
+
+tabulate.data <- function(outcome.t1,outcome.t2,restrictions)
+{
+    
+    table(outcome.t1[restrictions],outcome.t2[restrictions])
+
+}
+
+test.equality <- function(df1,value2)
+{
+    TOLERANCE = 1e-4
+    #if(abs(value1-value2)<TOLERANCE){return(TRUE)} else{return(FALSE)}
+    # Works automatically if no data in df1:
+    if(length(df1)==0){return(TRUE)}
+    
+    if((min(df1)>value2-TOLERANCE) & (max(df1)<value2+TOLERANCE)){return(TRUE)} else{return(FALSE)}
+}
+
+check.data <- function(outcome.t1,outcome.t2,restrictions,value.t1,value.t2)
+{
+    
+    #all(outcome.t1[restrictions]==value.t1) & all(outcome.t2[restrictions]==value.t2)
+    all(test.equality(outcome.t1[restrictions],value.t1)) & all(test.equality(outcome.t2[restrictions],value.t2))
+}
+
+
+make.integer <- function(x){
+    d <- dim(x)
+    if (d[1]==0 & d[2]==0){return(0)}
+
+    if(d[1]==1 & d[2]==1){return(as.integer(x))}
+    return(NA)
+}
+
+
+
+
+
+####################################################
+###PrEP checks:                                    #
+####################################################
+
+
+run.checks <- function(data.all, run.params, intervention.params)
+{
+
+# Should be 0->run.params$p_use_PrEP_M_young
+prep.m.1 <- check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_too_young,run.params$p_use_PrEP_M_young) &
+# Should be run.params$p_use_PrEP_M_neversex->run.params$p_use_PrEP_M_neversex
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y, data.all$n_lifetime_partners.y %in% 0 & data.all$Sex %in% "M",run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_neversex) &
+# Should be run.params$p_use_PrEP_M_young->run.params$p_use_PrEP_M_young
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_M_young,run.params$p_use_PrEP_M_young) &
+# Should be 0->run.params$p_use_PrEP_M_young
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_young) &
+# Should be run.params$p_use_PrEP_M_young->run.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_M_young,run.params$p_use_PrEP_M_old) &
+# Should be 0->run.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_old) &
+# ERROR: Should be run.params$p_use_PrEP_M_old->run.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_M_old,run.params$p_use_PrEP_M_old) &
+#tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))
+# Should be 0->run.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_old) &
+# Should be run.params$p_use_PrEP_M_old->0
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_M_old,run.params$p_use_PrEP_M_too_old) &
+# Should be run.params$p_use_PrEP_M_old->0
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_too_old) &
+# Should be 0->0:
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_M_too_old,run.params$p_use_PrEP_M_too_old) &
+# Should be 0->0:
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,run.params$p_use_PrEP_M_too_old)
+
+
+# Make sure the above is TRUE.
+
+############################
+# Now women:
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_neversex
+prep.f.1 <- check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y, data.all$n_lifetime_partners.y %in% 0 & data.all$Sex %in% "F",run.params$p_use_PrEP_F_neversex,run.params$p_use_PrEP_F_neversex) &
+# Should be run.params$p_use_PrEP_F_too_young->run.params$p_use_PrEP_F_young
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_too_young,run.params$p_use_PrEP_F_young) &
+# Should be run.params$p_use_PrEP_F_young->run.params$p_use_PrEP_F_young
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_young,run.params$p_use_PrEP_F_young) &
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_young
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_too_young,run.params$p_use_PrEP_F_young) &
+# Should be run.params$p_use_PrEP_F_young->run.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_young,run.params$p_use_PrEP_F_old) &
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,run.params$p_use_PrEP_F_old) &
+# ERROR: Should be run.params$p_use_PrEP_F_old->run.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_old,run.params$p_use_PrEP_F_old) &
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,run.params$p_use_PrEP_F_old) &
+# Should be run.params$p_use_PrEP_F_old->run.params$p_use_PrEP_F_too_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_old,run.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_too_old
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,run.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_too_old->run.params$p_use_PrEP_F_too_old:
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_too_old,run.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_neversex->run.params$p_use_PrEP_F_too_old:
+check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,run.params$p_use_PrEP_F_too_old) 
+
+
+
+###################
+# Now intervention:
+##################
+# Should be run.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_neversex:
+
+prep.m.2 <- check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z, data.all$n_lifetime_partners.z %in% 0 & data.all$Sex %in% "M",run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_neversex) &
+# Should be run.params$p_use_PrEP_M_young->intervention.params$p_use_PrEP_M_young
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_young,intervention.params$p_use_PrEP_M_young) &
+# Should be run.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_young
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_young) &
+# Should be run.params$p_use_PrEP_M_young->intervention.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_young,intervention.params$p_use_PrEP_M_old) &
+# Should be run.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_old) &
+# ERROR: Should be run.params$p_use_PrEP_M_old->intervention.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_old,intervention.params$p_use_PrEP_M_old) &
+# Should be run.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_old) &
+# Should be run.params$p_use_PrEP_M_old->intervention.params$p_use_PrEP_M_too_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_old,intervention.params$p_use_PrEP_M_too_old) &
+# Should be run.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_too_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_too_old) &
+# Should be intervention.params$p_use_PrEP_M_too_old->intervention.params$p_use_PrEP_M_too_old:
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_M_too_old,intervention.params$p_use_PrEP_M_too_old) &
+# Should be intervention.params$p_use_PrEP_M_neversex->intervention.params$p_use_PrEP_M_too_old:
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_M_neversex,intervention.params$p_use_PrEP_M_too_old)
+
+###
+                                        # Now women:
+
+prep.f.2 <- check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z, data.all$n_lifetime_partners.z %in% 0 & data.all$Sex %in% "F",run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_neversex) &
+# Should be run.params$p_use_PrEP_F_young->intervention.params$p_use_PrEP_F_young
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_young,intervention.params$p_use_PrEP_F_young) &
+# Should be intervention.params$p_use_PrEP_F_neversex->intervention.params$p_use_PrEP_F_young
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_young) & 
+# Should be run.params$p_use_PrEP_F_young->intervention.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_young,intervention.params$p_use_PrEP_F_old) &
+# Should be intervention.params$p_use_PrEP_F_neversex->intervention.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_old) &
+# Should be run.params$p_use_PrEP_F_old->intervention.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_old,intervention.params$p_use_PrEP_F_old) &
+# Should be intervention.params$p_use_PrEP_F_neversex->intervention.params$p_use_PrEP_F_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_old) &
+# Should be run.params$p_use_PrEP_F_old->intervention.params$p_use_PrEP_F_too_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_old,intervention.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_neversex->intervention.params$p_use_PrEP_F_too_old
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_too_old->intervention.params$p_use_PrEP_F_too_old:
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_PrEP_F_too_old,intervention.params$p_use_PrEP_F_too_old) &
+# Should be run.params$p_use_PrEP_F_neversex->intervention.params$p_use_PrEP_F_too_old:
+check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_PrEP_F_neversex,intervention.params$p_use_PrEP_F_too_old) 
+
+
+
+####################################################
+###VMMC checks:                                    #
+####################################################
+
+
+# Should be run.params$p_use_VMMC_neversex->run.params$p_use_VMMC_neversex
+vmmc.1 <- check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(13,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% 0,run.params$p_use_VMMC_neversex,run.params$p_use_VMMC_neversex) &
+# Should be run.params$p_use_VMMC_neversex->run.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_neversex,run.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_neversex->run.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(28,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_neversex,run.params$p_use_VMMC_old) &
+# Should be run.params$p_use_VMMC_neversex->run.params$p_use_VMMC_too_old
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(53,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_neversex,run.params$p_use_VMMC_too_old) & 
+# Should be run.params$p_use_VMMC_too_young->run.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_too_young,run.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_young->run.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_young,run.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_young->run.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_young,run.params$p_use_VMMC_old) &
+# Should be run.params$p_use_VMMC_old->run.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_old,run.params$p_use_VMMC_old) &
+# Should be run.params$p_use_VMMC_old->run.params$p_use_VMMC_too_old
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_old,run.params$p_use_VMMC_too_old) &
+# Should be run.params$p_use_VMMC_too_old->run.params$p_use_VMMC_too_old:
+check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_VMMC_too_old,run.params$p_use_VMMC_too_old)
+
+
+
+
+
+
+
+
+#data.all$id[data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000) & data.all$p_will_get_VMMC.x==0 & data.all$p_will_get_VMMC.y==0.2351]
+
+#data.all$id[data.all$p_will_get_VMMC.x==0.2351]
+#data.all[data.all$id %in% c(583,631,719,745),]
+
+
+############################
+# VMMC intervention:
+
+
+# Should be run.params$p_use_VMMC_neversex->intervention.params$p_use_VMMC_neversex
+vmmc.2 <- check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z, data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% 0,run.params$p_use_VMMC_neversex,intervention.params$p_use_VMMC_neversex) & 
+# Should be run.params$p_use_VMMC_neversex->intervention.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_VMMC_neversex,intervention.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_neversex->intervention.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(28,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_VMMC_neversex,intervention.params$p_use_VMMC_old) &
+# Should be run.params$p_use_VMMC_neversex->intervention.params$p_use_VMMC_too_old
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(53,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),run.params$p_use_VMMC_neversex,intervention.params$p_use_VMMC_too_old) &
+# Should be run.params$p_use_VMMC_too_young->intervention.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_too_young,intervention.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_young->intervention.params$p_use_VMMC_young
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_young,intervention.params$p_use_VMMC_young) &
+# Should be run.params$p_use_VMMC_young->intervention.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_young,intervention.params$p_use_VMMC_old) &
+# ERROR: Should be run.params$p_use_VMMC_old->intervention.params$p_use_VMMC_old
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_old,intervention.params$p_use_VMMC_old) &
+# Should be run.params$p_use_VMMC_old->intervention.params$p_use_VMMC_too_old
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_old,intervention.params$p_use_VMMC_too_old) &
+# Should be run.params$p_use_VMMC_too_old->intervention.params$p_use_VMMC_too_old:
+check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),run.params$p_use_VMMC_too_old,intervention.params$p_use_VMMC_too_old)
+
+
+
+
+
+
+#####################################################
+# Condom use:
+#####################################################
+
+#data.all$id[data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000) & data.all$p_will_use_PrEP.x==0 & data.all$p_will_use_PrEP.y==0]
+#Need to find out why these epople don't change probability of getting PrEP once aged 15:
+#[1] 2019
+
+###### Long-term partners:
+
+# Should be run.params$p_use_cond_casual_M_young->run.params$p_use_cond_casual_M_young
+cond.lt.1 <- check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,run.params$p_use_cond_casual_M_young) &
+# Should be run.params$p_use_cond_casual_M_young->run.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,run.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_M_old->run.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_old,run.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_F_young->run.params$p_use_cond_casual_F_young
+check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,run.params$p_use_cond_casual_F_young) &
+# Should be run.params$p_use_cond_casual_F_young->run.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,run.params$p_use_cond_casual_F_old) &
+# Should be run.params$p_use_cond_casual_F_old->run.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_old,run.params$p_use_cond_casual_F_old)
+
+
+#######################
+# intervention:
+# Should be run.params$p_use_cond_casual_M_young->intervention.params$p_use_cond_casual_M_young
+cond.lt.2 <- check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,intervention.params$p_use_cond_casual_M_young) &
+# Should be run.params$p_use_cond_casual_M_young->intervention.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,intervention.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_M_old->intervention.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_old,intervention.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_F_young->intervention.params$p_use_cond_casual_F_young
+check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,intervention.params$p_use_cond_casual_F_young) &
+# Should be run.params$p_use_cond_casual_F_young->intervention.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,intervention.params$p_use_cond_casual_F_old) &
+# Should be run.params$p_use_cond_casual_F_old->intervention.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_old,intervention.params$p_use_cond_casual_F_old)
+
+
+
+
+# Casual:
+# Should be run.params$p_use_cond_casual_M_young->run.params$p_use_cond_casual_M_young
+cond.cas.1 <- check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,run.params$p_use_cond_casual_M_young) &
+# Should be run.params$p_use_cond_casual_M_young->run.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,run.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_M_old->run.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_old,run.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_F_young->run.params$p_use_cond_casual_F_young
+check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,run.params$p_use_cond_casual_F_young) &
+# Should be run.params$p_use_cond_casual_F_young->run.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,run.params$p_use_cond_casual_F_old) &
+# Should be run.params$p_use_cond_casual_F_old->run.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_old,run.params$p_use_cond_casual_F_old)
+
+#intervention:
+# Should be run.params$p_use_cond_casual_M_young->intervention.params$p_use_cond_casual_M_young
+cond.cas.2 <- check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,intervention.params$p_use_cond_casual_M_young) &
+# Should be run.params$p_use_cond_casual_M_young->intervention.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_young,intervention.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_M_old->intervention.params$p_use_cond_casual_M_old
+check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M",run.params$p_use_cond_casual_M_old,intervention.params$p_use_cond_casual_M_old) &
+# Should be run.params$p_use_cond_casual_F_young->intervention.params$p_use_cond_casual_F_young
+check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,intervention.params$p_use_cond_casual_F_young) &
+# Should be run.params$p_use_cond_casual_F_young->intervention.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_young,intervention.params$p_use_cond_casual_F_old) &
+# Should be run.params$p_use_cond_casual_F_old->intervention.params$p_use_cond_casual_F_old
+check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F",run.params$p_use_cond_casual_F_old,intervention.params$p_use_cond_casual_F_old)
+
+
+
+
+checks <- data.frame(c("prep.m.1","prep.f.1","prep.m.2","prep.f.2","vmmc.1","vmmc.2","cond.lt.1","cond.lt.2","cond.cas.1","cond.cas.2"),c(prep.m.1,prep.f.1,prep.m.2,prep.f.2,vmmc.1,vmmc.2,cond.lt.1,cond.lt.2,cond.cas.1,cond.cas.2))
+names(checks) <- c("Var","Check")
+
+return(checks)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################
+count.check  <- function(data.all)
+{
+count.prep.m.1 <- make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y, data.all$n_lifetime_partners.y %in% 0 & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) +
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M"  & data.all$n_lifetime_partners.x %in% seq(1,1000))) +
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M"  & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000)))     
+#2341
+
+
+# Count for women:
+
+#check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),run.params$p_use_PrEP_F_young,run.params$p_use_PrEP_F_young) &
+
+count.prep.f.1 <- make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y, data.all$n_lifetime_partners.y %in% 0 & data.all$Sex %in% "F")) +
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000)))
+make.integer(tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000)))
+
+
+###################
+# Now intervention:
+##################
+count.prep.m.2 <- make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z, data.all$n_lifetime_partners.z %in% 0 & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000)))
+### 2341
+
+
+                                        # Now women:
+
+count.prep.f.2 <- make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z, data.all$n_lifetime_partners.z %in% 0 & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000)))
+make.integer(tabulate.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000)))
+
+    
+
+
+
+
+
+#VMMC:
+###
+#Counts:
+count.vmmc.1 <- make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(13,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% 0)) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(28,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(53,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M"  & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000)))
+#2341
+
+# VMMC intervention:
+count.vmmc.2 <- make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z, data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% 0)) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(28,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(53,100) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000))) + 
+make.integer(tabulate.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000)))
+#2341
+
+
+
+
+# Condom use counts:
+count.cond.lt.m.1 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M"))
+#2341
+
+count.cond.lt.f.1 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F")) 
+#2320
+
+# intervention:
+count.cond.lt.m.2 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M"))
+#2341
+
+count.cond.lt.f.2 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F"))
+#2320
+
+
+
+# Casual:
+count.cond.cas.m.1 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M"))
+#2341
+
+count.cond.cas.f.1 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F"))
+#2320
+
+#intervention:
+count.cond.cas.m.2 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M"))
+#2341
+
+count.cond.cas.f.2 <- make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F")) + 
+make.integer(tabulate.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F")) 
+#2320
+n.m <- as.integer(table(data.all$Sex.x)["M"])
+n.f <- as.integer(table(data.all$Sex.x)["F"])
+
+
+count.checks <- data.frame(c("count.prep.m.1","count.prep.f.1","count.prep.m.2","count.prep.f.2","count.vmmc.1","count.vmmc.2","count.cond.lt.m.1","count.cond.lt.f.1","count.cond.lt.m.2","count.cond.lt.f.2","count.cond.cas.m.1","count.cond.cas.f.1","count.cond.cas.m.2","count.cond.cas.f.2"),c(count.prep.m.1,count.prep.f.1,count.prep.m.2,count.prep.f.2,count.vmmc.1,count.vmmc.2,count.cond.lt.m.1,count.cond.lt.f.1,count.cond.lt.m.2,count.cond.lt.f.2,count.cond.cas.m.1,count.cond.cas.f.1,count.cond.cas.m.2,count.cond.cas.f.2),c(count.prep.m.1==n.m,count.prep.f.1==n.f,count.prep.m.2==n.m,count.prep.f.2==n.f,count.vmmc.1==n.m,count.vmmc.2==n.m,count.cond.lt.m.1==n.m,count.cond.lt.f.1==n.f,count.cond.lt.m.2==n.m,count.cond.lt.f.2==n.f,count.cond.cas.m.1==n.m,count.cond.cas.f.1==n.f,count.cond.cas.m.2==n.m,count.cond.cas.f.2==n.f)
+                           )
+names(count.checks) <- c("Var","Count","CheckOK")
+
+return(count.checks)
+
+}
+
+###################################################################
+
+# Load up parameter file:
+params <- read.csv("../data/SAMPLED_PARAMETERS/PARAMS_COMMUNITY5/param_processed_patch0_barriers.csv",header=T,sep=" ")
+
+
+
+run <- 3
+
+run.params <- params[run,]
+rr.intervention <- run.params$reduction_non_use_intervention
+intervention.year <- run.params$t_start_prevention_cascade_intervention
+# Tidy up:
+run.params <- run.params[,!names(run.params) %in% c("X", "reduction_non_use_intervention","t_start_prevention_cascade_intervention")]
+
+intervention.params <- make.intervention.params(run.params, rr.intervention)
+
+
+t1 <- as.character(intervention.year-3) 
+t2 <- as.character(intervention.year-1)
+t3 <- as.character(intervention.year+1)
+
+data.t1 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t",t1,".csv"),header=T,sep=",")
+data.t2 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t",t2,".csv"),header=T,sep=",")
+data.t3 <- read.csv(paste0("../src/HIVPrevCasc_Indiv_run",as.character(run),"_t",t3,".csv"),header=T,sep=",")
+
+#data.t1 <- data.t1[seq(1,10000),]
+#data.t2 <- data.t2[seq(1,10000),]
+#data.t3 <- data.t3[seq(1,10000),]
 
 
 # Make results more readable:
@@ -53,233 +603,8 @@ names(data.all)[names(data.all)=="p_want_to_use_condom_casual_partner"] <- "p_wa
 data.all <- data.all[,!names(data.all) %in% c("Circ_status","Sex.y")]
 
 
- tabulate.data <- function(outcome.t1,outcome.t2,restrictions)
-{
-    
-    table(outcome.t1[restrictions],outcome.t2[restrictions])
-
-}
-
-check.data <- function(outcome.t1,outcome.t2,restrictions,value.t1,value.t2)
-{
-    
-    all(outcome.t1[restrictions]==value.t1) & all(outcome.t2[restrictions]==value.t2)
-
-}
+run.checks(data.all, run.params, intervention.params)
 
 
-
-
-
-
-
-
-####################################################
-###PrEP checks:                                    #
-####################################################
-
-
-# Should be 0->0
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0,0,0) & 
-# Should be 0->0.001
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.001) &
-# Should be 0->0
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0, 0, 0) &
-# Should be 0->0.003
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.003) &
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y, data.all$n_lifetime_partners.y %in% 0,0,0) &
-# Should be 0.001->0.001
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.001,0.001) &
-# Should be 0->0.001
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.001) &
-# Should be 0.001->0.002
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.001,0.002) &
-# Should be 0->0.002
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.002) &
-# ERROR: Should be 0.002->0.002
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.002,0.002) &
-#tabulate.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000))
-# Should be 0->0.002
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.002) &
-# Should be 0.002->0
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.002,0) &
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M",0,0)
-
-# Make sure the above is TRUE.
-
-
-###
-                                        # Now women:
-
-# Should be 0.003->0.003
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.003,0.003) &
-# Should be 0->0.003
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.003) &
-# Should be 0.003->0.004
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.003,0.004) &
-# Should be 0->0.004
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.004) &
-# ERROR: Should be 0.004->0.004
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.004,0.004) &
-# Should be 0->0.004
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% 0 & data.all$n_lifetime_partners.y %in% seq(1,1000),0,0.004) &
-# Should be 0.004->0
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.x %in% seq(1,1000),0.004,0) &
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.x,data.all$p_will_use_PrEP.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "F",0,0) 
-
-
-
-###################
-# Now intervention:
-##################
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z, data.all$n_lifetime_partners.z %in% 0,0,0) &
-# Should be 0.001->0.13
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.001,0.13) &
-# Should be 0->0.13
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.13) &
-# Should be 0.001->0.14
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.001,0.14) &
-# Should be 0->0.14
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.14) &
-# ERROR: Should be 0.002->0.14
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.002,0.14) &
-# Should be 0->0.14
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.14) &
-# Should be 0.002->0
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.002,0) &
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M",0,0)
-
-###
-                                        # Now women:
-
-# Should be 0.003->0.15
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.003,0.15) &
-# Should be 0->0.15
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(15,22) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.15) & 
-# Should be 0.003->0.16
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.003,0.16) &
-# Should be 0->0.16
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(23,24) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.16) &
-# ERROR: Should be 0.004->0.16
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.004,0.16) &
-# Should be 0->0.16
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(25,52) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% 0 & data.all$n_lifetime_partners.z %in% seq(1,1000),0,0.16) &
-# Should be 0.004->0
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "F" & data.all$n_lifetime_partners.y %in% seq(1,1000),0.004,0) &
-# Should be 0->0:
-check.data(data.all$p_will_use_PrEP.y,data.all$p_will_use_PrEP.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "F",0,0) 
-
-
-
-####################################################
-###VMMC checks:                                    #
-####################################################
-
-
-# Should be 0->0.05
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M",0,0.05) &
-# Should be 0.05->0.05
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(15,27) & data.all$Sex %in% "M",0.05,0.05) &
-# Should be 0.05->0.02
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(28,29) & data.all$Sex %in% "M",0.05,0.02) &
-# ERROR: Should be 0.02->0.02
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(30,52) & data.all$Sex %in% "M",0.02,0.02) &
-# Should be 0.02->0
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% c(53,54) & data.all$Sex %in% "M",0.02,0) &
-# Should be 0->0:
-check.data(data.all$p_will_get_VMMC.x,data.all$p_will_get_VMMC.y,data.all$Age.x %in% seq(55,500) & data.all$Sex %in% "M",0,0)
-
-
-############################
-# VMMC intervention:
-
-# Should be 0->0.11
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(13,14) & data.all$Sex %in% "M",0,0.11) &
-# Should be 0.05->0.11
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(15,27) & data.all$Sex %in% "M",0.05,0.11) &
-# Should be 0.05->0.12
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(28,29) & data.all$Sex %in% "M",0.05,0.12) &
-# ERROR: Should be 0.02->0.12
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(30,52) & data.all$Sex %in% "M",0.02,0.12) &
-# Should be 0.02->0
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% c(53,54) & data.all$Sex %in% "M",0.02,0) &
-# Should be 0->0:
-check.data(data.all$p_will_get_VMMC.y,data.all$p_will_get_VMMC.z,data.all$Age.y %in% seq(55,500) & data.all$Sex %in% "M",0,0)
-
-
-
-#####################################################
-# Condom use:
-#####################################################
-
-#data.all$id[data.all$Age.x %in% c(13,14) & data.all$Sex %in% "M" & data.all$n_lifetime_partners.y %in% seq(1,1000) & data.all$p_will_use_PrEP.x==0 & data.all$p_will_use_PrEP.y==0]
-#Need to find out why these epople don't change probability of getting PrEP once aged 15:
-#[1] 2019
-
-###### Long-term partners:
-
-# Should be 0.009->0.009
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M",0.009,0.009) &
-# Should be 0.009->0.010
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M",0.009,0.010) &
-# Should be 0.010->0.010
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M",0.010,0.010) &
-# Should be 0.011->0.011
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F",0.011,0.011) &
-# Should be 0.011->0.012
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F",0.011,0.012) &
-# Should be 0.012->0.012
-check.data(data.all$p_want_to_use_condom_long_term_partner.x,data.all$p_want_to_use_condom_long_term_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F",0.012,0.012)
-
-
-#######################
-# intervention:
-# Should be 0.009->0.21
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M",0.009,0.21) &
-# Should be 0.009->0.22
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M",0.009,0.22) &
-# Should be 0.010->0.22
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M",0.010,0.22) &
-# Should be 0.011->0.23
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F",0.011,0.23) &
-# Should be 0.011->0.24
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F",0.011,0.24) &
-# Should be 0.012->0.24
-check.data(data.all$p_want_to_use_condom_long_term_partner.y,data.all$p_want_to_use_condom_long_term_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F",0.012,0.24)
-
-
-
-
-# Casual:
-# Should be 0.005->0.005
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,27) & data.all$Sex %in% "M",0.005,0.005) &
-# Should be 0.005->0.006
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(28,29) & data.all$Sex %in% "M",0.005,0.006) &
-# Should be 0.006->0.006
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(30,500) & data.all$Sex %in% "M",0.006,0.006) &
-# Should be 0.007->0.007
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(13,22) & data.all$Sex %in% "F",0.007,0.007) &
-# Should be 0.007->0.008
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(23,24) & data.all$Sex %in% "F",0.007,0.008) &
-# Should be 0.008->0.008
-check.data(data.all$p_want_to_use_condom_casual_partner.x,data.all$p_want_to_use_condom_casual_partner.y,data.all$Age.x %in% seq(25,500) & data.all$Sex %in% "F",0.008,0.008)
-
-#intervention:
-# Should be 0.005->0.17
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,27) & data.all$Sex %in% "M",0.005,0.17) &
-# Should be 0.005->0.18
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(28,29) & data.all$Sex %in% "M",0.005,0.18) &
-# Should be 0.006->0.18
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(30,500) & data.all$Sex %in% "M",0.006,0.18) &
-# Should be 0.007->0.19
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(13,22) & data.all$Sex %in% "F",0.007,0.19) &
-# Should be 0.007->0.20
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(23,24) & data.all$Sex %in% "F",0.007,0.20) &
-# Should be 0.008->0.20
-check.data(data.all$p_want_to_use_condom_casual_partner.y,data.all$p_want_to_use_condom_casual_partner.z,data.all$Age.y %in% seq(25,500) & data.all$Sex %in% "F",0.008,0.20)
+count.check(data.all)
 

@@ -3,6 +3,7 @@ p_use_VMMC_too_young 0.0  // Annual probability of getting VMMC pre-intervention
 p_use_VMMC_young [0.1977-0.2506]  // VMMC pre-intervention M aged 15-29
 p_use_VMMC_old [0.0831-0.1188]  // VMMC pre-intervention M aged 30-55
 p_use_VMMC_too_old 0.0  // VMMC pre-intervention M aged >55 - assumed zero.
+p_use_VMMC_neversex 0.0  // VMMC pre-intervention M if never had sex.
 p_use_PrEP_M_too_young 0.0  // PrEP pre-intervention M aged <15 - assumed zero.
 p_use_PrEP_M_young [0.0001-0.0074]  // PrEP pre-intervention M aged 15-29
 p_use_PrEP_M_old [0.0005-0.0073]  // PrEP pre-intervention M aged 30-55

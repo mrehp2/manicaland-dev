@@ -5128,7 +5128,7 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 		
 		N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(aa+AGE_ADULT,g,indiv->n_lifetime_partners)][indiv->PrEP_cascade_status]++;
 		if(g==MALE)
-		    N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(aa+AGE_ADULT)][indiv->circ]++;
+		    N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(aa+AGE_ADULT,indiv->n_lifetime_partners)][indiv->circ]++;
 
 		/* Adds counts for condom use to relevant arrays. */
 		add_to_condom_use_prevention_cascade_counts(aa,g,indiv,N_LT_partnerships_use_condom,N_alwaysusecondom_with_LTpartner,N_casual_partnerships_use_condom,N_alwaysusecondom_with_casualpartner);
@@ -5144,7 +5144,7 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	    
 	    N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(MAX_AGE,g,indiv->n_lifetime_partners)][indiv->PrEP_cascade_status]++;
 	    if(g==MALE)
-		N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(MAX_AGE)][indiv->circ]++;
+		N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(MAX_AGE,indiv->n_lifetime_partners)][indiv->circ]++;
 
 	    /* Adds counts for condom use to relevant arrays. */
 	    add_to_condom_use_prevention_cascade_counts(MAX_AGE,g,indiv,N_LT_partnerships_use_condom,N_alwaysusecondom_with_LTpartner,N_casual_partnerships_use_condom,N_alwaysusecondom_with_casualpartner);
@@ -5324,6 +5324,9 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	    break;
 	case i_VMMC_PREVENTIONBARRIER_TOO_OLD_M:
 	    strncpy(group_text, "55+", 19);	    
+	    break;
+	case i_VMMC_PREVENTIONBARRIER_NEVERSEX_M:
+	    strncpy(group_text, "neversex", 19);	    
 	    break;
 	default:
 	    printf("Error - unknown value of i_VMMC=%i in write_population_HIVpreventioncascade(). Exiting\n",i);

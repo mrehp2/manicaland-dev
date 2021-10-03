@@ -1448,6 +1448,8 @@ void print_hiv_params(parameters *param){
     printf("param->p_child_circ_vmmc=%lg\n",param->p_child_circ_vmmc);
     printf("param->eff_circ_vmmc=%lg\n",param->eff_circ_vmmc);
     printf("param->eff_circ_tmc=%lg\n",param->eff_circ_tmc);
+    printf("param->eff_circ_hsv2_vmmc=%lg\n",param->eff_circ_hsv2_vmmc);
+    printf("param->eff_circ_hsv2_tmc=%lg\n",param->eff_circ_hsv2_tmc);
     printf("param->rr_circ_unhealed=%lg\n",param->rr_circ_unhealed);
     printf("param->eff_prep_semiadherent=%lg\n",param->eff_prep_semiadherent);
     printf("param->eff_prep_adherent=%lg\n",param->eff_prep_adherent);
@@ -1852,6 +1854,22 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
+
+    if (param->eff_circ_hsv2_vmmc<0.3 || param->eff_circ_hsv2_vmmc>0.8){
+        printf("Error: param->eff_circ_hsv2_vmmc is outside expected range [0.3,0.8]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->eff_circ_hsv2_tmc<0.0 || param->eff_circ_hsv2_tmc>param->eff_circ_hsv2_vmmc){
+        printf("Error: param->eff_circ_hsv2_tmc is outside expected range [0.0,param->eff_circ_hsv2_vmmc]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    
     if (param->rr_circ_unhealed<0 || param->rr_circ_unhealed>3){
         printf("Error: param->rr_circ_unhealed is outside expected range [0,3]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);

@@ -422,6 +422,10 @@ typedef struct {
 
     double eff_circ_vmmc;         /* Effectiveness of VMMC circumcision.  */
     double eff_circ_tmc;         /* Effectiveness of traditional male circumcision.  */
+
+    double eff_circ_hsv2_vmmc;         /* Effectiveness of VMMC circumcision on HSV-2 acquisition.  */
+    double eff_circ_hsv2_tmc;         /* Effectiveness of traditional male circumcision on HSV-2 acquisition.  */
+
     double rr_circ_unhealed; /* Increased susceptibilty to HIV during VMMC healing period (ie just after operation).   */
 
     double eff_prep_semiadherent;

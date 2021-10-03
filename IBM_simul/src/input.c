@@ -21,6 +21,7 @@
 #include "input.h"
 #include "constants.h"
 #include "utilities.h"
+#include<math.h>
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -683,6 +684,16 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_adherent_hsv2));
         check_if_cannot_read_param(checkreadok, "param_local->eff_prep_adherent_hsv2");
 	
+	    
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_circ_hsv2_vmmc));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_circ_hsv2_vmmc");
+	printf("eff_circ_hsv2_vmmc=%lf\n",param_local->eff_circ_hsv2_vmmc);
+
+	
+	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_circ_hsv2_tmc));
+        check_if_cannot_read_param(checkreadok, "param_local->eff_circ_hsv2_tmc");
+	printf("eff_circ_hsv2_tmc=%lf\n",param_local->eff_circ_hsv2_tmc);
+
 	
     }
     // Close parameter file
@@ -2583,7 +2594,16 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
 	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
+	    if(i_barrier_group==1 && i_run==1)
+		printf("Using hack to make p_use_VMMC annual. Please adjust!\n");
+	    //printf("i=%i before param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
+	    param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention] = 1- pow(1- param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention],1/6.0);
+	    //printf("i=%i after param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
+	    
 	}
+
+	
+
 	    
 	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
 	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]));

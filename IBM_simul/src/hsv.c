@@ -112,7 +112,14 @@ void hsv2_acquisition(individual* susceptible, double time_infect, patch_struct 
 	else if (susceptible->PrEP_cascade_status==ONPREP_SEMIADHERENT)
 	    total_hazard_per_timestep = total_hazard_per_timestep * (1.0-patch[p].param->eff_prep_semiadherent_hsv2);
     }
-    
+
+    /* Reduced susceptibility if VMMC or TMC respectively: */
+    if (susceptible->gender==MALE){
+	if (susceptible->circ==VMMC)
+	    total_hazard_per_timestep = total_hazard_per_timestep * (1.0-patch[p].param->eff_circ_hsv2_vmmc);
+	if (susceptible->circ==TRADITIONAL_MC)
+	    total_hazard_per_timestep = total_hazard_per_timestep * (1.0-patch[p].param->eff_circ_hsv2_tmc);
+    }
     
     double x = gsl_rng_uniform (rng);
     if(x <= total_hazard_per_timestep){

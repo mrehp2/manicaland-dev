@@ -1049,7 +1049,7 @@ if __name__=="__main__":
     mortality_sweave_code_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
 
 
-    # Analysis of PC0 partnership data:
+    # Analysis of Manicaland partnership data:
     partnership_analysis_dir = join(homedir, "Dropbox (SPH Imperial College)", "Manicaland", "Cohort_analysis")
 
     

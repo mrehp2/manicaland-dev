@@ -1,11 +1,17 @@
 import glob,sys,os
 import shutil   # For copying files
-nruns = 10000
 
 
-dir_root = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_05_09/"
+dir_root = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_testOct2021/"
 
-output_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/"
+output_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT_TEMP/params/"
+
+if(not(os.path.isdir(output_dir))):
+    try:
+        os.makedirs(output_dir)
+    except:
+        print "Error - need to make directiry ",output_dir
+        sys.exit()
 
 likelihood_fits_file = open(dir_root+"/goodfits.txt","r")
 run_numbers = [int(x.split()[1]) for x in likelihood_fits_file.read().splitlines()]

@@ -16,7 +16,7 @@ source("HIV_prevention_cascade_plots_validation.R")
 
 # Run data checks on a run (I pick run 2 randomly - can use others):
 # Arguments are: run number, intervention.prep, intervention.VMMC, intervention.cond
-data.checks(2,1,1,1)
+data.checks(2,0,0,0)
 
 load.plot.data <- function(resultsdir,run,intervention.prep,intervention.VMMC,intervention.cond)
 {
@@ -552,6 +552,16 @@ print.last.timepoint.data <- function(data.list){
 }
 
 
+extract.data.timepoints<- function(time.var, this.var,timepoints)
+{
+    n.timepoints <- length(timepoints)
+    for(t in timepoints){
+        i <- which(time.var==t)
+        print(c(t,i,min(this.var[i,]),max(this.var[i,]),mean(this.var[i,])))
+    }
+}
+                                                        
+
 
 
 ################################################################
@@ -561,17 +571,40 @@ print.last.timepoint.data <- function(data.list){
 
 resultsdir <- "../results/RESULTS/Output/"
 
-intervention.prep <- 1
-intervention.VMMC <- 1
-intervention.cond <- 1
-
+intervention.prep <- 0
+intervention.VMMC <- 0
+intervention.cond <- 0
+nruns <- 100
 
 # For testing:
 run <- 1
 run1.data <- load.plot.data(resultsdir,run,intervention.prep,intervention.VMMC,intervention.cond)
 
         
-all.data <- get.data.as.list(resultsdir,3, intervention.prep,intervention.VMMC,intervention.cond)
+all.data <- get.data.as.list(resultsdir, nruns, intervention.prep,intervention.VMMC,intervention.cond)
+
+
+
+extract.data.timepoints(all.data$t, all.data$prop.VMMC.15.29.store, 2019)
+extract.data.timepoints(all.data$t, all.data$prop.VMMC.30.54.store, 2019)
+
+
+extract.data.timepoints(all.data$t, all.data$prop.always.cond.LT.M.lt30.store, 2019)
+#[1] 2.019000e+03 1.190000e+02 4.093098e-02 1.867518e-01 9.315953e-02
+
+extract.data.timepoints(all.data$t, all.data$prop.always.cond.LT.M.30plus.store, 2019)
+#[1] 2.019000e+03 1.190000e+02 5.505651e-03 1.261446e-01 4.415514e-02
+
+extract.data.timepoints(all.data$t, all.data$prop.partnerships.use.cond.LT.M.lt30.store, 2019)
+#[1] 2019.0000000  119.0000000    0.2091530    0.2593939    0.2371129
+
+extract.data.timepoints(all.data$t, all.data$prop.partnerships.use.cond.LT.M.30plus.store, 2019)
+#[1] 2019.0000000  119.0000000    0.1874482    0.2225884    0.2059495
+
+extract.data.timepoints(all.data$t, all.data$prop.partnerships.use.cond.LT.F.lt25.store, 2019)
+#[1] 2019.0000000  119.0000000    0.2036643    0.2575172    0.2330386
+extract.data.timepoints(all.data$t, all.data$prop.partnerships.use.cond.LT.F.25plus.store, 2019)
+#[1] 2019.0000000  119.0000000    0.1877825    0.2290839    0.2092104
 
 
 
@@ -604,7 +637,7 @@ lines.cols<- c(brewer.pal(n = 11, name = "RdYlBu")[10], brewer.pal(n = 9, name =
 
 # Voluntary male medical circumcision:
 temp.data.list <- list(all.data$prop.VMMC.lt.15.store, all.data$prop.VMMC.15.29.store, all.data$prop.VMMC.30.54.store, all.data$prop.VMMC.55.plus.store, all.data$prop.VMMC.store)
-multi.age.sex.polygon.plot(all.data$t, temp.data.list, polygon.cols, lines.cols, "VMMC coverage by age group", "% of men in age group who have VMMC", scale.as.percentage=TRUE, x.range=c(2000,2030), y.range=c(0,100), x.legend=2001, y.legend=95, plot.legend=c("<15","15-29","30-54","55+","All ages"), legend.title="Age group")
+multi.age.sex.polygon.plot(all.data$t, temp.data.list, polygon.cols, lines.cols, "VMMC coverage by age group", "% of men in age group who have VMMC", scale.as.percentage=TRUE, x.range=c(2000,2030), y.range=c(0,30), x.legend=2001, y.legend=95, plot.legend=c("<15","15-29","30-54","55+","All ages"), legend.title="Age group")
 
 
 # Traditional male circumcision:
@@ -614,7 +647,7 @@ multi.age.sex.polygon.plot(all.data$t, temp.data.list, polygon.cols, lines.cols,
 
 # Any male circumcision:
 temp.data.list <- list(all.data$prop.circ.lt.15.store, all.data$prop.circ.15.29.store, all.data$prop.circ.30.54.store, all.data$prop.circ.55.plus.store, all.data$prop.circ.store)
-multi.age.sex.polygon.plot(all.data$t, temp.data.list, polygon.cols, lines.cols, "Circumcision by age group", "% of men in age group who are circumcised", scale.as.percentage=TRUE, x.range=c(2000,2030), y.range=c(0,100), x.legend=2001, y.legend=95, plot.legend=c("<15","15-29","30-54","55+","All ages"), legend.title="Age group")
+multi.age.sex.polygon.plot(all.data$t, temp.data.list, polygon.cols, lines.cols, "Circumcision by age group", "% of men in age group who are circumcised", scale.as.percentage=TRUE, x.range=c(2000,2030), y.range=c(0,40), x.legend=2001, y.legend=25, plot.legend=c("<15","15-29","30-54","55+","All ages"), legend.title="Age group")
 
 
 

@@ -1,0 +1,1128 @@
+\documentclass{article}
+
+%%% Choosing the margins of the document %%%
+\usepackage{geometry}
+\geometry{a4paper, portrait, margin=1in}
+%%% Package to make sure figures are in right section %%%
+\usepackage[section]{placeins}
+%%% package for colours
+\usepackage{color}
+\usepackage{lscape}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+%%% Some options to make the R code look nicer in Sweave %%%
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=2em}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=2em}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=2em}
+\fvset{listparameters={\setlength{\topsep}{0pt}}}
+\renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+
+<<echo=FALSE>>=
+
+require(xtable)
+library(RColorBrewer)
+require(plotrix)
+library("readxl")
+
+
+#######################
+# Colours
+#######################
+
+my_rainbow <- c("hotpink","purple","blue","royalblue1","cyan","green","gold","orange2","red","brown","grey","black")
+
+polygon.cols<- c(brewer.pal(n = 11, name = "RdYlBu")[8],brewer.pal(n = 9, name = "Reds")[3],brewer.pal(n = 9, name = "Greens")[3],brewer.pal(n = 11, name = "BrBG")[4],brewer.pal(n = 11, name = "PuOr")[5])
+
+lines.cols<- c(brewer.pal(n = 11, name = "RdYlBu")[10], brewer.pal(n = 9, name = "Reds")[7], brewer.pal(n = 9, name = "Greens")[7], brewer.pal(n = 11, name = "BrBG")[2], brewer.pal(n = 11, name = "PuOr")[7])
+
+
+
+#######################
+# Miscellaneous functions:
+#######################
+nm1<-function(x) format(round(unname(x), 1), nsmall = 0)
+nm2<-function(x) format(round(unname(x), 1), nsmall = 1)
+nm3<-function(x) format(round(unname(x), 2), nsmall = 2)
+nm4<-function(x) format(round(unname(x), 3), nsmall = 3)
+
+make.annualoutput.filenames <- function(n.runs,rootdir,scenario){
+    if(scenario==0){
+        file.tag <- ""
+    }else if (scenario==1){
+        file.tag <- "PrEP1_VMMC1_cond1"
+    }else if (scenario==2){
+        file.tag <- "PrEP1_VMMC0_cond0"
+    }else if (scenario==3){
+        file.tag <- "PrEP0_VMMC1_cond0"
+    }else if (scenario==4){
+        file.tag <- "PrEP0_VMMC0_cond1"
+    }
+    
+    file.names <- rep("",n.runs)
+    for (i in 1:n.runs)
+    {
+        file.names[i] <- paste0(rootdir,"/Annual_outputs_CL05_Zim_patch0_Rand1_Run",as.character(i),"_0",file.tag,".csv")
+    }
+    return(file.names)
+}
+
+
+calculate.annual.number.from.cumulative <- function(cumulative.var)
+{
+    n.timepoints <- length(cumulative.var)
+    cumulative.last.year <- c(0,cumulative.var[1:n.timepoints-1])
+    annual.number <- cumulative.var - cumulative.last.year
+    return(annual.number)
+
+}
+
+
+# Use this to get CI for Manicaland data:
+get.ci <- function(indata)
+{
+    n <- sum(table(indata))
+    p <- prop.table(table(indata))["Positive"]
+    ci <- c(p-1.96*sqrt(p*(1-p)/n),p+1.96*sqrt(p*(1-p)/n))
+    return(100*ci)
+}
+
+
+get.data.as.list <- function(list.of.filenames)
+{
+    nruns <- length(list.of.filenames)
+
+    for (i in seq(nruns))
+    {
+        model.filename <- list.of.filenames[i]
+
+        annual.output.data.thisrun <- read.csv(model.filename,header=T)
+        
+        year <- annual.output.data.thisrun$Year
+        
+        prevalence <- annual.output.data.thisrun$Prevalence
+        incidence <- annual.output.data.thisrun$Incidence
+        totalpop <- annual.output.data.thisrun$TotalPopulation
+        npopm <- annual.output.data.thisrun$PopulationM
+        npopf <- annual.output.data.thisrun$PopulationF
+        prop.lowrisk <- annual.output.data.thisrun$Prop_riskLow
+        prop.medrisk <- annual.output.data.thisrun$Prop_riskMed
+        prop.highrisk <- annual.output.data.thisrun$Prop_riskHigh
+        
+        npop.pos.m <- annual.output.data.thisrun$NumberPositiveM
+        npop.pos.f <- annual.output.data.thisrun$NumberPositiveF
+        
+        prev.lowrisk <- annual.output.data.thisrun$Prevalence_riskLow
+        prev.medrisk <- annual.output.data.thisrun$Prevalence_riskMed
+        prev.highrisk <- annual.output.data.thisrun$Prevalence_riskHigh
+        
+        
+        prop.hivposonart <- annual.output.data.thisrun$PropHIVPosONART
+        n.needART.m <- annual.output.data.thisrun$NNeedARTM
+        n.needART.f <- annual.output.data.thisrun$NNeedARTM
+        n.onART.m <- annual.output.data.thisrun$NOnARTM
+        n.onART.f <- annual.output.data.thisrun$NOnARTF
+        frac.needART.onART.m <- annual.output.data.thisrun$NOnARTM/annual.output.data.thisrun$NNeedARTM
+        frac.needART.onART.f <- annual.output.data.thisrun$NOnARTF/annual.output.data.thisrun$NNeedARTF
+        
+        
+        prop.m.circ <- annual.output.data.thisrun$PropMenCirc
+        n.womenwaitingPrEP <- annual.output.data.thisrun$N_women_waiting_PrEP
+        n.womenonPrEP.adherent.under25 <- annual.output.data.thisrun$N_women_on_PrEP_adherent_under25
+        n.womenonPrEP.adherent.25plus <- annual.output.data.thisrun$N_women_on_PrEP_adherent_25plus
+        n.womenonPrEP.semiadherent.under25 <- annual.output.data.thisrun$N_women_on_PrEP_semiadherent_under25
+        n.womenonPrEP.semiadherent.25plus <- annual.output.data.thisrun$N_women_on_PrEP_semiadherent_25plus
+        n.menonPrEP.adherent <- annual.output.data.thisrun$N_men_on_PrEP_adherent
+        n.menonPrEP.semiadherent <- annual.output.data.thisrun$N_men_on_PrEP_semiadherent
+
+        n.mtct.transmissions <- annual.output.data.thisrun$N_mother_to_child_transmissions
+        n.mtct.deaths <- annual.output.data.thisrun$N_mother_to_child_transmissions_deaths
+        n.mtct.alive.agefourteen <- annual.output.data.thisrun$N_mother_to_child_transmissions_alive_age14
+        frac.mtct.alive.onART.agefourteen <- annual.output.data.thisrun$N_mother_to_child_transmissions_alive_age14 / annual.output.data.thisrun$N_mother_to_child_transmissions_alive_onARTage14
+
+        
+        # Turn cumulative number of people died into annual total:
+        ndied <- calculate.annual.number.from.cumulative(annual.output.data.thisrun$N_dead)
+        # Fraction of deaths in a year that are from HIV (numerator excludes people who were HIV+ but died for other reasons):
+        frac.diedfromhiv <- calculate.annual.number.from.cumulative(annual.output.data.thisrun$NDied_from_HIV) / ndied
+
+    
+        n.hsv2.m <- annual.output.data.thisrun$nprevalent_hsv2_m
+        n.hsv2.f <- annual.output.data.thisrun$nprevalent_hsv2_f
+    
+        incidence.hsv2 <- annual.output.data.thisrun$annual_incident_hsv2
+    
+	
+        n.hivtests <- annual.output.data.thisrun$NHIVTestedThisYear
+        frac.acute.infections <- annual.output.data.thisrun$NewCasesThisYearFromAcute / annual.output.data.thisrun$NewCasesThisYear
+
+        npos.weighted <- annual.output.data.thisrun$NPosMage13.18*weight.hiv.agegp1.m/annual.output.data.thisrun$NMage13.18 + 
+            annual.output.data.thisrun$NPosMage18.23*weight.hiv.agegp2.m/annual.output.data.thisrun$NMage18.23 + 
+            annual.output.data.thisrun$NPosMage23.30*weight.hiv.agegp3.m/annual.output.data.thisrun$NMage23.30 + 
+            annual.output.data.thisrun$NPosMage30.40*weight.hiv.agegp4.m/annual.output.data.thisrun$NMage30.40 + 
+            annual.output.data.thisrun$NPosMage40.50*weight.hiv.agegp5.m/annual.output.data.thisrun$NMage40.50 +
+            annual.output.data.thisrun$NPosMage50.60*weight.hiv.agegp6.m/annual.output.data.thisrun$NMage50.60 +
+            annual.output.data.thisrun$NPosMage60.80*weight.hiv.agegp7.m/annual.output.data.thisrun$NMage60.80+
+            annual.output.data.thisrun$NPosFage13.18*weight.hiv.agegp1.f/annual.output.data.thisrun$NFage13.18 + 
+            annual.output.data.thisrun$NPosFage18.23*weight.hiv.agegp2.f/annual.output.data.thisrun$NFage18.23 + 
+            annual.output.data.thisrun$NPosFage23.30*weight.hiv.agegp3.f/annual.output.data.thisrun$NFage23.30 +
+            annual.output.data.thisrun$NPosFage30.40*weight.hiv.agegp4.f/annual.output.data.thisrun$NFage30.40 +
+            annual.output.data.thisrun$NPosFage40.50*weight.hiv.agegp5.f/annual.output.data.thisrun$NFage40.50 + 
+            annual.output.data.thisrun$NPosFage50.60*weight.hiv.agegp6.f/annual.output.data.thisrun$NFage50.60 +
+            annual.output.data.thisrun$NPosFage60.80*weight.hiv.agegp7.f/annual.output.data.thisrun$NFage60.80
+
+
+         
+        n.weighted <- weight.hiv.agegp1.m + weight.hiv.agegp1.f + weight.hiv.agegp2.m + weight.hiv.agegp2.f + weight.hiv.agegp3.m + weight.hiv.agegp3.f + weight.hiv.agegp4.m + weight.hiv.agegp4.f + weight.hiv.agegp5.m + weight.hiv.agegp5.f + weight.hiv.agegp6.m + weight.hiv.agegp6.f + weight.hiv.agegp7.m + weight.hiv.agegp7.f       
+        HIVprev.weighted <- npos.weighted/n.weighted
+
+
+
+
+
+
+
+        
+        
+        
+        if(i==1){
+            t <- annual.output.data.thisrun$Year
+        
+            prevalence.store <- prevalence
+            incidence.store <- incidence
+            totalpop.store <- totalpop
+            npopm.store <- npopm
+            npopf.store <- npopf
+            prop.lowrisk.store <- prop.lowrisk
+            prop.medrisk.store <- prop.medrisk
+            prop.highrisk.store <- prop.highrisk
+            
+            npop.pos.m.store <- npop.pos.m
+            npop.pos.f.store <- npop.pos.f
+            
+            prev.lowrisk.store <- prev.lowrisk
+            prev.medrisk.store <- prev.medrisk
+            prev.highrisk.store <- prev.highrisk
+            
+            
+            prop.hivposonart.store <- prop.hivposonart
+            n.needART.m.store <- n.needART.m
+            n.needART.f.store <- n.needART.f
+            n.onART.m.store <- n.onART.m
+            n.onART.f.store <- n.onART.f
+            frac.needART.onART.m.store <- frac.needART.onART.m
+            frac.needART.onART.f.store <- frac.needART.onART.f
+        
+        
+            prop.m.circ.store <- prop.m.circ
+            n.womenwaitingPrEP.store <- n.womenwaitingPrEP
+            n.womenonPrEP.adherent.under25.store <- n.womenonPrEP.adherent.under25
+            n.womenonPrEP.adherent.25plus.store <- n.womenonPrEP.adherent.25plus
+            n.womenonPrEP.semiadherent.under25.store <- n.womenonPrEP.semiadherent.under25
+            n.womenonPrEP.semiadherent.25plus.store <- n.womenonPrEP.semiadherent.25plus
+            n.menonPrEP.adherent.store <- n.menonPrEP.adherent
+            n.menonPrEP.semiadherent.store <- n.menonPrEP.semiadherent
+            
+            n.mtct.transmissions.store <- n.mtct.transmissions
+            n.mtct.deaths.store <- n.mtct.deaths
+            n.mtct.alive.agefourteen.store <- n.mtct.alive.agefourteen
+            frac.mtct.alive.onART.agefourteen.store <- frac.mtct.alive.onART.agefourteen
+            ndied.store <- ndied
+            frac.diedfromhiv.store <- frac.diedfromhiv
+            
+    
+            n.hsv2.m.store <- n.hsv2.m
+            n.hsv2.f.store <- n.hsv2.f
+    
+            incidence.hsv2.store <- incidence.hsv2
+            n.hivtests.store <- n.hivtests
+            frac.acute.infections.store <- frac.acute.infections
+
+            HIVprev.weighted.store <- HIVprev.weighted
+
+            
+
+        }else{
+
+            prevalence.store <- cbind(prevalence.store,prevalence)
+            incidence.store <- cbind(incidence.store,incidence)
+            totalpop.store <- cbind(totalpop.store,totalpop)
+            npopm.store <- cbind(npopm.store,npopm)
+            npopf.store <- cbind(npopf.store,npopf)
+            prop.lowrisk.store <- cbind(prop.lowrisk.store,prop.lowrisk)
+            prop.medrisk.store <- cbind(prop.medrisk.store,prop.medrisk)
+            prop.highrisk.store <- cbind(prop.highrisk.store,prop.highrisk)
+            
+            npop.pos.m.store <- cbind(npop.pos.m.store,npop.pos.m)
+            npop.pos.f.store <- cbind(npop.pos.f.store,npop.pos.f)
+            
+            prev.lowrisk.store <- cbind(prev.lowrisk.store,prev.lowrisk)
+            prev.medrisk.store <- cbind(prev.medrisk.store,prev.medrisk)
+            prev.highrisk.store <- cbind(prev.highrisk.store,prev.highrisk)
+            
+            
+            prop.hivposonart.store <- cbind(prop.hivposonart.store,prop.hivposonart)
+            n.needART.m.store <- cbind(n.needART.m.store,n.needART.m)
+            n.needART.f.store <- cbind(n.needART.f.store,n.needART.f)
+            n.onART.m.store <- cbind(n.onART.m.store,n.onART.m)
+            n.onART.f.store <- cbind(n.onART.f.store,n.onART.f)
+            frac.needART.onART.m.store <- cbind(frac.needART.onART.m.store,frac.needART.onART.m)
+            frac.needART.onART.f.store <- cbind(frac.needART.onART.f.store,frac.needART.onART.f)
+        
+        
+            prop.m.circ.store <- cbind(prop.m.circ.store,prop.m.circ)
+            n.womenwaitingPrEP.store <- cbind(n.womenwaitingPrEP.store,n.womenwaitingPrEP)
+            n.womenonPrEP.adherent.under25.store <- cbind(n.womenonPrEP.adherent.under25.store,n.womenonPrEP.adherent.under25)
+            n.womenonPrEP.adherent.25plus.store <- cbind(n.womenonPrEP.adherent.25plus.store,n.womenonPrEP.adherent.25plus)
+            n.womenonPrEP.semiadherent.under25.store <- cbind(n.womenonPrEP.semiadherent.under25.store,n.womenonPrEP.semiadherent.under25)
+            n.womenonPrEP.semiadherent.25plus.store <- cbind(n.womenonPrEP.semiadherent.25plus.store,n.womenonPrEP.semiadherent.25plus)
+            n.menonPrEP.adherent.store <- cbind(n.menonPrEP.adherent.store,n.menonPrEP.adherent)
+            n.menonPrEP.semiadherent.store <- cbind(n.menonPrEP.semiadherent.store,n.menonPrEP.semiadherent)
+            
+            n.mtct.transmissions.store <- cbind(n.mtct.transmissions.store,n.mtct.transmissions)
+            n.mtct.deaths.store <- cbind(n.mtct.deaths.store,n.mtct.deaths)
+            n.mtct.alive.agefourteen.store <- cbind(n.mtct.alive.agefourteen.store,n.mtct.alive.agefourteen)
+            frac.mtct.alive.onART.agefourteen.store <- cbind(frac.mtct.alive.onART.agefourteen.store,frac.mtct.alive.onART.agefourteen)
+            ndied.store <- cbind(ndied.store,ndied)
+            frac.diedfromhiv.store <- cbind(frac.diedfromhiv.store,frac.diedfromhiv)
+                
+            n.hsv2.m.store <- cbind(n.hsv2.m.store,n.hsv2.m)
+            n.hsv2.f.store <- cbind(n.hsv2.f.store,n.hsv2.f)
+    
+            incidence.hsv2.store <- cbind(incidence.hsv2.store,incidence.hsv2)
+            n.hivtests.store <- cbind(n.hivtests.store,n.hivtests)
+            frac.acute.infections.store <- cbind(frac.acute.infections.store,frac.acute.infections)
+
+            HIVprev.weighted.store <- cbind(HIVprev.weighted.store,HIVprev.weighted)
+
+        }
+    }
+
+
+
+    data.store <- list(t=t,
+    prevalence.store=prevalence.store,
+    incidence.store=incidence.store,
+    totalpop.store=totalpop.store,
+    npopm.store=npopm.store,
+    npopf.store=npopf.store,
+    prop.lowrisk.store=prop.lowrisk.store,
+    prop.medrisk.store=prop.medrisk.store,
+    prop.highrisk.store=prop.highrisk.store,
+    npop.pos.m.store=npop.pos.m.store,
+    npop.pos.f.store=npop.pos.f.store,
+    prev.lowrisk.store=prev.lowrisk.store,
+    prev.medrisk.store=prev.medrisk.store,
+    prev.highrisk.store=prev.highrisk.store,
+    prop.hivposonart.store=prop.hivposonart.store,
+    n.needART.m.store=n.needART.m.store,
+    n.needART.f.store=n.needART.f.store,
+    n.onART.m.store=n.onART.m.store,
+    n.onART.f.store=n.onART.f.store,
+    frac.needART.onART.m.store=frac.needART.onART.m.store,
+    frac.needART.onART.f.store=frac.needART.onART.f.store,
+    prop.m.circ.store=prop.m.circ.store,
+    n.womenwaitingPrEP.store=n.womenwaitingPrEP.store,
+    n.womenonPrEP.adherent.under25.store=n.womenonPrEP.adherent.under25.store,
+    n.womenonPrEP.adherent.25plus.store=n.womenonPrEP.adherent.25plus.store,
+    n.womenonPrEP.semiadherent.under25.store=n.womenonPrEP.semiadherent.under25.store,
+    n.womenonPrEP.semiadherent.25plus.store=n.womenonPrEP.semiadherent.25plus.store,
+
+    n.menonPrEP.adherent.store=n.menonPrEP.adherent.store,
+    n.menonPrEP.semiadherent.store=n.menonPrEP.semiadherent.store,
+
+    n.mtct.transmissions.store=n.mtct.transmissions.store,
+    n.mtct.deaths.store=n.mtct.deaths.store,
+    n.mtct.alive.agefourteen.store=n.mtct.alive.agefourteen.store,
+    frac.mtct.alive.onART.agefourteen.store=frac.mtct.alive.onART.agefourteen.store,
+    ndied.store=ndied.store,
+    frac.diedfromhiv.store=frac.diedfromhiv.store,
+    n.hsv2.m.store=n.hsv2.m.store,
+    n.hsv2.f.store=n.hsv2.f.store,
+    incidence.hsv2.store=incidence.hsv2.store,
+    n.hivtests.store=n.hivtests.store,
+    frac.acute.infections.store=frac.acute.infections.store,
+    HIVprev.weighted.store=HIVprev.weighted.store)
+
+
+    return(data.store)
+}
+
+
+plot.polygon <- function(t,ylowerpolygon,yupperpolygon,ymean,ylowerdotted,yupperdotted,polygon.col,lines.col,firstpolygon,x.range,y.range,plot.title,y.axis.label)
+{
+
+    alpha.adjust <- 0.3
+    #unadjusted.col <- colorRampPalette(c(polygon.cols[1], "black"))(100)[50]
+    
+    if (firstpolygon==1){
+        # Type="n" means don't draw anything:
+        plot(t,ymean,type="n",lty=1,lwd=0.5, ,xlab="",ylab=y.axis.label,cex.lab=1.4,cex.axis=1.4,xlim=x.range,ylim = y.range,main=plot.title,cex.main=1.2)
+    }
+    t.max <- t[length(t)]
+    t.min <- t[1]
+
+    polygon(x=c(t,t.max,rev(t),t.min),
+        y=c(ylowerpolygon,ylowerpolygon[length(ylowerpolygon)],rev(yupperpolygon),yupperpolygon[1]),col=adjustcolor(polygon.col,alpha.f=alpha.adjust),border=NA)
+    lines(t,ymean,lwd=2,,col=lines.col)
+    if (!(is.na(ylowerdotted))){
+        lines(t,ylowerdotted,lwd=1,lty=3,col=lines.col)
+        lines(t,yupperdotted,lwd=1,lty=3,col=lines.col)
+    }
+    
+}
+
+
+
+
+# Multipurpose plot function for different barrier scenarios:
+plot.one.scenario <- function(t,baseline.data,lq,uq,x.range,y.range,plot.filename,plot.legend,plot.title,y.axis.label)
+{
+
+    if(!is.na(plot.filename)){
+        pdf(plot.filename)
+    }
+    
+        
+    plot.polygon(t=t,
+                 ylowerpolygon=apply(baseline.data,1,quantile,lq),
+                 yupperpolygon=apply(baseline.data,1,quantile,uq),
+                 ymean=apply(baseline.data,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=x.range,y.range=y.range,plot.title=plot.title,y.axis.label=y.axis.label)
+    
+
+    ## plot.polygon(t=t.opt,
+    ##              ylowerpolygon=apply(optimal.data,1,quantile,lq),
+    ##              yupperpolygon=apply(optimal.data,1,quantile,uq),
+    ##              ymean=rowMedians(optimal.data),
+    ##              ylowerdotted=NA,
+    ##              yupperdotted=NA,
+    ##              polygon.col=polygon.cols[3],lines.col=lines.cols[3],firstpolygon=0,x.range=x.range,y.range=y.range,plot.title=NA,y.axis.label=NA)
+
+    if(plot.legend==1)
+    {
+        legend("topleft",col=polygon.cols,legend=c("With barriers"),lty=1,lwd=4,bty="n",cex=1.1)
+    }
+    
+    if(!is.na(plot.filename)){
+        dev.off()
+    }
+
+}
+
+
+@ 
+
+<<echo=FALSE>>=
+
+# Load Manicaland cohort data:
+load("~/Documents/Manicaland/aivq_data/DataByRoundRenamed_Cleaned_short.Rdata")
+
+
+cohort.hiv.prevalence <- c(100*prop.table(table(r1data$hiv))["Positive"],100*prop.table(table(r2data$hiv))["Positive"],100*prop.table(table(r3data$hiv))["Positive"],100*prop.table(table(r4data$hiv))["Positive"],100*prop.table(table(r5data$hiv))["Positive"],100*prop.table(table(r5data$hiv))["Positive"])
+
+
+cohort.hiv.ci.r1 <- get.ci(r1data$hiv)
+cohort.hiv.ci.r2 <- get.ci(r2data$hiv)
+cohort.hiv.ci.r3 <- get.ci(r3data$hiv)
+cohort.hiv.ci.r4 <- get.ci(r4data$hiv)
+cohort.hiv.ci.r5 <- get.ci(r5data$hiv)
+cohort.hiv.ci.r6 <- get.ci(r6data$hiv)
+
+
+# People in R6 who have age and gender (N=8799):
+npop <- sum(table(r6data$age,r6data$gender))
+# Create weights for HIV:
+weight.hiv.agegp1.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(13,17)])["M"])
+weight.hiv.agegp1.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(13,17)])["F"])
+
+weight.hiv.agegp2.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(18,22)])["M"])
+weight.hiv.agegp2.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(18,22)])["F"])
+
+weight.hiv.agegp3.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(23,29)])["M"])
+weight.hiv.agegp3.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(23,29)])["F"])
+
+weight.hiv.agegp4.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(30,39)])["M"])
+weight.hiv.agegp4.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(30,39)])["F"])
+
+weight.hiv.agegp5.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(40,49)])["M"])
+weight.hiv.agegp5.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(40,49)])["F"])
+
+weight.hiv.agegp6.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(50,59)])["M"])
+weight.hiv.agegp6.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(50,59)])["F"])
+
+# Last age group adds in the oldest_age_group (80+). Arbitratily use 150 as oldest age
+weight.hiv.agegp7.m <- as.numeric(table(r6data$gender[r6data$age %in% seq(60,150)])["M"])
+weight.hiv.agegp7.f <- as.numeric(table(r6data$gender[r6data$age %in% seq(60,150)])["F"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# General things used by various plots:
+n.runs <- 10
+
+min.age <- 15
+max.age <- 79
+age.gp.width <- 5
+
+n.age.groups <- (max.age+1-min.age)/age.gp.width
+age_groups_lab <- rep("",n.age.groups)
+for (i in 1:n.age.groups)
+{
+    i.age <- (i-1)*age.gp.width + min.age
+    age_groups_lab[i] <- paste(as.character(i.age),as.character(i.age+age.gp.width-1),sep="-")
+}
+
+#print("Remove this to fit all age groups")
+age_groups_lab <- c("15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64")
+
+col <-  rainbow(length(age_groups_lab))
+
+# These are the CIs we use for the shaded plot regions:
+lq <- 0.1
+uq <- 0.9
+
+t.range <- c(2020,2030)
+
+year <- 2020
+
+
+
+# last 0 that this is the baseline cascade scenario:
+annualoutput.filenames <- make.annualoutput.filenames(n.runs,"../params/Output",0)
+# No barriers:
+annualoutput.filenames.scenario2 <- make.annualoutput.filenames(n.runs,"../params/Output",1)
+# Remove PrEP barriers onlyL
+annualoutput.filenames.scenario3 <- make.annualoutput.filenames(n.runs,"../params/Output",2)
+
+all.data <- get.data.as.list(annualoutput.filenames)
+#data.run1 <- get.annual.output.model.data(annualoutput.filenames[1])
+all.data.scenario2 <- get.data.as.list(annualoutput.filenames.scenario2)
+all.data.scenario3 <- get.data.as.list(annualoutput.filenames.scenario3)
+#all.data.scenario4 <- get.data.as.list(annualoutput.filenames.scenario4)
+
+
+# This reads in an Excel spreadhseet of data I got from Louisa (r7 HSV-2, as of 6/10/2021):
+hsv2.data <- read_excel("/home/mike/Dropbox (SPH Imperial College)/Manicaland/Model/HSV-2/hsv2_baseline_lab_demographics_processed.xlsx",sheet="Table")
+
+cohort.survey.dates <- c(1999.2, 2002.54, 2004.583, 2007.833, 2010.833, 2013.21)
+    
+
+
+
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Calibration to HIV prevalence/awareness/on ART by age and sex}
+
+<<echo=FALSE>>=
+
+
+
+
+
+
+# Pull out the data from this file:
+get.model.data <- function(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+{
+    
+    age.groups <- seq(min.age,max.age,age.gp.width)
+    n.age.groups <- length(age.groups)
+    outcomes <- rep(0,n.age.groups)
+    for (age in age.groups)
+     {
+         i <- which(age.groups==age)
+         #print(i)
+         dataname1 <- paste0("CohortRound",as.character(r),outcome,gender,as.character(age))
+    
+
+         start.col <- which(colnames(model.data)==dataname1)
+         #print(start.col)
+         outcomes[i] <- sum(model.data[row,seq(start.col,start.col+(age.gp.width-1))])
+         #print(model.data[row,seq(start.col,start.col+(age.gp.width-1))])
+      }
+    return(outcomes)
+}
+
+
+    #plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r,survey.data.prev[[r]],survey.data.prev.denom[[r]])
+
+# plotrange is the y axis range.
+plot.stuff <- function(prev.m.allruns,prev.f.allruns,denom.m.allruns,denom.f.allruns,r,survey.data.p,survey.data.n,plotrange=c(0,30),plot.title)
+{
+    #prev.m.allruns <- prev.m
+    #prev.f.allruns <- prev.f
+    #denom.m.allruns <- denom.m.prev
+    #denom.f.allruns <- denom.f.prev
+    #survey.data.p <- survey.data.prev[[5]]
+    #survey.data.n <- survey.data.prev.denom[[5]]
+
+    # Y axis goes from 0-20% in increments of 5%:
+    tmp <- seq(plotrange[1],plotrange[2],10)
+    round.label <- paste0("Round ",as.character(r))
+
+    # Increase/reduce gap between M/F plots:
+    gap.adjustment.scale <- 5
+    # Used for plotting polygons:
+    height_of_a_bar <- 0.8
+
+    # Use this if doing a single plot only.
+#pyramid.plot(lx=prev.m,rx=prev.f,gap=max(tmp/gap.adjustment.scale),laxlab = tmp, raxlab = tmp, xlim=range(tmp), labels=age_groups_lab,main=round.label,unit="")
+
+
+    # Set up the plot axes:
+    dummy.data <- rep(0, length(age_groups_lab))
+    pyramid.plot(lx=dummy.data,rx=dummy.data,gap=max(tmp/gap.adjustment.scale),laxlab = tmp, raxlab = tmp, xlim=range(tmp), labels=age_groups_lab,main=round.label,unit="")
+
+
+    
+    # Plot HIV prevalence by age/gender:
+    for(k in 1:nruns)
+    {
+        for(a in 1:(length(age_groups_lab)))
+        {
+            x <- c(-prev.m.allruns[[k]][a],0,0,-prev.m.allruns[[k]][a]) - max(tmp)/gap.adjustment.scale
+            ymin <- a-height_of_a_bar/2+height_of_a_bar*(k-1)/nruns
+            ymax <- a-height_of_a_bar/2+height_of_a_bar*k/nruns
+            y <- c(ymin,ymin,ymax,ymax)
+            polygon(x,y,col=col[a],border = NA)
+            x <- c(prev.f.allruns[[k]][a],0,0,prev.f.allruns[[k]][a]) + max(tmp)/gap.adjustment.scale
+            polygon(x,y,col=col[a],border = NA)
+        }
+    }
+    # X axis label:
+    mtext(side=1,line=2.5,plot.title)
+
+                                        # Now plot the survey data and confidence interval:
+    n.survey.data <- length(survey.data.p)
+    n.survey.data.by.gender <- n.survey.data/2
+    
+    survey.prev.m <- 100*survey.data.p[1:min(n.survey.data.by.gender,length(age_groups_lab))]
+    survey.prev.f <- 100*survey.data.p[(n.survey.data.by.gender+1):min(n.survey.data,n.survey.data.by.gender+length(age_groups_lab))]
+    survey.prev.denom.m <- survey.data.n[1:min(n.survey.data.by.gender,length(age_groups_lab))]
+    survey.prev.denom.f <- survey.data.n[(n.survey.data.by.gender+1):min(n.survey.data,n.survey.data.by.gender+length(age_groups_lab))]
+
+    points(-survey.prev.m - max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)
+    points(survey.prev.f + max(tmp/gap.adjustment.scale),1:length(age_groups_lab),pch=19)
+
+    for(a in 1:(length(age_groups_lab)))
+    {
+        y <- survey.prev.m[a]
+        se <- 100*sqrt(survey.prev.m[a]/100*(1.0-survey.prev.m[a]/100)/survey.prev.denom.m[a])
+        
+        segments(-(y-1.96*se) - max(tmp)/gap.adjustment.scale,a, -(y+1.96*se) - max(tmp)/gap.adjustment.scale,a)
+
+
+        y <- survey.prev.f[a]
+        se <- 100*sqrt(survey.prev.f[a]/100*(1.0-survey.prev.f[a]/100)/survey.prev.denom.f[a])
+
+        segments((y-1.96*se) + max(tmp)/gap.adjustment.scale,a, (y+1.96*se) + max(tmp)/gap.adjustment.scale,a)
+
+    }
+}
+
+
+
+#group.survey.data(survey.data["HIV+",],survey.data["All",], min.age, max.age, age.gp.width)
+#numerator.ungrouped <- survey.data["HIV+",]
+#denominator.ungrouped <- survey.data["All",]
+group.survey.data  <- function(numerator.ungrouped, denominator.ungrouped, min.age, max.age, age.gp.width)
+{
+    both.genders <- c("M","F")
+    
+    n.age.groups.per.gender <- (max.age+1-min.age)/age.gp.width
+    n.age.groups <- length(both.genders)*n.age.groups.per.gender
+    outputs <- list()   # Store for prevalence and Ndenom.
+    prev <- rep(0,n.age.groups)
+    denom <- rep(0,n.age.groups)
+    for (g in 1:length(both.genders))
+    {
+        this.gender <- both.genders[g]
+        for (i in 1:n.age.groups.per.gender)
+        {
+            age <- min.age + (i-1)*age.gp.width
+            label <- paste0(this.gender,as.character(age))
+                                        # Index in the numerator/denominator
+            i.start <- which(colnames(numerator.ungrouped)==label)
+            numerator.sum <- sum(numerator.ungrouped[i.start:(i.start+age.gp.width-1)])
+            denominator.sum <- sum(denominator.ungrouped[i.start:(i.start+age.gp.width-1)])     
+            if (numerator.sum>denominator.sum)
+            {
+                print("Error - numerator>denominator")
+            }
+            if (denominator.sum>0)
+            {
+                prev[i+(g-1)*n.age.groups.per.gender] = numerator.sum/denominator.sum
+            } else {
+                prev[i+(g-1)*n.age.groups.per.gender] = 0
+            }
+            denom[i+(g-1)*n.age.groups.per.gender] <- denominator.sum
+
+        }
+    }
+    outputs <- list(prev,denom)
+    return(outputs)
+}
+
+
+#####################################################################
+#Main code:
+#####################################################################
+
+
+
+# This section makes the calibration plots to HIV prevalence, awareness, on ART by age and gender (the rainbow PopART-style plots).
+
+
+infile = "../../results/Calibration_data_bestfits.csv"
+
+model.data <- read.csv(infile,header=T)
+nruns <- dim(model.data)[1]
+
+# We use rounds 1+2 at present:
+rounds <- 4:6
+
+survey.data.prev <- list()
+survey.data.propaware <- list()
+survey.data.proponART <- list()
+survey.data.prev.denom <- list()
+survey.data.propaware.denom <- list()
+survey.data.proponART.denom <- list()
+
+
+for (r in rounds)
+{
+                                        # Read in survey data
+    survey.data <- read.csv(paste0("~/Dropbox (SPH Imperial College)/Manicaland/Model/CalibrationData/Manicalandr",as.character(r),"_calibration_data.txt"),sep=" ")
+
+    temp <- group.survey.data(survey.data["HIV+",],survey.data["All",], min.age, max.age, age.gp.width)
+    survey.data.prev[[r]] <- temp[[1]]
+    survey.data.prev.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.prev[[r]][is.na(survey.data.prev[[r]])] <- 0
+
+
+    temp <- group.survey.data(survey.data["AwareOfStatus",],survey.data["HIV+",], min.age, max.age, age.gp.width)
+    survey.data.propaware[[r]] <- temp[[1]]
+    survey.data.propaware.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.propaware[[r]][is.na(survey.data.propaware[[r]])] <- 0
+
+
+    temp <- group.survey.data(survey.data["OnART",],survey.data["AwareOfStatus",], min.age, max.age, age.gp.width)
+    survey.data.proponART[[r]] <- temp[[1]]
+    survey.data.proponART.denom[[r]] <- temp[[2]]
+    # Set NAs to zero:
+    #survey.data.proponART[[r]][is.na(survey.data.proponART[[r]])] <- 0
+    
+}
+
+@ 
+
+
+% Chunk here to generate pdfs in a for loop:
+<<results=tex,echo=FALSE>>=
+
+
+for (r in rounds)
+{
+    # was list(1:nruns)
+    denom.f.prev <- list()
+    numerator.f.prev <- list()
+    prev.f <- list()
+    denom.m.prev <- list()
+    numerator.m.prev <- list()
+    prev.m <- list()
+
+    denom.f.aware <- list()
+    numerator.f.aware <- list()
+    aware.f <- list()
+    denom.m.aware <- list()
+    numerator.m.aware <- list()
+    aware.m <- list()
+
+    denom.f.onart <- list()
+    numerator.f.onart <- list()
+    onart.f <- list()
+    denom.m.onart <- list()
+    numerator.m.onart <- list()
+    onart.m <- list()
+
+
+
+    for (row in 1:nruns)
+    {
+    
+    
+        outcome <- "Ntot"
+        gender <- "F"
+        denom.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Npos"
+        numerator.f.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Ntot"
+        gender <- "M"
+        denom.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Npos"
+        numerator.m.prev[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        ### Awareness
+        outcome <- "Npos"
+        gender <- "F"
+        denom.f.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Naware"
+        numerator.f.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Npos"
+        gender <- "M"
+        denom.m.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "Naware"
+        numerator.m.aware[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+
+        ### On ART:
+        outcome <- "Naware"
+        gender <- "F"
+        denom.f.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "NonART"
+        numerator.f.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+        outcome <- "Naware"
+        gender <- "M"
+        denom.m.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+        outcome <- "NonART"
+        numerator.m.onart[[row]] <- get.model.data(model.data,r,outcome,gender,row,min.age,max.age,age.gp.width)
+
+
+        
+        prev.f[[row]] <- 100*numerator.f.prev[[row]]/denom.f.prev[[row]]
+        prev.m[[row]] <- 100*numerator.m.prev[[row]]/denom.m.prev[[row]]
+
+        aware.f[[row]] <- 100*numerator.f.aware[[row]]/denom.f.aware[[row]]
+        aware.m[[row]] <- 100*numerator.m.aware[[row]]/denom.m.aware[[row]]
+
+        onart.f[[row]] <- 100*numerator.f.onart[[row]]/denom.f.onart[[row]]
+        onart.m[[row]] <- 100*numerator.m.onart[[row]]/denom.m.onart[[row]]
+
+    }
+
+
+    
+    file.name <- paste0("HIVprevalenceRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(prev.m,prev.f,denom.m.prev,denom.f.prev,r,survey.data.prev[[r]],survey.data.prev.denom[[r]],c(0,40),"HIV prevalence (%)")
+    dev.off()
+    # Hack to allow plotting in a for loop, which Sweave doesn't do (note - if I ever switch to knitr, then this can be done properly).
+    cat("\\noindent\\includegraphics[width=5cm]{", file.name, "}\n", sep="")
+    file.name <- paste0("HIVawareRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(aware.m,aware.f,denom.m.aware,denom.f.aware,r,survey.data.propaware[[r]],survey.data.propaware.denom[[r]],c(0,100),"% aware of status")
+    dev.off()
+    cat("\\includegraphics[width=5cm]{", file.name, "}\n", sep="")
+    # Set NAs to zero:
+    file.name <- paste0("HIVonARTRound",as.character(r),".pdf")
+    pdf(file.name)
+    plot.stuff(onart.m,onart.f,denom.m.onart,denom.f.onart,r,survey.data.proponART[[r]],survey.data.proponART.denom[[r]],c(0,100),"% on ART")
+    dev.off()
+    cat("\\includegraphics[width=5cm]{", file.name, "}\n\n", sep="")
+
+    
+}
+
+@ 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\section*{Validation of demographics}
+
+<<echo=FALSE>>=
+
+
+extract.model.age.dist <- function(model.data,t)
+{
+    i <- which(model.data$Time==t)
+    age.distribition <- model.data[i,seq(3,31)]
+    return(age.distribition)
+}
+
+
+extract.wpp.age.dist <- function(wpp.data.local,t)
+{
+    i <- which(wpp.data.local$Reference.date..as.of.1.July.==t)
+    #extract data aged 15-100:
+    wpp.data.extract <- cbind(wpp.data.local[i,seq(12,24)],sum(wpp.data.local[i,seq(25,28)]))
+    names(wpp.data.extract)[14] <- "X80+"
+    return(wpp.data.extract)
+}
+
+
+
+######################################################################
+# Main code:
+######################################################################
+
+
+# I made this by hand from the WPP 2019 data for Zimbabwe (using medium variant for future projections).
+wpp.data.m <- read.csv("/home/mike/Dropbox (SPH Imperial College)/Manicaland/Model/Population/Zimbabwe_WPP2019_M.csv",header=T,sep=",",stringsAsFactors=F)
+wpp.data.f <- read.csv("/home/mike/Dropbox (SPH Imperial College)/Manicaland/Model/Population/Zimbabwe_WPP2019_F.csv",header=T,sep=",",stringsAsFactors=F)
+
+wpp.data <- read.csv("/home/mike/Dropbox (SPH Imperial College)/Manicaland/Model/Population/Zimbabwe_WPP2019.csv",header=T,sep=",",stringsAsFactors=F)
+wpp.pop <- rowSums(wpp.data[,seq(7,27)])
+
+wpp.t <- wpp.data$Reference.date..as.of.1.July.
+
+
+wpp.pop.normalised <- wpp.pop * (all.data$totalpop.store[which(all.data$t==wpp.t[1]),1]/wpp.pop[1])
+
+
+
+wpp.m.distribition <- extract.wpp.age.dist(wpp.data.m,year)
+wpp.f.distribition <- extract.wpp.age.dist(wpp.data.f,year)
+
+# Normalise (to total population):
+wpp.m.distribition.norm <- wpp.m.distribition/sum(wpp.m.distribition+wpp.f.distribition)
+wpp.f.distribition.norm <- wpp.f.distribition/sum(wpp.f.distribition+wpp.f.distribition)
+
+
+
+create.normalised.model.data.m <- function(a.run,year)
+{
+    age.distribition.data <-read.csv(paste0("../params/Output/Age_distribution_check_CL05_Zim_patch0_Rand1_Run",as.character(a.run),"_0.csv"),header=T,sep=",")
+    age.distribition.model <- extract.model.age.dist(age.distribition.data,year)
+    age.distribition.model.m <- age.distribition.model[seq(1,14)]
+    #15 is F aged 13-14 so ignore:
+    age.distribition.model.f <- age.distribition.model[seq(16,29)]
+    # Normalise (to total population):
+    age.distribition.model.m.norm <- age.distribition.model.m/sum(age.distribition.model.m+age.distribition.model.f)
+    age.distribition.model.f.norm <- age.distribition.model.f/sum(age.distribition.model.m+age.distribition.model.f)
+
+    age.distribition.model.norm <- list(m=age.distribition.model.m.norm,f=age.distribition.model.f.norm)
+    return(age.distribition.model.norm)
+}
+
+
+ibm.run1 <- create.normalised.model.data.m(3,year)
+ibm.run2 <- create.normalised.model.data.m(7,year)
+ibm.run3 <- create.normalised.model.data.m(8,year)
+
+@ 
+
+
+<<AgepyramidM2020,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+#pdf(paste0("Age_pyramid_M_",as.character(year),".pdf"))
+data.to.plot <- 100*rbind(unlist(wpp.m.distribition.norm),unlist(ibm.run1$m),unlist(ibm.run2$m),unlist(ibm.run3$m))
+max.data <- ceiling(max(data.to.plot))
+this.plot <- barplot(data.to.plot,beside=T,main=paste0("Men aged 15 and over (",as.character(year),")"),xaxt="n",ylab="% of population in age group",ylim=c(0,max.data),col=c(polygon.cols[3],rep(polygon.cols[4],3)))
+axis(1, labels=c("15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"), at=this.plot[seq(1,length(this.plot),4)]+2, cex.axis =1.0,las=3)
+legend("topright",legend=c("WPP 2019 estimate","IBM runs"),fill=c(polygon.cols[3],polygon.cols[4]))
+#dev.off()
+@ 
+
+<<AgepyramidF2020,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+#pdf(paste0("Age_pyramid_F_",as.character(year),".pdf"))
+data.to.plot <- 100*rbind(unlist(wpp.f.distribition.norm),unlist(ibm.run1$f),unlist(ibm.run2$f),unlist(ibm.run3$f))
+max.data <- ceiling(max(data.to.plot))
+this.plot <- barplot(data.to.plot,beside=T,main=paste0("Women aged 15 and over (",as.character(year),")"),xaxt="n",ylab="% of population in age group",ylim=c(0,max.data),col=c(polygon.cols[3],rep(polygon.cols[4],3)))
+axis(1, labels=c("15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"), at=this.plot[seq(1,length(this.plot),4)]+2, cex.axis =1.0,las=3)
+legend("topright",legend=c("WPP 2019 estimate","IBM runs"),fill=c(polygon.cols[3],polygon.cols[4]))
+#dev.off()
+
+@ 
+
+
+\begin{figure}
+\includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-AgepyramidM2020} \includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-AgepyramidF2020} 
+
+\caption{Comparison of model and UNPD WPP 2019 population distribution by age in 2020 for men (left) and women (right).}
+\label{PopulationPyramid}
+\end{figure}
+
+
+
+
+
+
+
+
+<<population_growth,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+plot(all.data$t,all.data$totalpop.store[,1],type="l",col="gray",xlab="Year",ylab="Modelled population")
+for(i in seq(2,n.runs))
+{
+    lines(all.data$t,all.data$totalpop.store[,i],type="l",col="gray")
+}
+
+lines(wpp.t,wpp.pop.normalised,col="red",type="b")
+legend(1902,58000,legend=c("Model estimates","UNPD WPP 2019"),col=c("gray","red"),lty=c(1,2),pch=c(NA,"o"))
+
+@
+
+\begin{figure}
+\centering \includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-population_growth}
+
+\caption{Population growth over time in the calibrated IBM runs, compared to UNPD WPP 2019 (medium variant projections from 2020 onwards).}
+\label{populationgrowth}
+\end{figure}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\section*{HIV and HSV-2 prevalence trends}
+\bf{****Make these plots normalised to correct numbers:
+   - add in an output file that 
+
+<<HIVprevalence_trend_withdata,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+
+
+
+plot.polygon(t=all.data$t,
+             ylowerpolygon=apply(100*all.data$prevalence.store,1,quantile,lq),
+             yupperpolygon=apply(100*all.data$prevalence.store,1,quantile,uq),
+             ymean=apply(100*all.data$prevalence.store,1, median, na.rm = TRUE),
+             ylowerdotted=NA,
+             yupperdotted=NA,
+             polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=c(1970,2030),y.range=c(0,30),plot.title="Overall HIV prevalence",y.axis.label="HIV prevalence (%)")
+
+
+
+points(cohort.survey.dates,cohort.hiv.prevalence)
+
+arrows(cohort.survey.dates[1], cohort.hiv.ci.r1[1], cohort.survey.dates[1], cohort.hiv.ci.r1[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[2], cohort.hiv.ci.r2[1], cohort.survey.dates[2], cohort.hiv.ci.r2[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[3], cohort.hiv.ci.r3[1], cohort.survey.dates[3], cohort.hiv.ci.r3[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[4], cohort.hiv.ci.r4[1], cohort.survey.dates[4], cohort.hiv.ci.r4[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[5], cohort.hiv.ci.r5[1], cohort.survey.dates[5], cohort.hiv.ci.r5[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[6], cohort.hiv.ci.r6[1], cohort.survey.dates[6], cohort.hiv.ci.r6[2], length=0.05, angle=90, code=3, lwd=1.5)
+    
+legend("topleft",col=polygon.cols,legend=c("IBM estimate prevalence 15+"),lty=1,lwd=4,bty="n",cex=1.1)
+   
+
+@ 
+
+
+<<HIVprevalence_trend_withdataWeighted,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+
+plot.polygon(t=all.data$t,
+             ylowerpolygon=apply(100*all.data$HIVprev.weighted.store,1,quantile,lq),
+             yupperpolygon=apply(100*all.data$HIVprev.weighted.store,1,quantile,uq),
+             ymean=apply(100*all.data$HIVprev.weighted.store,1, median, na.rm = TRUE),
+             ylowerdotted=NA,
+             yupperdotted=NA,
+             polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=c(1970,2030),y.range=c(0,30),plot.title="Overall HIV prevalence (weighted by age and gender)",y.axis.label="HIV prevalence (%)")
+
+
+points(cohort.survey.dates,cohort.hiv.prevalence)
+
+arrows(cohort.survey.dates[1], cohort.hiv.ci.r1[1], cohort.survey.dates[1], cohort.hiv.ci.r1[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[2], cohort.hiv.ci.r2[1], cohort.survey.dates[2], cohort.hiv.ci.r2[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[3], cohort.hiv.ci.r3[1], cohort.survey.dates[3], cohort.hiv.ci.r3[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[4], cohort.hiv.ci.r4[1], cohort.survey.dates[4], cohort.hiv.ci.r4[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[5], cohort.hiv.ci.r5[1], cohort.survey.dates[5], cohort.hiv.ci.r5[2], length=0.05, angle=90, code=3, lwd=1.5)
+arrows(cohort.survey.dates[6], cohort.hiv.ci.r6[1], cohort.survey.dates[6], cohort.hiv.ci.r6[2], length=0.05, angle=90, code=3, lwd=1.5)
+
+legend("topleft",col=polygon.cols,legend=c("IBM estimate prevalence 14+"),lty=1,lwd=4,bty="n",cex=1.1)
+   
+
+@ 
+
+
+
+
+
+
+
+\begin{figure}
+\centering \includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-HIVprevalence_trend_withdata} \includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-HIVprevalence_trend_withdataWeighted}
+
+
+\caption{Overall HIV prevalence across IBM model fits, compared to Manicaland cohort data (error bars).}
+\label{HIVtrend}
+\end{figure} 
+
+
+
+<<HSV2prevalence_trend_withdata,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
+
+#######################
+# HSV-2 plot:
+hsv2.npos <- (all.data$n.hsv2.m.store + all.data$n.hsv2.f.store)/all.data$totalpop.store
+hsv2.npos.m <- 100*all.data$n.hsv2.m.store / all.data$npopm.store
+hsv2.npos.f <- 100*all.data$n.hsv2.f.store / all.data$npopf.store
+
+plot.polygon(t=all.data$t,
+                 ylowerpolygon=apply(hsv2.npos.m,1,quantile,lq),
+                 yupperpolygon=apply(hsv2.npos.m,1,quantile,uq),
+                 ymean=apply(hsv2.npos.m,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+                 polygon.col=polygon.cols[1],lines.col=lines.cols[1],firstpolygon=1,x.range=c(1980,2030),y.range=c(0,80),plot.title="HSV-2 prevalence by sex",y.axis.label="HSV-2 prevalence (%)")
+
+
+plot.polygon(t=all.data$t,
+                 ylowerpolygon=apply(hsv2.npos.f,1,quantile,lq),
+                 yupperpolygon=apply(hsv2.npos.f,1,quantile,uq),
+                 ymean=apply(hsv2.npos.f,1, median, na.rm = TRUE),
+                 ylowerdotted=NA,
+                 yupperdotted=NA,
+             polygon.col=polygon.cols[2],lines.col=lines.cols[2],firstpolygon=0,x.range=c(1980,2030),y.range=c(0,80),plot.title=NA,y.axis.label=NA)
+
+    
+legend(1980,80,col=polygon.cols,legend=c("Men","Women"),lty=1,lwd=4,bty="n",cex=1.1)
+
+# Use this to get at Louisa's data:
+#100*hsv2.data$Prevalence[hsv2.data$Sex %in% "Men" & hsv2.data$Age.group %in% "15-19"]
+    arrows(cohort.survey.dates[1], 100*hsv2.data$Min[hsv2.data$Sex %in% "Men" & hsv2.data$Age.group %in% "Overall"], cohort.survey.dates[1], 100*hsv2.data$Max[hsv2.data$Sex %in% "Men" & hsv2.data$Age.group %in% "Overall"], length=0.05, angle=90, code=3, lwd=1.5,col="darkblue")
+    arrows(cohort.survey.dates[1], 100*hsv2.data$Min[hsv2.data$Sex %in% "Women" & hsv2.data$Age.group %in% "Overall"], cohort.survey.dates[1], 100*hsv2.data$Max[hsv2.data$Sex %in% "Women" & hsv2.data$Age.group %in% "Overall"], length=0.05, angle=90, code=3, lwd=1.5,col="red")
+    
+    legend("topleft",col=polygon.cols,legend=c("IBM estimate prevalence 14+"),lty=1,lwd=4,bty="n",cex=1.1)
+   
+
+@
+
+\begin{figure}
+\centering \includegraphics[width=8cm]{HPC_5Oct2021_R1_R6-HSV2prevalence_trend_withdata} 
+
+
+\caption{Overall HSV-2 prevalence across IBM model fits by sex (red=female, blue=male), compared to Manicaland R7 cohort data (error bars). Note that the cohort data is mostly 15-29 years, so would expect to be lower.}
+\label{HIVtrend}
+\end{figure} 
+
+
+%plot.one.scenario(all.data$t,100*all.data$incidence.store, lq,uq,x.range=c(1970,2030),y.range=c(0,3),plot.filename="HIVincidence_trend.pdf",plot.legend=1,plot.title="Overall HIV incidence",y.axis.label="HIV incidence (%)")
+
+
+
+
+%plot.three.scenarios(all.data$t,100*all.data$prevalence.store, 100*all.data.scenario2$prevalence.store, 100*all.data.scenario3$prevalence.store, lq,uq,t.range,c(0,20),plot.filename="HIVprevalence_barrierscenarios.pdf",plot.legend=c("With barriers","10% reduced barriers","10% reduced PrEP barriers"),plot.title="Overall prevalence","Prevalence (%)")
+
+
+%plot.three.scenarios(all.data$t,100*all.data$incidence.store, 100*all.data.scenario2$incidence.store, 100*all.data.scenario3$incidence.store, lq,uq,t.range,c(0,2),plot.filename="HIVincidence_barrierscenarios.pdf",plot.legend=c("With barriers","10% reduced barriers","10% reduced PrEP barriers"),plot.title="Overall HIV incidence","HIV incidence (%)")
+
+
+
+
+\end{document}
+

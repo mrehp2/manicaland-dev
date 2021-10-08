@@ -127,7 +127,6 @@ int index_HIV_prevention_cascade_condom(int age, int g){
 
 /* Functions assign the probability of getting PrEP / VMMC / condom preferences
    based on characteristics (currently age, sex) as well as whether there's an intervention to remove barriers and increase usage at that time. */
-
 void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_PrEP_intervention_running_flag){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
@@ -135,12 +134,10 @@ void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, casc
 	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
 	printf("Age=%i gender=%i n_partners=%li\n",age,g,indiv->n_lifetime_partners);
     }
-    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)][i_PrEP_intervention_running_flag];    if(indiv->id==FOLLOW_INDIVIDUAL)
+    indiv->cascade_barriers.p_will_use_PrEP = barrier_params.p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)][i_PrEP_intervention_running_flag];
+    if(indiv->id==FOLLOW_INDIVIDUAL)
 	printf("Following change, PrEP probability is now %lf\n",indiv->cascade_barriers.p_will_use_PrEP);
-
-	
 }
-
 
 void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_VMMC_intervention_running_flag){
 
@@ -148,25 +145,18 @@ void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, casc
     indiv->cascade_barriers.p_will_get_VMMC = barrier_params.p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)][i_VMMC_intervention_running_flag];
 }
 
-
-
-
 void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params barrier_params, int i_condom_intervention_running_flag){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
     
     indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params.p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
     indiv->cascade_barriers.p_want_to_use_condom_casual_partner = barrier_params.p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
-
 }
 
 
 
-/* This function sets the probability of effectively using a method given the cascade barriers experienced by a person.
+/* This function sets the probability of effectively using a method given the cascade barriers experienced by a person, depending on their age, sex, and other individual covariates.
    Function is called in set_up_population() in init.c and create_new_individual() in demographics.c when MANICALAND_CASCADE==1.
-   ***It will also be called when the person transitions age groups (i.e. reaches 15 and 25/30 for F/M. ***
-   ***It will also be called if the barrier-removing intervention is called.*** 
-   Note that the minimum age for the populations is 15 (e.g. 15-24 year old women are a priority age group for PrEP), so the probability of starting PrEP when first entering the population *should* be zero, and we reset it when the person turns 15. 
 */
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params barrier_params, int scenario_flag){
 
@@ -542,6 +532,14 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 
     /* Store scenario for easier readability. */
     int intervention_scenario = patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
+    printf("Condom intervention scenario = %i\n",intervention_scenario);
+
+    /* Note - it is *wrong* to call this function if there is no condom intervention, as the second part of the function calls update_partnership_condom_use_in_response_to_intervention(). That function redraws condom use in partnerships where condoms are not already used - so increases condom use in the absence of an intervention. Hence this return statement is a safety catch: */
+    if(intervention_scenario==0){
+	printf("Should not be in function prevention_cascade_intervention_condom() when patch[p].param->barrier_params.i_condom_barrier_intervention_flag is 0. Please check what's happening.\n");
+	return;
+    }
+
     
     /* First - go through everyone, and alter their individual preference for condoms.
       */

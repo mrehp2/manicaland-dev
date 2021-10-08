@@ -64,7 +64,7 @@
 
 #define CHECK_AGE_LIST 0 // if 1 then write a file for run 1, patch 0, called check_age_list_temp.csv, in the current directory that contains the DoB of each alive person as a csv (each row is an age-year cohort, containing all the individuals in that element of age_list)
 
-#define DEBUG_HIV_PREVENTION_CASCADES 1 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
+#define DEBUG_HIV_PREVENTION_CASCADES 0 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
 
 #define WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS 0 // if 1 then writes files of the form Annual_partnerships_outputs_*.csv
 
@@ -103,7 +103,7 @@
 #define WRITE_DHS_CALIBRATION 0 /* Write DHS outputs to Calibration*.csv files. */
 #define PRINT_ALL_RUNS 1 /* Use this if you want to print everything regardless of fitting. */
 #define PRINT_EACH_RUN_OUTPUT 1 /* 0 if don't want to generate an output file for every run (when calibrating at present this is the case), or 1 if we do. */
-#define WRITE_EVERYTIMESTEP 1 /* Generates the files Timestep_outputs*.csv */
+#define WRITE_EVERYTIMESTEP 0 /* Generates the files Timestep_outputs*.csv */
 #define TIMESTEP_AGE 0 /* Generates the files Timestep_age_outputs_*.csv */
 #define PHYLO_PATCH 0                        /* At present just print phylo information from one patch. */
 #define WRITE_PHYLOGENETICS_OUTPUT 0 // 1    /* if 1 print phylo output to file, otherwise do not print */

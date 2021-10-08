@@ -1104,9 +1104,22 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    int tstep_prevention_cascade_intervention = (int) floor((patch[p].param->barrier_params.t_start_prevention_cascade_intervention-year_prevention_cascade_intervention)*N_TIME_STEP_PER_YEAR);
 
 	    if(t_step==tstep_prevention_cascade_intervention){
-		prevention_cascade_intervention_VMMC(t, patch, p);
-		prevention_cascade_intervention_PrEP(t, patch, p);
-		prevention_cascade_intervention_condom(t, patch, p);
+		if(patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag>0){
+		    prevention_cascade_intervention_VMMC(t, patch, p);
+		    printf("Running VMMC prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
+		}
+		
+		if(patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag>0){
+		    prevention_cascade_intervention_PrEP(t, patch, p);
+		    printf("Running PrEP prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
+		}
+		
+		if(patch[p].param->barrier_params.i_condom_barrier_intervention_flag>0){
+		    prevention_cascade_intervention_condom(t, patch, p);
+		    printf("Running condom prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_condom_barrier_intervention_flag,t);
+		}
+		    
+
 		if(VERBOSE_OUTPUT || PRINT_HIV_PREVENTION_CASCADE_INFO){
 		    printf("Running prevention cascade intervention at t=%lf. ",t);
 		    printf("Intervention scenarios: PrEP = %i VMMC = %i, condoms = %i \n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,patch[p].param->barrier_params.i_condom_barrier_intervention_flag);

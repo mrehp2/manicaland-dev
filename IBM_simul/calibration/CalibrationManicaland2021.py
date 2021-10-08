@@ -18,6 +18,7 @@ def read_calibration_file(infilename):
 
 def get_calibration_results_dirs(calibration_root_dir):
     possible_calibration_results_dirs = [x[0] for x in os.walk(calibration_root_dir)]
+
     # Now check that these are of the form "..../RESULTSX":
     checked_dirs = []
     pattern = re.compile("^(RESULTS[1-9]*[0-9]*)")
@@ -49,6 +50,7 @@ def check_calibration_files_consistent(dir_list):
     checked_files = []
     for i in range(len(dir_list)):
         potential_calibration_files = glob.glob(dir_list[i]+"/Output/Calibration*.csv")
+
         if potential_calibration_files==[]:
             potential_calibration_files = glob.glob(dir_list[i]+"/Calibration*.csv")
         for j in range(len(potential_calibration_files)):
@@ -61,7 +63,9 @@ def check_calibration_files_consistent(dir_list):
             else:
                 # if there is no "PCseed": 
                 if pcseed==-1:
-                    pattern = re.compile("Calibration_output_CL"+community+"_"+country+"__patch"+patchno+"_Rand[1-9]+[0-9]*_[0-9]+.csv")
+                    pattern = re.compile("Calibration_output_CL"+community+"_"+country+"_patch"+patchno+"_Rand[1-9]+[0-9]*_[0-9]+.csv")
+                    #pattern = re.compile("Calibration_output_CL"+community+"_"+country+"_patch"+patchno+"_Rand2_0.csv")
+
 
                     if not(pattern.match(f_name)):
                         print "Error: filename",f_name," does not match expected format with no pcseed"
@@ -119,7 +123,7 @@ def get_calibration_filenames_and_check_headers(calibration_root_dir):
     calibration_results_dirs = get_calibration_results_dirs(calibration_root_dir)
 
     # Find the files in those sub-directories, and check that they are all named the right way e.g. Calibration_output_CL05_Zim_V2.0_patch0_Rand1_PCseed0_0.csv 
-    check_calibration_files_consistent(calibration_results_dirs)
+    
     [calibration_files,community] = check_calibration_files_consistent(calibration_results_dirs)
 
     # Number of files
@@ -423,10 +427,12 @@ def Ramunajan_approximation(N):
 
 #h = hpy() 
 
-calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_05_09/"
+calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_testOct2021/"
 #calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/"
 
 [community, ibm_data_header, all_model_calibration_filenames, full_header_string] = get_calibration_filenames_and_check_headers(calibration_root_dir)
+
+
 
 #[community, ibm_data_header, model_data_array,full_header_string] = read_ibm_calibration_files(calibration_root_dir)
 print "Finished reading in IBM calibration files. Community=",community

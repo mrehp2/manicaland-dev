@@ -42,3 +42,7 @@
 #data/RAW_PRIORS/community_dictionary_withtrialarm.csv
 #data/GENERATED_PRIORS/
 #data/SAMPLED_PARAMETERS/
+
+
+# Some output files:
+HIVPrevCasc_Indiv_run*.csv

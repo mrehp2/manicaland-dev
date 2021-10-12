@@ -68,7 +68,12 @@ typedef struct{
 
     /* This is decided per partnership (based on the individual preferences of each person in the partnership), and remains fixed over the course of the partnership. */
     int use_condom_in_this_partnership[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
-    
+
+
+    /* Look-up tables for the increase in condom use when an intervention is implemented - we use these tables to draw whether people in a relationship at the time of the intervention who were not previously using condoms will start using condoms together. 
+       Arrays for different partnership types (LT/casual).
+       Indices are condom prevention group for male and female partner respectively. */
+
 }  cascade_barrier_struct;
 
 
@@ -89,6 +94,10 @@ typedef struct{
 
     /* Time (in years) when intervention starts. */
     double t_start_prevention_cascade_intervention;
+
+    double change_in_p_use_condom_LT[N_COND_PREVENTIONBARRIER_GROUPS_M][N_COND_PREVENTIONBARRIER_GROUPS_F];
+    double change_in_p_use_condom_casual[N_COND_PREVENTIONBARRIER_GROUPS_M][N_COND_PREVENTIONBARRIER_GROUPS_F];
+
     
 }cascade_barrier_params;
 

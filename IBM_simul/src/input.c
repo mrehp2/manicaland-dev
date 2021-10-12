@@ -21,6 +21,7 @@
 #include "input.h"
 #include "constants.h"
 #include "utilities.h"
+#include "cascades.h"
 #include<math.h>
 
 /************************************************************************/
@@ -2554,7 +2555,6 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
     FILE *param_file;
 
     int i_run;
-    int i_barrier_intervention; /* Loop over barrier intervention (no intervention/with intervention). */
     int i_barrier_group; /* Loop over the different sub-populations for that particular prevention method. */
     // This is a local temp variable we use so we don't have to keep 
     // writing allparameters+i_run (or equivalently &allparameters[i_run]).
@@ -2586,13 +2586,9 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
         param_local = allrunparameters + i_run;
 	checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.t_start_prevention_cascade_intervention));
 
-	//for (i_barrier_intervention=0; i_barrier_intervention<=1; i_barrier_intervention++){
-	/* Use this to just read in the pre-intervention values, with a multiplier for post-intervention: */
-	i_barrier_intervention=0;
-
-	
+	/* Read in the pre-intervention values - post-intervention is calculated afterwards with a multiplier. */
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]));
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][0]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
 	    //printf("i=%i after param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
 	    
@@ -2602,18 +2598,18 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 
 	    
 	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][i_barrier_intervention]));
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP[i_barrier_group][0]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP[][]");
 	}
 	    
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]));
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][0]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[][]");
 	}
 
 	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention];
+	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][0] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][0];
 	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
 	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
 	}
@@ -2652,7 +2648,10 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
 	}
 
-    
+	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention: */
+	printf("Run %i\n",i_run);
+	generate_intervention_increase_in_partnership_condom_use_lookuptable(&(param_local->barrier_params));
+
 	
 
     }

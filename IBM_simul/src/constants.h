@@ -407,6 +407,9 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define i_VMMC_PREVENTIONBARRIER_NEVERSEX_M 4
 
 #define N_COND_PREVENTIONBARRIER_GROUPS 4 // Number of groups that we subdivide the population into, for condoms (with both casual and long-term partners).
+/* Number of male/female groups that we subdivide the population into, for condoms (with both casual and long-term partners). *Note* the sum of these should equal N_COND_PREVENTIONBARRIER_GROUPS. */
+#define N_COND_PREVENTIONBARRIER_GROUPS_M 2 
+#define N_COND_PREVENTIONBARRIER_GROUPS_F 2 
 #define i_COND_PREVENTIONBARRIER_YOUNG_M 0
 #define i_COND_PREVENTIONBARRIER_OLD_M 1
 #define i_COND_PREVENTIONBARRIER_YOUNG_F 2

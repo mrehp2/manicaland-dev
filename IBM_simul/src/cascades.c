@@ -412,6 +412,31 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 
 
 
+void generate_intervention_increase_in_partnership_condom_use_lookuptable(cascade_barrier_params *barrier_params){
+
+    /* Index over M/F prevention barrier groups: */
+    int i_cond_preventionbarrier_group_M,i_cond_preventionbarrier_group_F;
+
+    for(i_cond_preventionbarrier_group_M=0; i_cond_preventionbarrier_group_M<N_COND_PREVENTIONBARRIER_GROUPS_M; i_cond_preventionbarrier_group_M++)
+	for(i_cond_preventionbarrier_group_F=0; i_cond_preventionbarrier_group_F<N_COND_PREVENTIONBARRIER_GROUPS_F; i_cond_preventionbarrier_group_F++){
+
+	    barrier_params->change_in_p_use_condom_casual[i_cond_preventionbarrier_group_M][i_cond_preventionbarrier_group_F] =
+		sqrt(barrier_params->p_use_cond_casual[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
+		sqrt(barrier_params->p_use_cond_casual[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
+    
+
+	    barrier_params->change_in_p_use_condom_LT[i_cond_preventionbarrier_group_M][i_cond_preventionbarrier_group_F] =
+		sqrt(barrier_params->p_use_cond_LT[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
+		sqrt(barrier_params->p_use_cond_LT[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
+	}    
+
+
+}
+
+
+
+
+
 /* Function called when a condom barrier prevention intervention occurs, potentially changing condom use in existing partnerships (*starting condom use in partnership where condoms were not used before*).
    Function called by ******. */
 void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, double duration_partnership){
@@ -421,6 +446,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
     double p_use_condom_partnerF_postintervention;
     
     double change_in_p_use_condom; /* We want to calculate what the extra probability of using a condom is; */
+    double change_in_p_use_condom_temp; /* We want to calculate what the extra probability of using a condom is; */    
     double x;  /* RV to see if condom is used or not. */
 
     int i_partner1, i_partner2; /* Indices for use_condom_in_this_partnership[] array. */ 
@@ -436,6 +462,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 	ageM = (int) floor(t-indiv1->DoB);
 	ageF = (int) floor(t-indiv2->DoB);
     }
+
 
     
     if (duration_partnership<1.0){
@@ -456,6 +483,25 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 
     /* Look at change in probability: */
     change_in_p_use_condom = sqrt(p_use_condom_partnerM_postintervention*p_use_condom_partnerF_postintervention) - sqrt(p_use_condom_partnerM_preintervention*p_use_condom_partnerF_preintervention);
+    
+    
+
+    /* Look at change in probability: */    
+    if (duration_partnership<1.0){
+	change_in_p_use_condom_temp = barrier_params.change_in_p_use_condom_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][index_HIV_prevention_cascade_condom(ageF,FEMALE)-N_COND_PREVENTIONBARRIER_GROUPS_M];
+    }
+    /* Long-term partnership: */
+    else{
+	change_in_p_use_condom_temp = barrier_params.change_in_p_use_condom_LT[index_HIV_prevention_cascade_condom(ageM,MALE)][index_HIV_prevention_cascade_condom(ageF,FEMALE)-N_COND_PREVENTIONBARRIER_GROUPS_M];
+
+    }
+
+    if(change_in_p_use_condom_temp!=change_in_p_use_condom){
+	if(index_HIV_prevention_cascade_condom(ageM,MALE)!=1)
+	    printf("%i %i %lf %lf %lf\n",index_HIV_prevention_cascade_condom(ageM,MALE),index_HIV_prevention_cascade_condom(ageF,FEMALE)-N_COND_PREVENTIONBARRIER_GROUPS_M,duration_partnership,change_in_p_use_condom_temp,change_in_p_use_condom);
+    }
+    
+    
     if (change_in_p_use_condom<0 || change_in_p_use_condom>1){
     	printf("Error: change in probability of using condom from intervention = %6.4lf. Exiting\n",change_in_p_use_condom);
     	exit(1);

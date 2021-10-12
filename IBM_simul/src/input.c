@@ -2649,7 +2649,6 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	}
 
 	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention: */
-	printf("Run %i\n",i_run);
 	generate_intervention_increase_in_partnership_condom_use_lookuptable(&(param_local->barrier_params));
 
 	

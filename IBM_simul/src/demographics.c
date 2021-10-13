@@ -2528,6 +2528,15 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                     // Assign dead person's CD4 count as being DEAD and assign date-of-death (DoD)
                     (person_dying)->cd4 = DEAD;
                     (person_dying)->DoD = t;
+
+		    /* Store in MIPHSA output if needed: */
+		    if(MIHPSA_MODULE==1){
+			int age_at_death = floor(t - person_dying->DoB);
+			if(age_at_death>=20 && age_at_death<=59)
+			    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[g] += 1;
+		    }
+
+
                     
                     update_age_list_death(patch[p].age_list, g, ai, 
                         (int) patch[p].new_deaths[i], t, p);
@@ -3050,6 +3059,10 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
     int aa, ai, age_list_index;
     int g = dead_person->gender;
 
+    
+    // Find age of the dead person when they died
+    int age = (int) floor(t - dead_person->DoB);
+    
     //print_here_string("individual_death_AIDS line",1466);
     //printf("Reached individual_death_AIDS() for individual %li in patch %i at t=%6.2f. Exiting\n",dead_person->id,dead_person->patch_no,t);
     //printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -3061,6 +3074,18 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
         fflush(stdout);
     }
     patch[p].OUTPUT_NDIEDFROMHIV++;
+
+    if(MIHPSA_MODULE==1){
+	if(age>=15){
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[g] += 1;
+	    if(age>=20 && age<=59){
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[g] += 1;
+	    }
+	}
+	else
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15 += 1;	    
+    }
+
     patch[p].n_died_from_HIV_by_risk[dead_person->sex_risk]++;
     
 
@@ -3076,8 +3101,6 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
     // If cost-effectiveness output is being recorded, record the amount of time of mortality that
     // was accumulated in the current year from this individual that died an HIV-related death.  
     if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){
-        // Find age of the dead person when they died
-        int age = (int) floor(t - dead_person->DoB);
         
         // Find the age index of this person (>=80 is its own category)
         // truncate >=80 to 80 so that indexing of FIND_AGE_GROUPS_UNPD works

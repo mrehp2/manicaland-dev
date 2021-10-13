@@ -539,7 +539,13 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         // Increment counters
         patch[p].n_newly_infected_total++;
         patch[p].n_newly_infected_total_by_risk[susceptible->sex_risk]++;
-        
+
+	if(MIHPSA_MODULE==1){
+	    int age = floor(time_infect - susceptible->DoB);
+	    if(age>=15 && age <=49)
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[susceptible->gender]++;
+	}
+		    
         if(susceptible->patch_no != infector->patch_no){
             patch[p].n_newly_infected_total_from_outside++;
         }
@@ -2642,6 +2648,13 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
         cumulative_outputs->N_total_HIV_tests_popart++; // Home-based CHiPs test - note we distinguish as allows economists to distinguish home/facility-based testing costs
         calendar_outputs->N_calendar_HIV_tests_popart[year_idx]++;
     }
+
+    if(MIHPSA_MODULE==1){
+	/* Count number of tests in age 15+: */
+	if (floor(t-indiv->DoB)>=15)
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[indiv->gender] += 1;
+    }
+    
     /* HIV test window for someone who IS infected (NOTE - this is coded as >UNINFECTED):
      * NOTE: we call this first as what we want to know is their HIV test result (not HIV status). */
     if (indiv->HIV_status > UNINFECTED){
@@ -2708,6 +2721,13 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
         calendar_outputs->N_calendar_HIV_tests_popart_positive[year_idx]++;
     }
 
+    if(MIHPSA_MODULE==1){
+	int age = floor(t - indiv->DoB);
+	if(age>=15 && age <=49)
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus++;
+    }
+	
+    
     if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
         printf("Adult %ld tested positive at time %6.4f\n",indiv->id,t);
         fflush(stdout);

@@ -1,1 +1,1 @@
-initial_adult_population_size 750 // FIXME - make 750 for calibration runs, 500 for testing parameters, and <500 for anything else (500 takes 20 secs).
+initial_adult_population_size 75 // FIXME - make 750 for calibration runs, 500 for testing parameters, and <500 for anything else (500 takes 20 secs).

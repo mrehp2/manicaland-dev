@@ -942,6 +942,16 @@ typedef struct{
 
 
 typedef struct{
+    long N_deaths_20_59[N_GENDER];
+    long N_AIDSdeaths_15plus[N_GENDER];
+    long N_AIDSdeaths_children_under15;
+    long N_HIVtests_15plus[N_GENDER];
+    long N_newHIVinfections_15to49[N_GENDER];
+    long N_newHIVdiagnoses_15plus;
+} cumulative_outputs_MIHPSA_struct;
+
+
+typedef struct{
     long N_total_CD4_tests_nonpopart; /* Cum. num CD4 tests done (excluding those from PopART). */
     long N_total_HIV_tests_nonpopart; /* Cum. num HIV tests done (excluding those from PopART). */
     long N_total_CD4_tests_popart; /* Cum. num of CD4 tests done by PopART. */
@@ -958,6 +968,9 @@ typedef struct{
     long N_total_seroconvert_while_on_PrEP;
     
     cumulative_outputs_MTCT_struct *cumulative_outputs_MTCT;
+
+    /* Store for MIHPSA Zimbabwe project (Oct 2021) */
+    cumulative_outputs_MIHPSA_struct *cumulative_outputs_MIHPSA;
 
 } cumulative_outputs_struct;
 
@@ -1175,6 +1188,9 @@ typedef struct{ /* structure which contains all the strings that are outputted *
     char *pc_output_string[NPATCHES];
     char *calibration_outputs_combined_string[NPATCHES];
 
+    char *MIHPSA_outputs_string[NPATCHES];
+
+    
     char *phylogenetics_output_string;
 
     char *hazard_output_string; /* Stores hazard and other factors (e.g. age, risk gp, partner in/outside community) to allow us to examine whether the average hazard is credible. */
@@ -1261,6 +1277,8 @@ typedef struct{
     FILE *ChipsVisit_DATAFILE[NPATCHES];
     char filename_chipsvisit_data[NPATCHES][LONGSTRINGLENGTH];
 
+    char filename_MIHPSA_outputs[NPATCHES][LONGSTRINGLENGTH];
+    
     /* Partnership-related files: */
     FILE *DUR_BETWEEN_HIGHHIGH;
     FILE *DUR_BETWEEN_MEDMED;

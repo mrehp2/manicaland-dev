@@ -37,6 +37,9 @@
 /****** For switching on and off different parts of the code ************/
 /************************************************************************/
 
+#define MIHPSA_MODULE 1 /* If 1, keep track of additional outcomes for Zimbabwe MIHPSA project, October 2021. */
+
+
 #define SIMPLE_PARTNERSHIP_CHECK 0 /* if 0 then normal simulation is run, otherwise check functions are run (checks certain outputs - partnership formations etc). */
 #define SWEEP_THROUGH_TO_CHECK_LISTS 0 /* if 1 then perform sweep through whole population once a year to check everyone is where they should be in list of susceptibles in serodiscordant partnerships and list of available partners
                                             NOTE THIS MAKES THE CODE VERY SLOW (because we sweep through every single every individual and their partners once a year for the whole simulation
@@ -544,6 +547,7 @@ double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
 
 #define HAZARD_OUTPUT_STRING_LENGTH 20000 // This stores the hazard and associated factors.
 
+#define MIHPSA_OUTPUT_STRING_LENGTH 500000 // Store for MIHPSA Zimbabwe output.
 
 
 /************************************************************************/

@@ -234,6 +234,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
     //memset(output->annual_outputs_string_knowserostatusandonart[p], '\0', SIZEOF_annual_outputs_tempstore*sizeof(char));
     /* Note we only blank calibration_outputs_combined_string every NRUNSPERWRITETOFILE runs - this is done in main.c at present. */
     memset(output->phylogenetics_output_string, '\0', PHYLO_OUTPUT_STRING_LENGTH*sizeof(char));
+    memset(output->MIHPSA_outputs_string[p], '\0', MIHPSA_OUTPUT_STRING_LENGTH*sizeof(char));
     memset(output->hazard_output_string, '\0', HAZARD_OUTPUT_STRING_LENGTH*sizeof(char));
     memset(output->cost_effectiveness_outputs_string[p], '\0',
         SIZEOF_cost_effectiveness_outputs_string*sizeof(char));
@@ -275,7 +276,6 @@ void alloc_output_memory(output_struct **output)
         (*output)->timestep_age_outputs_string_PConly[p] = (char *)calloc((N_TIME_STEP_PER_YEAR/OUTPUTTIMESTEP)*SIZEOF_annual_outputs_string, sizeof(char));
         (*output)->chips_output_string[p] = (char *)calloc(SIZEOF_annual_outputs_string, sizeof(char));
 
-
         //(*output)->annual_outputs_string_prevalence[p] = (char *)calloc(SIZEOF_annual_outputs_tempstore, sizeof(char));
         //(*output)->annual_outputs_string_knowserostatus[p] = (char *)calloc(SIZEOF_annual_outputs_tempstore, sizeof(char));
         //(*output)->annual_outputs_string_knowserostatusandonart[p] = (char *)calloc(SIZEOF_annual_outputs_tempstore, sizeof(char));
@@ -285,6 +285,7 @@ void alloc_output_memory(output_struct **output)
             (char *)calloc(SIZEOF_calibration_outputs, sizeof(char));
         (*output)->calibration_outputs_combined_string[p] = 
             (char *)calloc(SIZEOF_calibration_outputs, sizeof(char));
+	(*output)->MIHPSA_outputs_string[p] =  (char *)calloc(MIHPSA_OUTPUT_STRING_LENGTH, sizeof(char));
         (*output)->cost_effectiveness_outputs_string[p] = 
             (char *)calloc(SIZEOF_cost_effectiveness_outputs_string, sizeof(char));
         (*output)->art_status_by_age_sex_outputs_string[p] = (char *)calloc((N_TIME_STEP_PER_YEAR/OUTPUTTIMESTEP)*SIZEOF_calibration_outputs, sizeof(char));
@@ -908,6 +909,16 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
 
+	patch[p].cumulative_outputs->cumulative_outputs_MIHPSA  = malloc(sizeof(cumulative_outputs_MIHPSA_struct));
+        if(patch[p].cumulative_outputs->cumulative_outputs_MIHPSA==NULL)
+        {
+            printf("Unable to allocate cumulative_outputs->cumulative_outputs_MIHPSA in alloc_all_memory. Execution aborted.");
+            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+            exit(1);
+        }
+
+	
         patch[p].calendar_outputs  = malloc(sizeof(calendar_outputs_struct));
         if(patch[p].calendar_outputs==NULL)
         {
@@ -1333,6 +1344,7 @@ void free_all_patch_memory(parameters *param, individual *individual_population,
     free(PC_cohort_data);
 
     free(cumulative_outputs->cumulative_outputs_MTCT);
+    free(cumulative_outputs->cumulative_outputs_MIHPSA);
     free(cumulative_outputs);
     free(calendar_outputs);
     
@@ -1492,6 +1504,7 @@ void free_output_memory(output_struct *output){
         free(output->dhs_output_string[p]);
         free(output->pc_output_string[p]);
         free(output->calibration_outputs_combined_string[p]);
+	free(output->MIHPSA_outputs_string[p]);
         free(output->cost_effectiveness_outputs_string[p]);
         free(output->art_status_by_age_sex_outputs_string[p]);
     }

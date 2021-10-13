@@ -680,6 +680,7 @@ void init_available_partnerships(int p, patch_struct *patch, all_partnerships *o
 
 /* Set all cumulative counters to zero (number of HIV tests, CD4 tests etc. ) : */
 void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
+    int g;
     cumulative_outputs->N_total_CD4_tests_nonpopart = 0;
     cumulative_outputs->N_total_HIV_tests_nonpopart = 0;
     cumulative_outputs->N_total_CD4_tests_popart = 0;
@@ -698,6 +699,17 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
     //cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_deaths_newborn = 0;
     cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_age14 = 0;
     cumulative_outputs->cumulative_outputs_MTCT->N_mother_to_child_transmissions_alive_onARTage14 = 0;
+
+    /* Outputs used for MIHPSA Zimbabwe project: */
+    for(g=0; g<N_GENDER; g++){
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[g] = 0;
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[g] = 0;
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[g] = 0;
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[g] = 0;	
+    }
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15 = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus = 0;
+
 
 }
 

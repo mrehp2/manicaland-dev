@@ -32,6 +32,8 @@
 #include "fitting.h"
 #include "debug.h"
 #include "simul.h"
+#include "mihpsa_output.h"
+
 
 /************************************************************************/
 /******************************* main function **************************/
@@ -858,9 +860,14 @@ int main(int argc,char *argv[]){
                                 write_art_status_by_age_sex(file_data_store, output, p);
                             }
                         }
+
+			if(MIHPSA_MODULE==1)
+			    write_MIHPSA_outputs(file_data_store, output, p);
                     }
-		    if(MANICALAND_CASCADE==1)
+		    if(MANICALAND_CASCADE==1){
+			printf("***CHECK - p=%i\n",p);
 			write_population_HIVpreventioncascade(file_data_store, output, p);
+		    }
                 }
             }
             

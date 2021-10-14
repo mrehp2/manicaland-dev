@@ -2513,6 +2513,13 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+    if(MIHPSA_MODULE==1)
+	if (param->end_time_simul<2041){
+        printf("Error:param->end_time_simul must be 2041 or greater for MIHPSA output.\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
 
 
     if ((param->end_time_simul - fmin(param->COUNTRY_HIV_TEST_START,param->PrEP_background_params->year_start_background))>=MAX_N_YEARS){

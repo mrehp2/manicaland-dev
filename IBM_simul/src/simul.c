@@ -33,6 +33,7 @@
 #include "output.h"
 #include "pc.h"
 #include "cascades.h"
+#include "mihpsa_output.h"
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -213,6 +214,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
                 if(WRITE_ART_STATUS_BY_AGE_SEX == 1){
                     store_art_status_by_age_sex(patch, p, t0 + (t_step + 1)*TIME_STEP, output);
                 }
+	   
             }
         }
         
@@ -263,7 +265,15 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    
 	}
 
-	
+	/* MIHPSA outputs are stored from 1990 onwards, in the timestep 1 July. */
+	if(MIHPSA_MODULE==1){
+	    if(t0>=1990){
+		/* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
+		if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
+		    for(p = 0; p < NPATCHES; p++)
+			store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
+	    }
+	}
 	
     }
     
@@ -1116,7 +1126,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		
 		if(patch[p].param->barrier_params.i_condom_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_condom(t, patch, p);
-		    printf("Running condom prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_condom_barrier_intervention_flag,t);
+		    printf("Running condom prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_condom_barrier_intervention_flag,t);
 		}
 		    
 

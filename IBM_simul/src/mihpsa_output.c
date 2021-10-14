@@ -1,6 +1,7 @@
 /* Outputs for MIHPSA Zimbabwe project (October 2021). 
  */
 
+#include "mihpsa_output.h"
 
 /* Function to approximate 'condom use at last sex act'. */
 int get_MIHPSA_condom_use_last_act(individual *indiv){
@@ -29,8 +30,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 
     */
     
-    int aa, a, g, r, ai;
-    int age;
+    int age,g;
     long n_id;
     int art; /* ART status. */
 
@@ -66,14 +66,6 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     /* Temporary store of data from current year. */
     char temp_string[10000];
     /* Temporary store for single variable which gets strcat'd into temp_string. */
-    char temp_string2[50];
-    /* Temporary store for pop size/incidence/prevalence by gender and age gp which gets strcat'd
-    into temp_string. */
-    char temp_string3[1000];
-    char temp_string4[1000];
-    char temp_string5[1000];
-
-
 
     /* Loop through the alive population. */
     for (n_id = 0; n_id < patch[p].id_counter; n_id++){
@@ -121,7 +113,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    else{
 		npop_children_under15++;    
 		if(indiv->HIV_status>UNINFECTED){
-		    npositive_children_under15++
+		    npositive_children_under15++;
 		    art = indiv->ART_status;
 		    /* Aware of status: */
 		    if((art==ARTNAIVE) || (art==EARLYART) || (art==LTART_VS) || (art==LTART_VU) || (art==ARTDROPOUT) || (art==CASCADEDROPOUT)){
@@ -193,8 +185,7 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
     }
     
     /* Print the header of the file */
-    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,
-N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to49_male,N_newHIVinfections_15to49_female,N_newHIVdiagnoses_15plus\n");	
+    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to49_male,N_newHIVinfections_15to49_female,N_newHIVdiagnoses_15plus\n");	
 
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);

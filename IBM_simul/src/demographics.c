@@ -150,7 +150,7 @@ void get_mtct_fraction(double t, patch_struct *patch, int p, double *proportion_
     }
     // Assume transmission remains constant after end of Spectrum projections:
     else if (t>=patch[p].param->T_LAST_MTCT_DATAPOINT){
-	*proportion_of_hiv_positive_infants =  patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS-1]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS];
+	*proportion_of_hiv_positive_infants =  patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS-1]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS-1];
 	*proportion_of_hiv_pos_infants_on_art  = patch[p].param->prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS-1];
     }
     else{
@@ -2941,7 +2941,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
     /* Use Spectrum outputs to get the % of infants (that survive to age 14) that are HIV+, and the proportion of HIV+ infants (who survive to age 14) that are on ART by age 14. */
     get_mtct_fraction(t, patch, p, &proportion_of_hiv_positive_infants, &proportion_of_hiv_pos_infants_on_art);
-
+    //printf("At t=%lf proportion_of_hiv_positive_infants=%lf proportion_of_hiv_pos_infants_on_art=%lf\n",t,proportion_of_hiv_positive_infants, proportion_of_hiv_pos_infants_on_art);
 
     int n_birth_hivpos, n_birth_hivpos_art;
     /* Store number of HIV- new births: */

@@ -664,6 +664,16 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             cumulative_outputs->N_total_CD4_tests_popart++;
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
 
+	    /* Add diagnosis if needed: */
+	    if(MIHPSA_MODULE==1){
+		if(indiv->ART_status==ARTNEG){
+		    printf("Error - POpART test???\n");
+		    int age = floor(t - indiv->DoB);
+		    if(age>=15 && age <=49)
+			patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus++;
+		}
+	    }
+
 	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
 	    indiv->ART_status = ARTNAIVE;
@@ -672,7 +682,9 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             indiv->VISITEDBYCHIPS_TO_INIT_ART = 1;
             schedule_start_of_art(indiv, param, t, cascade_events, 
                 n_cascade_events, size_cascade_events);
-        
+
+
+	    
         /* In arm B but eligible for ART: */
         }else if (is_eligible_for_art(indiv, param, t, patch, p) > 0){
             
@@ -684,7 +696,17 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             }
 
 	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
-            
+
+	    if(MIHPSA_MODULE==1){
+		if(indiv->ART_status==ARTNEG){
+		    printf("Error - PopART testing???\n");
+		    int age = floor(t - indiv->DoB);
+		    if(age>=15 && age <=49)
+			patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus++;
+		}
+	    }
+
+	    
             indiv->ART_status = ARTNAIVE;
             cumulative_outputs->N_total_CD4_tests_popart++;
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
@@ -710,6 +732,15 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
 
 
 	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
+
+	    if(MIHPSA_MODULE==1){
+		if(indiv->ART_status==ARTNEG){
+		    int age = floor(t - indiv->DoB);
+		    printf("Error - PopART testing\n");
+		    if(age>=15 && age <=49)
+			patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus++;
+		}
+	    }
 
 
 	    indiv->ART_status = ARTNAIVE;

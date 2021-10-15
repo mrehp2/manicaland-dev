@@ -46,20 +46,25 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 
 
     long npop_bysex_15plus[N_GENDER]={0,0}; /* Population aged 15+. */
-    long npop_children_under15 = 0;
+
     
     long npositive_bysex_15plus[N_GENDER]={0,0}; /* Number of HIV+ aged 15+. */
-    long npositive_children_under15 = 0;
+
     
     long naware_bysex_15plus[N_GENDER]={0,0}; /* Number of HIV+ diagnosed aged 15+. */
-    long naware_children_under15 = 0;
     
     long N_onART_bysex_15plus[N_GENDER]={0,0}; /* Number on ART aged 15+. */
     long N_VS_bysex_15plus[N_GENDER]={0,0}; /* Number virally suppressed aged 15+. */
 
 
-
-
+    long npop_children_under15 = 0;
+    long npositive_children_under15 = 0;
+    long naware_children_under15 = 0;
+    for(int j_child=0; j_child<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1); j_child++){
+	npop_children_under15 += patch[p].child_population[0].n_child[j_child] + patch[p].child_population[1].n_child[j_child] + patch[p].child_population[2].n_child[j_child];
+	npositive_children_under15 += patch[p].child_population[1].n_child[j_child] + patch[p].child_population[2].n_child[j_child];
+	naware_children_under15 += patch[p].child_population[2].n_child[j_child];
+    }
     //int current_cd4_guidelines = art_cd4_eligibility_group(patch[p].param, t);
 
 

@@ -2651,6 +2651,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
 
     if(MIHPSA_MODULE==1){
 	/* Count number of tests in age 15+: */
+	//printf("Incrementing number of tests for age = %i at t=%lf gender=%i\n",(int) floor(t-indiv->DoB),t,indiv->gender);
 	if (floor(t-indiv->DoB)>=15)
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[indiv->gender] += 1;
     }
@@ -3034,6 +3035,7 @@ void cd4_test_process(individual* indiv, parameters *param, double t, individual
 	/* Update ART cascade counter if needed: */
 	if (indiv->ART_status!=ARTNAIVE){
             update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
+	    printf("Please check - HIV diagnosis seems to occur in cd4_test_process()!?\n");
 	    indiv->ART_status = ARTNAIVE;
 	}
 	
@@ -3045,6 +3047,7 @@ void cd4_test_process(individual* indiv, parameters *param, double t, individual
 	/* Update ART cascade counter if needed: */
 	if (indiv->ART_status!=ARTNAIVE){
             update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);    
+	    printf("Please check - HIV diagnosis seems to occur in cd4_test_process()!?\n");
 	    indiv->ART_status = ARTNAIVE;
 	}
 
@@ -3415,7 +3418,7 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
     //printf("Calling carry_out_cascade_events at time t=%f\n",t);
     for (n=0; n<n_events; n++){
         indiv = patch[p].cascade_events[array_index_for_cascade_event][n];
-
+	
         if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
             printf("Adult %ld from patch %d is entering function carry_out_cascade_events_per_timestep at time %f, array_index_for_cascade_event is %i\n",indiv->id,indiv->patch_no, t, array_index_for_cascade_event);
             fflush(stdout);

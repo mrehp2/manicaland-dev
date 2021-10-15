@@ -5214,7 +5214,7 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 
 
 
-void write_population_HIVpreventioncascade(file_struct *file_data_store, output_struct *output, int p){
+void write_population_HIVpreventioncascade(file_struct *file_data_store, output_struct *output){
     /*
     Writes out the HIV_prevention_barrier_outputs_string into a file
     the HIV_prevention_barrier_outputs_string is populated using the function store_HIV_prevention_barrier_outputs()

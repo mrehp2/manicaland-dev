@@ -990,7 +990,7 @@ legend(1902,58000,legend=c("Model estimates","UNPD WPP 2019"),col=c("gray","red"
 
 \section*{HIV and HSV-2 prevalence trends}
 \bf{****Make these plots normalised to correct numbers:
-   - add in an output file that 
+   - add in an output file that}
 
 <<HIVprevalence_trend_withdata,include=FALSE,echo=FALSE,fig=TRUE,width=8, height=6>>=
 
@@ -1121,6 +1121,12 @@ legend(1980,80,col=polygon.cols,legend=c("Men","Women"),lty=1,lwd=4,bty="n",cex=
 
 %plot.three.scenarios(all.data$t,100*all.data$incidence.store, 100*all.data.scenario2$incidence.store, 100*all.data.scenario3$incidence.store, lq,uq,t.range,c(0,2),plot.filename="HIVincidence_barrierscenarios.pdf",plot.legend=c("With barriers","10% reduced barriers","10% reduced PrEP barriers"),plot.title="Overall HIV incidence","HIV incidence (%)")
 
+
+
+\newpage
+
+\section*{Trends in prevention and treatment: VMMC, PrEP}
+\bf{****Add in plots by priority population}
 
 
 

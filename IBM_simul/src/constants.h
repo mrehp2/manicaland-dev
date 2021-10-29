@@ -205,7 +205,7 @@ gsl_rng * rng;
 #define DHS_AGE_RANGE_MAX 45  /* DHS runs from 15-59 so 45 age groups. */
 
 
-#define NCOHORTROUNDS 6 /* Number of rounds of Manicaland (or similar) cohort. */
+#define NCOHORTROUNDS 7 /* Number of rounds of Manicaland (or similar) cohort. */
 
 /************************************************************************/
 /***************************** PC constants *****************************/

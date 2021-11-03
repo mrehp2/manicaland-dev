@@ -491,6 +491,145 @@ int is_already_selected(long *idx_new_partners_m, long current_idx, long n_partn
 }
 
 
+int get_manicaland_round(double t, parameters *param, double *f){
+
+    /* After the last cohort round, just return the last round: */
+    if(t>=(param->COHORTYEAR[NCOHORTROUNDS-1]+TIME_STEP*param->COHORTTIMESTEP[NCOHORTROUNDS-1])){
+	*f = 0.0;
+	//printf("Post-cohort, at t=%lf, round is 7, f=%lf\n",t,*f);
+	
+	return (NCOHORTROUNDS-1);
+    }
+    /* Before the first cohort round, return the first round: */
+    else if(t<=(param->COHORTYEAR[0]+TIME_STEP*param->COHORTTIMESTEP[0])){
+	*f = 0.0;
+	//printf("Pre-cohort, at t=%lf, round is 0, f=%lf\n",t,*f);
+	return 0;
+    }
+
+    
+    int round=0; /* Cohort round index. */
+
+    while(round<(NCOHORTROUNDS-1)){
+	if(t>=(param->COHORTYEAR[round]+TIME_STEP*param->COHORTTIMESTEP[round]))
+	    if(t<(param->COHORTYEAR[round+1]+TIME_STEP*param->COHORTTIMESTEP[round+1])){
+		*f = (t-(param->COHORTYEAR[round]+TIME_STEP*param->COHORTTIMESTEP[round]))/((param->COHORTYEAR[round+1]+TIME_STEP*param->COHORTTIMESTEP[round+1]) - (param->COHORTYEAR[round]+TIME_STEP*param->COHORTTIMESTEP[round]));
+		break;
+	    }
+	round += 1;
+    }
+    //printf("At t=%lf, round is %i, f=%lf\n",t,round+1,*f);
+
+    return round;
+
+}
+
+void calculate_current_c_within_patch(parameters *param, double rr_m[2], double rr_f[2]){
+    int ag, i_young_old;
+    for(ag = 0; ag < N_AGE; ag++){
+	i_young_old = (ag<=1) ? 0 : 1;
+
+	param->c_per_gender_within_patch[FEMALE][ag] = param->c_per_gender_within_patch_baseline[FEMALE][ag] * rr_f[i_young_old];
+	param->c_per_gender_within_patch[MALE][ag] = param->c_per_gender_within_patch_baseline[MALE][ag] * rr_m[i_young_old];
+	
+	
+	//printf("param->c_per_gender_within_patch[FEMALE][ag] = %lf param->c_per_gender_within_patch[MALE][ag] = %lf\n",param->c_per_gender_within_patch[FEMALE][ag],param->c_per_gender_within_patch[MALE][ag]);
+	}
+}
+
+void calculate_c_between_patches(parameters *param){
+
+    int npatches_minus_one = NPATCHES-1;
+    int ag;
+    for(ag = 0; ag < N_AGE; ag++){
+	if (NPATCHES==1){ 	    /* If only 1 patch, then no mixing between patches. */
+	    param->c_per_gender_between_patches[FEMALE][ag] = 0;
+	    param->c_per_gender_between_patches[MALE][ag] = 0;
+	}
+	else if (NPATCHES>1){
+	    param->c_per_gender_between_patches[FEMALE][ag] =
+		param->rel_rate_partnership_formation_between_patches *
+		param->c_per_gender_within_patch[FEMALE][ag] / npatches_minus_one;
+	    
+	    param->c_per_gender_between_patches[MALE][ag] =
+		param->rel_rate_partnership_formation_between_patches *
+		param->c_per_gender_within_patch[MALE][ag] / npatches_minus_one;
+	}
+	else{
+	    printf("Error in value of NPATCHES. Exiting\n");
+	    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+	    fflush(stdout);
+	    exit(1);
+	    
+	}
+    }
+}
+
+/* Function called each timestep (once the cohort starts) in simul.c to update the number of new partners per unit time (c_per_gender_within_patch[][]). Code is also called by read_partnership_params() in input.c to set the pre-cohort values.
+   Function only does meaningful work in Zimbabwe for now (using R1-R7 Manicaland cohort), but could be used elsewhere if data available. For other settings it just sets c=c_baseline.
+   In other settings it just keeps c_per_gender_within_patch[][] constant at the baseline value.
+   Function loops through patches, and also updates c_per_gender_between_patches[][] if needed (if in Zimbabwe, and NPATCHES>1).
+*/
+void update_number_new_partners(double t, patch_struct *patch){
+    int p, round;
+    int g,ag;
+
+    if(patch[0].country_setting!=ZIMBABWE){
+	/* Keep constant for all time: */
+	for(p = 0; p < NPATCHES; p++){
+	    for(g=0 ; g<N_GENDER ; g++){
+		for(ag = 0; ag < N_AGE; ag++)
+		    patch[p].param->c_per_gender_within_patch[g][ag] = patch[p].param->c_per_gender_within_patch_baseline[g][ag];
+	    }
+	}
+	return;
+    }
+
+    /* Now deal with Zimbabwe: */
+
+    double rr_f[2], rr_m[2]; /* Temp store for the specific rr being used. The "2" are young/old (correspond to rr_mean_ly_F/M_byround[2][NCOHORTROUNDS]. */
+    int i_young_old; /* Index for rr_f/m[]. Takes value 0/1, used as rr_mean_ly stratified into young/old (roughly <23, 23+ - note that I currently use <25, 25+ in the R script). */
+    double f; /* Interpolation factor between rounds. */
+    for(p = 0; p < NPATCHES; p++){
+	round = get_manicaland_round(t, patch[p].param, &f);
+
+	/* After the latest cohort round: */
+	if(round==(NCOHORTROUNDS-1)){
+	    /* Assume same RR as last round in future: */
+	    for(i_young_old=0; i_young_old<2; i_young_old++){
+		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][NCOHORTROUNDS];
+		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][NCOHORTROUNDS];
+	    }
+	}
+	/* Code is called by read_partnership_params() to set pre-cohort values: */
+	else if(round==0 && f==0){
+	    for(i_young_old=0; i_young_old<2; i_young_old++){
+		/* Assume same RR as first round for pre-cohort: */
+		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][0];
+		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][0];
+	    }
+	}
+	
+	else{
+	    for(i_young_old=0; i_young_old<2; i_young_old++){
+		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_F_byround[i_young_old][round+1]*f;
+		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_M_byround[i_young_old][round+1]*f;
+	    }
+	}	    
+
+
+
+	calculate_current_c_within_patch(patch[p].param, rr_m, rr_f);
+	
+
+	/* Now deal with between patches (note - if NPATCHES=1 then this is zero for all time, and is set in read_partnership_params()). */
+	if (NPATCHES>1)
+	    calculate_c_between_patches(patch[p].param);
+
+    }
+}
+    
+
 void copy_array_long(long *dest, long *orig, long size){
     /* Copy an array of long integers
     
@@ -2625,8 +2764,9 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
+    for(ag=0; ag<N_AGE; ag++)
+	printf("c_per_gender_within_patch[FEMALE][ag]=%lf\n",param->c_per_gender_within_patch[FEMALE][ag]);
 
-    
     for(ag=0; ag<N_AGE; ag++){
         if (param->c_per_gender_within_patch[FEMALE][ag]<0 || param->c_per_gender_within_patch[FEMALE][ag]>20){
             printf("Error:param->c_per_gender_within_patch[FEMALE][ag] is outside expected range [0,20]\nExiting\n");

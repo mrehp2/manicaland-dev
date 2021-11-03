@@ -497,8 +497,14 @@ typedef struct {
     /* parameter theta between 0 and 1 corresponding to the proportion of unbalanced partnership that will be balanced because of male compromise (theta=1 <-> males decide of everything) */
     double prop_compromise_from_males;
 
-    /* Average number of new partners per year within the patch */
+    /* Average number of new partners per year within the patch. *This is now calculated per timestep* */
     double c_per_gender_within_patch[N_GENDER][N_AGE];
+    /* We calculate c_per_gender_within_path as c_per_gender_within_patch_baseline multiplied by a scale factor that accounts for how the mean number of partners per year varies between rounds in Manicaland (as a function of age, sex and time). This calculation is made at the beginning of each timestep in  */
+    double c_per_gender_within_patch_baseline[N_GENDER][N_AGE];
+
+    double rr_mean_ly_F_byround[2][NCOHORTROUNDS]; /* The '2' is i=0 (young)/i=1 (old). */
+    double rr_mean_ly_M_byround[2][NCOHORTROUNDS];
+
     double rel_rate_partnership_formation_between_patches;
     double c_per_gender_between_patches[N_GENDER][N_AGE]; // this is equal to c_per_gender_within_patch * rel_rate_partnership_formation_between_patches / (NPATCHES-1) (implicitly assuming that partnerships not within patch are split equally & randomly between other patches)
 

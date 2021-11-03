@@ -286,6 +286,13 @@ int main(int argc,char *argv[]){
     /*** READING PARAMETERS AND FITTING DATA           ***/
     /*****************************************************/
 
+
+    /* Get country: country_setting values are 1 for Zambia, 2 for South Africa, 3 for Zimbabwe. There are constants defined in constants.h for this.
+    Note we assume that the country setting does not vary across all the parameter sets. If this is not the case then we need to move this into the "for i_run" loop.
+    country_setting determines demographics (fertility+death rate), HIV testing and HIV test sensitivity. */
+    get_setting(patch);
+
+    
     /* Reads in all the parameters. Note that certain patch info (e.g. trial arm) is set here.
     In particular trial arm may be overwritten below if we are in a counterfactual scenario
     (scenario_flag==1). */
@@ -314,13 +321,6 @@ int main(int argc,char *argv[]){
     }
 
     
-    /* Get country: country_setting values are 1 for Zambia, 2 for South Africa, 3 for Zimbabwe.
-    There are constants defined in constants.h for this.
-
-    Note we assume that the country setting does not vary across all the parameter sets.
-    If this is not the case then we need to move this into the "for i_run" loop.
-    country_setting determines demographics (fertility+death rate), HIV testing and HIV test sensitivity. */
-    get_setting(patch);
 
     // NEEDS FIXING WHEN UPDATING PATCH MODEL:
 

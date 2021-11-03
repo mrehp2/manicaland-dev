@@ -25,7 +25,7 @@ void read_patch_info(char *, patch_struct *);
 void read_demographic_params(char *, parameters *, int);
 void read_hiv_params(char *, parameters *, int, int);
 void read_hsv2_params(char *, parameters *, int, int);
-void read_partnership_params(char *, parameters *, int);
+void read_partnership_params(char *, parameters *, int, int);
 void read_time_params(char *, parameters *, int, int);
 void read_cascade_params(char *, parameters *, int);
 void read_mtct_params(char *, parameters *, int);

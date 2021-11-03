@@ -40,6 +40,11 @@ void balance_contacts_arithmetic(parameters *param);
 int are_in_partnership(individual *, individual *);
 int has_free_partnership(individual *);
 int is_already_selected(long *, long , long );
+int get_manicaland_round(double , parameters *, double *);
+void calculate_current_c_within_patch(parameters *, double [2], double [2]);
+void calculate_c_between_patches(parameters *);
+void update_number_new_partners(double , patch_struct *);
+
 void copy_array_long(long *, long *, long );
 int is_serodiscordant(partnership *);
 int is_hsv2_serodiscordant(partnership *);

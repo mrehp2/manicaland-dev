@@ -105,7 +105,8 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         read_demographic_params(patch_tag, param[p], n_runs);
         read_hiv_params(patch_tag, param[p], n_runs, p);
         read_hsv2_params(patch_tag, param[p], n_runs, p);
-        read_partnership_params(patch_tag, param[p], n_runs);
+
+        read_partnership_params(patch_tag, param[p], n_runs, patch[0].country_setting);
         read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
 	read_mtct_params(patch_tag, param[p], n_runs);
@@ -703,7 +704,7 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 }
 
 
-void read_partnership_params(char *patch_tag, parameters *allrunparameters, int n_runs){
+void read_partnership_params(char *patch_tag, parameters *allrunparameters, int n_runs, int country_setting){
     /* Read partnership related parameters
     
     
@@ -729,8 +730,9 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
     
     FILE * param_file;
     int g, ag, r, bg, i_run;
-    int npatches_minus_one = NPATCHES-1;
 
+    int round; /* Round of the Manicaland cohort. */
+    
     char param_file_name[LONGSTRINGLENGTH];
     
     // This is a temporary var so as not to keep writing allparameters+i_run
@@ -771,52 +773,83 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 
         for(ag = 0; ag < N_AGE ; ag++){
             checkreadok = fscanf(param_file, "%lg",
-                &(param_local->c_per_gender_within_patch[FEMALE][ag]));
-            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch");
+                &(param_local->c_per_gender_within_patch_baseline[FEMALE][ag]));
+            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline");
         }
 
         for(ag = 0; ag < N_AGE; ag++){
             checkreadok = fscanf(param_file, "%lg", 
-                &(param_local->c_per_gender_within_patch[MALE][ag]));
-            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch");
+                &(param_local->c_per_gender_within_patch_baseline[MALE][ag]));
+            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline");
         }
 
         checkreadok = fscanf(param_file, "%lg", &c_multiplier);
         check_if_cannot_read_param(checkreadok, "c_multiplier");
         
         for(ag = 0; ag < N_AGE; ag++){
-            param_local->c_per_gender_within_patch[FEMALE][ag] *= c_multiplier;
-            param_local->c_per_gender_within_patch[MALE][ag] *= c_multiplier;
+            param_local->c_per_gender_within_patch_baseline[FEMALE][ag] *= c_multiplier;
+            param_local->c_per_gender_within_patch_baseline[MALE][ag] *= c_multiplier;
         }
 
+	/* Modify the number of partners (to allow people earlier in the epidemic to have more partners for example). 
+	   At present this is only for Zimbabwe (using Manicaland cohort). */
+	if(country_setting==ZIMBABWE){
+	    printf("Zimbabwe\n");
+
+	    int i_young_old; /* Takes value 0/1, used as rr_mean_ly stratified into young/old (roughly <23, 23+ - note that I currently use <25, 25+ in the R script). */
+	    for(i_young_old=0; i_young_old<2; i_young_old++){
+		for(round=0; round <NCOHORTROUNDS; round++){
+		    checkreadok = fscanf(param_file, "%lg", &(param_local->rr_mean_ly_F_byround[i_young_old][round]));
+		    check_if_cannot_read_param(checkreadok, "param_local->rr_mean_ly_F_byround[i_young_old][round]");
+		}
+	    }
+	    
+	    for(i_young_old=0; i_young_old<2; i_young_old++){
+		for(round=0; round <NCOHORTROUNDS; round++){
+		    checkreadok = fscanf(param_file, "%lg", &(param_local->rr_mean_ly_M_byround[i_young_old][round]));
+		    check_if_cannot_read_param(checkreadok, "param_local->rr_mean_ly_M_byround[i_young_old][round]");
+		}
+	    }
+
+
+	    printf("param_local->rr_mean_ly_young_F_byround[r]=");
+	    for(round=0; round <NCOHORTROUNDS; round++)
+		printf("%lf ",param_local->rr_mean_ly_F_byround[0][round]);
+	    printf("param_local->rr_mean_ly_old_F_byround[r]=");
+	    for(round=0; round <NCOHORTROUNDS; round++)
+		printf("%lf ",param_local->rr_mean_ly_F_byround[1][round]);
+
+	    printf("param_local->rr_mean_ly_young_M_byround[r]=");
+	    for(round=0; round <NCOHORTROUNDS; round++)
+		printf("%lf ",param_local->rr_mean_ly_M_byround[0][round]);
+	    printf("param_local->rr_mean_ly_old_M_byround[r]=");
+	    for(round=0; round <NCOHORTROUNDS; round++)
+		printf("%lf ",param_local->rr_mean_ly_M_byround[1][round]);
+
+	    double rr_f[2] = {param_local->rr_mean_ly_F_byround[0][0],param_local->rr_mean_ly_F_byround[1][0]};
+	    double rr_m[2] = {param_local->rr_mean_ly_M_byround[0][0],param_local->rr_mean_ly_M_byround[1][0]};
+	    /* Assigns param_local->c_per_gender_within_patch given param_local->c_per_gender_within_patch_baseline: */
+
+	    calculate_current_c_within_patch(param_local, rr_m, rr_f);
+	    
+	}
+	else{ /* For non-Zimbabwe settings, the number of partners never changes (unless there's something similar to the Manicaland cohort): */
+	    for(ag = 0; ag < N_AGE; ag++){
+		param_local->c_per_gender_within_patch[FEMALE][ag] = param_local->c_per_gender_within_patch_baseline[FEMALE][ag];
+		param_local->c_per_gender_within_patch[MALE][ag] = param_local->c_per_gender_within_patch_baseline[MALE][ag];
+	    }
+	}
+	
+	
         checkreadok = fscanf(param_file, "%lg",
             &(param_local->rel_rate_partnership_formation_between_patches));
         check_if_cannot_read_param(checkreadok,
             "param_local->rel_rate_partnership_formation_between_patches");
 
+	/* This calculates param->c_per_gender_between_patches[][] based on c_per_gender_within_patch and rel_rate_partnership_formation_between_patches. */
+
+	calculate_c_between_patches(param_local);
 	
-        for(ag = 0; ag < N_AGE; ag++){
-	    if (NPATCHES==1){ 	    /* If only 1 patch, then no mixing between patches. */
-		param_local->c_per_gender_between_patches[FEMALE][ag] = 0;
-		param_local->c_per_gender_between_patches[MALE][ag] = 0;
-	    }
-	    else if (NPATCHES>1){
-		param_local->c_per_gender_between_patches[FEMALE][ag] =
-		    param_local->rel_rate_partnership_formation_between_patches *
-		    param_local->c_per_gender_within_patch[FEMALE][ag] / npatches_minus_one;
-            
-		param_local->c_per_gender_between_patches[MALE][ag] =
-		    param_local->rel_rate_partnership_formation_between_patches *
-		    param_local->c_per_gender_within_patch[MALE][ag] / npatches_minus_one;
-	    }
-	    else{
-		printf("Error in value of NPATCHES. Exiting\n");
-		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-		fflush(stdout);
-		exit(1);
-		
-	    }
-        }
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->rr_hiv_between_vs_within_patch));
         check_if_cannot_read_param(checkreadok, "param_local->rr_hiv_between_vs_within_patch");

@@ -145,7 +145,15 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    }
         }
 
-
+	/* For Zimbabwe we want partner numbers to change over time.
+	   For other settings, we currently don't do this. */
+	if(patch[0].country_setting==ZIMBABWE){
+	    /* Only update once we have data (i.e. once cohort starts): 
+	       Pre-cohort, value is set to be at cohort value in read_partnership_params(). */
+	    if((t0+t_step*TIME_STEP)>(patch[0].param->COHORTYEAR[0]+TIME_STEP*patch[0].param->COHORTTIMESTEP[0])){
+		update_number_new_partners(t0+t_step*TIME_STEP,patch);
+	    }
+	}
 
 	
         // Carry out main processes

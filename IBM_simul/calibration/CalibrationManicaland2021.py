@@ -49,10 +49,10 @@ def check_calibration_files_consistent(dir_list):
     print "in check_calibration_files_consistent dir_list=",dir_list
     checked_files = []
     for i in range(len(dir_list)):
-        potential_calibration_files = glob.glob(dir_list[i]+"/Output/Calibration*.csv")
+        potential_calibration_files = glob.glob(dir_list[i]+"/Output/Calibration_output*.csv")
 
         if potential_calibration_files==[]:
-            potential_calibration_files = glob.glob(dir_list[i]+"/Calibration*.csv")
+            potential_calibration_files = glob.glob(dir_list[i]+"/Calibration_output*.csv")
         for j in range(len(potential_calibration_files)):
             # Get the filename:
             f_name = potential_calibration_files[j].split("/")[-1]
@@ -322,37 +322,38 @@ def get_cohort_likelihood_bestfits_fromonerun(model_calibration_filename,  model
                     denominator = numerator_denominator[t]
 
                     genders = survey_data[s][r][t].keys()
-                    for g in genders:
-                        minage = max(min(survey_data[s][r][t][g]),15)
-                        if not(minage%5==0):
-                            minage = minage + (5-minage%5)
-                        maxage = max(survey_data[s][r][t][g])-5
-                        if not(maxage%5==0):
-                            maxage = maxage - maxage%5
-                        ages = range(minage,maxage,5)
-                        #    if not(set(survey_rounds) <= set(model_data_rounds)):
-                        #        print "Error: IBM model data does not have the same rounds as the survey data"
-                        #    if not(set(numerators) <= set(model_data_datatypes)):
-                        #        print "Error: IBM model data contains indicators not given in get_cohort_likelihood(). Need to extend numerator_denominator"
+                    if not(survey_data[s][r][t]=={ele:{} for ele in genders}):
+                        for g in genders:
+                            minage = max(min(survey_data[s][r][t][g]),15)
+                            if not(minage%5==0):
+                                minage = minage + (5-minage%5)
+                            maxage = max(survey_data[s][r][t][g])-5
+                            if not(maxage%5==0):
+                                maxage = maxage - maxage%5
+                            ages = range(minage,maxage,5)
+                            #    if not(set(survey_rounds) <= set(model_data_rounds)):
+                            #        print "Error: IBM model data does not have the same rounds as the survey data"
+                            #    if not(set(numerators) <= set(model_data_datatypes)):
+                            #        print "Error: IBM model data contains indicators not given in get_cohort_likelihood(). Need to extend numerator_denominator"
                             
-                        model_k = 0
-                        model_N = 0
-                        survey_k = 0
-                        survey_N = 0
-                        for age_gp_start in ages:
+                            model_k = 0
+                            model_N = 0
+                            survey_k = 0
+                            survey_N = 0
+                            for age_gp_start in ages:
 
-                            dataname_numerator_start = s+r.replace("R","Round")+t+g+str(age_gp_start)
-                            dataname_denominator_start = s+r.replace("R","Round")+denominator+g+str(age_gp_start)
-                            i_numerator_start = lookup_table[dataname_numerator_start]
-                            i_denominator_start = lookup_table[dataname_denominator_start]
-                            for a in range(5):
-                                #print filekey,n,i_numerator_start+a,a,age_gp_start
-                                model_k += model_data[n][i_numerator_start+a]
-                                model_N += model_data[n][i_denominator_start+a]
+                                dataname_numerator_start = s+r.replace("R","Round")+t+g+str(age_gp_start)
+                                dataname_denominator_start = s+r.replace("R","Round")+denominator+g+str(age_gp_start)
+                                i_numerator_start = lookup_table[dataname_numerator_start]
+                                i_denominator_start = lookup_table[dataname_denominator_start]
+                                for a in range(5):
+                                    #print filekey,n,i_numerator_start+a,a,age_gp_start
+                                    model_k += model_data[n][i_numerator_start+a]
+                                    model_N += model_data[n][i_denominator_start+a]
 
-                                survey_k += survey_data[s][r][t][g][a+age_gp_start]
-                                survey_N += survey_data[s][r][denominator][g][a+age_gp_start]
-                            log_likelihood_by_round[(filekey,n)] += calculate_log_likelihood(survey_k,survey_N,model_k,model_N)
+                                    survey_k += survey_data[s][r][t][g][a+age_gp_start]
+                                    survey_N += survey_data[s][r][denominator][g][a+age_gp_start]
+                                log_likelihood_by_round[(filekey,n)] += calculate_log_likelihood(survey_k,survey_N,model_k,model_N)
 
 
 
@@ -440,7 +441,7 @@ print "Finished reading in IBM calibration files. Community=",community
 
 #chips_survey_data_dir = "/home/mike/Dropbox (SPH Imperial College)/PoPART/Data:Stats/CHiPs data/"
 survey_data = {}
-rounds = [6]
+rounds = [1,2,3,4,5,6,7]
 # For each type of data (cohort, DHS, CHiPS) etc we call read_survey_files:
 [survey_data_header,survey_data["Cohort"]] = read_survey_files(rounds)
 

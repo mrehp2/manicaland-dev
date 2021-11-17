@@ -71,7 +71,9 @@ def read_annual_output_files_and_extract_data(annualoutputfiledir,plot_output_fi
 
 
 
-resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_10_22/RESULTS/RESULTS1/Output/"
+#resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_10_22/RESULTS/RESULTS1/Output/"
+resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results/RESULTS/Output/"
+#resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/data/SAMPLED_PARAMETERS/PARAMS_COMMUNITY5/Output/"
 
 
 outputfilename = "Summary_annual_output_prevalence.csv"    
@@ -80,7 +82,9 @@ read_annual_output_files_and_extract_data(resultsdir,outputfilename)
 print("Calling R")
 
 plotname = "prevalenceplot.pdf"
-rcmd_string = "Rscript make_annual_output_prev_plot_Rplot.R "+resultsdir+outputfilename+" "+plotname
+# This plot consists of runs meeting soem criteria (currently prevalence in 2021 to be between 5 and 40%)
+plotname_restricted = "prevalenceplot_restricted.pdf"
+rcmd_string = "Rscript make_annual_output_prev_plot_Rplot.R "+resultsdir+outputfilename+" "+plotname+" "+plotname_restricted
 print rcmd_string
 os.system(rcmd_string)
 

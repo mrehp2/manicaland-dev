@@ -44,6 +44,8 @@ int get_manicaland_round(double , parameters *, double *);
 void calculate_current_c_within_patch(parameters *, double [2], double [2]);
 void calculate_c_between_patches(parameters *);
 void update_number_new_partners(double , patch_struct *);
+void update_time_varying_hazard_onepatch(double , parameters *);
+void update_time_varying_hazard_allpatches(double , patch_struct *);    
 
 void copy_array_long(long *, long *, long );
 int is_serodiscordant(partnership *);

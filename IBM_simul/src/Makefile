@@ -26,10 +26,10 @@ GSLFLAGS= -lgsl -lgslcblas -lm -O3
 LFLAGS = ${GSLFLAGS}
 
 # all the C files (*.c)
-SRCS = constants.c demographics.c hiv.c hsv.c init.c input.c interventions.c output.c partnership.c utilities.c checks.c memory.c fitting.c debug.c pc.c cascades.c mihpsa_output.c simul.c main.c 
+SRCS = constants.c demographics.c hiv.c hsv.c init.c input.c interventions.c output.c partnership.c utilities.c checks.c memory.c fitting.c debug.c pc.c prevention_cascades.c mihpsa_output.c simul.c main.c 
 
 # all the object files (*.o)
-OBJS = constants.o demographics.o hiv.o hsv.o init.o input.o interventions.o output.o partnership.o utilities.o checks.o memory.o fitting.o debug.o pc.o cascades.o mihpsa_output.o simul.o main.o 
+OBJS = constants.o demographics.o hiv.o hsv.o init.o input.o interventions.o output.o partnership.o utilities.o checks.o memory.o fitting.o debug.o pc.o prevention_cascades.o mihpsa_output.o simul.o main.o 
 
 # the executable (*.exe)
 _EXE = popart-simul.exe 

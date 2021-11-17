@@ -21,7 +21,7 @@
 #include "input.h"
 #include "constants.h"
 #include "utilities.h"
-#include "cascades.h"
+#include "prevention_cascades.h"
 #include<math.h>
 
 /************************************************************************/
@@ -103,11 +103,11 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         strcat(patch_tag, "_");
 
         read_demographic_params(patch_tag, param[p], n_runs);
-        read_hiv_params(patch_tag, param[p], n_runs, p);
+        read_time_params(patch_tag, param[p], n_runs, p);
+        read_hiv_params(patch_tag, param[p], n_runs, p, patch[0].country_setting);
         read_hsv2_params(patch_tag, param[p], n_runs, p);
 
         read_partnership_params(patch_tag, param[p], n_runs, patch[0].country_setting);
-        read_time_params(patch_tag, param[p], n_runs, p);
         read_cascade_params(patch_tag, param[p], n_runs);
 	read_mtct_params(patch_tag, param[p], n_runs);
 	read_PrEP_uptake_params(patch_tag, param[p], n_runs);
@@ -391,7 +391,7 @@ void read_demographic_params(char *patch_tag, parameters *allrunparameters, int 
 }
 
 
-void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, int p){
+void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, int p, int country_setting){
     /* Read parameters related to HIV
     
     
@@ -471,8 +471,17 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 	checkreadok = fscanf(param_file,"%lg", &(param_local->average_log_viral_load));
         check_if_cannot_read_param(checkreadok, "param_local->average_log_viral_load");
 
-        checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard));
-        check_if_cannot_read_param(checkreadok, "param_local->average_annual_hazard");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard_baseline));
+        check_if_cannot_read_param(checkreadok, "param_local->average_annual_hazard_baseline");
+
+	if(country_setting==ZIMBABWE){
+	    /* Need to make sure param_times is read in before this (so start_time_simul is defined): */
+	    update_time_varying_hazard_onepatch(param_local->start_time_simul, param_local);
+	}
+	else{
+	    param_local->average_annual_hazard = param_local->average_annual_hazard_baseline;
+	}
+
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->RRacute_trans));
         check_if_cannot_read_param(checkreadok, "param_local->RRacute_trans");
@@ -794,7 +803,6 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 	/* Modify the number of partners (to allow people earlier in the epidemic to have more partners for example). 
 	   At present this is only for Zimbabwe (using Manicaland cohort). */
 	if(country_setting==ZIMBABWE){
-	    printf("Zimbabwe\n");
 
 	    int i_young_old; /* Takes value 0/1, used as rr_mean_ly stratified into young/old (roughly <23, 23+ - note that I currently use <25, 25+ in the R script). */
 	    for(i_young_old=0; i_young_old<2; i_young_old++){
@@ -812,19 +820,19 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 	    }
 
 
-	    printf("param_local->rr_mean_ly_young_F_byround[r]=");
-	    for(round=0; round <NCOHORTROUNDS; round++)
-		printf("%lf ",param_local->rr_mean_ly_F_byround[0][round]);
-	    printf("param_local->rr_mean_ly_old_F_byround[r]=");
-	    for(round=0; round <NCOHORTROUNDS; round++)
-		printf("%lf ",param_local->rr_mean_ly_F_byround[1][round]);
+	    /* printf("param_local->rr_mean_ly_young_F_byround[r]="); */
+	    /* for(round=0; round <NCOHORTROUNDS; round++) */
+	    /* 	printf("%lf ",param_local->rr_mean_ly_F_byround[0][round]); */
+	    /* printf("param_local->rr_mean_ly_old_F_byround[r]="); */
+	    /* for(round=0; round <NCOHORTROUNDS; round++) */
+	    /* 	printf("%lf ",param_local->rr_mean_ly_F_byround[1][round]); */
 
-	    printf("param_local->rr_mean_ly_young_M_byround[r]=");
-	    for(round=0; round <NCOHORTROUNDS; round++)
-		printf("%lf ",param_local->rr_mean_ly_M_byround[0][round]);
-	    printf("param_local->rr_mean_ly_old_M_byround[r]=");
-	    for(round=0; round <NCOHORTROUNDS; round++)
-		printf("%lf ",param_local->rr_mean_ly_M_byround[1][round]);
+	    /* printf("param_local->rr_mean_ly_young_M_byround[r]="); */
+	    /* for(round=0; round <NCOHORTROUNDS; round++) */
+	    /* 	printf("%lf ",param_local->rr_mean_ly_M_byround[0][round]); */
+	    /* printf("param_local->rr_mean_ly_old_M_byround[r]="); */
+	    /* for(round=0; round <NCOHORTROUNDS; round++) */
+	    /* 	printf("%lf ",param_local->rr_mean_ly_M_byround[1][round]); */
 
 	    double rr_f[2] = {param_local->rr_mean_ly_F_byround[0][0],param_local->rr_mean_ly_F_byround[1][0]};
 	    double rr_m[2] = {param_local->rr_mean_ly_M_byround[0][0],param_local->rr_mean_ly_M_byround[1][0]};

@@ -38,7 +38,7 @@
 #include "demographics.h"
 #include "utilities.h"
 #include "debug.h"
-#include "cascades.h"
+#include "prevention_cascades.h"
 
 /************************************************************************/
 /******************************** functions *****************************/
@@ -575,8 +575,9 @@ void set_up_population(int p, patch_struct *patch, population *pop, int scenario
 
 
 		    /* Function initialises barriers (i.e. probability of getting PrEP, VMMC, using condoms, when each method is available). */
-		    if (MANICALAND_CASCADE==1)
-			set_prevention_cascade_barriers(&patch[p].individual_population[patch[p].id_counter] , patch[p].param->start_time_simul, patch[p].param->barrier_params, scenario_flag);
+		    if (MANICALAND_CASCADE==1){
+			set_prevention_cascade_barriers(&patch[p].individual_population[patch[p].id_counter] , patch[p].param->start_time_simul, &(patch[p].param->barrier_params), scenario_flag);
+		    }
 
 
 
@@ -709,7 +710,7 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
     }
     cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15 = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus = 0;
-
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49 = 0;
 
 }
 

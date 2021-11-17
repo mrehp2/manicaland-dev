@@ -3,6 +3,13 @@
 
 #include "mihpsa_output.h"
 
+/* Functions: 
+int get_MIHPSA_condom_use_last_act(individual *indiv)
+void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *output, double t)
+void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, int p)
+
+*/
+
 /* Function to approximate 'condom use at last sex act'. */
 int get_MIHPSA_condom_use_last_act(individual *indiv){
 
@@ -60,7 +67,8 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     long npop_children_under15 = 0;
     long npositive_children_under15 = 0;
     long naware_children_under15 = 0;
-    for(int j_child=0; j_child<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1); j_child++){
+    int j_child;
+    for(j_child=0; j_child<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1); j_child++){
 	npop_children_under15 += patch[p].child_population[0].n_child[j_child] + patch[p].child_population[1].n_child[j_child] + patch[p].child_population[2].n_child[j_child];
 	npositive_children_under15 += patch[p].child_population[1].n_child[j_child] + patch[p].child_population[2].n_child[j_child];
 	naware_children_under15 += patch[p].child_population[2].n_child[j_child];
@@ -160,7 +168,9 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[FEMALE],
-	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus);	
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49
+	    );	
 
     
 
@@ -190,7 +200,7 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
     }
     
     /* Print the header of the file */
-    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to49_male,N_newHIVinfections_15to49_female,N_newHIVdiagnoses_15plus\n");	
+    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to49_male,N_newHIVinfections_15to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
 
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);

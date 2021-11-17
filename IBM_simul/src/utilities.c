@@ -630,6 +630,44 @@ void update_number_new_partners(double t, patch_struct *patch){
 }
     
 
+void update_time_varying_hazard_onepatch(double t, parameters *param){
+    double hazard_scale = 2.0;
+    double t_hazard_stabilizes = 2000.0;
+    double current_hazard_multiplier;
+    if(t<=param->start_time_hiv)
+	current_hazard_multiplier = hazard_scale;
+    else if(t>=t_hazard_stabilizes)	
+	current_hazard_multiplier = 1.0;
+    else{
+	current_hazard_multiplier = hazard_scale - (hazard_scale-1)*(t-param->start_time_hiv)/(t_hazard_stabilizes-param->start_time_hiv);
+    }
+
+    param->average_annual_hazard = param->average_annual_hazard_baseline * current_hazard_multiplier;
+
+}
+
+void update_time_varying_hazard_allpatches(double t, patch_struct *patch){
+    int p;
+
+    if(patch[0].country_setting!=ZIMBABWE){
+	/* Keep constant for all time: */
+	for(p = 0; p < NPATCHES; p++){
+	    patch[p].param->average_annual_hazard = patch[p].param->average_annual_hazard_baseline;
+	}
+	return;
+    }
+
+    /* Now deal with Zimbabwe: */
+    for(p = 0; p < NPATCHES; p++){
+	update_time_varying_hazard_onepatch(t, patch[p].param);
+    }
+    
+	
+    
+}
+
+
+
 void copy_array_long(long *dest, long *orig, long size){
     /* Copy an array of long integers
     
@@ -1604,7 +1642,7 @@ void print_hiv_params(parameters *param){
     printf("param->eff_condom=%lg\n",param->eff_condom);
     printf("param->eff_condom_hsv2=%lg\n",param->eff_condom_hsv2);
     printf("param->average_log_viral_load=%lg\n",param->average_log_viral_load);
-    printf("param->average_annual_hazard=%lg\n",param->average_annual_hazard);
+    printf("param->average_annual_hazard_baseline=%lg\n",param->average_annual_hazard_baseline);
     printf("param->RRacute_trans=%lg\n",param->RRacute_trans);
     printf("param->RRmale_to_female_trans=%lg\n",param->RRmale_to_female_trans);
     printf("param->RRCD4[0],param->RRCD4[1],param->RRCD4[2],param->RRCD4[3]=%lg %lg %lg %lg\n",param->RRCD4[0],param->RRCD4[1],param->RRCD4[2],param->RRCD4[3]);
@@ -2073,8 +2111,8 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-    if (param->average_annual_hazard<0.001 || param->average_annual_hazard>0.6){
-        printf("Error: param->average_annual_hazard is outside expected range [0.01,0.6]\nExiting\n");
+    if (param->average_annual_hazard_baseline<0.001 || param->average_annual_hazard_baseline>0.6){
+        printf("Error: param->average_annual_hazard_baseline is outside expected range [0.01,0.6]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2764,8 +2802,7 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    for(ag=0; ag<N_AGE; ag++)
-	printf("c_per_gender_within_patch[FEMALE][ag]=%lf\n",param->c_per_gender_within_patch[FEMALE][ag]);
+
 
     for(ag=0; ag<N_AGE; ag++){
         if (param->c_per_gender_within_patch[FEMALE][ag]<0 || param->c_per_gender_within_patch[FEMALE][ag]>20){

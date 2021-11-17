@@ -1179,6 +1179,14 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
         if (indiv->circ == UNCIRC_WAITING_VMMC){
             //printf("Person %ld with circ=%d is being scheduled for VMMC healing.\n",
             //      indiv->id,indiv->circ);
+
+	    /* Add to VMMC count for MIHPSA project if needed: */
+	    if(MIHPSA_MODULE==1){
+		int age = floor(t - indiv->DoB);
+		if(age>=15 && age <=49)
+		    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49++;
+	    }
+
             schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,
                 patch[p].n_vmmc_events, patch[p].size_vmmc_events, t);
             

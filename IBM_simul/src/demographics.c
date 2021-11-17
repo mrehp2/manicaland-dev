@@ -91,7 +91,7 @@ individual_death_AIDS()
 #include "init.h"
 #include "hiv.h"
 #include "debug.h"
-#include "cascades.h"
+#include "prevention_cascades.h"
 
 double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
     /* Calculate per-woman fertility rate based on age using UNPD rates
@@ -643,8 +643,12 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
     new_adult->debug_last_hiv_event_index = -1;
 
 
-    if (MANICALAND_CASCADE==1)
-	set_prevention_cascade_barriers(new_adult, t, param->barrier_params, scenario_flag);
+    if (MANICALAND_CASCADE==1){
+	set_prevention_cascade_barriers(new_adult, t, &(param->barrier_params), scenario_flag);
+	//set_prevention_cascade_barriers(&patch[p].individual_population[patch[p].id_counter], t, patch[p].param->barrier_params, scenario_flag);
+    }
+
+
 
     /* PrEP-related stuff: */
     new_adult->PrEP_cascade_status = NOTONPREP;

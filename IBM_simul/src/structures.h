@@ -62,7 +62,7 @@ typedef struct{
     double p_want_to_use_condom_long_term_partner;
     double p_want_to_use_condom_casual_partner;
     
-    double p_will_get_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
+    double *p_will_get_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
     
     //double condom_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland condom cascade would be. */
 
@@ -449,6 +449,7 @@ typedef struct {
     double average_log_viral_load;
 
     /* Assuming average annual hazard of transmission with average viral load is 0.2. */
+    double average_annual_hazard_baseline;
     double average_annual_hazard;
 
     /* Relative increase in transmission from acute infection, reference group is not acute untreated CD4>500 low SPVL */
@@ -954,6 +955,7 @@ typedef struct{
     long N_HIVtests_15plus[N_GENDER];
     long N_newHIVinfections_15to49[N_GENDER];
     long N_newHIVdiagnoses_15plus;
+    long N_VMMC_15plus;
 } cumulative_outputs_MIHPSA_struct;
 
 

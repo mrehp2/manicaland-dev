@@ -32,7 +32,7 @@
 #include "debug.h"
 #include "output.h"
 #include "pc.h"
-#include "cascades.h"
+#include "prevention_cascades.h"
 #include "mihpsa_output.h"
 
 /************************************************************************/
@@ -87,6 +87,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     
     int p, t_step, fit_flag;
     int icd4, i, r;
+    double t;
 
     
     // Reset the counters for newly infected individuals
@@ -131,7 +132,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
     for(t_step = 0; t_step < N_TIME_STEP_PER_YEAR; t_step++){
 
-        if((t0 + t_step*TIME_STEP == TIME_PC0 && WRITE_PARTNERSHIPS_AT_PC0 == 1) && (PRINT_EACH_RUN_OUTPUT == 1)){
+	t = t0 + t_step*TIME_STEP;
+        if((t == TIME_PC0 && WRITE_PARTNERSHIPS_AT_PC0 == 1) && (PRINT_EACH_RUN_OUTPUT == 1)){
             sweep_through_all_and_compute_distribution_lifetime_and_lastyear_partners(patch, overall_partnerships, t0, t_step, output);
             write_distr_n_lifetime_partners_and_n_partners_lastyear(patch, file_data_store);
         }
@@ -150,9 +152,12 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	if(patch[0].country_setting==ZIMBABWE){
 	    /* Only update once we have data (i.e. once cohort starts): 
 	       Pre-cohort, value is set to be at cohort value in read_partnership_params(). */
-	    if((t0+t_step*TIME_STEP)>(patch[0].param->COHORTYEAR[0]+TIME_STEP*patch[0].param->COHORTTIMESTEP[0])){
-		update_number_new_partners(t0+t_step*TIME_STEP,patch);
+	    if(t>(patch[0].param->COHORTYEAR[0]+TIME_STEP*patch[0].param->COHORTTIMESTEP[0])){
+		update_number_new_partners(t,patch);
 	    }
+	    /* Allows hazard to vary over time, once epidemic starts: */
+	    if(t>=patch[p].param->start_time_hiv)
+		update_time_varying_hazard_allpatches(t,patch);
 	}
 
 	
@@ -161,7 +166,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);
 	    //fflush(stdout);
             fit_flag = carry_out_processes_by_patch_by_time_step(t_step, t0, fitting_data, patch,
-								 p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug,
+								 p, overall_partnerships, output, rng_seed_offset, rng_seed_offset_PC, debug, i_run,
 								 file_data_store, scenario_flag);
         }
 	
@@ -452,7 +457,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
 
 int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_struct *fitting_data,
         patch_struct *patch, int p, all_partnerships * overall_partnerships, output_struct *output,
-        int rng_seed_offset, int rng_seed_offset_PC, debug_struct *debug, 
+					      int rng_seed_offset, int rng_seed_offset_PC, debug_struct *debug, int i_run,
         file_struct *file_data_store, int scenario_flag){
     /* This function calls a range of processes used in the simulation
     
@@ -1096,6 +1101,17 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* 12. VMMC (for Manicaland cascade - i.e. not part of HIV testing) */
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
+
+	if(MIHPSA_MODULE==1){	
+	    if(t_step==0 && t>=patch[p].param->COUNTRY_VMMC_START){
+		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START)
+		    printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
+		/* This function varies VMMC uptake on an annual basis, overriding the values of p_use_VMMC[] set in input.c.
+		 Note that it only changes the pre-intervention values for now. */
+		update_VMMCrates(t,patch,p);
+	    }
+	}
+	
 	update_VMMCbarriers_from_ageing(t, t_step, patch, p);
 	if(t >= patch[p].param->COUNTRY_VMMC_START){
 	    sweep_pop_for_VMMC_per_timestep_given_barriers(t, patch, p);

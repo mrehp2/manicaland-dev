@@ -710,7 +710,7 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
     }
     cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15 = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus = 0;
-    cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49 = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus = 0;
 
 }
 

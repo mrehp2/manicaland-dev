@@ -153,7 +153,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     }
 
 
-    sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
+    sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
 	    (int) floor(t),
 	    npop_bysex_15to49[MALE],npop_bysex_15to49[FEMALE],
 	    npositive_bysex_15to49[MALE],npositive_bysex_15to49[FEMALE],
@@ -169,8 +169,7 @@ patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[FEMALE],
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
-	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49
-	    );	
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus);	
 
     
 

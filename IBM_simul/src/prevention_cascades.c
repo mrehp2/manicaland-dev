@@ -152,8 +152,8 @@ void assign_individual_condom_prevention_cascade(double t, individual *indiv, ca
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
     
-    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = barrier_params->p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
-    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = barrier_params->p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag];
+    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = &(barrier_params->p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag]);
+    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = &(barrier_params->p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag]);
 }
 
 
@@ -234,7 +234,7 @@ void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patc
 			if(MIHPSA_MODULE==1){
 			    int age = floor(t - indiv->DoB);
 			    if(age>=15 && age <=49)
-				patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49++;
+				patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
 			}
 			
 		    }
@@ -309,12 +309,12 @@ double calculate_partnership_condom_cascade_probability(individual *indiv1, indi
 
     //p_use_condom1 = generate_individual_condom_preference(indiv1, t, duration_partnership, condom_cascade_scenario);
     if (duration_partnership<1.0){
-	p_use_condom1 = indiv1->cascade_barriers.p_want_to_use_condom_casual_partner;
-	p_use_condom2 = indiv2->cascade_barriers.p_want_to_use_condom_casual_partner;
+	p_use_condom1 = *(indiv1->cascade_barriers.p_want_to_use_condom_casual_partner);
+	p_use_condom2 = *(indiv2->cascade_barriers.p_want_to_use_condom_casual_partner);
     }
     else{
-	p_use_condom1 = indiv1->cascade_barriers.p_want_to_use_condom_long_term_partner;
-	p_use_condom2 = indiv2->cascade_barriers.p_want_to_use_condom_long_term_partner;
+	p_use_condom1 = *(indiv1->cascade_barriers.p_want_to_use_condom_long_term_partner);
+	p_use_condom2 = *(indiv2->cascade_barriers.p_want_to_use_condom_long_term_partner);
     }
 
     p_use_condom = sqrt(p_use_condom1*p_use_condom2);

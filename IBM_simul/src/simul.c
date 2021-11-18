@@ -115,7 +115,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
     long npop_check;
     int g, ai, aa;
-    
+
     for(p = 0; p < NPATCHES; p++){
         npop_check = 0;
         for(g = 0; g < N_GENDER; g++){
@@ -128,6 +128,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
             }
             npop_check += patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
         }
+
     }
 
     for(t_step = 0; t_step < N_TIME_STEP_PER_YEAR; t_step++){
@@ -137,7 +138,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
             sweep_through_all_and_compute_distribution_lifetime_and_lastyear_partners(patch, overall_partnerships, t0, t_step, output);
             write_distr_n_lifetime_partners_and_n_partners_lastyear(patch, file_data_store);
         }
-        
+
         // When CHiPs starts for the first time (round 1) we reseed the random number generator.
         // This allows us to see how stochasticity during PopART affects impact.  
         if (SETTING==SETTING_POPART){
@@ -147,6 +148,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    }
         }
 
+
 	/* For Zimbabwe we want partner numbers to change over time.
 	   For other settings, we currently don't do this. */
 	if(patch[0].country_setting==ZIMBABWE){
@@ -155,12 +157,13 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    if(t>(patch[0].param->COHORTYEAR[0]+TIME_STEP*patch[0].param->COHORTTIMESTEP[0])){
 		update_number_new_partners(t,patch);
 	    }
+
 	    /* Allows hazard to vary over time, once epidemic starts: */
-	    if(t>=patch[p].param->start_time_hiv)
+	    if(t>=patch[0].param->start_time_hiv)
 		update_time_varying_hazard_allpatches(t,patch);
+
 	}
 
-	
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
 	    //printf("Running carry_out_processes_by_patch_by_time_step() for p=%i,t=%i %i\n",p,t0,t_step);

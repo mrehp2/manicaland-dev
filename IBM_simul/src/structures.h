@@ -59,8 +59,8 @@ typedef struct{
     //double VMMC_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
     /* Personal preference for using condom with long-term and short-term partners. 
 */
-    double p_want_to_use_condom_long_term_partner;
-    double p_want_to_use_condom_casual_partner;
+    double *p_want_to_use_condom_long_term_partner;
+    double *p_want_to_use_condom_casual_partner;
     
     double *p_will_get_VMMC; /* Probability gets circumcised this timestep (given cascade barriers). */
     

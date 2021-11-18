@@ -1184,7 +1184,7 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
 	    if(MIHPSA_MODULE==1){
 		int age = floor(t - indiv->DoB);
 		if(age>=15 && age <=49)
-		    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15_49++;
+		    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
 	    }
 
             schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,

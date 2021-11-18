@@ -649,6 +649,7 @@ void update_time_varying_hazard_onepatch(double t, parameters *param){
 void update_time_varying_hazard_allpatches(double t, patch_struct *patch){
     int p;
 
+
     if(patch[0].country_setting!=ZIMBABWE){
 	/* Keep constant for all time: */
 	for(p = 0; p < NPATCHES; p++){

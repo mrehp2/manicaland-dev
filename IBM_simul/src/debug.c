@@ -2491,8 +2491,8 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%8.6lf,%8.6lf,",(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1);
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",indiv->cascade_barriers.p_will_use_PrEP);
 		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",(indiv->gender==MALE)?*(indiv->cascade_barriers.p_will_get_VMMC):0);
-		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",indiv->cascade_barriers.p_want_to_use_condom_long_term_partner);
-		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf\n",indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf,",*(indiv->cascade_barriers.p_want_to_use_condom_long_term_partner));
+		fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%6.4lf\n",*(indiv->cascade_barriers.p_want_to_use_condom_casual_partner));
 
 		//fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,t-indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_condom_used_LT>0)?N_partners_LT/(1.0*N_partners_LT):-1,(N_partners_condom_used_casual>0)?N_partners_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,indiv->cascade_barriers.p_will_get_VMMC,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
 	    }
@@ -2505,7 +2505,7 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
 	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
 
 	    
-	    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%i,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,(int) floor(t-indiv->DoB),indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,(indiv->gender==MALE)?*(indiv->cascade_barriers.p_will_get_VMMC):0,indiv->cascade_barriers.p_want_to_use_condom_long_term_partner,indiv->cascade_barriers.p_want_to_use_condom_casual_partner);
+	    fprintf(PREVENTION_CASCADE_INDIV_BARRIER_FILE,"%li,%i,%6.4lf,%s,%li,%i,%i,%8.6lf,%8.6lf,%6.4lf,%6.4lf,%6.4lf,%6.4lf\n",indiv->id,(int) floor(t-indiv->DoB),indiv->DoB,(indiv->gender==MALE?"M":"F"),indiv->n_lifetime_partners,indiv->PrEP_cascade_status,indiv->circ,(N_partners_LT>0)?N_partners_condom_used_LT/(1.0*N_partners_LT):-1,(N_partners_casual>0)?N_partners_condom_used_casual/(1.0*N_partners_casual):-1,indiv->cascade_barriers.p_will_use_PrEP,(indiv->gender==MALE)?*(indiv->cascade_barriers.p_will_get_VMMC):0,*(indiv->cascade_barriers.p_want_to_use_condom_long_term_partner),*(indiv->cascade_barriers.p_want_to_use_condom_casual_partner));
 	}
     }
 	    

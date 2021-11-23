@@ -8,11 +8,11 @@
 # e.g. WPP2017_FERT_F07_AGE_SPECIFIC_FERTILITY.XLS
 # Modify "COUNTRY" and "YEAR" variables below to change the country and UNPD WPP version used.
 # Additional requirements: python packae 'xlrd':
-# Uses package 'xlrd' to read in xlsx files.
+# Uses package 'openpyxl' to read in xlsx files.
 # To install make sure you have pip:
 # (if you don't, then install via) sudo apt install python-pip
-# Then install xlrd:
-# pip install xlrd
+# Then install openpyxl:
+# pip install openpyxl
 
 #############################################################################
 
@@ -24,7 +24,7 @@
 #############################################################################
 
 # Library functions:
-import xlrd
+import openpyxl
 import sys,os,glob
 
 # This is the year of the UNPD WPP projections we are using - currently using WPP2019 projections.
@@ -38,7 +38,7 @@ COUNTRY = sys.argv[2]
 projection_type = "MEDIUM VARIANT"
 
 
-print "***USING UNPD WPP",YEAR,projection_type," projections***"
+print("***USING UNPD WPP",YEAR,projection_type," projections***")
 
 
 
@@ -65,7 +65,7 @@ def find_correct_filename(filename_without_extension):
     possible_files = glob.glob(os.getcwd()+"/"+filename_without_extension+".[xX]*")
 
     if len(possible_files)>1:
-        print "Too many possible files:",possible_files
+        print("Too many possible files:",possible_files)
         sys.exit(1)
     else:
         return possible_files[0]
@@ -92,9 +92,8 @@ def check_header(header,f):
         header_to_compare += [age_range]
         min_age = min_age + 5
 
-    
     if not(header_to_compare==header):
-        print "Error: header for file ",f," not of the expected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header
+        print("Error: header for file ",f," not of the expected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header)
         sys.exit(1)
 
 
@@ -125,16 +124,15 @@ def combine_times_time_periods(past_data,future_data):
 # Given a list of sheet names (where the formatting may not match Excel's exactly in terms of whitespace etc) and the name of the xlsx file, pull out the named sheets and return this (as an array) and the list of sheet names 
 def pull_out_sheets(infilename,list_of_sheets):
 
-    book = xlrd.open_workbook(infilename)
+    book = openpyxl.load_workbook(infilename)
     
     sheets_to_keep = {}
     
 
-    for sheet in book.sheets():
-        formatted_sheet_name = sheet.name.rstrip().upper()
+    for sheet in book:
+        formatted_sheet_name = sheet.title.rstrip().upper()
         if formatted_sheet_name in list_of_sheets:
-            
-            sheets_to_keep[formatted_sheet_name] = book.sheet_by_name(sheet.name)
+            sheets_to_keep[formatted_sheet_name] = sheet
             
     return sheets_to_keep
 
@@ -144,18 +142,15 @@ def pull_out_sheets(infilename,list_of_sheets):
 def extract_country_data_fertility(sheet,COUNTRY,f):
     fertility_data = {}
     
-    for i in range(sheet.nrows):
-
-        # Go through spreadsheet line by line:
-        line = sheet.row_values(i)
-
+    for i, line in enumerate(sheet.values):
+        line = list(line)
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
             try:
                 i_data_start = line.index("15-19")
             except:
                 # If this happens, then UNPD has changed the format of their file again.
-                print "Unexpected format of Excel file - please check that line 16 contains the header information",line
+                print("Unexpected format of Excel file - please check that line 16 contains the header information",line)
 
 
             header = line[i_data_start:]

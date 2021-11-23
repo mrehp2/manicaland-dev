@@ -28,12 +28,12 @@
 
 
 
-# Additional requirements: python packae 'xlrd':
-# Uses package 'xlrd' to read in xlsx files.
+# Additional requirements: python package 'openpyxl':
+# Uses package 'openpyxl' to read in xlsx files.
 # To install make sure you have pip:
 # (if you don't, then install via) sudo apt install python-pip
-# Then install xlrd:
-# pip install xlrd
+# Then install openpyxl:
+# pip install openpyxl
 
 #############################################################################
 
@@ -45,7 +45,7 @@
 
 
 # Library functions:
-import xlrd
+import openpyxl
 import sys,os,glob
 
 
@@ -65,7 +65,7 @@ mortality_info_file.close()
 projection_type = "MEDIUM VARIANT"
 
 
-print "***USING UNPD WPP",YEAR,projection_type," projections***"
+print("***USING UNPD WPP",YEAR,projection_type," projections***")
 
 
 
@@ -98,7 +98,7 @@ def find_correct_filename(filename_without_extension):
     possible_files = glob.glob(os.getcwd()+"/"+filename_without_extension+".[xX]*")
 
     if len(possible_files)>1:
-        print "Too many possible files:",possible_files
+        print("Too many possible files:",possible_files)
         sys.exit(1)
     else:
         return possible_files[0]
@@ -117,20 +117,20 @@ def check_mortality_header(header,f):
             i_max = i
         age_range = str(min_age)+"-"+str(max_age)
         if not(age_range==header[i]):
-            print "Error: header for file ",f," not of the expected format in check_mortality_header(). Exiting",age_range,header[i]
+            print("Error: header for file ",f," not of the expected format in check_mortality_header(). Exiting",age_range,header[i])
             sys.exit(1)
             
     # Now check oldest age group:
     age_range = str(5*(n_age_groups-1))+"+"
     if not(age_range==header[n_age_groups-1]):
-        print "Error: header for file ",f," not of the expected format. Exiting",age_range,header[n_age_groups-1]
+        print("Error: header for file ",f," not of the expected format. Exiting",age_range,header[n_age_groups-1])
         sys.exit(1)
 
 
     try:
         return i_max
     except:
-        print "ERROR: in check_mortality_header() i_max is not defined. Exitng."
+        print("ERROR: in check_mortality_header() i_max is not defined. Exitng.")
         sys.exit(1)
 
 
@@ -180,7 +180,7 @@ def check_NPop_header(header,f):
 
     
     if not(header_to_compare==header):
-        print "Error: NPop header for file ",f," not of the xpected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header
+        print("Error: NPop header for file ",f," not of the xpected format. Exiting.\nComparison header=",header_to_compare,"\nOriginal:",header)
         sys.exit(1)
 
         
@@ -189,7 +189,7 @@ def check_NPop_header(header,f):
         # i_80to84 is the index for the 80-84 column
         return [i_80plus,i_80to84]
     except:
-        print "ERROR: in check_NPop_header() i_max is not defined. Exitng."
+        print("ERROR: in check_NPop_header() i_max is not defined. Exitng.")
         sys.exit(1)
 
 
@@ -239,20 +239,19 @@ def combine_times_years(past_data,future_data):
 
 # Given a list of sheet names (where the formatting may not match Excel's exactly in terms of whitespace etc) and the name of the xlsx file, pull out the named sheets and return this (as an array) and the list of sheet names 
 def pull_out_sheets(infilename,list_of_sheets):
-    #list_of_sheets_in_excel = []
 
-    book = xlrd.open_workbook(infilename)
+    book = openpyxl.load_workbook(infilename)
     
     sheets_to_keep = {}
     
 
-    for sheet in book.sheets():
-        formatted_sheet_name = sheet.name.rstrip().upper()
+    for sheet in book:
+        formatted_sheet_name = sheet.title.rstrip().upper()
         if formatted_sheet_name in list_of_sheets:
-            
-            sheets_to_keep[formatted_sheet_name] = book.sheet_by_name(sheet.name)
+            sheets_to_keep[formatted_sheet_name] = sheet
             
     return sheets_to_keep
+
 
 def combine_upper_age_groups(line,i_max):
     upper_age_groups_to_combine = line[i_max:]
@@ -283,18 +282,16 @@ def combine_upper_age_groups_NPop(line,i_80plus,i_80to84,i_data_start):
 def extract_country_data_mortality(sheet,COUNTRY,f):
     mortality_data = {}
     
-    for i in range(sheet.nrows):
+    for i, line in enumerate(sheet.values):
 
-        # Go through spreadsheet line by line:
-        line = sheet.row_values(i)
-
+        line = list(line)
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
             try:
                 i_data_start = line.index("0-4")
             except:
                 # If this happens, then UNPD has changed the format of their file again.
-                print "Unexpected format of Excel file",f," in extract_country_data_mortality()- please check that line 16 contains the header information",line
+                print("Unexpected format of Excel file",f," in extract_country_data_mortality()- please check that line 16 contains the header information",line)
 
             header = line[i_data_start:]
             # Make sure that this is of the correct format. If it is, then give the index corresponding to the age group 80+ (when combining data)
@@ -320,10 +317,9 @@ def extract_country_data_mortality(sheet,COUNTRY,f):
 def extract_country_data_NPop(sheet,COUNTRY,f):
     NPop_data = {}
     
-    for i in range(sheet.nrows):
+    for i, line in enumerate(sheet.values):
 
-        # Go through spreadsheet line by line:
-        line = sheet.row_values(i)
+        line = list(line)
 
         # 17th row is the header. Check this is what we think it is as a way fo verifying the file.
         if i==16:
@@ -332,7 +328,7 @@ def extract_country_data_NPop(sheet,COUNTRY,f):
 
             except:
                 # If this happens, then UNPD has changed the format of their file again.
-                print "Error: Unexpected format of Excel file",f," in extract_country_data_NPop() - please check that line 16 contains the header information",line
+                print("Error: Unexpected format of Excel file",f," in extract_country_data_NPop() - please check that line 16 contains the header information",line)
                 sys.exit(1)
                 
             header = line[i_data_start:]
@@ -375,7 +371,7 @@ def interpolate_data(original_data):
 
         n_data = len(original_data[t_start])
         if len(original_data[t_end])!=n_data:
-            print "Error: interpolate_data() length of lines for years ",t_start," and ",t_end," do not match. Exiting."
+            print("Error: interpolate_data() length of lines for years ",t_start," and ",t_end," do not match. Exiting.")
             sys.exit(1)
         
         for i in range(n_data):
@@ -431,7 +427,7 @@ def calculate_annual_mortality_rates(Ndeaths,Npeople):
         t_range = str(t_start)+"-"+str(t_end)
 
         if not(Nagegroups==len(Ndeaths[t_range]) and Nagegroups==len(Ndeaths[t_range])):
-            print "Error in calculate_annual_mortality_rates(): different lengths for the number of deaths and number of people. Exiting"
+            print("Error in calculate_annual_mortality_rates(): different lengths for the number of deaths and number of people. Exiting")
             sys.exit(1)
 
         mortality_rate[t_range] = []

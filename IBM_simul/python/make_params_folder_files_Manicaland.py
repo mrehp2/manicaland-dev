@@ -1043,10 +1043,10 @@ if __name__=="__main__":
     # Mortality and fertility data is based on UNPD estimates (with mortality estimates removing
     # HIV mortality by fitting a curve to times outside of main impact of HIV epidemic based on
     # analysis from Sweave file - see IBM model documetation for full explanation).
-    fertility_data_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
+    fertility_data_dir = join(homedir,"manicaland-dev","Parameterization","Demographics")
     mortality_unpd_data_dir = fertility_data_dir
     
-    mortality_sweave_code_dir = join(homedir,"MANICALAND","manicaland-dev","Parameterization","Demographics")
+    mortality_sweave_code_dir = join(homedir,"manicaland-dev","Parameterization","Demographics")
 
 
     # Analysis of Manicaland partnership data:

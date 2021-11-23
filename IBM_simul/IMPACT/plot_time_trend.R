@@ -687,11 +687,11 @@ n.runs <- 10
 
 
 # last 0 that this is the baseline cascade scenario:
-annualoutput.filenames <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",0)
+annualoutput.filenames <- make.annualoutput.filenames(n.runs,"./IMPACT/params/Output",0)
 
-annualoutput.filenames.scenario2 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",3)
-annualoutput.filenames.scenario3 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",2)
-annualoutput.filenames.scenario4 <- make.annualoutput.filenames(n.runs,"/home/mike/MANICALAND/manicaland-dev/IBM_simul/IMPACT/params/Output",1)
+annualoutput.filenames.scenario2 <- make.annualoutput.filenames(n.runs,"./IMPACT/params/Output",3)
+annualoutput.filenames.scenario3 <- make.annualoutput.filenames(n.runs,"./IMPACT/params/Output",2)
+annualoutput.filenames.scenario4 <- make.annualoutput.filenames(n.runs,"./IMPACT/params/Output",1)
 
 
 all.data <- get.data.as.list(annualoutput.filenames)

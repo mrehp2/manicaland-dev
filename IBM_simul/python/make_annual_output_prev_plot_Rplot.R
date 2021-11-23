@@ -15,7 +15,7 @@ print(outputfilename)
 outputfilename.restricted <- args[3]
 print(outputfilename.restricted)
 
-#infilename <- "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results/RESULTS/Output/Summary_annual_output_prevalence.csv"    
+#infilename <- "./results/RESULTS/Output/Summary_annual_output_prevalence.csv"    
 
 data = read.csv(infilename,header=F,sep=",")
 

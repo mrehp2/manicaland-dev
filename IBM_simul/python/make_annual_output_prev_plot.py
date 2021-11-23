@@ -71,9 +71,9 @@ def read_annual_output_files_and_extract_data(annualoutputfiledir,plot_output_fi
 
 
 
-#resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_2021_10_22/RESULTS/RESULTS1/Output/"
-resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results/RESULTS/Output/"
-#resultsdir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/data/SAMPLED_PARAMETERS/PARAMS_COMMUNITY5/Output/"
+#resultsdir = "./results_2021_10_22/RESULTS/RESULTS1/Output/"
+resultsdir = "./results/RESULTS/Output/"
+#resultsdir = "./data/SAMPLED_PARAMETERS/PARAMS_COMMUNITY5/Output/"
 
 
 outputfilename = "Summary_annual_output_prevalence.csv"    

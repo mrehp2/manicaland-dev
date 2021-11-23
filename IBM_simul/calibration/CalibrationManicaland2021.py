@@ -428,8 +428,8 @@ def Ramunajan_approximation(N):
 
 #h = hpy() 
 
-calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results_testOct2021/"
-#calibration_root_dir = "/home/mike/MANICALAND/manicaland-dev/IBM_simul/results2/"
+calibration_root_dir = "./manicaland-dev/IBM_simul/results_testOct2021/"
+#calibration_root_dir = "./manicaland-dev/IBM_simul/results2/"
 
 [community, ibm_data_header, all_model_calibration_filenames, full_header_string] = get_calibration_filenames_and_check_headers(calibration_root_dir)
 

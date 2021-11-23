@@ -19,7 +19,7 @@ import glob, sys, os, filecmp, shutil
 from datetime import datetime,date
 from os.path import join
 import random,copy
-import xlrd   # For reading Excel files.
+import openpyxl   # For reading Excel files.
 
 import utilities as utils
 
@@ -436,13 +436,13 @@ def copy_chips_file_removing_whitespace_and_store_start_end_times(original_data_
 # Given a single sheet name and the name of the xlsx file, pull out the named sheet and return as an array:
 def pull_out_sheet(infilename,sheet_to_get):
 
-    book = xlrd.open_workbook(infilename)
+    book = openpyxl.load_workbook(infilename)
     sheet_to_keep = {}
 
-    for sheet in book.sheets():
-        formatted_sheet_name = sheet.name.rstrip().upper()
+    for sheet in book:
+        formatted_sheet_name = sheet.title.rstrip().upper()
         if formatted_sheet_name==sheet_to_get:
-            return book.sheet_by_name(sheet.name)
+            return sheet
 
     print("Error: sheet",sheet_to_get," not found. Exiting.")
     sys.exit(1)
@@ -662,10 +662,9 @@ def make_mtct_params(sheet,mtct_param_filename):
     outstring = ""
     passed_header = 0 
     years = []
-    for i in range(sheet.nrows):
-
-        # Go through spreadsheet line by line:
-        line = sheet.row_values(i)
+    for i, line in enumerate(sheet.values):
+        line = list(line)
+        
         if (passed_header>0):
             outstring += " ".join([str(x) for x in line])+"\n"
             years += [line[0]]
@@ -1050,7 +1049,7 @@ if __name__=="__main__":
 
 
     # Analysis of Manicaland partnership data:
-    partnership_analysis_dir = join(homedir, "Dropbox (SPH Imperial College)", "Manicaland", "Cohort_analysis")
+    partnership_analysis_dir = join(homedir, "manicaland-dev", "Parameterization")
 
     
     utils.check_directory_exists(params_basedir)
@@ -1103,7 +1102,7 @@ if __name__=="__main__":
     copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir)
 
 
-    mtct_file = "~/Dropbox (SPH Imperial College)/Manicaland/Model/PMTCT/Spectrum_Manicaland_2019_MTCT.xlsx"
+    mtct_file = "../Parameterization/Spectrum_Manicaland_2019_MTCT.xlsx"
     # This is the sheet we want to pull out from the Excel file: 
     mtct_sheet_needed = "FOR IBM"
 

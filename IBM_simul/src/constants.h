@@ -128,8 +128,8 @@
 /************************** Random number variables *********************/
 /************************************************************************/
 
-const gsl_rng_type * TYPE_RNG;
-gsl_rng * rng;
+extern gsl_rng_type * TYPE_RNG;
+extern gsl_rng * rng;
 
 /************************************************************************/
 /***************************** General variables ************************/
@@ -521,7 +521,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define RESIZEMEM_BREAKUP 100   /* If we run out of memory in planned_breakups[] array, add this much extra. Note that the value is arbitrary so can change to optimise. */
 
 /* This is an array used by hiv_acquisition() to store the per-partnership hazard from all HIV+ partners of an individual. */
-double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
+extern double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
 
 /* Defines amount that can be stored each year for a single patch. If we want to write very long lines we need to increase this. */
 #define SIZEOF_annual_outputs_string 3000000

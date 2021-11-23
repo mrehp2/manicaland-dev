@@ -22,5 +22,6 @@
 int get_MIHPSA_condom_use_last_act(individual *);
 void store_annual_outputs_MIHPSA(patch_struct *, int, output_struct *, double);
 void write_MIHPSA_outputs(file_struct *, output_struct *, int);
+void join_strings_with_check(char *, char *, int , char *);
 
 #endif /* MIHPSA_OUTPUT_H_ */

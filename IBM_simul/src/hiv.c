@@ -72,6 +72,8 @@ Returns
 -------
 An individual's set-point viral load category. 
 */
+double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
+
 
 int get_spvl_cat(double spvl_num){
     if(spvl_num < 4.0)

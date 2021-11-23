@@ -2775,7 +2775,8 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
     double childhood_mortality_rate = childhood_mortality(patch[p].param, t);
 
-    long n, n_hivpos;
+    // long n, n_hivpos;
+    long n_hivpos;
     //long , n_hivpos_artvs, n_hivpos_earlyart, n_hivpos_artvu, n_hivpos_unaware, n_hivpos_aware_neverart, n_hivpos_cascadedropout;
 
     /**********************FOR DEBUGGING CASCADE. */
@@ -2838,7 +2839,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
     
 	
 	/* Total number of women aged aa: */
-	n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
+	// n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
 
 	for (r=0; r<N_RISK; r++){
 	    n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];

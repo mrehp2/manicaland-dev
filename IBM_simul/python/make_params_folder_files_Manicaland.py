@@ -444,7 +444,7 @@ def pull_out_sheet(infilename,sheet_to_get):
         if formatted_sheet_name==sheet_to_get:
             return book.sheet_by_name(sheet.name)
 
-    print "Error: sheet",sheet_to_get," not found. Exiting."
+    print("Error: sheet",sheet_to_get," not found. Exiting.")
     sys.exit(1)
 
     
@@ -572,7 +572,7 @@ def read_community_data(files_by_community, community_param_dir):
 
 
 def read_partnership_data(country, partnership_analysis_dir):
-    print "Country=",country
+    print("Country=",country)
     """
     For PopART function reads in the data generated from the raw PC data by a knitr document written by  Anne:
     ~/Dropbox/PoPART/Data\:Stats/PC\ Data\ Downloads/15-12-2016_PC0_NEWFINAL/R/partnerships/ExtractPartnershipParamFromPC0.Rnw
@@ -732,14 +732,14 @@ def get_most_recent_WPP_year(WPP_filename):
         first_part_of_filename = this_filename.split("_")[0]
 
         if ((len(first_part_of_filename)!=7) or (first_part_of_filename[0:3])!="WPP"):
-            print "Error for UNPD WPP file ",this_filename,". Filename not in expected format",first_part_of_filename
+            print("Error for UNPD WPP file ",this_filename,". Filename not in expected format",first_part_of_filename)
             sys.exit(1)
 
 
         try:
             years_stored_in_folder += [int(first_part_of_filename[3:])]
         except:
-            print "Error for UNPD WPP file ",f,". Filename not in expected format"
+            print("Error for UNPD WPP file ",f,". Filename not in expected format")
             sys.exit(1)
 
     # Now pick the most recent year:
@@ -748,7 +748,7 @@ def get_most_recent_WPP_year(WPP_filename):
     # From datetime module - check if the most recent WPP year is within 2 years of current year.
     current_year = date.today().year
     if (most_recent_year+2<current_year):
-        print "Warning: newer UNPD WPP projections may exist than ",most_recent_year
+        print("Warning: newer UNPD WPP projections may exist than ",most_recent_year)
         
     return most_recent_year
 
@@ -834,7 +834,7 @@ def get_current_UNPD_mortality_datafile_year(input_dir, country_sentencecase):
     most_recent_year_mort_F = get_most_recent_WPP_year(WPP_mortality_file_women)
 
     if not(most_recent_year_Npop_M==most_recent_year_Npop_F==most_recent_year_mort_M==most_recent_year_mort_F):
-        print "Error: One or more missing WPP files - not all have the same date. Exiting\n"
+        print("Error: One or more missing WPP files - not all have the same date. Exiting\n")
         sys.exit(1)
     else: # All are the same.
         most_recent_year = most_recent_year_mort_F
@@ -1002,7 +1002,7 @@ if __name__=="__main__":
     try:
         all_communities = [int(x) for x in COMMAND_LINE_ARGS[2:]]
     except:
-        print "Error for community number.",site_no
+        print("Error for community number.",site_no)
         utils.handle_error("All arguments passed to make_params_folder_file_Manicaland.py must be integers. Exiting")
 
     for x in all_communities:
@@ -1190,7 +1190,7 @@ if __name__=="__main__":
                     output_file_strings[f] = \
                         utils.add_comment(output_file_strings[f], comment) + "\n"
                 else:
-                    print "For file ",f
+                    print("For file ",f)
                     utils.handle_error("Error: not dealing with " + typeofinput + \
                                        " at present.  Exiting.\n")
         
@@ -1204,11 +1204,11 @@ if __name__=="__main__":
     # Now check that we did remove everything from the country list (so that all the files
     # match up).
     if not(country_level_data == {}):
-        print "ERROR*** - country_level_data=",country_level_data
+        print("ERROR*** - country_level_data=",country_level_data)
         sys.exit(1)
 
     if not(community_level_data == {}):
-        print "ERROR*** - community_level_data=",community_level_data
+        print("ERROR*** - community_level_data=",community_level_data)
         sys.exit(1)
 
     # ###########################################################################################

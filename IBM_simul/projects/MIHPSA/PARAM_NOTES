@@ -1,0 +1,15 @@
+
+changed log seed multiplier to 0.5-2.5
+start time HIV is 1960
+p_child_circ_trad 0.098 //   MIHPSA value used.
+COUNTRY_VMMC_START 2013 MIHPSA (2008 originally)
+
+
+
+COHORTROUND7 2019.25  // median value of start.date variable "2019-04-12"
+
+
+# MAKE SURE MIHPSA IS 1 IN CONSTNATS.H
+
+
+

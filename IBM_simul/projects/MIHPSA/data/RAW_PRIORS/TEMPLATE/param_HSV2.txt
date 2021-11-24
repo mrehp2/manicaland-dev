@@ -1,0 +1,7 @@
+mean_dur_hsv2event  0.1 10.0 0.1    // Duration of each HSV-2 stage. 
+average_annual_hazard_hsv2  0.05    // Assumption.
+eff_condom_hsv2 0.55 // Mid-point of Pickles et al LGH 2013 (range 0.4-0.7)
+eff_prep_semiadherent_hsv2 0.5 // CHANGE!!!
+eff_prep_adherent_hsv2 0.7  // https://www.acpjournals.org/doi/10.7326/m13-2471
+eff_circ_hsv2_vmmc 0.66 // Point estimate of Davis BMJ Glob Health 2019, looking at South Africa data.
+eff_circ_hsv2_tmc 0.66 // Assumption for now.

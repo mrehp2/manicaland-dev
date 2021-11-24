@@ -162,6 +162,19 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    if(t>=patch[0].param->start_time_hiv)
 		update_time_varying_hazard_allpatches(t,patch);
 
+	    if(MANICALAND_CASCADE==1){
+	    
+		if(t>=1989){
+		    if(i_run==0 && t==1989.0)
+			printf("Condom use now changes at each timestep\n");
+		    /* This function varies condom use uptake. 
+		       It incorporates the intervention (if it happens). */
+		    for(p = 0; p < NPATCHES; p++)
+			update_condomrates(t,patch[p].param);
+		}
+	    }
+	    
+
 	}
 
         // Carry out main processes
@@ -1127,15 +1140,6 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 
-	if(MIHPSA_MODULE==1){	
-	    if(t>=patch[p].param->COUNTRY_VMMC_START){
-		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START)
-		    printf("Warning: Overriding p_use_cond_X for MIHPSA project\n");
-		/* This function varies condom use uptake on an annual basis, overriding the values of p_use_VMMC[] set in input.c.
-		 Note that it only changes the pre-intervention values for now. */
-		update_condomrates(t,patch,p);
-	    }
-	}
 	
 	update_condombarriers_from_ageing(t, t_step, patch, p);
     }
@@ -1161,7 +1165,8 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		    prevention_cascade_intervention_PrEP(t, patch, p);
 		    printf("Running PrEP prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
 		}
-		
+
+		/* This function redraws condom use in *existing* partnerships where condoms are not already used. Note that an individual's preferences for condoms is automatically updated via the function update_condomrates(). */
 		if(patch[p].param->barrier_params.i_condom_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_condom(t, patch, p);
 		    printf("Running condom prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_condom_barrier_intervention_flag,t);

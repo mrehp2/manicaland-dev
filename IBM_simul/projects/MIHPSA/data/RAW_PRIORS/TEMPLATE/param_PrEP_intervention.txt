@@ -1,0 +1,11 @@
+start_time_PrEP_intervention 2019.0   // Year (note - must be integer) when  PrEP becomes available.
+proportion_seen_by_age[18] 0.08   // Proportion of eligible 18 year old women in the period lasting n_timesteps_in_intervention who receive PrEP (eligibility currently not HIV+, not on PrEP). Note that PrEP ages currently 18-24.
+proportion_seen_by_age[19] 0.05
+proportion_seen_by_age[20] 0.1
+proportion_seen_by_age[21] 0.12
+proportion_seen_by_age[22] 0.05
+proportion_seen_by_age[23] 0.01
+proportion_seen_by_age[24] 0.02
+n_timesteps_in_round 40 // Duration of a single intervention round.
+p_becomes_PrEP_adherent_intervention 0.9 //
+p_semiadherent_acts_covered 0.8 // Proportion of acts covered if using PrEP semi-adherently.

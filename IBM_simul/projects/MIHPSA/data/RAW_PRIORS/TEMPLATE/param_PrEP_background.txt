@@ -1,0 +1,10 @@
+start_time_PrEP_background 2015.0   // Time when  PrEP became available (via background).
+proportion_seen_by_age[18] 0.1   // Proportion of eligible 18 year old women who receive PrEP annually (eligibility currently not HIV+, not on PrEP). Note that PrEP ages currently 18-24.
+proportion_seen_by_age[19] 0.15
+proportion_seen_by_age[20] 0.2
+proportion_seen_by_age[21] 0.15
+proportion_seen_by_age[22] 0.2
+proportion_seen_by_age[23] 0.12
+proportion_seen_by_age[24] 0.08
+p_becomes_PrEP_adherent_background 1.0 // Assumption - lower adherence is taken into account by reduced prep_efficacy.
+p_semiadherent_acts_covered_background 0.8 // Proportion of acts covered if using PrEP semi-adherently.

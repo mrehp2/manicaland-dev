@@ -148,12 +148,12 @@ void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, casc
 
 }
 
-void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params, int i_condom_intervention_running_flag){
+void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
     
-    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = &(barrier_params->p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag]);
-    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = &(barrier_params->p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)][i_condom_intervention_running_flag]);
+    indiv->cascade_barriers.p_want_to_use_condom_long_term_partner = &(barrier_params->p_use_cond_LT[index_HIV_prevention_cascade_condom(age,g)]);
+    indiv->cascade_barriers.p_want_to_use_condom_casual_partner = &(barrier_params->p_use_cond_casual[index_HIV_prevention_cascade_condom(age,g)]);
 }
 
 
@@ -165,17 +165,14 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 
     int i_VMMC_intervention_running_flag;
     int i_PrEP_intervention_running_flag;
-    int i_condom_intervention_running_flag;
     
     if (t<barrier_params->t_start_prevention_cascade_intervention){
 	i_VMMC_intervention_running_flag = 0;
 	i_PrEP_intervention_running_flag = 0;
-	i_condom_intervention_running_flag = 0;
     }
     else{
 	i_VMMC_intervention_running_flag = barrier_params->i_VMMC_barrier_intervention_flag;
 	i_PrEP_intervention_running_flag = barrier_params->i_PrEP_barrier_intervention_flag;
-	i_condom_intervention_running_flag = barrier_params->i_condom_barrier_intervention_flag;
     }
 
     /* if(t>2007){ */
@@ -192,7 +189,8 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     
     assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params, i_PrEP_intervention_running_flag);
 
-    assign_individual_condom_prevention_cascade(t, indiv, barrier_params, i_condom_intervention_running_flag);
+    /* No need to specify if condom interventiokn is running, because that is dealt with in p_use_condom_casual/LT[], which is updated at each timestep. */
+    assign_individual_condom_prevention_cascade(t, indiv, barrier_params);
 
 }
 
@@ -435,13 +433,13 @@ void generate_intervention_increase_in_partnership_condom_use_lookuptable(cascad
 	for(i_cond_preventionbarrier_group_F=0; i_cond_preventionbarrier_group_F<N_COND_PREVENTIONBARRIER_GROUPS_F; i_cond_preventionbarrier_group_F++){
 
 	    barrier_params->change_in_p_use_condom_casual[i_cond_preventionbarrier_group_M][i_cond_preventionbarrier_group_F] =
-		sqrt(barrier_params->p_use_cond_casual[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
-		sqrt(barrier_params->p_use_cond_casual[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
+		sqrt(barrier_params->p_use_cond_casual_present[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_casual_present[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
+		sqrt(barrier_params->p_use_cond_casual_present[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_casual_present[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
     
 
 	    barrier_params->change_in_p_use_condom_LT[i_cond_preventionbarrier_group_M][i_cond_preventionbarrier_group_F] =
-		sqrt(barrier_params->p_use_cond_LT[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
-		sqrt(barrier_params->p_use_cond_LT[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
+		sqrt(barrier_params->p_use_cond_LT_present[i_cond_preventionbarrier_group_M][1]*barrier_params->p_use_cond_LT_present[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][1]) - 
+		sqrt(barrier_params->p_use_cond_LT_present[i_cond_preventionbarrier_group_M][0]*barrier_params->p_use_cond_LT_present[N_COND_PREVENTIONBARRIER_GROUPS_M+i_cond_preventionbarrier_group_F][0]);
 	}    
 
 
@@ -541,14 +539,11 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
 
     
 /* Function corresponds to an intervention that increases each individual's preference for using a condom (by reducing barriers).
-   Thus any new partnerships will have a higher probability of using a condom.
-   In addition this function increases the probability of using a condom for existing partnerhips.
+   This function increases the probability of using a condom for existing partnerhips.
    ***Right now, if a partnerships is using a condom, then they will continue to do so. If not, then there is a probability that they will start to use it. 
    
    
-   Function loops through the list of alive people via age_list *TWICE*.
-   Firstly, loop through the list of alive people. For each person, update their individual condom cascade barrier params.
-   Then, loop through again and look at partnerships for each person - update condom use if the id of the partner is < the id of that person. 
+   Function loops through the list of alive people via age_list, looking at partnerships for each person - update condom use if the id of the partner is < the id of that person. 
    Note we need 2 loops as we can't guarantee that the age of the second person is less than that of the first (it is for new individuals, but not at the start of the simulation). */
 void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p){
     int aa, ai, g, i, i_partners;
@@ -572,29 +567,6 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
     }
 
     
-    /* First - go through everyone, and alter their individual preference for condoms.
-      */
-    for(g = 0; g < N_GENDER; g++){    
-	for(aa = 0; aa < (MAX_AGE - AGE_ADULT); aa++){
-	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
-	    while(ai > (MAX_AGE - AGE_ADULT - 1))
-		ai = ai - (MAX_AGE - AGE_ADULT);
-            
-	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
-	    for(i = 0; i < number_per_age_group; i++){
-		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-		assign_individual_condom_prevention_cascade(t, indiv, &(patch[p].param->barrier_params),intervention_scenario);
-	    }
-	}
-	/* Now oldest age group: */
-	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
-	for(i = 0; i < number_per_age_group; i++){
-	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
-
-	    assign_individual_condom_prevention_cascade(t, indiv, &(patch[p].param->barrier_params),intervention_scenario);
-	}
-
-    }
 
     
     /* Go through everyone - modify if we only reach certain age groups etc. */
@@ -764,7 +736,6 @@ void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
 
 void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
-    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
 
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
@@ -782,7 +753,7 @@ void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_
 	indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 	if(indiv->birthday_timestep==t_step){
 	    /* Assumption - condom use in *existing* partnerships does not change when people pass this age threshold. We therefore do not need an equivalent function to update_partnership_condom_use_in_response_to_intervention(). */
-	    assign_individual_condom_prevention_cascade(t, indiv, &(patch[p].param->barrier_params), intervention_scenario);
+	    assign_individual_condom_prevention_cascade(t, indiv, &(patch[p].param->barrier_params));
 	}
     }
 }
@@ -897,78 +868,75 @@ void update_VMMCrates(int t, patch_struct *patch, int p){
 
 /* Function allows condom rates to vary each year. 
    Designed for MIHPSA project, but can be used elsewhere. */
-void update_condomrates(int t, patch_struct *patch, int p){
+void update_condomrates(double t, parameters *param){
 
-    /* We have data for 12 years from C:\Users\mpickles\Dropbox (SPH Imperial College)\projects\MIHPSA_Zimabwe2021\Copy of HIVcalibrationData_Zimbabwe.xlsx. */
-    double VMMCrate_young[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
-    double VMMCrate_old[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
+    double cond_1989 = 0.05; /* Assumed condom use rate in 1989. */
 
-    
-    if(t>2019){
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
+    int intervention_scenario;    /* Stores scenario for easier readability. */
+    if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
+        intervention_scenario = param->barrier_params.i_condom_barrier_intervention_flag;
+	
     }
-
     else{
-	switch(t)
-	    {
-	    case 2008:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[0];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[0];
-		break;
-	    case 2009:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[1];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[1];
-		break;
-	    case 2010:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[2];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[2];
-		break;
-	    case 2011:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[3];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[3];
-		break;
-	    case 2012:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[4];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[4];
-		break;
-	    case 2013:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[5];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[5];
-		break;
-	    case 2014:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[6];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[6];
-		break;
-	    case 2015:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[7];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[7];
-		break;
-	    case 2016:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[8];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[8];
-		break;
-	    case 2017:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[9];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[9];
-		break;
-	    case 2018:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10];
-		break;
-	    case 2019:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[11];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[11];
-		break;
-
-	    default:
-		printf("Default ");
-	    }
+	intervention_scenario = 0; /* pre-intervention. */
     }
-    // Checked that this works:
-    //printf("p_use_VMMC at t=%i: %lf %lf\n",t,patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0],patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0]);
 
-    return;
+    /* Based on analysis of data for MIHPSA (see C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\Condom_use_analysis.xlsx, sheet "MIHPSA info"). 
+       There is an increase in recorded distributed condoms per person between 2010 and 2018. It dips in 2019/20 in response to covid-19, which we ignore and assume 2018 value continues. We fit a regression to the 'per-person' condom via Excel. 
+       We don't have distribution data for pre-2010. HOWEVER, the Manicaland R1-R5 analyses suggest that condom use was fairly constant during this time - so let's have it as a slow decline to some constant value that represents pre-HIV contraception use. 
+       There's a paper that puts condom use at last act among men to be 5% in 1989, so let's take that as baseline. */
 
+    int i_cond_preventionbarrier_group;
+
+    /* Before 1989, assume that condom use is 5%: */
+    if(t<1989){
+	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
+	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = cond_1989;
+	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = cond_1989;
+	}
+
+    }
+    else if(t>=2018){
+	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
+	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][intervention_scenario];
+	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][intervention_scenario];
+	}
+    }
+	    
+    else if(t>=2010 && t<2018){
+	/* Based off excel file C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\Condom_use_analysis.xlsx "MIHPSA info" sheet. */
+	double f = (0.8433*(t-2009)+8.665)/16.2547;
+
+	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
+	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = f*param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][0];
+	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = f*param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][0];
+	}
+    }
+    /* t=1989-2009: */
+    else if(t>=1989 && t<2010){
+	/* This is the fraction of 2018's condom use which is used in 2010.
+	   e.g. if condom use was 80% in 2018, then it would be f_2010*80% in 2010. */
+	double f_2010 = 9.5083/16.2547; /* Calculated in Condom_use_analysis.xlsx "MIHPSA info" sheet. */
+	double delta_t = (t-1989.0)/(2010-1989);
+	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
+	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = cond_1989 + delta_t * (f_2010*param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][0] - cond_1989);
+	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = cond_1989 + delta_t * (f_2010*param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][0] - cond_1989);
+	}
+
+    }
+    else{
+	printf("Error - time %6.4lf is not included in the if statement in update_condomrates(). Exiting\n",t);
+	exit(1);
+    }
+
+    /* printf("At t=%6.4lf, p_use_cond_casual= %lf %lf %lf %lf; p_use_cond_LT= %lf %lf %lf %lf\n",t, */
+    /* 	   param->barrier_params.p_use_cond_casual[0], */
+    /* 	   param->barrier_params.p_use_cond_casual[1], */
+    /* 	   param->barrier_params.p_use_cond_casual[2], */
+    /* 	   param->barrier_params.p_use_cond_casual[3], */
+    /* 	   param->barrier_params.p_use_cond_LT[0], */
+    /* 	   param->barrier_params.p_use_cond_LT[1], */
+    /* 	   param->barrier_params.p_use_cond_LT[2], */
+    /* 	   param->barrier_params.p_use_cond_LT[3]); */
 
 }

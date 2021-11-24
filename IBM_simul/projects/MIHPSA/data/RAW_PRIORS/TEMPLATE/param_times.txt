@@ -1,0 +1,21 @@
+start_time_hiv 1960   // http://data.unaids.org/publications/irc-pub06/zimbabwe_epi_report_nov05_en.pdf reports first AIDS case in 1985 in Zimbabwe, so take 10 years before.
+start_time_hsv2 1901   // Assume around start of simulation.
+start_time_simul 1900   // Assumption - around 70 years for burn-in prior to introducing HIV.
+end_time_simul 2041     // Assumption for now.
+COUNTRY_HIV_TEST_START 1998.0  // In Manicaland R1 5.8% ever tested (carried out July 1998-Jan 00) so assume started just before this.
+COUNTRY_ART_START  2004.25  // Done - From C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\UNAIDS\ZWE 2006 Zimbabwe National Hiv and Aids Strategic Plan (ZNAP).pdf The national ART roll-out plan was launched in April 2004. Also reiterated in May 2010 ART guidelines.
+COUNTRY_CD4_350_START 2010.33 // May 2010 guidelines state (C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\UNAIDS_ZimMoH_PHIA\ZIM 2010_ART_guidelines.pdf 
+COUNTRY_CD4_500_START 2014.0 // Zimbabwe_ART_guidelines2013.pdf (December 2013) stated that " the CD4 count threshold for starting ART will be raised to 500." Assume that this started Jan 2014. 
+COUNTRY_IMMEDIATE_ART_START  2016.917 // Published December 2016: https://aidsfree.usaid.gov/sites/default/files/zw_arv_therapy_prevention.pdf (see also https://www.avert.org/professionals/hiv-around-world/sub-saharan-africa/zimbabwe where 'treat all' adopted in 2016 - citing MoH guidelines.
+COUNTRY_VMMC_START 2013 // CHANGED - FIXME 2009.917 // DONE - e.g. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5769777/ "In December 2009, the Ministry of Health and Child Welfare (MOHCW) Zimbabwe launched the National Male Circumcision Policy for HIV Prevention as part of an integrated response and the VMMC strategy". Changed for MIHPSA project from 2008. 
+NDHSROUNDS 3 // DONE - Number of DHS rounds with HIV prevalence data. Early DHS in Zimbabwe (1988, 1994, 1999) only asked about risk, knowledge and behaviour. Later rounds had HIV prevalence.
+DHSROUND1 2006   // DONE - Report p7: Data collection took place over a seven-month period, from August 2005 to February 2006.
+DHSROUND2 2011   // DONE - Report p7: Data collection took place over a six-month period, from 29 September 2010 through late March 2011
+DHSROUND3 2015   // DONE - Report p5: Data collection took place over a 6-month period from July 6 to December 20, 2015.
+COHORTROUND1 1999.25 // Round 1 (excluding pilot) from July 1998-Jan 2000.
+COHORTROUND2 2002.5 // Round 2 Sept 2001-March 2003
+COHORTROUND3 2004.583 // Median value - see Dropbox file Get_dates_surveys.do.
+COHORTROUND4 2007.833 // Median value - same file.
+COHORTROUND5 2010.833 // Median value - same file.
+COHORTROUND6 2013.25  // Median value - same file, but using stata dates.
+COHORTROUND7 2019.25  // median value of start.date variable "2019-04-12"

@@ -1,0 +1,28 @@
+
+
+----------------------------------------------------------------------
+# Post-calibration on HPC:
+
+When running on the HPC, each RESULTS$i directory should have its own Calibration_MIHPSA.csv file. This is generated from the MIHPSA_output_CL05_Zim_patch0_Rand10_RunR.csv files (pulls the numbers for certain outputs at specified times, and calculates a likelihood compared to MIHPSA data (DHS HIV prevalence and programme data on ART, VMMC etc).
+
+
+Then use the code find_best_mihpsa_plots.py to generate goodfits_mihpsa.txt.
+ - You need to modify the line for results_rootdir
+
+pull_parameters_MIHPSA2.py uses goodfits_mihpsa.txt and pulls the corresponding parameters into IMPACT_MIHPSAFIT/params (generating the directories automatically).
+
+Copy file run_baseline.sh, and put popart-simul.exe in the IMPACT_MIHPSAFIT directory, then:
+ - need to edit params/param_processed_patch0_times.csv to make sure end time is at least *2042* (currently 2030 for calibration) - needs to be 2042 as we need output to 2041.5.
+ - run
+ 
+
+
+----------------------------------------------------------------------
+# Generating outputs for MIHPSA project:
+
+get_mihpsa_project_outputs.py
+ - this needs to be in the IMPACT_MIHPSAFITS directory as it looks for subdirectory params/Output/.
+ Generates file MIHPSA_project_outputs_stage1.csv
+  - if validate=1 (line 497) then generates files checks/N_circ.csv, Incidence_15_49.csv and Prop_tests_pos_15plus.csv, which I used to check by hand that things work.
+
+----------------------------------------------------------------------

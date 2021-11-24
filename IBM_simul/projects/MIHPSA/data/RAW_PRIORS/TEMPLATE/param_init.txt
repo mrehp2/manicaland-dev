@@ -1,0 +1,22 @@
+ran_seed_run RANDOMSEED // This tells python that we need to stick a random integer here which will be used as a seed later on.
+initial_adult_population_size BY_COMMUNITY // Currently set to 500 - make a little bigger eventually for Zimbabwe.
+initial_prop_13_17 BY_COUNTRY // DONE - Using UNPD 2019 for Zimbabwe.
+initial_prop_18_22 BY_COUNTRY 
+initial_prop_23_30 BY_COUNTRY 
+initial_prop_31_40 BY_COUNTRY 
+initial_prop_41_50 BY_COUNTRY 
+initial_prop_51_60 BY_COUNTRY 
+initial_prop_61_and_older BY_COUNTRY 
+initial_low_risk_male [0.3-0.6] // based on variability between communities. See Dropbox/PoPART/Data:Stats/PC Data Downloads/partnerships/ExtractPartnershipParamFromPC0.Rnw
+initial_low_risk_female [0.3-0.6] // Females have 35% on average across communities. See ExtractPartnershipParamFromPC0.Rnw table 2.
+initial_med_not_low_risk_male [0.50-0.99] //
+initial_med_not_low_risk_female [0.50-0.99] // 
+initial_prop_HIV_pos_low_risk_male 0.00002 // Assumptions
+initial_prop_HIV_pos_low_risk_female 0.00002 // Assumptions
+initial_prop_HIV_pos_med_risk_male 0.00005 // Assumptions
+initial_prop_HIV_pos_med_risk_female 0.00005 // Assumptions
+initial_prop_HIV_pos_high_risk_male 0.00008 // Assumptions
+initial_prop_HIV_pos_high_risk_female 0.00008 // Assumptions
+log_seed_multiplier [0.5-2.5] // 10^(log_seed_multiplier) multiplies each of the above seeds to allow bigger initial seed.
+n_years_HIV_seeding 5 // Every year from start_time_hiv to start_time_hiv+n_years_HIV_seeding we seed the initial_prop_HIV_pos values above to be HIV positive (so annual introduction of HIV). 
+initial_prop_hsv2infected 0.05 // Assumption

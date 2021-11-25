@@ -29,11 +29,11 @@
 
 
 # Additional requirements: python package 'openpyxl':
-# Uses package 'openpyxl' to read in xlsx files.
+# Uses packages 'openpyxl' and 'pandas' to read in xlsx files.
 # To install make sure you have pip:
 # (if you don't, then install via) sudo apt install python-pip
-# Then install openpyxl:
-# pip install openpyxl
+# Then install openpyxl and pandas:
+# pip install openpyxl pandas
 
 #############################################################################
 
@@ -45,7 +45,7 @@
 
 
 # Library functions:
-import openpyxl
+import openpyxl, pandas
 import sys,os,glob
 
 
@@ -240,7 +240,7 @@ def combine_times_years(past_data,future_data):
 # Given a list of sheet names (where the formatting may not match Excel's exactly in terms of whitespace etc) and the name of the xlsx file, pull out the named sheets and return this (as an array) and the list of sheet names 
 def pull_out_sheets(infilename,list_of_sheets):
 
-    book = openpyxl.load_workbook(infilename)
+    book = openpyxl.load_workbook(infilename, data_only=True)
     
     sheets_to_keep = {}
     

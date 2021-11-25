@@ -124,7 +124,7 @@ def combine_times_time_periods(past_data,future_data):
 # Given a list of sheet names (where the formatting may not match Excel's exactly in terms of whitespace etc) and the name of the xlsx file, pull out the named sheets and return this (as an array) and the list of sheet names 
 def pull_out_sheets(infilename,list_of_sheets):
 
-    book = openpyxl.load_workbook(infilename)
+    book = openpyxl.load_workbook(infilename, data_only=True)
     
     sheets_to_keep = {}
     

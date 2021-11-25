@@ -109,29 +109,30 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 
         read_partnership_params(patch_tag, param[p], n_runs, patch[0].country_setting);
         read_cascade_params(patch_tag, param[p], n_runs);
-	read_mtct_params(patch_tag, param[p], n_runs);
-	read_PrEP_uptake_params(patch_tag, param[p], n_runs);
-	if (SETTING==SETTING_POPART){
-	    read_popart_params(patch_tag, param[p], n_runs);
-	
-	    /* Note that this MUST be called after read_cascade_params(). */
-	    read_chips_uptake_params(patch_tag, param[p]);
-	    read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
-	    read_pc_future_params(patch_tag, param[p], n_runs);
+        printf("First datapoint: %f\n", param[p]->T_FIRST_MTCT_DATAPOINT);
+        read_mtct_params(patch_tag, param[p], n_runs);
+        read_PrEP_uptake_params(patch_tag, param[p], n_runs);
+        if (SETTING==SETTING_POPART){
+            read_popart_params(patch_tag, param[p], n_runs);
+        
+            /* Note that this MUST be called after read_cascade_params(). */
+            read_chips_uptake_params(patch_tag, param[p]);
+            read_pc0_enrolment_params(patch_tag, patch[p].community_id, param[p], n_runs, p);
+            read_pc_future_params(patch_tag, param[p], n_runs);
         }
 
-	if (MANICALAND_CASCADE==1)
-	    read_cascade_barrier_params(patch_tag, param[p], n_runs);
+        if (MANICALAND_CASCADE==1)
+            read_cascade_barrier_params(patch_tag, param[p], n_runs);
 
-	
+        
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
     }
-    
-    // Calling outside the patch loop to avoid a valgrind error where patch[1] is not initialised.
+        
+        // Calling outside the patch loop to avoid a valgrind error where patch[1] is not initialised.
     if (SETTING==SETTING_POPART){
-	copy_chips_params(param, n_runs);
-	copy_pc_params(param, n_runs);
+        copy_chips_params(param, n_runs);
+        copy_pc_params(param, n_runs);
     }
     return;
 }
@@ -1411,18 +1412,14 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
     strcat(param_file_name, "mtct.csv");
 
     /******************* opening parameter file ********************/
-    if ((param_file=fopen(param_file_name,"r"))==NULL)
-    {
+    if ((param_file=fopen(param_file_name,"r"))==NULL) {
         printf("Cannot open %s\n",param_file_name);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
-    }else
-    {
-        if(VERBOSE_OUTPUT==1)
-            printf("MTCT parameters read from: %s:\n",param_file_name);
+    } else if(VERBOSE_OUTPUT==1) {
+        printf("MTCT parameters read from: %s:\n",param_file_name);
     }
-
 
     checkreadok = fscanf(param_file, "%lg", &(allrunparameters[0].T_FIRST_MTCT_DATAPOINT));    
     check_if_cannot_read_param(checkreadok, "allrunparameters[0].T_FIRST_MTCT_DATAPOINT");

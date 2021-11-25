@@ -436,13 +436,13 @@ def copy_chips_file_removing_whitespace_and_store_start_end_times(original_data_
 # Given a single sheet name and the name of the xlsx file, pull out the named sheet and return as an array:
 def pull_out_sheet(infilename,sheet_to_get):
 
-    book = openpyxl.load_workbook(infilename)
+    book = openpyxl.load_workbook(infilename, data_only=True)
     sheet_to_keep = {}
 
     for sheet in book:
         formatted_sheet_name = sheet.title.rstrip().upper()
         if formatted_sheet_name==sheet_to_get:
-            return sheet
+            return sheet.values
 
     print("Error: sheet",sheet_to_get," not found. Exiting.")
     sys.exit(1)
@@ -662,7 +662,7 @@ def make_mtct_params(sheet,mtct_param_filename):
     outstring = ""
     passed_header = 0 
     years = []
-    for i, line in enumerate(sheet.values):
+    for i, line in enumerate(sheet):
         line = list(line)
         
         if (passed_header>0):
@@ -675,7 +675,7 @@ def make_mtct_params(sheet,mtct_param_filename):
 
     # Add the first and last year as the first line of the file:
     outstring = str(min(years))+" "+str(max(years))+"\n"+outstring
-                
+    
     outfile = open(mtct_param_filename,"w")
     outfile.write(outstring)
     outfile.close()
@@ -1101,13 +1101,13 @@ if __name__=="__main__":
     copy_fertility_file(country, fertility_data_dir, output_dir)
     copy_mortality_file(country, mortality_sweave_code_dir, mortality_unpd_data_dir, output_dir)
 
-
     mtct_file = "../Parameterization/Spectrum_Manicaland_2019_MTCT.xlsx"
     # This is the sheet we want to pull out from the Excel file: 
     mtct_sheet_needed = "FOR IBM"
 
     # Extract the worksheet:
     mtct_worksheets = pull_out_sheet(mtct_file,mtct_sheet_needed)
+
     # Now process it and save it in the format needed by the IBM:
     mtct_params = make_mtct_params(mtct_worksheets,join(output_dir,"param_mtct.txt"))
 

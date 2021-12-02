@@ -474,6 +474,14 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
         checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard_baseline));
         check_if_cannot_read_param(checkreadok, "param_local->average_annual_hazard_baseline");
 
+        checkreadok = fscanf(param_file,"%lg", &(param_local->hazard_scale));
+        check_if_cannot_read_param(checkreadok, "param_local->hazard_scale");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->t_hazard_starts_declining));
+        check_if_cannot_read_param(checkreadok, "param_local->t_hazard_starts_declining");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->t_hazard_stabilizes));
+        check_if_cannot_read_param(checkreadok, "param_local->t_hazard_stabilizes");
+
+
 	if(country_setting==ZIMBABWE){
 	    /* Need to make sure param_times is read in before this (so start_time_simul is defined): */
 	    update_time_varying_hazard_onepatch(param_local->start_time_simul, param_local);
@@ -2644,15 +2652,15 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	}
 	    
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual[i_barrier_group][0]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual[][]");
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][0]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual_present[][]");
 	}
 
 	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][0] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][0];
-	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
-	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
+	    param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][0] = param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][0];
+	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]));
+	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][]");
 	}
 
     
@@ -2679,20 +2687,21 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 
 	/* No need to change condom use groups: */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    param_local->barrier_params.p_use_cond_casual[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_condom) * (1-param_local->barrier_params.p_use_cond_casual[i_barrier_group][0]);
+	    param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_condom) * (1-param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][0]);
 	}
 
 	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    param_local->barrier_params.p_use_cond_LT[i_barrier_group][1] = param_local->barrier_params.p_use_cond_casual[i_barrier_group][1];
-	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]));
-	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT[][]");
+	    param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][1] = param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][1];
+	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]));
+	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][]");
 	}
 
 	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention: */
 	generate_intervention_increase_in_partnership_condom_use_lookuptable(&(param_local->barrier_params));
 
-	
+	/* Now populate param->barrier_params.p_use_cond_casual/LT for each run: */
+	update_condomrates(param_local->start_time_simul, param_local);
 
     }
 

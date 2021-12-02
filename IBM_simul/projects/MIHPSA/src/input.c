@@ -127,8 +127,6 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
     }
-
-
     
     // Calling outside the patch loop to avoid a valgrind error where patch[1] is not initialised.
     if (SETTING==SETTING_POPART){
@@ -475,6 +473,14 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->average_annual_hazard_baseline));
         check_if_cannot_read_param(checkreadok, "param_local->average_annual_hazard_baseline");
+
+        checkreadok = fscanf(param_file,"%lg", &(param_local->hazard_scale));
+        check_if_cannot_read_param(checkreadok, "param_local->hazard_scale");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->t_hazard_starts_declining));
+        check_if_cannot_read_param(checkreadok, "param_local->t_hazard_starts_declining");
+        checkreadok = fscanf(param_file,"%lg", &(param_local->t_hazard_stabilizes));
+        check_if_cannot_read_param(checkreadok, "param_local->t_hazard_stabilizes");
+
 
 	if(country_setting==ZIMBABWE){
 	    /* Need to make sure param_times is read in before this (so start_time_simul is defined): */
@@ -2690,8 +2696,8 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]));
 	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][]");
 	}
-	
-	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention. */
+
+	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention: */
 	generate_intervention_increase_in_partnership_condom_use_lookuptable(&(param_local->barrier_params));
 
 	/* Now populate param->barrier_params.p_use_cond_casual/LT for each run: */

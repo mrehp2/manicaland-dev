@@ -458,6 +458,12 @@ typedef struct {
     double average_annual_hazard_baseline;
     double average_annual_hazard;
 
+    /* Allow time-varying HIV hazard (used in update_time_varying_hazard_allpatches()). */
+    double hazard_scale;
+    double t_hazard_starts_declining;
+    double t_hazard_stabilizes;
+    
+
     /* Relative increase in transmission from acute infection, reference group is not acute untreated CD4>500 low SPVL */
     double RRacute_trans;
     double RRCD4[NCD4]; /* RRCD4[0] is 1 */
@@ -959,7 +965,8 @@ typedef struct{
     long N_AIDSdeaths_15plus[N_GENDER];
     long N_AIDSdeaths_children_under15;
     long N_HIVtests_15plus[N_GENDER];
-    long N_newHIVinfections_15to49[N_GENDER];
+    long N_newHIVinfections_15to24[N_GENDER];
+    long N_newHIVinfections_25to49[N_GENDER];
     long N_newHIVdiagnoses_15plus;
     long N_VMMC_15plus;
 } cumulative_outputs_MIHPSA_struct;

@@ -631,15 +631,13 @@ void update_number_new_partners(double t, patch_struct *patch){
     
 
 void update_time_varying_hazard_onepatch(double t, parameters *param){
-    double hazard_scale = 2.0;
-    double t_hazard_stabilizes = 2000.0;
     double current_hazard_multiplier;
-    if(t<=param->start_time_hiv)
-	current_hazard_multiplier = hazard_scale;
-    else if(t>=t_hazard_stabilizes)	
+    if(t<=param->t_hazard_starts_declining)
+	current_hazard_multiplier = param->hazard_scale;
+    else if(t>=param->t_hazard_stabilizes)	
 	current_hazard_multiplier = 1.0;
     else{
-	current_hazard_multiplier = hazard_scale - (hazard_scale-1)*(t-param->start_time_hiv)/(t_hazard_stabilizes-param->start_time_hiv);
+	current_hazard_multiplier = param->hazard_scale - (param->hazard_scale-1)*(t-param->t_hazard_starts_declining)/(param->t_hazard_stabilizes-param->t_hazard_starts_declining);
     }
 
     param->average_annual_hazard = param->average_annual_hazard_baseline * current_hazard_multiplier;
@@ -1644,6 +1642,10 @@ void print_hiv_params(parameters *param){
     printf("param->eff_condom_hsv2=%lg\n",param->eff_condom_hsv2);
     printf("param->average_log_viral_load=%lg\n",param->average_log_viral_load);
     printf("param->average_annual_hazard_baseline=%lg\n",param->average_annual_hazard_baseline);
+    printf("param->hazard_scale=%lg\n",param->hazard_scale);
+    printf("param->t_hazard_starts_declining=%lg\n",param->t_hazard_starts_declining);
+    printf("param->t_hazard_stabilizes=%lg\n",param->t_hazard_stabilizes);    
+    
     printf("param->RRacute_trans=%lg\n",param->RRacute_trans);
     printf("param->RRmale_to_female_trans=%lg\n",param->RRmale_to_female_trans);
     printf("param->RRCD4[0],param->RRCD4[1],param->RRCD4[2],param->RRCD4[3]=%lg %lg %lg %lg\n",param->RRCD4[0],param->RRCD4[1],param->RRCD4[2],param->RRCD4[3]);
@@ -1905,10 +1907,10 @@ void print_prevention_cascade_params(parameters *param){
 
 
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
-	    printf("param->barrier_params.p_use_cond_casual[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]);
+	    printf("param->barrier_params.p_use_cond_casual_present[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_casual_present[i_barrier_group][i_barrier_intervention]);
 	
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
-	    printf("param->barrier_params.p_use_cond_LT[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]);
+	    printf("param->barrier_params.p_use_cond_LT_present[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]);
     
 	printf("----------\n");
     }
@@ -2113,11 +2115,33 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
     if (param->average_annual_hazard_baseline<0.001 || param->average_annual_hazard_baseline>0.6){
-        printf("Error: param->average_annual_hazard_baseline is outside expected range [0.01,0.6]\nExiting\n");
+        printf("Error: param->average_annual_hazard_baseline is outside expected range [0.001,0.6]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
+
+    if (param->hazard_scale<1.0 || param->hazard_scale>4.0){
+        printf("Error: param->hazard_scale is outside expected range [1.0,4.0]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_hazard_starts_declining<1960 || param->t_hazard_starts_declining>2000){
+        printf("Error: param->t_hazard_starts_declining is outside expected range [1960,2000]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->t_hazard_stabilizes<1980 || param->t_hazard_stabilizes>2005){
+        printf("Error: param->t_hazard_stabilizes is outside expected range [1980,2005]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    
+
+
     if (param->RRacute_trans<1 || param->RRacute_trans>50){
         printf("Error: param->RRacute_trans is outside expected range [1,50]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -3005,15 +3029,15 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 	
 	/* Condoms: */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual[i_barrier_group][i_barrier_intervention]>1.0){
-		printf("Error:param->barrier_params.p_use_cond_casual[][] is outside expected range [0,1.0]\nExiting\n");
+	    if (param->barrier_params.p_use_cond_casual_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_casual_present[i_barrier_group][i_barrier_intervention]>1.0){
+		printf("Error:param->barrier_params.p_use_cond_casual_present[][] is outside expected range [0,1.0]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
 	    }
 
-	    if (param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_LT[i_barrier_group][i_barrier_intervention]>0.7){
-		printf("Error:param->barrier_params.p_use_cond_LT[][] is outside expected range [0,0.7]\nExiting\n");
+	    if (param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]>0.7){
+		printf("Error:param->barrier_params.p_use_cond_LT_present[][] is outside expected range [0,0.7]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);

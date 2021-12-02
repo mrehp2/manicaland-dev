@@ -8,6 +8,9 @@ eff_prep_adherent 0.75  // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3882910/
 eff_condom 0.8 // Based on point estimate of Weller and Davis (2002). Could be higher/
 average_log_viral_load 4.0 // Currently an unused parameter - the only time it is now used is in the function mtct_transmission(), which is never called.
 average_annual_hazard [0.05-0.3] // Fraser PNAS 2007 found beta = 0.317 per annum. Boily LID 2009 per act 0.0001 to 0.0014. Assume 50-200 acts per year. Then run in R: nsample=20000 n = sample(25:150,nsample,replace=TRUE) p = runif(nsample,0.0001,0.0014) c(quantile(1 - (1-p)^n,0.05),quantile(1 - (1-p)^n,0.95)). Hollingsworth 2008 had 10.6 (7.61-13.3). Donnell Lancet 2010 found transmission rate 2.24 per 100 person-years among people not on ART (so censoring CD4<200). 
+hazard_scale [1.5-3.0] // Multiplier for HIV transmission hazard during early part of epidemic.
+t_hazard_starts_declining [1990-1995] // t_hazard_starts_declining and t_hazard_stabilizes determine the time when the hazard multiplier goes from hazard_scale to 1 (via a piecewise linear function in update_time_varying_hazard_onepatch())
+t_hazard_stabilizes [1995-2002] 
 RRacute_trans 5.3 // Bellan Plos Med 2015.
 RRmale_to_female_trans [1.0-3.0] // [1.0-3.95] Lower limit is that they are equal. Upper limit from Boily LID 2009 table 2 highest upper limit (ie from high income countries). 
 RRCD4 1.0 1.0 1.0 2.34 // Cori 2014 Table S7 was 1.0,1.0,1.0,2.34. Could also use Boily LID 2009 estimate 7.3. Previous limits were 1.0 1.0 [1.0-1.5] [2.0-4.0] but changed in July 2018

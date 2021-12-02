@@ -39,7 +39,7 @@
 typedef struct individual individual;
 typedef struct partnership partnership;
 
-//typedef struct cascade_barrier_struct cascade_barrier_struct; /* Variables relating to barriers for prevention (Manicaland 2020/21 project). */
+//typedef struct indiv_cascade_barrier_struct indiv_cascade_barrier_struct; /* Variables relating to barriers for prevention for individual (Manicaland 2020/21 project). */
 
 
 
@@ -74,18 +74,24 @@ typedef struct{
        Arrays for different partnership types (LT/casual).
        Indices are condom prevention group for male and female partner respectively. */
 
-}  cascade_barrier_struct;
+}  indiv_cascade_barrier_struct;
 
 
-
+/* Sub-structure of params, containing HIV prevention cascade parameters: */
 typedef struct{
     /* N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
     /* The 2 is the number of interventions (i=0-no intervention, i=1-with prevention barrier intervention). */
     double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
     double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
 
-    double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS][2];
-    double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS][2];
+    /* Probability of using a condom at a given time. This is calculated in the function update_condomrates().
+     Note that we don't have the second index that p_use_cond_casual_present[][] has, because this stores the condom use calculated at a given time for a given intervention scenarion. */
+    double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS];
+    double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS];
+
+    /* This is the probability of using a condom at present (and in the future, in the absence of further interventions - the [2] represents no intervention (0) or intervention (1))). */
+    double p_use_cond_casual_present[N_COND_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_cond_LT_present[N_COND_PREVENTIONBARRIER_GROUPS][2];
 
     /* Indicate what kind of intervention is happening for each barrier. */
     int i_VMMC_barrier_intervention_flag;
@@ -151,7 +157,7 @@ struct individual{
     long debug_last_vmmc_event_index; /* Stores the first index of idx_vmmc_event for the last vmmc event to happen - so can check that two vmmc events do not happen to the same person in the same timestep. */
 
 
-    cascade_barrier_struct cascade_barriers;
+    indiv_cascade_barrier_struct cascade_barriers;
     
     // Pangea outputs for Olli
     double PANGEA_t_prev_cd4stage; /* Time at which an individual last moved CD4 stage. Allows us to linearly estimate CD4 at ART initiation. */
@@ -451,6 +457,12 @@ typedef struct {
     /* Assuming average annual hazard of transmission with average viral load is 0.2. */
     double average_annual_hazard_baseline;
     double average_annual_hazard;
+
+    /* Allow time-varying HIV hazard (used in update_time_varying_hazard_allpatches()). */
+    double hazard_scale;
+    double t_hazard_starts_declining;
+    double t_hazard_stabilizes;
+    
 
     /* Relative increase in transmission from acute infection, reference group is not acute untreated CD4>500 low SPVL */
     double RRacute_trans;
@@ -953,7 +965,8 @@ typedef struct{
     long N_AIDSdeaths_15plus[N_GENDER];
     long N_AIDSdeaths_children_under15;
     long N_HIVtests_15plus[N_GENDER];
-    long N_newHIVinfections_15to49[N_GENDER];
+    long N_newHIVinfections_15to24[N_GENDER];
+    long N_newHIVinfections_25to49[N_GENDER];
     long N_newHIVdiagnoses_15plus;
     long N_VMMC_15plus;
 } cumulative_outputs_MIHPSA_struct;

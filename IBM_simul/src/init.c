@@ -706,7 +706,8 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
 	cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[g] = 0;
 	cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[g] = 0;
 	cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[g] = 0;
-	cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[g] = 0;	
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[g] = 0;	
+	cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[g] = 0;	
     }
     cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15 = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus = 0;

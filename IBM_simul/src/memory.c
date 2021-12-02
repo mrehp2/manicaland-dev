@@ -469,7 +469,7 @@ void alloc_patch_memoryv2(patch_struct *patch){
 	patch[p].individual_population[0].sex_risk=10;
 	/* for(n=0;n<MAX_POP_SIZE;n++){ */
 	
-	/*     patch[p].individual_population[n_id].cascade_barriers = malloc(sizeof(cascade_barrier_struct)); */
+	/*     patch[p].individual_population[n_id].cascade_barriers = malloc(sizeof(indiv_cascade_barrier_struct)); */
 	/*     if(patch[p].individual_population[n_id].cascade_barriers==NULL){ */
 	/* 	printf("Unable to allocate cascade_barriers in alloc_all_memory. Execution aborted."); */
 	/* 	printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */

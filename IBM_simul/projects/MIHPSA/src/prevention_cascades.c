@@ -189,7 +189,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     
     assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params, i_PrEP_intervention_running_flag);
 
-    /* No need to specify if condom interventiokn is running, because that is dealt with in p_use_condom_casual/LT[], which is updated at each timestep. */
+    /* No need to specify if condom intervention is running, because that is dealt with in p_use_condom_casual/LT[], which is updated at each timestep. */
     assign_individual_condom_prevention_cascade(t, indiv, barrier_params);
 
 }

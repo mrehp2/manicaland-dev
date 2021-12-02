@@ -4,7 +4,7 @@ timesfile = open("params/param_processed_patch0_times.csv","r")
 timesdata = timesfile.readlines()
 timesfile.close()
 
-date_to_change = "2030.0"
+date_to_change = "2041.0"
 new_date = "2042.0" # 2042 so have output for MIHPSA covering 2041.5.
 
 # Check that 2030.0 appears in the file:

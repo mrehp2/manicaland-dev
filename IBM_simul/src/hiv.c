@@ -542,8 +542,10 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
 
 	if(MIHPSA_MODULE==1){
 	    int age = floor(time_infect - susceptible->DoB);
-	    if(age>=15 && age <=49)
-		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[susceptible->gender]++;
+	    if(age>=15 && age <=24)
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[susceptible->gender]++;
+	    else if(age>=25 && age <=49)
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[susceptible->gender]++;
 	}
 		    
         if(susceptible->patch_no != infector->patch_no){

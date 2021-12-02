@@ -1,18 +1,27 @@
 import glob,sys,os
 import shutil   # For copying files
 
-CALIBRATION_TYPE="MIHPSA"
+#CALIBRATION_TYPE="MIHPSA"
 #CALIBRATION_TYPE="R7"
-
+#CALIBRATION_TYPE="R1-7"
+CALIBRATION_TYPE="TARGETMIHPSA"
 dir_root = "RESULTS/"
 
 if(CALIBRATION_TYPE=="MIHPSA"):
     output_dir = "./IMPACT_MIHPSAFIT/params/"
     goodfits_file = "goodfits_mihpsa.txt"
     offset = 0
+if(CALIBRATION_TYPE=="TARGETMIHPSA"):
+    output_dir = "./IMPACT_TARGETMIHPSA/params/"
+    goodfits_file = "targetfits_MIHPSA.txt"
+    offset = 0
 elif(CALIBRATION_TYPE=="R7"):
     output_dir = "./IMPACT_R7/params/"
     goodfits_file = "goodfits7.txt"
+    offset = 1
+elif(CALIBRATION_TYPE=="R1-7"): # Rounds 1-7
+    output_dir = "./IMPACT_R1R7/params/"
+    goodfits_file = "goodfits1234567.txt"
     offset = 1
 else:
     sys.exit(1)

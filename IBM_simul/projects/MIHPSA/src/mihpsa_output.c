@@ -44,7 +44,11 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     individual *indiv; /* Pointer used to make code more readable - points to already allocated memory so no need to malloc. */
 
     long npop_bysex_15to49[N_GENDER]={0,0}; /* Population aged 15-49. */
+    long npop_bysex_15to24[N_GENDER]={0,0}; /* Population aged 15-24. */
+    long npop_bysex_25to49[N_GENDER]={0,0}; /* Population aged 25-49. */
     long npositive_bysex_15to49[N_GENDER]={0,0}; /* No. of HIV+ aged 15-49. */
+    long npositive_bysex_15to24[N_GENDER]={0,0}; /* No. of HIV+ aged 15-24. */
+    long npositive_bysex_25to49[N_GENDER]={0,0}; /* No. of HIV+ aged 25-49. */
 
     long N_men_MC_15to49 = 0; /* Number of men aged 15-49 circumcised (VMMC or TMC). */
 
@@ -92,8 +96,17 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    /* 15-49 outputs: */
 	    if(age>=15 && age<=49){
 		npop_bysex_15to49[g]++;
-		if(indiv->HIV_status>UNINFECTED)
+		if(age>=15 && age<=24)
+		    npop_bysex_15to24[g]++;
+		else if(age>=25 && age<=49)
+		    npop_bysex_25to49[g]++;
+		if(indiv->HIV_status>UNINFECTED){
 		    npositive_bysex_15to49[g]++;
+		    if(age>=15 && age<=24)
+			npositive_bysex_15to24[g]++;
+		    else if(age>=25 && age<=49)
+			npositive_bysex_25to49[g]++;
+		}
 		/* Now if circumcised (including healing): */
 		if (g==MALE){
 		    if((indiv->circ == VMMC) || (indiv->circ == VMMC_HEALING) || (indiv->circ == TRADITIONAL_MC))
@@ -153,10 +166,14 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     }
 
 
-    sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
+    sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
 	    (int) floor(t),
 	    npop_bysex_15to49[MALE],npop_bysex_15to49[FEMALE],
+	    npop_bysex_15to24[MALE],npop_bysex_15to24[FEMALE],
+	    npop_bysex_25to49[MALE],npop_bysex_25to49[FEMALE],
 	    npositive_bysex_15to49[MALE],npositive_bysex_15to49[FEMALE],
+	    npositive_bysex_15to24[MALE],npositive_bysex_15to24[FEMALE],
+	    npositive_bysex_25to49[MALE],npositive_bysex_25to49[FEMALE],
 	    N_men_MC_15to49,
 	    N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,
 	    npop_bysex_15plus[MALE],npop_bysex_15plus[FEMALE],npop_children_under15,
@@ -167,7 +184,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[FEMALE],
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
 patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
-patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to49[FEMALE],
+patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus);	
 
@@ -199,7 +216,7 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
     }
     
     /* Print the header of the file */
-    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to49_male,N_newHIVinfections_15to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
+    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
 
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);

@@ -17,6 +17,6 @@ initial_prop_HIV_pos_med_risk_male 0.00005 // Assumptions
 initial_prop_HIV_pos_med_risk_female 0.00005 // Assumptions
 initial_prop_HIV_pos_high_risk_male 0.00008 // Assumptions
 initial_prop_HIV_pos_high_risk_female 0.00008 // Assumptions
-log_seed_multiplier [0-2] // 10^(log_seed_multiplier) multiplies each of the above seeds to allow bigger initial seed.
+log_seed_multiplier [0.5-2.5] // 10^(log_seed_multiplier) multiplies each of the above seeds to allow bigger initial seed.
 n_years_HIV_seeding 5 // Every year from start_time_hiv to start_time_hiv+n_years_HIV_seeding we seed the initial_prop_HIV_pos values above to be HIV positive (so annual introduction of HIV). 
 initial_prop_hsv2infected 0.05 // Assumption

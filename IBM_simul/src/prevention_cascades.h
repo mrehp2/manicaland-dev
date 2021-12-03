@@ -22,6 +22,9 @@
 #include "constants.h"
 #include "structures.h"
 #include "interventions.h"
+
+#include <pthread.h>
+
 //#include "utilities.h"
 //#include "output.h"
 //#include "debug.h"
@@ -39,6 +42,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 
 void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patch, int p);
 void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patch, int p);
+void *range_PrEP_per_timestamp_given_barriers(void *argstruct);
 
 double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, double t_partnership);
 void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership);

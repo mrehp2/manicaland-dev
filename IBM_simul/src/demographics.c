@@ -2214,7 +2214,7 @@ void remove_from_PrEP_events(individual *indiv, individual ***PrEP_events, long 
 
 
     /* FOR DEBUGGING: */
-    if (PrEP_events[i][indiv->idx_PrEP_event[1]]->id!=indiv->id){
+    if (PrEP_events[i][indiv->idx_PrEP_event[1]]->id != indiv->id){
         printf("ERROR: trying to swap out the wrong person in remove_from_PrEP_events(). Trying to swap %li but in PrEP_events[] the person is %li. Exiting\n",indiv->id,PrEP_events[i][indiv->idx_PrEP_event[1]]->id);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
@@ -2750,7 +2750,7 @@ void make_new_adults(double t, int t_step, patch_struct *patch, int p, all_partn
  * Function arguments: pointers to child_population, the size of the population (to calculate the number 
  * of children to be born), params. 
  * Function returns: nothing. */
-void add_new_kids(double t, patch_struct *patch, int p){
+void add_new_kids(double t, patch_struct *patch, int p) {
     int aa,ai;     /* index for age groups. */
     int ai_hivpos, ai_art;
     long n_births = 0;
@@ -2793,122 +2793,113 @@ void add_new_kids(double t, patch_struct *patch, int p){
     memset(tempstring, '\0', sizeof(tempstring));
     memset(outputstring, '\0', sizeof(outputstring));
 
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	sprintf(outputstring,"%lf,",t);    
+    if (t>2000 && (t-floor(t)<1e-9) && (p==0)) {
+	    sprintf(outputstring,"%lf,",t);    
     }
     
     //printf("t=%6.4lf\n",t);
-    for (aa=(UNPD_FERTILITY_YOUNGEST_AGE-AGE_ADULT); aa<=(UNPD_FERTILITY_OLDEST_AGE-AGE_ADULT); aa++){
+    for (aa=(UNPD_FERTILITY_YOUNGEST_AGE-AGE_ADULT); aa<=(UNPD_FERTILITY_OLDEST_AGE-AGE_ADULT); aa++) {
         //printf("aa=%i\n",aa);
         //fflush(stdout);	
 	
         ai = aa + patch[p].age_list->age_list_by_gender[FEMALE]->youngest_age_group_index;
-        while (ai>(MAX_AGE-AGE_ADULT-1))
-            ai = ai - (MAX_AGE-AGE_ADULT);
+        while (ai>(MAX_AGE-AGE_ADULT-1)) ai = ai - (MAX_AGE-AGE_ADULT);
 
 
         /* Get the fertility rate for this age group: */
         //printf("t=%lf age=%i y0=%i f=%lf peragefert = %lf n_age = %li\n",t,aa,y0,f,per_woman_fertility_rate(aa+AGE_ADULT, param, y0, f),age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
 
-	//printf("N women = %i",patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
+        //printf("N women = %i",patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
 
-	/* Here we calculate the number of HIV+ women (by relevant ART stage) for MTCT: */
-	ai_hivpos = aa + patch[p].n_infected->youngest_age_group_index;
-        while (ai_hivpos>(MAX_AGE-AGE_ADULT-1))
-            ai_hivpos = ai_hivpos - (MAX_AGE-AGE_ADULT);
+        /* Here we calculate the number of HIV+ women (by relevant ART stage) for MTCT: */
+        ai_hivpos = aa + patch[p].n_infected->youngest_age_group_index;
+        while (ai_hivpos>(MAX_AGE-AGE_ADULT-1)) ai_hivpos = ai_hivpos - (MAX_AGE-AGE_ADULT);
 
-	ai_art = aa + patch[p].n_infected_by_all_strata->youngest_age_group_index;
-        while (ai_art>(MAX_AGE-AGE_ADULT-1))
-            ai_art = ai_art - (MAX_AGE-AGE_ADULT);
+        ai_art = aa + patch[p].n_infected_by_all_strata->youngest_age_group_index;
+        while (ai_art>(MAX_AGE-AGE_ADULT-1)) ai_art = ai_art - (MAX_AGE-AGE_ADULT);
 
-	
+        /* Reset counters to zero. */
+        n_hivpos = 0;
+        for (icd4=0;icd4<NCD4;icd4++) {
+            n_hivpos_unaware[icd4] = 0;
+            n_hivpos_aware_neverart[icd4] = 0;
+            n_hivpos_earlyart[icd4] = 0;
+            n_hivpos_artvs[icd4] = 0;
+            n_hivpos_artvu[icd4] = 0;
+            n_hivpos_cascadedropout[icd4] = 0;
+        }	
+        
+        
+        /* Total number of women aged aa: */
+        // n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
 
-
-
-	
-	/* Reset counters to zero. */
-	n_hivpos = 0;
-	for (icd4=0;icd4<NCD4;icd4++){
-	    n_hivpos_unaware[icd4] = 0;
-	    n_hivpos_aware_neverart[icd4] = 0;
-	    n_hivpos_earlyart[icd4] = 0;
-	    n_hivpos_artvs[icd4] = 0;
-	    n_hivpos_artvu[icd4] = 0;
-	    n_hivpos_cascadedropout[icd4] = 0;
-	}	
+        for (r=0; r<N_RISK; r++) {
+            n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];
+            for (icd4=0; icd4<NCD4; icd4++) {
+                n_hivpos_unaware[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
+                n_hivpos_aware_neverart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
+                n_hivpos_earlyart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
+                n_hivpos_artvs[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
+                n_hivpos_artvu[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
+                n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];		
+            }
+        }
     
 	
-	/* Total number of women aged aa: */
-	// n = patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
-
-	for (r=0; r<N_RISK; r++){
-	    n_hivpos += patch[p].n_infected->pop_size_per_gender_age1_risk[FEMALE][ai_hivpos][r];
-	    for (icd4=0; icd4<NCD4; icd4++){
-		n_hivpos_unaware[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNEG+1];
-		n_hivpos_aware_neverart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][ARTNAIVE+1];
-		n_hivpos_earlyart[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][EARLYART+1];
-		n_hivpos_artvs[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VS+1];
-		n_hivpos_artvu[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][LTART_VU+1];
-		n_hivpos_cascadedropout[icd4] += patch[p].n_infected_by_all_strata->hiv_pop_size_per_gender_age_risk[FEMALE][ai_art][r][icd4][CASCADEDROPOUT+1];		
-	    }
-	}
-    
-	
-	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	    if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
-		sprintf(tempstring,"%li,",n_hivpos);
-		strcat(outputstring,tempstring);
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-	    }
-	    
-	}
+        if (t>2000 && (t-floor(t)<1e-9) && (p==0)) {
+            if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)) {
+                sprintf(tempstring,"%li,",n_hivpos);
+                strcat(outputstring,tempstring);
+                for (icd4=0;icd4<NCD4;icd4++) {	    
+                    sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+                for (icd4=0;icd4<NCD4;icd4++) {	    
+                    sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+                for (icd4=0;icd4<NCD4;icd4++) {
+                    sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+                for (icd4=0;icd4<NCD4;icd4++) {
+                    sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+                for (icd4=0;icd4<NCD4;icd4++) {
+                    sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+                for (icd4=0;icd4<NCD4;icd4++) {
+                    sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
+                    strcat(outputstring,tempstring);
+                }
+            }
+            
+        }
 
 	
-	/* We want to be able to include MTCT transmission of HIV.
-	   At present we use Spectrum's outputs - the % of live births to HIV+ women (for which we take (the number of women who need PMTCT - assumed to be all HIV+ pregnant women who aren't on ART, and assume that on ART there is no MTCT)*(infant mortality rate)/(number of births from DemProj module)).
+        /* We want to be able to include MTCT transmission of HIV.
+        At present we use Spectrum's outputs - the % of live births to HIV+ women (for which we take (the number of women who need PMTCT - assumed to be all HIV+ pregnant women who aren't on ART, and assume that on ART there is no MTCT)*(infant mortality rate)/(number of births from DemProj module)).
 
-	*/
+        */
 	
         /* We discount the fertility rate by the childhood mortality rate - so we only include children who will survive to adulthood - this is done in per_woman. Note that we don't substract AIDS_related mortality in kids here - this is done separately.
-	 */
+	    */
         age_group_fertility_rate_per_timestep = TIME_STEP*(1.0-childhood_mortality_rate)*per_woman_fertility_rate(aa+AGE_ADULT, patch[p].param, y0, f);      // * age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai];
 
         //printf("t=%6.4lf age=%i afsr=%8.6lf childhood_mortality_rate=%6.4lf \n",t,aa,per_woman_fertility_rate(aa+AGE_ADULT, param, y0, f),childhood_mortality_rate);
         n_births += gsl_ran_binomial (rng, age_group_fertility_rate_per_timestep, patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai]);
-
     }
 
 
 
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	strcat(outputstring,"\n");
-	FILE *infile;
-	infile = fopen("Output_count_by_age_gender_risk_cascade.csv","a");
-	fprintf(infile,"%s",outputstring);
-	fclose(infile);
+    if (t>2000 && (t-floor(t)<1e-9) && (p==0)) {
+        strcat(outputstring,"\n");
+        FILE *infile;
+        infile = fopen("Output_count_by_age_gender_risk_cascade.csv","a");
+        fprintf(infile,"%s",outputstring);
+        fclose(infile);
     }
 	    
     /* Store number of new births for model validation/debugging: */
@@ -2952,22 +2943,24 @@ void add_new_kids(double t, patch_struct *patch, int p){
     /* Store number of HIV- new births: */
     n_birth_hivpos = gsl_ran_binomial (rng, proportion_of_hiv_positive_infants, n_births);
     if ((n_birth_hivpos>0) && (proportion_of_hiv_pos_infants_on_art>0))
-	n_birth_hivpos_art = gsl_ran_binomial (rng, proportion_of_hiv_pos_infants_on_art, n_birth_hivpos);
+	    n_birth_hivpos_art = gsl_ran_binomial (rng, proportion_of_hiv_pos_infants_on_art, n_birth_hivpos);
     else
-	n_birth_hivpos_art = 0;
+	    n_birth_hivpos_art = 0;
     
     if ((patch[p].child_population[0].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-	j = patch[p].child_population[0].debug_tai+1;
+	    j = patch[p].child_population[0].debug_tai+1;
     else
-	j = 0;
+	    j = 0;
+
     patch[p].child_population[0].n_child[j] = n_births - n_birth_hivpos;
 
     
     /* Store number of HIV+ not on ART new births: */
     if ((patch[p].child_population[1].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-	j = patch[p].child_population[1].debug_tai+1;
+	    j = patch[p].child_population[1].debug_tai+1;
     else
-	j = 0;
+	    j = 0;
+
     patch[p].child_population[1].n_child[j] = n_birth_hivpos-n_birth_hivpos_art;
 
 
@@ -2975,9 +2968,10 @@ void add_new_kids(double t, patch_struct *patch, int p){
     
     /* Store number of HIV+, and on ART new births: */
     if ((patch[p].child_population[2].debug_tai) < ((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
-	j = patch[p].child_population[2].debug_tai+1;
+	    j = patch[p].child_population[2].debug_tai+1;
     else
-	j = 0;
+	    j = 0;
+
     patch[p].child_population[2].n_child[j] = n_birth_hivpos_art;
 
 
@@ -2987,7 +2981,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 
 
 
-    if (PRINT_DEBUG_DEMOGRAPHICS){
+    if (PRINT_DEBUG_DEMOGRAPHICS) {
         if ((patch[p].child_population[0].debug_tai)<((AGE_ADULT+1)*N_TIME_STEP_PER_YEAR-1))
             printf("BIRTHSx were: %li %li are: %i %i\n",patch[p].child_population[0].n_child[patch[p].child_population[0].debug_tai+1],patch[p].child_population[1].n_child[patch[p].child_population[1].debug_tai+1],(int) floor(n_births*(1.0-proportion_of_hiv_positive_infants)),(int) floor(n_births*proportion_of_hiv_positive_infants));
         else

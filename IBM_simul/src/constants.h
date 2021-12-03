@@ -182,7 +182,19 @@ extern gsl_rng * rng;
 
 #define TIME_PC0 2014.5
 
+/* Defines the maximum allowed number of threads, as well as how many are free to be used to increase calculation speed.
+   Crank the number up for more concurrent execution. 
+   
+   The HPC or cluster may not recieve benefits from multithreading due to the fact you might not get assigned multiple cores.
 
+   NOTE THAT THE NUMBER OF THREADS SHOULD EQUAL THE NUMBER OF CORES YOU ARE WILLING TO DEDICATE TO RUNNING THE MODEL. 
+   ANY MORE OR LESS MAY RESULT IN INEFFICIENCY AND/OR SLOWDOWN.
+
+   If the creation of a background thread is required, adjust RESERVED_THREADS accordingly.
+*/
+#define MAX_THREADS 11
+#define RESERVED_THREADS 0
+#define FREE_THREADS MAX_THREADS - RESERVED_THREADS
 
 /************************************************************************/
 /***************************** Demographics ***************************/

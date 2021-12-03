@@ -15,12 +15,12 @@
 #	./popart-simul.exe Zambia
 
 # In general
-GSLFLAGS= -lgsl -lgslcblas -lm -O3 
+#GSLFLAGS= -lgsl -lgslcblas -lm -O3 -lpthread
 # For valgrind:
 #GSLFLAGS= -lgsl -lgslcblas -lm 
 
 # for Gprof:
-#GSLFLAGS= -lgsl -lgslcblas -lm -pg 
+GSLFLAGS= -lgsl -lgslcblas -lm -pg -lpthread
 
 
 LFLAGS = ${GSLFLAGS}
@@ -54,10 +54,10 @@ endif
 # Compilation options and libraries to be used
 
 # In general use this:
-CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 
+#CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0
 
 #For gprof use this:
-#CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
+CFLAGS = -g -Wall -fmessage-length=0 -I$(INC) -O0 -pg
 
 # To compile
 all: ${OBJS}

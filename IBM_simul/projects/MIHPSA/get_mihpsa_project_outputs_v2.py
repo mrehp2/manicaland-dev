@@ -289,6 +289,8 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
     outputs_Npop15_49 = {}
 
     outputs_Npop_15plus = {}
+    outputs_Npop_M15plus = {}
+    outputs_Npop_F15plus = {}
     outputs_Npop_child = {}
     outputs_Npop_total = {}
 
@@ -429,6 +431,9 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
 
 
                 outputs_Npop_15plus[year] = [(NpopM15plus+NpopF15plus)*scale_tot_adult]
+                outputs_Npop_M15plus[year] = [NpopM15plus*scale_tot_adult]
+                outputs_Npop_F15plus[year] = [NpopF15plus*scale_tot_adult]
+
                 outputs_Npop_child[year] = [Npop_child*scale_child]
 
                 outputs_Npop_total[year] = [(NpopM15plus+NpopF15plus)*scale_tot_adult + Npop_child*scale_child]
@@ -510,6 +515,9 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
 
                 outputs_Npop15_49[year] += [(NpopM15_49+NpopF15_49)*scale_tot_adult]
                 outputs_Npop_15plus[year] += [(NpopM15plus+NpopF15plus)*scale_tot_adult]
+                outputs_Npop_M15plus[year] += [NpopM15plus*scale_tot_adult]
+                outputs_Npop_F15plus[year] += [NpopF15plus*scale_tot_adult]
+                
                 outputs_Npop_child[year] += [Npop_child*scale_child]
                 outputs_Npop_total[year] += [(NpopM15plus+NpopF15plus)*scale_tot_adult + Npop_child*scale_child]
                 
@@ -668,6 +676,8 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
 
     outputs_to_store = {"Npop15_49":outputs_Npop15_49,
                         "Npop_15plus":outputs_Npop_15plus,
+                        "Npop_M15plus":outputs_Npop_M15plus,
+                        "Npop_F15plus":outputs_Npop_F15plus,
                         "Npop_child":outputs_Npop_child,
                         "Npop_total":outputs_Npop_total,
                         "PrevalenceM15_49":outputs_prevalence_M15_49,
@@ -739,11 +749,15 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
                         
 
     list_of_outputs = ["PrevalenceM15_49","PrevalenceF15_49","PrevalenceAll15_49","ARTcoverage_M_15plus","ARTcoverage_F_15plus","ARTcoverage_child","ARTcoverage_total","N_ART_M_15plus","N_ART_F_15plus","N_ART_child","N_ART_total","N_circ_15_49",
-                       "PropDiagnosed_M15plus","PropDiagnosed_F15plus","PropF15_24_condlasttime","PropAdultVS","Npop_15plus","Npop15_49","Npop_child","Npop_total","Diagnosed_onART_M_15plus","Diagnosed_onART_F_15plus",
-                       "New_cases_M15_49","New_cases_F15_49","New_cases_total15_49","IncidenceM15_49","IncidenceF15_49","Incidencetotal15_49","AIDSdeaths_M15plus","AIDSdeaths_F15plus","AIDSdeaths_child","AIDSdeaths_total","totaldeaths_M20_59","totaldeaths_F20_59","totaldeaths_adult20_59","Ntests_M15plus","Ntests_F15plus","Ntests_adult15plus","Prop_tests_pos_15plus"
+                       "PropDiagnosed_M15plus","PropDiagnosed_F15plus","PropF15_24_condlasttime","PropAdultVS","Npop_15plus","Npop_M15plus","Npop_F15plus","Npop15_49","Npop_child","Npop_total","Diagnosed_onART_M_15plus","Diagnosed_onART_F_15plus",
+                       "New_cases_M15_49","New_cases_F15_49","New_cases_total15_49","IncidenceM15_49","IncidenceF15_49","Incidencetotal15_49","AIDSdeaths_M15plus","AIDSdeaths_F15plus","AIDSdeaths_child","AIDSdeaths_total","totaldeaths_M20_59","totaldeaths_F20_59","totaldeaths_adult20_59","Ntests_M15plus","Ntests_F15plus","Ntests_adult15plus","Prop_tests_pos_15plus",
+                       "Npos_M15plus","Npos_F15plus","Npos_child","Npos_total","PrevalenceM15_24","PrevalenceF15_24","PrevalenceM25_49","PrevalenceF25_49",
+                       "IncidenceM15_24","IncidenceF15_24","IncidenceM25_49","IncidenceF25_49",
+                       "New_cases_M15_24","New_cases_F15_24","New_cases_M25_49","New_cases_F25_49"
     ]
+                        
 
-    #"Npos_total","Npos_M15plus","Npos_F15plus","Npos_child","PrevalenceM15_24","PrevalenceM25_49","PrevalenceF15_24","PrevalenceF25_49","Prevalence_child","IncidenceM15_24","IncidenceM25_49","IncidenceF15_24","IncidenceF25_49"
+    #,"Prevalence_child"
 
     make_mean_CI(outputs_to_store,list_of_outputs)    
     

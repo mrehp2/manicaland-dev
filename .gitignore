@@ -39,6 +39,7 @@
 # 'Old' files:
 *.old
 
+
 # Files associated with the trial
 #data/RAW_PRIORS/community_dictionary_withtrialarm.csv
 #data/GENERATED_PRIORS/
@@ -68,6 +69,7 @@ IBM_simul/data/SAMPLED_PARAMETERS/
 IBM_simul/data/GENERATED_PRIORS/
 
 IBM_simul/tests/MIHPSA/params/
+IBM_simul/tests/MIHPSA/src/
 
 IBM_simul/projects/MIHPSA/data/GENERATED_PRIORS/
 IBM_simul/projects/MIHPSA/data/SAMPLED_PARAMETERS/
@@ -83,6 +85,11 @@ IBM_simul/TEMPLATE_IMPACT/IMPACT/sweave/*.tex
 IBM_simul/TEMPLATE_IMPACT/IMPACT/sweave/*.log
 IBM_simul/TEMPLATE_IMPACT/IMPACT/sweave/*.aux
 IBM_simul/TEMPLATE_IMPACT/IMPACT/*.csv
+
+
+IBM_simul/Manicaland_hpc_dir/
+IBM_simul/Manicaland_hpc_dir_test/
+IBM_simul/OTHER_LAPTOP/
 
 
 # Some output files:

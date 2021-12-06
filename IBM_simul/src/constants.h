@@ -37,7 +37,7 @@
 /****** For switching on and off different parts of the code ************/
 /************************************************************************/
 
-#define MIHPSA_MODULE 1 /* If 1, keep track of additional outcomes for Zimbabwe MIHPSA project, October 2021. */
+#define MIHPSA_MODULE 0 /* If 1, keep track of additional outcomes for Zimbabwe MIHPSA project, October 2021. */
 
 
 #define SIMPLE_PARTNERSHIP_CHECK 0 /* if 0 then normal simulation is run, otherwise check functions are run (checks certain outputs - partnership formations etc). */

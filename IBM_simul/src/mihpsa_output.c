@@ -181,10 +181,15 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    naware_bysex_15plus[MALE],naware_bysex_15plus[FEMALE],naware_children_under15,
 	    N_onART_bysex_15plus[MALE],N_onART_bysex_15plus[FEMALE],
 	    N_VS_bysex_15plus[MALE],N_VS_bysex_15plus[FEMALE],
-	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[FEMALE],
-patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
-patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
-patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
+
+	    if(MIHPSA_MODULE==1){
+		!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[FEMALE],
+		    !!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
+		    }
+	    
+!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
+!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
+	    
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus);	
 

@@ -17,6 +17,7 @@
 
 # Executable files
 *.exe
+*.out
 
 # Files associated with latex processing
 *.toc
@@ -43,6 +44,16 @@
 #data/GENERATED_PRIORS/
 #data/SAMPLED_PARAMETERS/
 
+# Graphs from calibration:
+IBM_simul/calibration/*.pdf
+IBM_simul/python/*.pdf
+
+IBM_simul/data/SAMPLED_PRIORS/
+IBM_simul/data/GENERATED_PRIORS/
+
+projects/MIHPSA/data/GENERATED_PRIORS/
+projects/MIHPSA/data/SAMPLED_PRIORS/
+IBM_simul/IMPACT/*.pdf
 
 # Some output files:
 HIVPrevCasc_Indiv_run*.csv

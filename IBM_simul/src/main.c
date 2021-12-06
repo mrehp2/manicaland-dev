@@ -861,8 +861,9 @@ int main(int argc,char *argv[]){
                             }
                         }
 
-			if(MIHPSA_MODULE==1)
-			    write_MIHPSA_outputs(file_data_store, output, p);
+			//if(MIHPSA_MODULE==1)
+			// This file is now some additional outputs - useful for diagnostics, but not needed for every year from start of simulation.
+			write_MIHPSA_outputs(file_data_store, output, p);
                     }
 
 		    if(MANICALAND_CASCADE==1){

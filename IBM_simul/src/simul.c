@@ -293,14 +293,16 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	}
 
 	/* MIHPSA outputs are stored from 1990 onwards, in the timestep 1 July. */
-	if(MIHPSA_MODULE==1){
-	    if(t0>=1990){
-		/* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
-		if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
-		    for(p = 0; p < NPATCHES; p++)
-			store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
-	    }
+	//if(MIHPSA_MODULE==1){
+	// This file is now some additional outputs - useful for diagnostics, but not needed for every year from start of simulation.
+	
+	if(t0>=1990){
+	    /* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
+	    if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
+		for(p = 0; p < NPATCHES; p++)
+		    store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
 	}
+	//}
 	
     }
     
@@ -1116,15 +1118,15 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 
-	if(MIHPSA_MODULE==1){	
-	    if(t_step==0 && t>=patch[p].param->COUNTRY_VMMC_START){
-		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START)
-		    printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
-		/* This function varies VMMC uptake on an annual basis, overriding the values of p_use_VMMC[] set in input.c.
-		 Note that it only changes the pre-intervention values for now. */
-		update_VMMCrates(t,patch,p);
-	    }
+	//if(MIHPSA_MODULE==1){	
+	if(t_step==0 && t>=patch[p].param->COUNTRY_VMMC_START){
+	    if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START)
+		printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
+	    /* This function varies VMMC uptake on an annual basis, overriding the values of p_use_VMMC[] set in input.c.
+	       Note that it only changes the pre-intervention values for now. */
+	    update_VMMCrates(t,patch,p);
 	}
+	//}
 	
 	update_VMMCbarriers_from_ageing(t, t_step, patch, p);
 	if(t >= patch[p].param->COUNTRY_VMMC_START){

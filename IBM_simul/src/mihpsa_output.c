@@ -80,8 +80,9 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     //int current_cd4_guidelines = art_cd4_eligibility_group(patch[p].param, t);
 
 
-    /* Temporary store of data from current year. */
+    /* Temporary stores of data from current year. */
     char temp_string[10000];
+    char temp_string2[10000];
     /* Temporary store for single variable which gets strcat'd into temp_string. */
 
     /* Loop through the alive population. */
@@ -166,34 +167,53 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     }
 
 
-    sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
-	    (int) floor(t),
-	    npop_bysex_15to49[MALE],npop_bysex_15to49[FEMALE],
-	    npop_bysex_15to24[MALE],npop_bysex_15to24[FEMALE],
-	    npop_bysex_25to49[MALE],npop_bysex_25to49[FEMALE],
-	    npositive_bysex_15to49[MALE],npositive_bysex_15to49[FEMALE],
-	    npositive_bysex_15to24[MALE],npositive_bysex_15to24[FEMALE],
-	    npositive_bysex_25to49[MALE],npositive_bysex_25to49[FEMALE],
-	    N_men_MC_15to49,
-	    N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,
-	    npop_bysex_15plus[MALE],npop_bysex_15plus[FEMALE],npop_children_under15,
-	    npositive_bysex_15plus[MALE],npositive_bysex_15plus[FEMALE],npositive_children_under15,
-	    naware_bysex_15plus[MALE],naware_bysex_15plus[FEMALE],naware_children_under15,
-	    N_onART_bysex_15plus[MALE],N_onART_bysex_15plus[FEMALE],
-	    N_VS_bysex_15plus[MALE],N_VS_bysex_15plus[FEMALE],
-
-	    if(MIHPSA_MODULE==1){
-		!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[FEMALE],
-		    !!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
-		    }
-	    
-!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
-!!!patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
-	    
-	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
-	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus);	
-
+    sprintf(temp_string, "%i,%li,%li,",
+	    (int) floor(t),npop_bysex_15to49[MALE],npop_bysex_15to49[FEMALE]);
     
+	
+    if(MIHPSA_MODULE==1){
+	sprintf(temp_string2, "%li,%li,%li,%li,",	
+		npop_bysex_15to24[MALE],npop_bysex_15to24[FEMALE],
+		npop_bysex_25to49[MALE],npop_bysex_25to49[FEMALE]);
+	strcat(temp_string, temp_string2);
+    }
+    
+    sprintf(temp_string2, "%li,%li,",	
+	    npositive_bysex_15to49[MALE],npositive_bysex_15to49[FEMALE]);
+    strcat(temp_string, temp_string2);
+
+    if(MIHPSA_MODULE==1){
+	sprintf(temp_string2, "%li,%li,%li,%li,",
+		npositive_bysex_15to24[MALE],npositive_bysex_15to24[FEMALE],
+		npositive_bysex_25to49[MALE],npositive_bysex_25to49[FEMALE]);
+	strcat(temp_string, temp_string2);
+    }
+	
+    sprintf(temp_string2, "%li,",
+	    N_men_MC_15to49);
+    strcat(temp_string, temp_string2);
+
+    if(MIHPSA_MODULE==1){
+	sprintf(temp_string2, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li\n",
+	
+		N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,
+		npop_bysex_15plus[MALE],npop_bysex_15plus[FEMALE],npop_children_under15,
+		npositive_bysex_15plus[MALE],npositive_bysex_15plus[FEMALE],npositive_children_under15,
+		naware_bysex_15plus[MALE],naware_bysex_15plus[FEMALE],naware_children_under15,
+		N_onART_bysex_15plus[MALE],N_onART_bysex_15plus[FEMALE],
+		N_VS_bysex_15plus[MALE],N_VS_bysex_15plus[FEMALE],
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_deaths_20_59[FEMALE],
+		    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_children_under15,
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus);
+    }
+    else{
+	sprintf(temp_string2, "\n");
+    }
+
+    strcat(temp_string, temp_string2);
 
 	//strcat(temp_string,"\n");
     
@@ -221,8 +241,11 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
     }
     
     /* Print the header of the file */
-    fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
-
+    if(MIHPSA_MODULE==1)
+	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
+    else
+	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPos_15to49_male,NPos_15to49_female,Ncirc_15to49\n");	
+    
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);
 }

@@ -1325,11 +1325,11 @@ void make_filenames_for_struct(file_label_struct *file_labels,
             "ART_status_by_age_sex");
         }
 
-        if(MIHPSA_MODULE == 1){
+        //if(MIHPSA_MODULE == 1){
         concatenate_filename(file_data_store->filename_MIHPSA_outputs[p],
             output_file_directory, file_labels->filename_label_bypatch[p],
             "MIHPSA_output");
-        }
+	//}
 	
     }
     /* Some filenames are special - only made for one run. */

@@ -1,0 +1,186 @@
+
+
+******************TO DO*********************
+
+
+new_adult->next_HIV_event = NOEVENT; 
+new_adult->idx_hiv_pos_progression[0] = -1;    
+new_adult->idx_hiv_pos_progression[1] = -1;    
+new_adult->debug_last_hiv_event_index = -1;    
+
+
+/* PANGEA stuff: */
+new_adult->PANGEA_t_prev_cd4stage = -1.0;
+new_adult->PANGEA_t_next_cd4stage = -1.0;
+
+
+
+****
+* Set to dummy values in create_new_individual. Need to ensure they are initilaised for HIV+ on ART in initialize_first_cascade_event_for_new_individual()
+new_adult->next_cascade_event = NOEVENT; 
+new_adult->idx_cascade_event[0] = -1;           
+new_adult->idx_cascade_event[1] = -1;           
+
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+
+Done in create_new_individual:
+
+new_adult->idx_vmmc_event[0] = -1;         
+new_adult->idx_vmmc_event[1] = -1;      
+
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+Done in add_hiv_info_for_new_hiv_positive_adult:
+
+new_adult->HIV_status;
+
+
+new_adult->ART_status;  // For hivstatus=1, choose via get_art_status_of_mtct_new_adult(). For hivstatus=2 assume LTARTVS.
+
+new_adult->t_sc = -1;                         
+new_adult->SPVL_infector = 0;             
+
+new_adult->PANGEA_cd4atfirstART
+new_adult->PANGEA_date_firstARTstart
+new_adult->PANGEA_date_startfirstVLsuppression
+new_adult->PANGEA_date_endfirstVLsuppression
+
+new_adult->DEBUG_cumulative_time_on_ART_VS = 0;
+new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
+new_adult->DEBUG_cumulative_time_on_ART_early = 0;
+new_adult->DEBUG_time_of_last_cascade_event = -1; /* Dummy value. */
+
+
+
+new_adult->PANGEA_t_diag = -1.0; // Assume that this is on average at AGE_ADULT/2 for children who are diagnosed but not on ART, and occurred at birth for those on ART.
+
+/* Assumed to be same as current CD4 if ever diagnosed. */
+new_adult->PANGEA_cd4atdiagnosis = -1.0;
+
+
+new_adult->debug_last_vmmc_event_index = -1; 
+
+new_adult->time_last_hiv_test; // If know serostatus, assume at birth, otherwise never tested. 
+
+
+
+new_adult->debug_last_cascade_event_index = -1; 
+
+
+
+
+Assigned from mctc_templates:
+ - new_adult->cd4, new_adult->SPVL_num_G, new_adult->SPVL_num_E, new_adult->SPVL_cat
+
+
+
+
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+Done in create_mtct_templates():
+
+new_adult->SPVL_num_G = 0;                
+new_adult->SPVL_num_E = 0;                
+
+new_adult->cd4 = CD4_UNINFECTED;          
+
+
+### These need fixing for those on ART: 
+relative_PANGEA_t_prev_cd4stage
+relative_PANGEA_t_next_cd4stage 
+
+
+
+
+
+
+
+
+To do:
+PANGEA_cd4atdiagnosis (for those whoare diagnosed at birth, but not on ART)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------
+new_adult->HIV_status = UNINFECTED;
+new_adult->ART_status = ARTNEG;
+new_adult->next_HIV_event = NOEVENT; 
+new_adult->next_cascade_event = NOEVENT; 
+new_adult->SPVL_num_G = 0;                
+new_adult->SPVL_num_E = 0;                
+new_adult->SPVL_infector = 0;             
+new_adult->cd4 = CD4_UNINFECTED;          
+new_adult->SPVL_cat = -1;                 
+
+new_adult->t_sc = -1;                          
+new_adult->idx_hiv_pos_progression[0] = -1;    
+new_adult->idx_hiv_pos_progression[1] = -1;    
+new_adult->debug_last_hiv_event_index = -1;    
+
+new_adult->idx_cascade_event[0] = -1;           
+new_adult->idx_cascade_event[1] = -1;           
+new_adult->debug_last_cascade_event_index = -1; 
+new_adult->idx_vmmc_event[0] = -1;         
+new_adult->idx_vmmc_event[1] = -1;      
+new_adult->debug_last_vmmc_event_index = -1; 
+
+/* PANGEA stuff: */
+new_adult->PANGEA_t_prev_cd4stage = -1.0;
+new_adult->PANGEA_t_next_cd4stage = -1.0;
+new_adult->PANGEA_cd4atdiagnosis = -1.0;
+new_adult->PANGEA_cd4atfirstART = -1.0;
+new_adult->PANGEA_t_diag = -1.0;
+new_adult->PANGEA_date_firstARTstart = -1.0;
+new_adult->PANGEA_date_startfirstVLsuppression = -1.0;
+new_adult->PANGEA_date_endfirstVLsuppression = -1.0;
+
+/* Variables store cumulative amount of time a person spends on ART: */
+new_adult->DEBUG_cumulative_time_on_ART_VS = 0;
+new_adult->DEBUG_cumulative_time_on_ART_VU = 0;
+new_adult->DEBUG_cumulative_time_on_ART_early = 0;
+new_adult->DEBUG_time_of_last_cascade_event = -1; /* Dummy value. */
+
+---------------------------------------------------------------------------

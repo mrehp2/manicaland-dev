@@ -1,0 +1,30 @@
+
+***Note - need to do tests for a random run with nruns>3 otherwise you can end up with some odd parameters (eg. no HIV tests in men) due to LHC sampling.***
+
+
+DONE:
+ - Npop_15plus_male/female: compared to Annual_outputs PopulationM/F.
+ - NPop_15to49_male/female: compared to MIHPSA Npop_15plus_male/female.
+ - Npos_15plus_male/female: compared to Annual_outputs Prevalence, and NumberPositiveM(F)/PopulationM(F) - close agreement (when using interpolation to estimate the July value from the surrounding Jan values).
+ - NPos_15to49_male/female: prevalence compared to Npos_15plus_male/female - same trend, higher prevalence (as expected).
+ - Ncirc_15to49: compared Ncirc_15to49/NPop_15to49_male to Annual_outputs PropMenCirc. Very similar trend, a little higher in the MIHPSA output as expected (as no VMMC for men aged 55+).
+ - N_women_sexuallyactive_15to24: N_women_sexuallyactive_15to24/NPop_15to49_female is fairly constant at around 20-40%. Roughly what I'd expect - something like around 40% of women 15-49 should be in the 15-24 range, and then not all of those are sexually active.
+ - N_women_usecondomlastact_15to24: N_women_usecondomlastact_15to24/N_women_sexuallyactive_15to24 is around 25% pre-intervention, moving up to around 35% once the cascade intervention starts (or constant without). This is roughly consistent with parameter input values.
+- N_deaths_20_59_male/female: I added in the population 23-60 from Annual outputs, and calculated the annual % of deaths using this as the approximate denominator. It seems plausible.
+ - N_AIDSdeaths_15plus_male/female: calculating the number of deaths each year, and dividing by Npos_15plus_male/female, it peaks in 2005 before declining to around 6%. I also cross-checked against the sum of NDied_from_HIV_riskLow/Med/High from Annual_outputs - this is consistent.
+ - N_HIVtests_15plus_male+female: I compared this against Annual_outputs CumulativeNonPopartHIVtests. They agree closely.
+- NonART_15plus_male/female: I compared Annual_outputs PropHIVPosONART with (NonART_15plus_male+female)/(NPop_15to49_male+female). These are very close. I also used Annual_outputs NonARTM/F for a direct comparison - again, consistent.
+ - N_newHIVdiagnoses_15plus - calculating this divided by the sum of HIV tests gives roughly the probability of a positive diagnosis. This is quite similar to HIV prevalence. 
+ - N_newHIVinfections_15to49_male+female: compare against Annual_outputs NewCasesThisYear. They're not exact, but plotting them they seem pretty similar in shape.
+ - Naware_15plus_male/female: calculated Naware_15plus_male/Npos_15plus_male - i.e. the % aware. This is quite low (48%/65% in M/F in 2020). After 2020, awareness increases in women faster than men, reaching around 88% in women, and 75% in men.
+   - N_VS_15plus_male/female: calculated N_VS_15plus_male/NonART_15plus_male. This is lower in men (~93%) than women (96-98%), but seems plausible. 
+
+
+
+
+
+***********************************
+TO DO:
+
+Need to add in child stats
+

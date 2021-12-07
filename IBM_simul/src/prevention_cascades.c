@@ -140,11 +140,11 @@ void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, casc
 }
 
 /* Need to pass a pointer to barrier_params as otherwise we create a local copy of barrier_params (and then assigning p_will_get_VMMC to that address fails, as the address is freed once we return from the function). */
-void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params, int i_VMMC_intervention_running_flag){
+void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params){
 
     int age = (int) floor(t-indiv->DoB);
-    indiv->cascade_barriers.p_will_get_VMMC = &(barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)][i_VMMC_intervention_running_flag]);
-    //printf("id=%li %lf %lf\n",indiv->id,barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)][i_VMMC_intervention_running_flag],*(indiv->cascade_barriers.p_will_get_VMMC));
+    indiv->cascade_barriers.p_will_get_VMMC = &(barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)]);
+    //printf("id=%li %lf %lf\n",indiv->id,barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)],*(indiv->cascade_barriers.p_will_get_VMMC));
 
 }
 
@@ -163,15 +163,12 @@ void assign_individual_condom_prevention_cascade(double t, individual *indiv, ca
 */
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params *barrier_params, int scenario_flag){
 
-    int i_VMMC_intervention_running_flag;
     int i_PrEP_intervention_running_flag;
     
     if (t<barrier_params->t_start_prevention_cascade_intervention){
-	i_VMMC_intervention_running_flag = 0;
 	i_PrEP_intervention_running_flag = 0;
     }
     else{
-	i_VMMC_intervention_running_flag = barrier_params->i_VMMC_barrier_intervention_flag;
 	i_PrEP_intervention_running_flag = barrier_params->i_PrEP_barrier_intervention_flag;
     }
 
@@ -181,7 +178,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     /* } */
     
     if(indiv->gender==MALE)
-	assign_individual_VMMC_prevention_cascade(t, indiv, barrier_params, i_VMMC_intervention_running_flag);
+	assign_individual_VMMC_prevention_cascade(t, indiv, barrier_params);
 
     
     if(indiv->id==FOLLOW_INDIVIDUAL)
@@ -354,8 +351,6 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
     individual *indiv;
     
-    /* Store scenario for easier readability. */
-    int intervention_scenario = patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag;
 
     /* VMMC unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
     if(VMMC_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
@@ -374,7 +369,7 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 	
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
-	    assign_individual_VMMC_prevention_cascade(t, indiv, &(patch[p].param->barrier_params), intervention_scenario);
+	    assign_individual_VMMC_prevention_cascade(t, indiv, &(patch[p].param->barrier_params));
 	}
 	
     }
@@ -624,7 +619,6 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 
 void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update){
 
-    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag;
 
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
@@ -643,7 +637,7 @@ void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_st
 	if(indiv->birthday_timestep==t_step){
 	    if(indiv->id==FOLLOW_INDIVIDUAL)
 		printf("Modifying VMMC HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
-	    assign_individual_VMMC_prevention_cascade(t, indiv, &(patch[p].param->barrier_params), intervention_scenario);
+	    assign_individual_VMMC_prevention_cascade(t, indiv, &(patch[p].param->barrier_params));
 	}
     }
 }
@@ -782,88 +776,117 @@ void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch
 
 }
 
-void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
+
+void update_VMMCrates(int t, parameters *param, double *adjustment_to_rate){
     if(MIHPSA_MODULE==1)
-	update_VMMCrates_MIHPSA(t, patch, p);
+	update_VMMCrates_MIHPSA(t, param);
     else
-	update_VMMCrates_manicaland(t, patch, p);
+	update_VMMCrates_Manicaland(t, param, adjustment_to_rate);
 }
 
 
 
+void get_VMMC_rate_adjustment_foralreadycirc_hivpos(double t, patch_struct *patch, int p, double adjustment_to_rate[2]){
+    int age;
+    long n_id;
+
+    individual *indiv; /* Pointer used to make code more readable - points to already allocated memory so no need to malloc. */
+
+    /* The '2' is the number of (male) prevention cascade priority populations that are eligible for VMMC (15-29 and 30-54 yer old men who have ever had sex). */
+    int n_men_in_prevention_group[2] = {0,0};
+    int n_men_eligble_vmmc_in_prevention_group[2] = {0,0};
+
+    int i_prevention_group;
+
+    /* Loop through the alive population. */
+    for (n_id = 0; n_id < patch[p].id_counter; n_id++){
+	indiv = &patch[p].individual_population[n_id];
+	/* Only for male: */
+	if(indiv->gender==MALE){
+
+	    /* Check that the person is not dead: */
+	    if (indiv->cd4!=DEAD){
+		age = (int) floor(t - indiv->DoB);
+		
+		if(age>=15 && age<=54){
+
+		    /* Restrict to men who have ever had sex: */
+		    if(indiv->n_lifetime_partners>0){
+			
+			i_prevention_group = (age<30)? 0:1;
+			n_men_in_prevention_group[i_prevention_group]++;
+			if(indiv->HIV_status==UNINFECTED && indiv->circ==UNCIRC)
+			    n_men_eligble_vmmc_in_prevention_group[i_prevention_group]++;
+		    }
+		}
+	    }
+	}
+
+    }
+
+    for(i_prevention_group=0; i_prevention_group<2; i_prevention_group++){
+	adjustment_to_rate[i_prevention_group] = n_men_in_prevention_group[i_prevention_group]/((n_men_eligble_vmmc_in_prevention_group[i_prevention_group]>0 ? n_men_eligble_vmmc_in_prevention_group[i_prevention_group]:1e-10));
+	//printf("In function adjustment_to_rate[%i]=%lf\n",i_prevention_group, adjustment_to_rate[i_prevention_group]);
+    }
+    
+}
+
 
 /* Function allows VMMC rates to vary each year - for Manicaland. */
-void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
+void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to_rate){
 
-    /* We have data for 12 years from C:\Users\mpickles\Dropbox (SPH Imperial College)\projects\MIHPSA_Zimabwe2021\Copy of HIVcalibrationData_Zimbabwe.xlsx. */
-    double VMMCrate_young[2] = {0.34,0.48};
-    double VMMCrate_old[2] = {0.34,0.48};
+    /* Based on analysis of national DHIS2 data to get relative number of 2013-2018 VMMC operations compared to 2019. Data came from MIHPSA project, but is in tile C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMC\Model_VMMC_uptake_FINAL.xlsx 'Louisa prevention cascade' tab. */
+    double VMMC_relativerate_2013_2018[6] = {0.317,0.531,0.641,0.661,0.769,0.953};
+    
+    int i_vmmc_preventionbarrier_group;
+
+    int i_adjustment;
 
     
-    if(t>2019){
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
+    int intervention_scenario;    /* Stores scenario for easier readability. */
+    if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
+        intervention_scenario = param->barrier_params.i_condom_barrier_intervention_flag;
+	
     }
-
     else{
-	if(
-	switch(t)
-	    {
-	    case 2008:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[0];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[0];
-		break;
-	    case 2009:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[1];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[1];
-		break;
-	    case 2010:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[2];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[2];
-		break;
-	    case 2011:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[3];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[3];
-		break;
-	    case 2012:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[4];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[4];
-		break;
-	    case 2013:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[5];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[5];
-		break;
-	    case 2014:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[6];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[6];
-		break;
-	    case 2015:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[7];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[7];
-		break;
-	    case 2016:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[8];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[8];
-		break;
-	    case 2017:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[9];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[9];
-		break;
-	    case 2018:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10];
-		break;
-	    case 2019:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[11];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[11];
-		break;
-
-	    default:
-		printf("Default ");
-	    }
+	intervention_scenario = 0; /* pre-intervention. */
     }
+
+
+    /* We set these to be zero: */
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M] = 0;
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_OLD_M] = 0;
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_NEVERSEX_M] = 0;
+
+    
+    if(t<2013){
+	for(i_vmmc_preventionbarrier_group=i_VMMC_PREVENTIONBARRIER_YOUNG_M; i_vmmc_preventionbarrier_group<=i_VMMC_PREVENTIONBARRIER_OLD_M; i_vmmc_preventionbarrier_group++)
+	    param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = 0; 
+    }
+    else{
+	/* Once VMMC starts we need to adjust for % of men in given VMMC prevention barrier group who can get VMMC (i.e. HIV- and not already circumcised). */
+	//for(i_adjustment=0;i_adjustment<2;i_adjustment++)
+	//printf("Outside function adjustment_to_rate[%i]=%lf\n",i_adjustment,adjustment_to_rate[i_adjustment]);
+	
+	if(t>=2019){
+	    for(i_vmmc_preventionbarrier_group=i_VMMC_PREVENTIONBARRIER_YOUNG_M; i_vmmc_preventionbarrier_group<=i_VMMC_PREVENTIONBARRIER_OLD_M; i_vmmc_preventionbarrier_group++){
+		i_adjustment = i_vmmc_preventionbarrier_group-i_VMMC_PREVENTIONBARRIER_YOUNG_M;
+		param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = param->barrier_params.p_use_VMMC_present[i_vmmc_preventionbarrier_group][intervention_scenario]*adjustment_to_rate[i_adjustment]; /* Note -we ignore COVID-19 here (so use last pre-covid value). */
+	    }
+	}
+    
+	else{
+	    int i_year = (int) t-2013;
+	    for(i_vmmc_preventionbarrier_group=i_VMMC_PREVENTIONBARRIER_YOUNG_M; i_vmmc_preventionbarrier_group<=i_VMMC_PREVENTIONBARRIER_OLD_M; i_vmmc_preventionbarrier_group++){
+		i_adjustment = i_vmmc_preventionbarrier_group-i_VMMC_PREVENTIONBARRIER_YOUNG_M;
+		param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = VMMC_relativerate_2013_2018[i_year] * param->barrier_params.p_use_VMMC_present[i_vmmc_preventionbarrier_group][intervention_scenario]*adjustment_to_rate[i_adjustment]; /* Note -we ignore COVID-19 here (so use last pre-covid value). */
+	    }
+	}
+    }
+
+
     // Checked that this works:
-    //printf("p_use_VMMC at t=%i: %lf %lf\n",t,patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0],patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0]);
+    //printf("p_use_VMMC at t=%i: %lf %lf\n",t,param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M],param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M]);
 
     return;
 
@@ -873,7 +896,7 @@ void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
 
 /* Function allows VMMC rates to vary each year. 
    Designed for MIHPSA project, but can take into account the fact that VMMC uptake has been quite non-linear. */
-void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
+void update_VMMCrates_MIHPSA(int t, parameters *param){
 
     /* We have data for 12 years from C:\Users\mpickles\Dropbox (SPH Imperial College)\projects\MIHPSA_Zimabwe2021\Copy of HIVcalibrationData_Zimbabwe.xlsx. */
     double VMMCrate_young[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
@@ -881,60 +904,60 @@ void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
 
     
     if(t>2019){
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
-	patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
     }
 
     else{
 	switch(t)
 	    {
 	    case 2008:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[0];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[0];
 		break;
 	    case 2009:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[1];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[1];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[1];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[1];
 		break;
 	    case 2010:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[2];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[2];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[2];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[2];
 		break;
 	    case 2011:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[3];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[3];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[3];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[3];
 		break;
 	    case 2012:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[4];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[4];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[4];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[4];
 		break;
 	    case 2013:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[5];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[5];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[5];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[5];
 		break;
 	    case 2014:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[6];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[6];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[6];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[6];
 		break;
 	    case 2015:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[7];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[7];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[7];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[7];
 		break;
 	    case 2016:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[8];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[8];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[8];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[8];
 		break;
 	    case 2017:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[9];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[9];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[9];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[9];
 		break;
 	    case 2018:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[10];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[10];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10];
 		break;
 	    case 2019:
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0] = VMMCrate_young[11];
-		patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0] = VMMCrate_old[11];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[11];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[11];
 		break;
 
 	    default:
@@ -942,7 +965,7 @@ void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
 	    }
     }
     // Checked that this works:
-    //printf("p_use_VMMC at t=%i: %lf %lf\n",t,patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M][0],patch[p].param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M][0]);
+    //printf("p_use_VMMC at t=%i: %lf %lf\n",t,param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M],param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M]);
 
     return;
 
@@ -950,13 +973,22 @@ void update_VMMCrates_MIHPSA(int t, patch_struct *patch, int p){
 }
 
 
+ /* Function allows condom rates to vary each year. 
+   Designed for MIHPSA project, but can be used elsewhere. */
+void update_condomrates(double t, parameters *param){
+    if(MIHPSA_MODULE==1)
+	update_condomrates_MIHPSA(t, param);
+    else
+	update_condomrates_Manicaland(t, param);
+}
+
 
 
 
 
 /* Function allows condom rates to vary each year. 
    Designed for MIHPSA project, but can be used elsewhere. */
-void update_condomrates(double t, parameters *param){
+void update_condomrates_MIHPSA(double t, parameters *param){
 
     double cond_1989 = 0.05; /* Assumed condom use rate in 1989. */
 
@@ -1032,12 +1064,10 @@ void update_condomrates(double t, parameters *param){
 
 
 /* Function allows condom rates to vary each year. 
-   Designed for MIHPSA project, but can be used elsewhere. */
-void update_condomrates(double t, parameters *param){
+   Version for Manicaland. */
+void update_condomrates_Manicaland(double t, parameters *param){
 
     double cond_1989 = 0.05; /* Assumed condom use rate in 1989. */
-    double VMMCrate_young[2] = {0.34,0.48};
-    double VMMCrate_old[2] = {0.34,0.48};
 
     int intervention_scenario;    /* Stores scenario for easier readability. */
     if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
@@ -1053,41 +1083,29 @@ void update_condomrates(double t, parameters *param){
 
     int i_cond_preventionbarrier_group;
 
-    /* Before 1989, assume that condom use is 5%: */
-    if(t<1989){
+    /* Before 1995, assume that condom use is 5% (Mbizvo and Adamchak, Central African Journal of Medicine 1989 - see Dropbox/Manicaland/Model/CondomUse). 1995 chosen fairly arbitrarily - condom use had already reached R1 levels by 1999, so need to increase beforehand.  */
+    if(t<1995){
 	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
 	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = cond_1989;
 	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = cond_1989;
 	}
 
     }
-    else if(t>=2018){
+    else if(t>=2012){
 	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
 	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][intervention_scenario];
 	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][intervention_scenario];
 	}
     }
-	    
-    else if(t>=2010 && t<2018){
-	/* Based off excel file C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\Condom_use_analysis.xlsx "MIHPSA info" sheet. */
-	double f = (0.8433*(t-2009)+8.665)/16.2547;
 
+    else if(t>=1995 && t<2012){
+	/* Based off excel file C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\Condom_use_analysis.xlsx "Model decisions Manicaland" sheet. 
+	 Roguhly speaking CCU was only 70% of the R6-7 value in R1-5. */
+	double f = 0.7;
 	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
 	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = f*param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][0];
 	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = f*param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][0];
 	}
-    }
-    /* t=1989-2009: */
-    else if(t>=1989 && t<2010){
-	/* This is the fraction of 2018's condom use which is used in 2010.
-	   e.g. if condom use was 80% in 2018, then it would be f_2010*80% in 2010. */
-	double f_2010 = 9.5083/16.2547; /* Calculated in Condom_use_analysis.xlsx "MIHPSA info" sheet. */
-	double delta_t = (t-1989.0)/(2010-1989);
-	for(i_cond_preventionbarrier_group=0; i_cond_preventionbarrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_cond_preventionbarrier_group++){
-	    param->barrier_params.p_use_cond_casual[i_cond_preventionbarrier_group] = cond_1989 + delta_t * (f_2010*param->barrier_params.p_use_cond_casual_present[i_cond_preventionbarrier_group][0] - cond_1989);
-	    param->barrier_params.p_use_cond_LT[i_cond_preventionbarrier_group] = cond_1989 + delta_t * (f_2010*param->barrier_params.p_use_cond_LT_present[i_cond_preventionbarrier_group][0] - cond_1989);
-	}
-
     }
     else{
 	printf("Error - time %6.4lf is not included in the if statement in update_condomrates(). Exiting\n",t);

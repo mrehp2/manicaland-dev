@@ -79,16 +79,23 @@ typedef struct{
 
 /* Sub-structure of params, containing HIV prevention cascade parameters: */
 typedef struct{
-    /* N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
+    /* Probability of getting VMMC at present (and in future in the absence of interventions (last index 0) or with interventions (index 1)). N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
     /* The 2 is the number of interventions (i=0-no intervention, i=1-with prevention barrier intervention). */
-    double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
-    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_VMMC_present[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
 
+
+    /* Probability of getting VMMC at a given time. This is calculated in the function update_VMMCrates(). */
+    double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS];
+    
     /* Probability of using a condom at a given time. This is calculated in the function update_condomrates().
      Note that we don't have the second index that p_use_cond_casual_present[][] has, because this stores the condom use calculated at a given time for a given intervention scenarion. */
     double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS];
     double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS];
 
+
+    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
+
+    
     /* This is the probability of using a condom at present (and in the future, in the absence of further interventions - the [2] represents no intervention (0) or intervention (1))). */
     double p_use_cond_casual_present[N_COND_PREVENTIONBARRIER_GROUPS][2];
     double p_use_cond_LT_present[N_COND_PREVENTIONBARRIER_GROUPS][2];

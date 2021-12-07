@@ -333,6 +333,8 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
     #outputs_circ_cumulative15_49 = {} # This is circumicsion. As TMC is rare (and constant over time) the difference in cumulative cirucmcision per year should be roughly VMMC.
     outputs_Ncirc_15_49 = {} # Number of 15-49 year old men who are currently circumcised.
 
+    outputs_propcirc_15_49 = {} # Number of 15-49 year old men who are currently circumcised.
+    
     outputs_prop_F15_24_sex_active_usedcondomlasttime = {}
 
     outputs_prop_VS_adult15plus = {}
@@ -466,6 +468,7 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
                 
                 #outputs_circ_cumulative15_49[year] = [circ*scale_VMMC] # This is circumicsion. As TMC is rare (and constant over time) the difference in cumulative cirucmcision per year should be roughly VMMC.
                 outputs_Ncirc_15_49[year] = [Ncirc_15_49*scale_VMMC]
+                outputs_propcirc_15_49[year] = [Ncirc_15_49/(1.0*NpopM15_49)]
 
                 outputs_prop_diagnosed_M15plus[year] = [NawareM15plus/(1.0*NposM15plus+ERR)]
 
@@ -566,6 +569,7 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
 
                 
                 outputs_Ncirc_15_49[year] += [Ncirc_15_49*scale_VMMC] 
+                outputs_propcirc_15_49[year] += [Ncirc_15_49/(1.0*NpopM15_49)]
 
                 outputs_prop_diagnosed_M15plus[year] += [NawareM15plus/(1.0*NposM15plus+ERR)]
                 outputs_prop_diagnosed_F15plus[year] += [NawareF15plus/(1.0*NposF15plus+ERR)]
@@ -695,6 +699,7 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
                         "Diagnosed_onART_F_15plus":outputs_DiagOnART_F15plus,
                         #"VMMCoperations_15plus":outputs_circ,
                         "N_circ_15_49":outputs_Ncirc_15_49,
+                        "prop_circ_15_49":outputs_propcirc_15_49,
                         "PropDiagnosed_M15plus":outputs_prop_diagnosed_M15plus,
                         "PropDiagnosed_F15plus":outputs_prop_diagnosed_F15plus,
                         "PropF15_24_condlasttime":outputs_prop_F15_24_sex_active_usedcondomlasttime,
@@ -748,7 +753,7 @@ def read_mihpsa_files_and_make_summary_file(mihpsafiledir):
 
                         
 
-    list_of_outputs = ["PrevalenceM15_49","PrevalenceF15_49","PrevalenceAll15_49","ARTcoverage_M_15plus","ARTcoverage_F_15plus","ARTcoverage_child","ARTcoverage_total","N_ART_M_15plus","N_ART_F_15plus","N_ART_child","N_ART_total","N_circ_15_49",
+    list_of_outputs = ["PrevalenceM15_49","PrevalenceF15_49","PrevalenceAll15_49","ARTcoverage_M_15plus","ARTcoverage_F_15plus","ARTcoverage_child","ARTcoverage_total","N_ART_M_15plus","N_ART_F_15plus","N_ART_child","N_ART_total","prop_circ_15_49",
                        "PropDiagnosed_M15plus","PropDiagnosed_F15plus","PropF15_24_condlasttime","PropAdultVS","Npop_15plus","Npop_M15plus","Npop_F15plus","Npop15_49","Npop_child","Npop_total","Diagnosed_onART_M_15plus","Diagnosed_onART_F_15plus",
                        "New_cases_M15_49","New_cases_F15_49","New_cases_total15_49","IncidenceM15_49","IncidenceF15_49","Incidencetotal15_49","AIDSdeaths_M15plus","AIDSdeaths_F15plus","AIDSdeaths_child","AIDSdeaths_total","totaldeaths_M20_59","totaldeaths_F20_59","totaldeaths_adult20_59","Ntests_M15plus","Ntests_F15plus","Ntests_adult15plus","Prop_tests_pos_15plus",
                        "Npos_M15plus","Npos_F15plus","Npos_child","Npos_total","PrevalenceM15_24","PrevalenceF15_24","PrevalenceM25_49","PrevalenceF25_49",

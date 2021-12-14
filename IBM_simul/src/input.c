@@ -1233,14 +1233,31 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->time_to_background_HIVtest_midpoint");
 
         /* Input probabilities for the cascade events: */
-        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_pre2006));
-        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_pre2006");
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_pre2005));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_pre2005");
+        
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_2005_2010));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_2005_2010");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_2010_2013));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_2010_2013");
         
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_female_current));
         check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_female_current");
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->RR_HIV_background_testing_male));
-        check_if_cannot_read_param(checkreadok,"param_local->RR_HIV_background_testing_male");
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_male_pre2005));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_male_pre2005");
+        
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_male_2005_2010));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_male_2005_2010");
+        
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_male_2010_2013));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_male_2010_2013");
+        
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_male_current));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_male_current");
+        //checkreadok = fscanf(param_file,"%lg",&(param_local->RR_HIV_background_testing_male));
+
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_ANC));
         check_if_cannot_read_param(checkreadok,"param_local->HIV_rapid_test_sensitivity_ANC");
@@ -1256,8 +1273,22 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->p_collect_hiv_test_results_cd4_under200");
         //printf("param_local->p_collect_hiv_test_results_cd4_over200 = %lf\n",param_local->p_collect_hiv_test_results_cd4_over200);
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_nonpopart));
-        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_nonpopart");
+        /* checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_nonpopart)); */
+        /* check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_nonpopart"); */
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_2008));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_2008");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_2010));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_2010");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_current));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_current");
+
+	param_local->p_collect_cd4_test_results_and_start_ART = param_local->p_collect_cd4_test_results_and_start_ART_2008;
+	
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_remain_in_cascade));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_remain_in_cascade");
 
 
         //printf("param_local->p_collect_hiv_test_results_cd4_under200 = %lf\n",param_local->p_collect_hiv_test_results_cd4_under200);

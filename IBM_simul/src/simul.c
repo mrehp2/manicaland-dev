@@ -185,6 +185,11 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    }
 
 
+	    if(t>=patch[0].param->COUNTRY_ART_START){
+		for(p = 0; p < NPATCHES; p++)
+		    set_probability_starts_ART_if_positive_and_eligible(t, patch[p].param);
+	    }
+	    
 	    
 	    if(t>=patch[0].param->COUNTRY_VMMC_START){
 		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START && MIHPSA_MODULE==1)
@@ -752,13 +757,13 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
             /// The difference between this function and the draw_initial_hiv_tests() function is
             // that these are drawn up to a set time, when HIV tests are redrawn
 	    // Note - only need to call this if the first test is before 2005 - otherwise the following years if statement will capture this. 
-	    if (patch[p].param->COUNTRY_HIV_TEST_START<=2005)
+	    if (patch[p].param->COUNTRY_HIV_TEST_START<=2004)
 		draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
         }
     }
     // Again, this has to be called before deaths_natural_causes() or individual_death_AIDS() 
     // in the given timestep
-    if((HIVTESTSCHEDULE == 1) && (t0 >= 2006) && (t_step == 0) && DO_HIV_TESTING == 1){
+    if((HIVTESTSCHEDULE == 1) && (t0 >= 2005) && (t_step == 0) && DO_HIV_TESTING == 1){
          // Schedule these annually starting in 2007:
         
         //printf("Drawing new HIV test events at time %f\n",t);

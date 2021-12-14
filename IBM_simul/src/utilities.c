@@ -1749,9 +1749,14 @@ void print_cascade_params(parameters *param){
     printf("param->p_collect_hiv_test_results_cd4_over200=%lg\n",param->p_collect_hiv_test_results_cd4_over200);
     printf("param->p_collect_hiv_test_results_cd4_under200=%lg\n",param->p_collect_hiv_test_results_cd4_under200);
 
-    printf("param->p_collect_cd4_test_results_cd4_nonpopart=%lg\n",param->p_collect_cd4_test_results_cd4_nonpopart);
+    //printf("param->p_collect_cd4_test_results_cd4_nonpopart=%lg\n",param->p_collect_cd4_test_results_cd4_nonpopart);
     printf("param->p_collect_cd4_test_results_cd4_popartYEAR1=%lg\n",param->p_collect_cd4_test_results_cd4_popartYEAR1);
     printf("param->p_collect_cd4_test_results_cd4_popartYEAR2onwards=%lg\n",param->p_collect_cd4_test_results_cd4_popartYEAR2onwards);
+
+    printf("param->p_collect_cd4_test_results_and_start_ART_2008=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2008);
+    printf("param->p_collect_cd4_test_results_and_start_ART_2010=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2010);
+    printf("param->p_collect_cd4_test_results_and_start_ART_current=%lg\n",param->p_collect_cd4_test_results_and_start_ART_current);
+
     for (icd4=0; icd4<NCD4; icd4++)
         printf("param->p_dies_earlyart_cd4[icd4]=%lg\n",param->p_dies_earlyart_cd4[icd4]);
     printf("param->p_leaves_earlyart_cd4_over200_if_not_die_early=%lg\n",param->p_leaves_earlyart_cd4_over200_if_not_die_early);
@@ -2439,8 +2444,29 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    if (param->p_collect_cd4_test_results_cd4_nonpopart<0 || param->p_collect_cd4_test_results_cd4_nonpopart>1){
-        printf("Error:param->p_collect_cd4_test_results_cd4_nonpopart is outside expected range [0,1]\nExiting\n");
+    /* if (param->p_collect_cd4_test_results_cd4_nonpopart<0 || param->p_collect_cd4_test_results_cd4_nonpopart>1){ */
+    /*     printf("Error:param->p_collect_cd4_test_results_cd4_nonpopart is outside expected range [0,1]\nExiting\n"); */
+    /*     printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+    /*     fflush(stdout); */
+    /*     exit(1); */
+    /* } */
+
+    if (param->p_collect_cd4_test_results_and_start_ART_2008<0 || param->p_collect_cd4_test_results_and_start_ART_2008>0.5){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2008 is outside expected range [0,0.5]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->p_collect_cd4_test_results_and_start_ART_2010<0 || param->p_collect_cd4_test_results_and_start_ART_2010>1){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2010 is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->p_collect_cd4_test_results_and_start_ART_current<0.5 || param->p_collect_cd4_test_results_and_start_ART_current>1){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_current is outside expected range [0.5,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

@@ -580,10 +580,14 @@ typedef struct {
 
     /* Cascade probabilities: */
 
-    double p_HIV_background_testing_female_pre2006; /* Baseline probability of a women having an HIV test in the background cascade from start of HIV testing until 2006. */
-    double p_HIV_background_testing_female_current; /* Baseline annual probability of a women having an annual test in the background cascade. */
-    double RR_HIV_background_testing_male; /* Decrease in annual probability of an HIV test for men (cp to women) so we can fit VS in PC24. */
-
+    double p_HIV_background_testing_female_pre2005; /* Baseline probability of a woman having an HIV test in the background cascade from start of HIV testing until 2006. */
+    double p_HIV_background_testing_female_2005_2010; /* Baseline probability of a woman having an HIV test in the background cascade 2005-2009.99. */
+    double p_HIV_background_testing_female_2010_2013; /* Baseline probability of a woman having an HIV test in the background cascade 2010-2012.99. */
+    double p_HIV_background_testing_female_current; /* Baseline annual probability of a woman having an annual test in the background cascade from 2013 onwards. */
+    double p_HIV_background_testing_male_pre2005; /* Baseline probability of a man having an HIV test in the background cascade from start of HIV testing until 2006. */
+    double p_HIV_background_testing_male_2005_2010; /* Baseline probability of a man having an HIV test in the background cascade 2005-2009.99. */
+    double p_HIV_background_testing_male_2010_2013; /* Baseline probability of a man having an HIV test in the background cascade 2010-2012.99. */
+    double p_HIV_background_testing_male_current; /* Baseline annual probability of a man having an annual test in the background cascade from 2013 onwards. */
     double HIV_rapid_test_sensitivity_CHIPS;       /* Represents the sensitivity of the rapid HIV test used by CHiPs. We might want this to be time-varying (to reflect better training/test kits used later in trial). */
     double HIV_rapid_test_sensitivity_ANC;       /* Represents the sensitivity of the rapid HIV test used in ANC testing (for Simon's routine testing misclassification project).  */
     double p_collect_hiv_test_results_cd4_over200; /* given you've had an HIV test, probability that you get your results if you have CD4>200 */
@@ -593,11 +597,18 @@ typedef struct {
     //double p_collect_cd4_test_results_cd4_under200;
 
     /* This represents the probability that, given you've just collected the results of your HIV test and have found out you are HIV+, that you get your CD4 test results. Note that once you get your CD4 results you will (I think?) start ART with probability 1. */
-    double p_collect_cd4_test_results_cd4_nonpopart;
+    //double p_collect_cd4_test_results_cd4_nonpopart; // Substituted for p_collect_cd4_test_results_and_start_ART_YYYY in Manicaland.
     double p_collect_cd4_test_results_cd4_popartYEAR1;
     double p_collect_cd4_test_results_cd4_popartYEAR2onwards;
 
+    double p_collect_cd4_test_results_and_start_ART_2008; /* Probability of starting ART if you test positive and pick up test results up to 2008. */
+    double p_collect_cd4_test_results_and_start_ART_2010;
+    double p_collect_cd4_test_results_and_start_ART_current;
 
+    double p_collect_cd4_test_results_and_start_ART; /* This is what the model uses at each timestep. */
+
+    double p_collect_cd4_test_results_and_remain_in_cascade; /* Probability that someone not eligible for ART yet, but who has just got a positive HIV test result, picks up CD4 and remains in cascade.*/
+    
     /* Given you've just started ART several events can happen with the following probabilities: */
     double p_dies_earlyart_cd4[NCD4]; /* you die early */
     double p_leaves_earlyart_cd4_over200_if_not_die_early; /* drop out (high CD4) conditional on not dying */

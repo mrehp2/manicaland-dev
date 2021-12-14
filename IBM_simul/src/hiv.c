@@ -1673,7 +1673,7 @@ int joins_preart_care(individual* indiv, parameters *param, double t,
             calendar_outputs->N_calendar_CD4_tests_nonpopart[year_idx]++;
             
             // returns whether they drop out (0) or stays in cascade (1)
-            return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_cd4_nonpopart);
+            return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_and_start_ART);
         }else{
             // If the individual does not collect HIV test results then assume they
             // drop out of the care cascade (return 0)
@@ -1729,7 +1729,7 @@ int remains_in_cascade(individual* indiv, parameters *param, int is_popart){
         return 1;
     }
     // Gets CD4 tested, determines of individual drops out (0) or stays in the cascade (1)
-    return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_cd4_nonpopart);
+    return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_and_remain_in_cascade);
 }
 
 
@@ -2442,7 +2442,7 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
             param->time_to_background_HIVtest_exponent, param->time_to_background_HIVtest_midpoint);
     
     double x = gsl_ran_exponential(rng, mean_time_to_test);
-    
+
     if(x <= TIME_STEP){
         x = TIME_STEP;
     }
@@ -2480,6 +2480,22 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
 }
 
 
+void set_probability_starts_ART_if_positive_and_eligible(double t, parameters *param){
+
+    if(t<=2008){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008;
+    }
+    else if(t>=2018){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_current;
+    }
+    else if(t>=2010){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2010 + (param->p_collect_cd4_test_results_and_start_ART_current - param->p_collect_cd4_test_results_and_start_ART_2010)*(t-2010)/(2018.0-2010.0);
+    }else{
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008 + (param->p_collect_cd4_test_results_and_start_ART_2010 - param->p_collect_cd4_test_results_and_start_ART_2008)*(t-2008)/(2010.0-2008.0);
+    }	
+	
+}
+
 void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int country_setting,
     int year, int COUNTRY_HIV_TEST_START, parameters *param){
     /*
@@ -2510,17 +2526,31 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
         printf("probability_get_hiv_test_in_next_window() ");
         printf("called before start of HIV testing.\n");
     }
+
     
     if(year == COUNTRY_HIV_TEST_START){
-        /* This refers to the period [COUNTRY_HIV_TEST_START, 2006]. */
-        p_test[MALE] = param->p_HIV_background_testing_female_pre2006 * param->RR_HIV_background_testing_male;
-        p_test[FEMALE] = param->p_HIV_background_testing_female_pre2006;
-        *t_gap = 2006 - COUNTRY_HIV_TEST_START;
-    }else{
-        p_test[MALE] = param->p_HIV_background_testing_female_current*param->RR_HIV_background_testing_male;
+        /* This refers to the period [COUNTRY_HIV_TEST_START, 2005]. */
+        p_test[MALE] = param->p_HIV_background_testing_male_pre2005;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_pre2005;
+        *t_gap = 2005 - COUNTRY_HIV_TEST_START;
+    }else if(year>=2013){
+        p_test[MALE] = param->p_HIV_background_testing_male_current;
         p_test[FEMALE] = param->p_HIV_background_testing_female_current;
         *t_gap = 1;
+    }else if((year>=2005) && (year<2010)){
+        p_test[MALE] = param->p_HIV_background_testing_male_2005_2010;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2005_2010;
+        *t_gap = 1;
+    }else if((year>=2010) && (year<2013)){
+        p_test[MALE] = param->p_HIV_background_testing_male_2010_2013;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2010_2013;
+        *t_gap = 1;
+    }else{
+	printf("Error - unknown year in probability_get_hiv_test_in_next_window(). Exiting\n");
+	exit(1);
     }
+
+
 }
 
 
@@ -2528,7 +2558,6 @@ void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year,
     individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, double t_gap,
     int country_setting, double *p_test){
     /* For a given individual draw when they will next have an HIV test
-    
     
     The probability of having a test is gender-specific and listed in the array `p_test`.  The 
     period of time in which the HIV test has to occur is between `year` and `year + t_gap`.  The 
@@ -2573,7 +2602,6 @@ void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year,
         indiv->idx_cascade_event[1] = -1;
     }else{ 
         // Schedule a test
-
         // Determine when the test will be held (time_hiv_test). 
         // Draw a uniform random variable from 0 to t_gap 
         // This has to happen before the end of the current testing window, hence the "-TIME_STEP"

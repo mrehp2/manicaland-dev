@@ -1722,6 +1722,7 @@ void print_time_params(parameters *param){
     printf("param->end_time_simul=%i\n",param->end_time_simul);
     printf("param->COUNTRY_HIV_TEST_START=%lg\n",param->COUNTRY_HIV_TEST_START);
     printf("param->COUNTRY_ART_START=%lg\n",param->COUNTRY_ART_START);
+    printf("param->COUNTRY_EMERGENCY_ART_START=%lg\n",param->COUNTRY_EMERGENCY_ART_START);
     printf("param->COUNTRY_CD4_350_START=%lg\n",param->COUNTRY_CD4_350_START);
     printf("param->COUNTRY_CD4_500_START=%lg\n",param->COUNTRY_CD4_500_START);
     printf("param->COUNTRY_VMMC_START=%lg\n",param->COUNTRY_VMMC_START);
@@ -2452,7 +2453,7 @@ void check_if_parameters_plausible(parameters *param){
     /* } */
 
     if (param->p_collect_cd4_test_results_and_start_ART_2008<0 || param->p_collect_cd4_test_results_and_start_ART_2008>0.5){
-        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2008 is outside expected range [0,0.5]\nExiting\n");
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2008=%lf is outside expected range [0,0.5]\nExiting\n",param->p_collect_cd4_test_results_and_start_ART_2008);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2765,6 +2766,12 @@ void check_if_parameters_plausible(parameters *param){
     }
     if (param->COUNTRY_ART_START<1985 || param->COUNTRY_ART_START>2015){
         printf("Error:param->COUNTRY_ART_START is outside expected range [1985,2015]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+    if (param->COUNTRY_EMERGENCY_ART_START<param->COUNTRY_ART_START || param->COUNTRY_EMERGENCY_ART_START>2015){
+        printf("Error:param->COUNTRY_EMERGENCY_ART_START is outside expected range [%lf,2015]\nExiting\n",param->COUNTRY_ART_START);
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

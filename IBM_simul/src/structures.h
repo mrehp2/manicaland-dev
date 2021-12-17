@@ -423,6 +423,7 @@ typedef struct {
     int end_time_simul;
     double COUNTRY_HIV_TEST_START;
     double COUNTRY_ART_START;
+    double COUNTRY_EMERGENCY_ART_START;
     double COUNTRY_CD4_350_START;
     double COUNTRY_CD4_500_START;
     double COUNTRY_IMMEDIATE_ART_START;
@@ -588,6 +589,11 @@ typedef struct {
     double p_HIV_background_testing_male_2005_2010; /* Baseline probability of a man having an HIV test in the background cascade 2005-2009.99. */
     double p_HIV_background_testing_male_2010_2013; /* Baseline probability of a man having an HIV test in the background cascade 2010-2012.99. */
     double p_HIV_background_testing_male_current; /* Baseline annual probability of a man having an annual test in the background cascade from 2013 onwards. */
+
+    /* Factor to take into account that HIV awareness is *much* lower in younger people. To be based on Manicaland HIV awareness prevalence. */
+    double p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT+1];
+    double p_HIV_background_testing_age_adjustment_factor_youngest_age_group; /* Set in param_cascade.txt and used to generate p_HIV_background_testing_age_adjustment_factor[]. */
+
     double HIV_rapid_test_sensitivity_CHIPS;       /* Represents the sensitivity of the rapid HIV test used by CHiPs. We might want this to be time-varying (to reflect better training/test kits used later in trial). */
     double HIV_rapid_test_sensitivity_ANC;       /* Represents the sensitivity of the rapid HIV test used in ANC testing (for Simon's routine testing misclassification project).  */
     double p_collect_hiv_test_results_cd4_over200; /* given you've had an HIV test, probability that you get your results if you have CD4>200 */

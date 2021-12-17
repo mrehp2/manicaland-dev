@@ -1115,6 +1115,9 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_ART_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_ART_START");
 
+        checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_EMERGENCY_ART_START));
+        check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_EMERGENCY_ART_START");
+
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_CD4_350_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_CD4_350_START");
 
@@ -1257,6 +1260,9 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_male_current));
         check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_male_current");
         //checkreadok = fscanf(param_file,"%lg",&(param_local->RR_HIV_background_testing_male));
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_HIV_background_testing_age_adjustment_factor_youngest_age_group));
+        check_if_cannot_read_param(checkreadok,"param_local->p_HIV_background_testing_age_adjustment_factor_youngest_age_group");
 
 
         checkreadok = fscanf(param_file,"%lg",&(param_local->HIV_rapid_test_sensitivity_ANC));

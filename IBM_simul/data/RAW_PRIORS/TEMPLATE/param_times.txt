@@ -4,6 +4,7 @@ start_time_simul 1900   // Assumption - around 70 years for burn-in prior to int
 end_time_simul 2041     // Assumption for now.
 COUNTRY_HIV_TEST_START 1998.0  // In Manicaland R1 5.8% ever tested (carried out July 1998-Jan 00) so assume started just before this.
 COUNTRY_ART_START  2004.25  // Done - From C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\UNAIDS\ZWE 2006 Zimbabwe National Hiv and Aids Strategic Plan (ZNAP).pdf The national ART roll-out plan was launched in April 2004. Also reiterated in May 2010 ART guidelines.
+COUNTRY_EMERGENCY_ART_START 2009 // Added to reduce number of people on ART. In R4 (2007-8) only 26/2105 HIV+ people self-reported being on ART. In R5 (2010-2011) it was 605/2234. So use mid-point between surveys.
 COUNTRY_CD4_350_START 2010.33 // May 2010 guidelines state (C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Literature\UNAIDS_ZimMoH_PHIA\ZIM 2010_ART_guidelines.pdf 
 COUNTRY_CD4_500_START 2014.0 // Zimbabwe_ART_guidelines2013.pdf (December 2013) stated that " the CD4 count threshold for starting ART will be raised to 500." Assume that this started Jan 2014. 
 COUNTRY_IMMEDIATE_ART_START  2016.917 // Published December 2016: https://aidsfree.usaid.gov/sites/default/files/zw_arv_therapy_prevention.pdf (see also https://www.avert.org/professionals/hiv-around-world/sub-saharan-africa/zimbabwe where 'treat all' adopted in 2016 - citing MoH guidelines.

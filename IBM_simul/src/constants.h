@@ -124,6 +124,11 @@
 
 #define WRITE_COST_EFFECTIVENESS_OUTPUT 0 /*  Generates a new file cost_effectiveness_$.csv */
 
+#define EXTENDED_OUTPUTS_AIDSDEATHS15PLUS 1 /* Adds N_AIDSdeaths_15plus_male/female to extended outputs file. */
+#define EXTENDED_OUTPUTS_NEWINFECTIONS_YOUNG_OLD 1 /* Adds N_newHIVinfections_15to24/25to49_male/female to extended outputs file. */
+#define EXTENDED_OUTPUTS_NHIVTESTS15PLUS 1 /* Adds N_HIVtests_15plus_male/female to extended outputs file. */
+#define EXTENDED_OUTPUTS_NNEWDIAGNOSES15PLUS 1 /* Adds N_newHIVdiagnoses_15plus to extended outputs file. */
+
 /************************************************************************/
 /************************** Random number variables *********************/
 /************************************************************************/
@@ -181,6 +186,7 @@ gsl_rng * rng;
 #define ARM_C 0
 
 #define TIME_PC0 2014.5
+
 
 
 

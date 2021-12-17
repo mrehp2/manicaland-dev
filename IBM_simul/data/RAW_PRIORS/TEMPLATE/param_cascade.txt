@@ -10,11 +10,12 @@ p_HIV_background_testing_male_pre2006 [0.000-0.020] // Testing rate for men (not
 p_HIV_background_testing_male_2005_2010 [0.022-0.053]
 p_HIV_background_testing_male_2010_2013 [0.107-0.160]
 p_HIV_background_testing_male_current [0.255-0.339] // Annual baseline probability of a female having an HIV test from 2013 onwards in the background cascade
+p_HIV_background_testing_age_adjustment_factor_youngest_age_group [0.1-0.5] // This scales HIV testing rates in younger age groups. Value is derived to fit HIV awareness/on ART cascade for Manicaland. 0.5 was too high - see if 0.3 works.
 HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC.
 p_collect_hiv_test_results_cd4_over200 0.97 //
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 
-p_collect_cd4_test_results_and_start_ART_2008 0.1 // This is the probability of getting CD4 results AND starting ART given collected HIV test results. It varies piecewise linearly. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\HIV_testing_notes2021.xlsx for derivation from Manicaland cohort. For PopART it was  [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic.
-p_collect_cd4_test_results_and_start_ART_2010 0.6
+p_collect_cd4_test_results_and_start_ART_2008 0.1 // This is the probability of getting CD4 results AND starting ART given collected HIV test results. It varies piecewise linearly. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\HIV_testing_notes2021.xlsx for derivation from Manicaland cohort (based in part on trial-and-error). For PopART it was  [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic.
+p_collect_cd4_test_results_and_start_ART_2010 0.95
 p_collect_cd4_test_results_and_start_ART_current 0.95
 p_collect_cd4_test_results_and_remain_in_cascade 0.95 // Probability that someone who has just tested HIV+ picks up CD4 result and remains in care cascade. 
 p_dies_earlyart_cd4_over500 0.0 // FIXED Assumption for now
@@ -23,8 +24,8 @@ p_dies_earlyart_cd4_200_350 0.0 // FIXED No mortality (assumption). Leigh Johnso
 p_dies_earlyart_cd4_under200 0.08 // FIXED Use value from Vinnikor 2013 in Lusaka about 8% died in first year (see calculation in PopART IBM ART states.docx). In same doc, Brennan 2013 found 6.7% died in first 6 months, while Johnson PLoS Med 2013 found somethign which I used to derive 0.15 over 12 months for CD4<200. 
 p_leaves_earlyart_cd4_over200_if_not_die_early 0.0 // FIXED Assumption - dropout occurs after this. 
 p_leaves_earlyart_cd4_under200_if_not_die_early 0.0 // FIXED As above. 
-p_becomes_vs_after_earlyart_if_not_die_early_or_leave 0.853 // MIHPSA parameter file Copy of HIVcalibrationData_Zimbabwe.xlsx, ART data worksheet gives 2018, 2019, 2020 "% of public sector ART patients who are virally suppressed at a threshold of <1000 RNA copies/ml, 6 months after ART initiation" values as 85.0, 82.0 and 88.9% respectively. Arithmetic mean is 85.3%.
-p_stays_virally_suppressed 0.6 // FIXED When become VS there are 3 possible events - remains VS for life, becomes VU or LFUP (p=1-stays_virally_suppressed-stops_virally_suppressed). Vinikoor (see PopART IBM ART states.docx) suggests around 30% drop our between 1-8 years after starting ART based on KM curve fig 3,and 13% have low adherence (<80%), so take 1 - (0.3+0.13) = 0.57
+p_becomes_vs_after_earlyart_if_not_die_early_or_leave [0.82-0.89] // MIHPSA parameter file Copy of HIVcalibrationData_Zimbabwe.xlsx, ART data worksheet gives 2018, 2019, 2020 "% of public sector ART patients who are virally suppressed at a threshold of <1000 RNA copies/ml, 6 months after ART initiation" values as 85.0, 82.0 and 88.9% respectively. Arithmetic mean is 85.3%.
+p_stays_virally_suppressed 0.95 // FIXED When become VS there are 3 possible events - remains VS for life, becomes VU or LFUP (p=1-stays_virally_suppressed-stops_virally_suppressed). 0.95 to get on ART cascade to match Manicaland R5-7. For POpART: 0.6 = Vinikoor (see PopART IBM ART states.docx) suggests around 30% drop our between 1-8 years after starting ART based on KM curve fig 3,and 13% have low adherence (<80%), so take 1 - (0.3+0.13) = 0.57
 p_stays_virally_suppressed_male [0.0-1.0] // Multiplier of staying virally suppressed of men compared to women.  
 p_stops_virally_suppressed 0.1 // FIXED If p_stays_virally_suppressed+p_stops_virally_suppressed=1 then no LFUP Vinnikoor 13% had poor adherence (i.e., < 80%) based on refill records - assume this leads to being virally unsuppressed
 p_vu_becomes_virally_suppressed 0.0 // **** Assumption **** - was [0.2-0.8] keep fixed to reduce sampled params. 
@@ -42,12 +43,12 @@ t_delay_hivtest_to_cd4test_nonpopart_max 0.5 // Rosen and Fox (PLOS Med 2011) ha
 t_start_art_nonpopart_mean 0.14575 // E-mail from Lebby (Malebogo Tlhajoane <m.tlhajoane@gmail.com>, 01 October 2019 20:07): "Days between HIV diagnosis and ART initiation (after treat-all was introduced): Mean = 53.2, Median = 11, SD = 141.4". 53.2/365=0.14575.
 t_end_vs_becomevu_nonpopart_min 0.01 // Assumption to match timescale of Vinikoor 
 t_end_vs_becomevu_nonpopart_max 6.0 // Assumption to match timescale of Vinikoor
-t_end_vs_dropout_nonpopart_min 0.01 // CF assumption to have 5% drop out per year
-t_end_vs_dropout_nonpopart_max 6.0 // Not in prePopart model
+t_end_vs_dropout_nonpopart_min 1.0 // CF assumption to have 5% drop out per year
+t_end_vs_dropout_nonpopart_max 20.0 // Not in prePopart model
 t_end_vu_becomevs_nonpopart_min 0.01 // **** FIX ME**** To match timescale for becoming virally unsuppressed
 t_end_vu_becomevs_nonpopart_max 6.0 // **** FIX ME**** To match timescale for becoming virally unsuppressed
-t_end_vu_dropout_nonpopart_min 0.01 // As for t_end_vs_dropout_nonpopart_min **** FIX ME**** 
-t_end_vu_dropout_nonpopart_max 6.0 //
+t_end_vu_dropout_nonpopart_min 1.0 // As for t_end_vs_dropout_nonpopart_min **** FIX ME**** 
+t_end_vu_dropout_nonpopart_max 20.0 //
 p_circ_nopopart BY_COUNTRY // Probability of 'background' VMMC
 t_get_vmmc_nonpopart_min 0 // Chosen as we schedule VMMC annually (so t_get_vmmc lies in [0,1]).
 t_get_vmmc_nonpopart_max 1.0 // 

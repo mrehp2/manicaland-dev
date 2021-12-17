@@ -226,12 +226,9 @@ void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patc
 		    /* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
 		    if(x <= p_will_get_VMMC_per_timestep){
 			indiv->circ = VMMC; /* Immediate VMMC (ignore healing period). */
-			if(MIHPSA_MODULE==1){
-			    int age = floor(t - indiv->DoB);
-			    if(age>=15 && age <=49)
-				patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
-			}
-			
+			int age = floor(t - indiv->DoB);
+			if(age>=15 && age <=49)
+			    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
 		    }
 		}
 	    }

@@ -163,7 +163,6 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 			    else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){	
 				nonART_bysex_older[g]++;
 			    }
-			    
 			    N_onART_bysex_15plus[g]++;
 			    /* Now virally suppressed: */
 			    if(art==LTART_VS)
@@ -251,8 +250,8 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 		naware_bysex_older[MALE],naware_bysex_older[FEMALE]);
 	strcat(temp_string, temp_string2);
     }
-	
-	
+
+
     sprintf(temp_string2, "%li,%li,%li,%li,",
 	    N_onART_bysex_15plus[MALE],N_onART_bysex_15plus[FEMALE],
 	    N_VS_bysex_15plus[MALE],N_VS_bysex_15plus[FEMALE]);

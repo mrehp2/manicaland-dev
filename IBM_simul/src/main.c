@@ -695,9 +695,10 @@ int main(int argc,char *argv[]){
                     point is year+1. */
                     store_annual_outputs(patch, p, output, overall_partnerships,
                         n_infected_total + p, year + 1, 0);
-                    
-                    store_annual_outputs(patch, p, output, overall_partnerships,
-                        n_infected_total + p, year + 1, 1);
+
+		    // This one uses PC data:
+                    //store_annual_outputs(patch, p, output, overall_partnerships,
+		    //   n_infected_total + p, year + 1, 1);
                     
                     /* Store the output associated with the cost-effectiveness analysis,
                     this is called every year.  */

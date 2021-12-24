@@ -69,7 +69,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	UPPER_AGE_LIM_YOUNG[FEMALE] = 24; 
 	UPPER_AGE_LIM_OLD[MALE] = 54;
 	UPPER_AGE_LIM_OLD[FEMALE] = 54;
-    }	
+    }
     long N_men_MC_15to49 = 0; /* Number of men aged 15-49 circumcised (VMMC or TMC). */
 
     long N_women_sexuallyactive_15to24 = 0;
@@ -117,25 +117,29 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    /* 15-49 outputs: */
 	    if(age>=15 && age<=49){
 		npop_bysex_15to49[g]++;
-		if(age>=15 && age<=UPPER_AGE_LIM_YOUNG[g]){
-		    npop_bysex_younger[g]++;
-		}
-		else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){
-		    npop_bysex_older[g]++;
-		}
 		if(indiv->HIV_status>UNINFECTED){
 		    npositive_bysex_15to49[g]++;
-		    if(age>=15 && age<=UPPER_AGE_LIM_YOUNG[g]){
-			npositive_bysex_younger[g]++;
-		    }
-		    else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){	
-			npositive_bysex_older[g]++;
-		    }
 		}
 		/* Now if circumcised (including healing): */
 		if (g==MALE){
 		    if((indiv->circ == VMMC) || (indiv->circ == VMMC_HEALING) || (indiv->circ == TRADITIONAL_MC))
 			N_men_MC_15to49++;
+		}
+	    }
+
+	    /* Specialist outputs: */
+	    if(age>=15 && age<=UPPER_AGE_LIM_YOUNG[g]){
+		npop_bysex_younger[g]++;
+	    }
+	    else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){
+		npop_bysex_older[g]++;
+	    }
+	    if(indiv->HIV_status>UNINFECTED){
+		if(age>=15 && age<=UPPER_AGE_LIM_YOUNG[g]){
+		    npositive_bysex_younger[g]++;
+		}
+		else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){	
+		    npositive_bysex_older[g]++;
 		}
 	    }
 

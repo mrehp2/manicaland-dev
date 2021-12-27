@@ -2533,7 +2533,7 @@ st    * number positive who are aware of status
 
     /* Loop through population of people who are alive: */
     for (g=0;g<N_GENDER;g++){
-	for (aa=AGE_ADULT;aa<MAX_AGE;aa++){
+	for (aa=0;aa<(MAX_AGE-AGE_ADULT);aa++){
 	    ai = aa + patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index;
 	    /* Make sure never goes beyond end of array. */
 	    while (ai>(MAX_AGE-AGE_ADULT-1))
@@ -2541,15 +2541,15 @@ st    * number positive who are aware of status
 	    for(k=0 ; k<patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai] ; k++){
 
 		/* Add to the overall counter: */
-		output->COHORT_NPOP[p][g][aa-AGE_ADULT][round]++;
+		output->COHORT_NPOP[p][g][aa][round]++;
 		
-		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];		
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][k];
 		if(indiv->HIV_status>UNINFECTED){
-		    output->COHORT_NPOSITIVE[p][g][aa-AGE_ADULT][round]++;
+		    output->COHORT_NPOSITIVE[p][g][aa][round]++;
 		    if (indiv->ART_status>ARTNEG && indiv->ART_status<ARTDEATH){
-			output->COHORT_NAWARE[p][g][aa-AGE_ADULT][round]++;
+			output->COHORT_NAWARE[p][g][aa][round]++;
 			if (indiv->ART_status==EARLYART || indiv->ART_status==LTART_VS || indiv->ART_status==LTART_VU){
-			    output->COHORT_NONART[p][g][aa-AGE_ADULT][round]++;
+			    output->COHORT_NONART[p][g][aa][round]++;
 			}
 		    }
 		}

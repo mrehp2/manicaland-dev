@@ -32,7 +32,7 @@ int index_HIV_prevention_cascade_VMMC(int age, int ever_had_sex);
 int index_HIV_prevention_cascade_condom(int age, int g);
 
 void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params, int i_PrEP_intervention_running_flag);
-void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params, int i_VMMC_intervention_running_flag);
+void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params);
 void assign_individual_condom_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params);
 
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params *barrier_params, int scenario_flag);
@@ -56,7 +56,16 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
 void update_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p);
 void update_specific_age_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g);
 void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch, int p);
-void update_VMMCrates(int t, patch_struct *patch, int p);
+
+void update_VMMCrates(int t, parameters *param, double *adjustment_to_rate);
+void get_VMMC_rate_adjustment_foralreadycirc_hivpos(double t, patch_struct *patch, int p, double adjustment_to_rate[2]);
+void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to_rate);
+void update_VMMCrates_MIHPSA(int t, parameters *param);
+    
 void update_condomrates(double t, parameters *param);
+void update_condomrates_MIHPSA(double t, parameters *param);
+void update_condomrates_Manicaland(double t, parameters *param);
+
+
 
 #endif /* CASCADES_H_ */

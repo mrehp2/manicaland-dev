@@ -692,9 +692,10 @@ int main(int argc,char *argv[]){
                     point is year+1. */
                     store_annual_outputs(patch, p, output, overall_partnerships,
                         n_infected_total + p, year + 1, 0);
-                    
-                    store_annual_outputs(patch, p, output, overall_partnerships,
-                        n_infected_total + p, year + 1, 1);
+
+		    // This one uses PC data:
+                    //store_annual_outputs(patch, p, output, overall_partnerships,
+		    //   n_infected_total + p, year + 1, 1);
                     
                     /* Store the output associated with the cost-effectiveness analysis,
                     this is called every year.  */
@@ -861,8 +862,9 @@ int main(int argc,char *argv[]){
                             }
                         }
 
-			if(MIHPSA_MODULE==1)
-			    write_MIHPSA_outputs(file_data_store, output, p);
+			//if(MIHPSA_MODULE==1)
+			// This file is now some additional outputs - useful for diagnostics, but not needed for every year from start of simulation.
+			write_MIHPSA_outputs(file_data_store, output, p);
                     }
 
 		    if(MANICALAND_CASCADE==1){

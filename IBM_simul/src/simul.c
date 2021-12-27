@@ -172,8 +172,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    /* Allows hazard to vary over time, once epidemic starts: */
 	    if(t>=patch[0].param->start_time_hiv)
 		update_time_varying_hazard_allpatches(t,patch);
-	    
 
+	    
 	    if(t>=1989){
 		
 		if(i_run==0 && t==1989.0)
@@ -192,7 +192,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    
 	    
 	    if(t>=patch[0].param->COUNTRY_VMMC_START){
-		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START && MIHPSA_MODULE==1)
+		if(i_run==0 && t==patch[0].param->COUNTRY_VMMC_START && MIHPSA_MODULE==1)
 		    printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
 
 		for(p = 0; p < NPATCHES; p++){

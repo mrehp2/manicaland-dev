@@ -1325,11 +1325,11 @@ void make_filenames_for_struct(file_label_struct *file_labels,
             "ART_status_by_age_sex");
         }
 
-        if(MIHPSA_MODULE == 1){
+        //if(MIHPSA_MODULE == 1){
         concatenate_filename(file_data_store->filename_MIHPSA_outputs[p],
             output_file_directory, file_labels->filename_label_bypatch[p],
             "MIHPSA_output");
-        }
+	//}
 	
     }
     /* Some filenames are special - only made for one run. */
@@ -1722,6 +1722,7 @@ void print_time_params(parameters *param){
     printf("param->end_time_simul=%i\n",param->end_time_simul);
     printf("param->COUNTRY_HIV_TEST_START=%lg\n",param->COUNTRY_HIV_TEST_START);
     printf("param->COUNTRY_ART_START=%lg\n",param->COUNTRY_ART_START);
+    printf("param->COUNTRY_EMERGENCY_ART_START=%lg\n",param->COUNTRY_EMERGENCY_ART_START);
     printf("param->COUNTRY_CD4_350_START=%lg\n",param->COUNTRY_CD4_350_START);
     printf("param->COUNTRY_CD4_500_START=%lg\n",param->COUNTRY_CD4_500_START);
     printf("param->COUNTRY_VMMC_START=%lg\n",param->COUNTRY_VMMC_START);
@@ -1749,9 +1750,14 @@ void print_cascade_params(parameters *param){
     printf("param->p_collect_hiv_test_results_cd4_over200=%lg\n",param->p_collect_hiv_test_results_cd4_over200);
     printf("param->p_collect_hiv_test_results_cd4_under200=%lg\n",param->p_collect_hiv_test_results_cd4_under200);
 
-    printf("param->p_collect_cd4_test_results_cd4_nonpopart=%lg\n",param->p_collect_cd4_test_results_cd4_nonpopart);
+    //printf("param->p_collect_cd4_test_results_cd4_nonpopart=%lg\n",param->p_collect_cd4_test_results_cd4_nonpopart);
     printf("param->p_collect_cd4_test_results_cd4_popartYEAR1=%lg\n",param->p_collect_cd4_test_results_cd4_popartYEAR1);
     printf("param->p_collect_cd4_test_results_cd4_popartYEAR2onwards=%lg\n",param->p_collect_cd4_test_results_cd4_popartYEAR2onwards);
+
+    printf("param->p_collect_cd4_test_results_and_start_ART_2008=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2008);
+    printf("param->p_collect_cd4_test_results_and_start_ART_2010=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2010);
+    printf("param->p_collect_cd4_test_results_and_start_ART_current=%lg\n",param->p_collect_cd4_test_results_and_start_ART_current);
+
     for (icd4=0; icd4<NCD4; icd4++)
         printf("param->p_dies_earlyart_cd4[icd4]=%lg\n",param->p_dies_earlyart_cd4[icd4]);
     printf("param->p_leaves_earlyart_cd4_over200_if_not_die_early=%lg\n",param->p_leaves_earlyart_cd4_over200_if_not_die_early);
@@ -1903,7 +1909,7 @@ void print_prevention_cascade_params(parameters *param){
 
 
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
-	    printf("param->barrier_params.p_use_VMMC[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
+	    printf("param->barrier_params.p_use_VMMC_present[%i]=%lf\n",i_barrier_group,param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]);
 
 
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++)
@@ -2439,8 +2445,29 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    if (param->p_collect_cd4_test_results_cd4_nonpopart<0 || param->p_collect_cd4_test_results_cd4_nonpopart>1){
-        printf("Error:param->p_collect_cd4_test_results_cd4_nonpopart is outside expected range [0,1]\nExiting\n");
+    /* if (param->p_collect_cd4_test_results_cd4_nonpopart<0 || param->p_collect_cd4_test_results_cd4_nonpopart>1){ */
+    /*     printf("Error:param->p_collect_cd4_test_results_cd4_nonpopart is outside expected range [0,1]\nExiting\n"); */
+    /*     printf("LINE %d; FILE %s\n", __LINE__, __FILE__); */
+    /*     fflush(stdout); */
+    /*     exit(1); */
+    /* } */
+
+    if (param->p_collect_cd4_test_results_and_start_ART_2008<0 || param->p_collect_cd4_test_results_and_start_ART_2008>0.5){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2008=%lf is outside expected range [0,0.5]\nExiting\n",param->p_collect_cd4_test_results_and_start_ART_2008);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->p_collect_cd4_test_results_and_start_ART_2010<0 || param->p_collect_cd4_test_results_and_start_ART_2010>1){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_2010 is outside expected range [0,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->p_collect_cd4_test_results_and_start_ART_current<0.5 || param->p_collect_cd4_test_results_and_start_ART_current>1){
+        printf("Error:param->p_collect_cd4_test_results_and_start_ART_current is outside expected range [0.5,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
@@ -2743,6 +2770,12 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
+    if (param->COUNTRY_EMERGENCY_ART_START<param->COUNTRY_ART_START || param->COUNTRY_EMERGENCY_ART_START>2015){
+        printf("Error:param->COUNTRY_EMERGENCY_ART_START is outside expected range [%lf,2015]\nExiting\n",param->COUNTRY_ART_START);
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
     if (param->start_time_hiv>param->COUNTRY_HIV_TEST_START){
         printf("Error: param->start_time_hiv is bigger than param->COUNTRY_HIV_TEST_START.\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -3017,8 +3050,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 
 	/* VMMC: */
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]>0.8){
-		printf("Error:param->barrier_params.p_use_VMMC is outside expected range [0,0.8]\nExiting\n");
+	    if (param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]>0.8){
+		printf("Error:param->barrier_params.p_use_VMMC_present is outside expected range [0,0.8]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);

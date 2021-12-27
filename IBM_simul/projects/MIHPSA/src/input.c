@@ -1115,6 +1115,9 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_ART_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_ART_START");
 
+        checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_EMERGENCY_ART_START));
+        check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_EMERGENCY_ART_START");
+
         checkreadok = fscanf(param_file, "%lg", &(param_local->COUNTRY_CD4_350_START));
         check_if_cannot_read_param(checkreadok, "param_local->COUNTRY_CD4_350_START");
 
@@ -1256,8 +1259,22 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         check_if_cannot_read_param(checkreadok,"param_local->p_collect_hiv_test_results_cd4_under200");
         //printf("param_local->p_collect_hiv_test_results_cd4_over200 = %lf\n",param_local->p_collect_hiv_test_results_cd4_over200);
 
-        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_nonpopart));
-        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_nonpopart");
+        /* checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_cd4_nonpopart)); */
+        /* check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_cd4_nonpopart"); */
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_2008));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_2008");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_2010));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_2010");
+
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_start_ART_current));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_start_ART_current");
+
+	param_local->p_collect_cd4_test_results_and_start_ART = param_local->p_collect_cd4_test_results_and_start_ART_2008;
+	
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_remain_in_cascade));
+        check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_remain_in_cascade");
 
 
         //printf("param_local->p_collect_hiv_test_results_cd4_under200 = %lf\n",param_local->p_collect_hiv_test_results_cd4_under200);
@@ -2637,9 +2654,9 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 
 	/* Read in the pre-intervention values - post-intervention is calculated afterwards with a multiplier. */
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC[i_barrier_group][0]));
-	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC[][]");
-	    //printf("i=%i after param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC[i_barrier_group][i_barrier_intervention]);
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_present[i_barrier_group][0]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_present[][]");
+	    //printf("i=%i after param_local->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]);
 	    
 	}
 
@@ -2678,7 +2695,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 
 	
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
-	    param_local->barrier_params.p_use_VMMC[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_VMMC[i_barrier_group]) * (1-param_local->barrier_params.p_use_VMMC[i_barrier_group][0]);
+	    param_local->barrier_params.p_use_VMMC_present[i_barrier_group][1] = 1 - (1-rr_HIV_prevention_cascade_intervention_VMMC[i_barrier_group]) * (1-param_local->barrier_params.p_use_VMMC_present[i_barrier_group][0]);
 	}
 	    
 	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
@@ -2700,8 +2717,12 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	/* Now generate the lookup table for increased condom use in existing partnerships at the start of the intervention: */
 	generate_intervention_increase_in_partnership_condom_use_lookuptable(&(param_local->barrier_params));
 
-	/* Now populate param->barrier_params.p_use_cond_casual/LT for each run: */
+	/* Now populate param->barrier_params.p_use_cond_casual/LT and p_use_VMMC for each run: */
 	update_condomrates(param_local->start_time_simul, param_local);
+
+	/* This is the 'adjustment' for the fact that not everyone in a given priority population will be eligible for VMMC (because either already circumcised or HIV+). */
+	double dummy_adjustment[i_VMMC_PREVENTIONBARRIER_OLD_M-i_VMMC_PREVENTIONBARRIER_YOUNG_M+1] = {1,1};
+	update_VMMCrates(param_local->start_time_simul, param_local, dummy_adjustment);
 
     }
 

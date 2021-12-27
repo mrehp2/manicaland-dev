@@ -540,7 +540,7 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         patch[p].n_newly_infected_total++;
         patch[p].n_newly_infected_total_by_risk[susceptible->sex_risk]++;
 
-	if(MIHPSA_MODULE==1){
+	if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NEWINFECTIONS_YOUNG_OLD==1){
 	    int age = floor(time_infect - susceptible->DoB);
 	    if(age>=15 && age <=24)
 		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[susceptible->gender]++;
@@ -1209,7 +1209,7 @@ void next_hiv_event(individual* indiv, individual ***hiv_pos_progression,
     starting ART.  Note that we are assuming they are not already on ART. */
     if(indiv->cd4 == 3){
         if(
-            (t >= param->COUNTRY_ART_START) && 
+            (t >= param->COUNTRY_EMERGENCY_ART_START) && 
             (indiv->ART_status != LTART_VU) && 
             (DO_HIV_TESTING == 1) && 
             (ALLOW_EMERGENCY_ART == 1)
@@ -1218,7 +1218,7 @@ void next_hiv_event(individual* indiv, individual ***hiv_pos_progression,
             
             /* Decide if individual will start ART because of low CD4 (and symptoms) - at which
             point they may die quickly on ART - or die without starting ART: */
-            
+
             if (time_emergency_start_ART < time_to_next_event){
                 
                 time_to_next_event = time_emergency_start_ART; 
@@ -1673,7 +1673,7 @@ int joins_preart_care(individual* indiv, parameters *param, double t,
             calendar_outputs->N_calendar_CD4_tests_nonpopart[year_idx]++;
             
             // returns whether they drop out (0) or stays in cascade (1)
-            return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_cd4_nonpopart);
+            return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_and_start_ART);
         }else{
             // If the individual does not collect HIV test results then assume they
             // drop out of the care cascade (return 0)
@@ -1729,7 +1729,7 @@ int remains_in_cascade(individual* indiv, parameters *param, int is_popart){
         return 1;
     }
     // Gets CD4 tested, determines of individual drops out (0) or stays in the cascade (1)
-    return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_cd4_nonpopart);
+    return gsl_ran_bernoulli(rng, param->p_collect_cd4_test_results_and_remain_in_cascade);
 }
 
 
@@ -2480,6 +2480,23 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
 }
 
 
+void set_probability_starts_ART_if_positive_and_eligible(double t, parameters *param){
+
+    if(t<=2008){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008;
+    }
+    else if(t>=2018){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_current;
+    }
+    else if(t>=2010){
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2010 + (param->p_collect_cd4_test_results_and_start_ART_current - param->p_collect_cd4_test_results_and_start_ART_2010)*(t-2010)/(2018.0-2010.0);
+    }else{
+	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008 + (param->p_collect_cd4_test_results_and_start_ART_2010 - param->p_collect_cd4_test_results_and_start_ART_2008)*(t-2008)/(2010.0-2008.0);
+    }	
+	
+}
+
+
 void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int country_setting,
     int year, int COUNTRY_HIV_TEST_START, parameters *param){
     /*
@@ -2651,7 +2668,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
         calendar_outputs->N_calendar_HIV_tests_popart[year_idx]++;
     }
 
-    if(MIHPSA_MODULE==1){
+    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NHIVTESTS15PLUS==1){
 	/* Count number of tests in age 15+: */
 	//printf("Incrementing number of tests for age = %i at t=%lf gender=%i\n",(int) floor(t-indiv->DoB),t,indiv->gender);
 	if (floor(t-indiv->DoB)>=15)
@@ -2724,7 +2741,7 @@ void hiv_test_process(individual* indiv, parameters *param, double t, individual
         calendar_outputs->N_calendar_HIV_tests_popart_positive[year_idx]++;
     }
 
-    if(MIHPSA_MODULE==1){
+    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NNEWDIAGNOSES15PLUS==1){
 	int age = floor(t - indiv->DoB);
 	if(age>=15 && age <=49)
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus++;

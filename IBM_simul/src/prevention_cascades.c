@@ -899,10 +899,18 @@ void update_VMMCrates_MIHPSA(int t, parameters *param){
     double VMMCrate_young[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
     double VMMCrate_old[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
 
-    
+    /* We set these to be zero: */
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M] = 0;
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_OLD_M] = 0;
+    param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_NEVERSEX_M] = 0;
+
     if(t>2019){
 	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
 	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
+    }
+    else if(t<2008){
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = 0;
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = 0;
     }
 
     else{
@@ -970,7 +978,7 @@ void update_VMMCrates_MIHPSA(int t, parameters *param){
 }
 
 
- /* Function allows condom rates to vary each year. 
+/* Function allows condom rates to vary each year. 
    Designed for MIHPSA project, but can be used elsewhere. */
 void update_condomrates(double t, parameters *param){
     if(MIHPSA_MODULE==1)

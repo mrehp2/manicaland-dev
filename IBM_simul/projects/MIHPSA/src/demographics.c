@@ -3079,7 +3079,7 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
     }
     patch[p].OUTPUT_NDIEDFROMHIV++;
 
-    if(MIHPSA_MODULE==1){
+    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_AIDSDEATHS15PLUS==1){
 	if(age>=15){
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_AIDSdeaths_15plus[g] += 1;
 	    if(age>=20 && age<=59){

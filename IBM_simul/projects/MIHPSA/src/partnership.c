@@ -1203,7 +1203,7 @@ void set_first_sex_characteristics(double t, individual *indiv, parameters *para
 	assign_individual_PrEP_prevention_cascade(t, indiv, &(param->barrier_params), (t<param->barrier_params.t_start_prevention_cascade_intervention) ? 0:param->barrier_params.i_PrEP_barrier_intervention_flag);
 
 	if(indiv->gender==MALE)
-	    assign_individual_VMMC_prevention_cascade(t, indiv, &(param->barrier_params), (t<param->barrier_params.t_start_prevention_cascade_intervention) ? 0:param->barrier_params.i_VMMC_barrier_intervention_flag);
+	    assign_individual_VMMC_prevention_cascade(t, indiv, &(param->barrier_params));
 	
     }
 }

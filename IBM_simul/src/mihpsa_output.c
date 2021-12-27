@@ -138,7 +138,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 		if(age>=15 && age<=UPPER_AGE_LIM_YOUNG[g]){
 		    npositive_bysex_younger[g]++;
 		}
-		else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){	
+		else if(age>UPPER_AGE_LIM_YOUNG[g] && age<=UPPER_AGE_LIM_OLD[g]){
 		    npositive_bysex_older[g]++;
 		}
 	    }
@@ -325,7 +325,7 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
 	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
     else
 	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to29_male,NPop_15to24_female,NPop_30to54_male,NPop_25to54_female,NPos_15to49_male,NPos_15to49_female,NPos_15to29_male,NPos_15to24_female,NPos_30to54_male,NPos_25to54_female,Ncirc_15to49,Npop_15plus_male,Npop_15plus_female,Npos_15plus_male,Npos_15plus_female,Naware_15plus_male,Naware_15plus_female,Naware_15to29_male,Naware_15to24_female,Naware_30to54_male,Naware_25to54_female,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,NonART_15to29_male,NonART_15to24_female,NonART_30to54_male,NonART_25to54_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus,N_VMMC_cumulative_15_49\n");	
-    
+
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);
 }

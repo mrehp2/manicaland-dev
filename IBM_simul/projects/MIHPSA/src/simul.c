@@ -89,6 +89,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
     int icd4, i, r;
     double t;
 
+
     
     // Reset the counters for newly infected individuals
     for(p = 0; p < NPATCHES; p++){
@@ -131,6 +132,16 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
     }
 
+
+
+    /* This is the 'adjustment' for the fact that not everyone in a given priority population will be eligible for VMMC (because either already circumcised or HIV+). Note - this is slow, so put it outside the t_step loop *so that it is calculated annually*)
+     */
+    double vmmc_rate_adjustment[NPATCHES][i_VMMC_PREVENTIONBARRIER_OLD_M-i_VMMC_PREVENTIONBARRIER_YOUNG_M+1];
+    for(p = 0; p < NPATCHES; p++){
+	get_VMMC_rate_adjustment_foralreadycirc_hivpos((double) t0, patch, p, vmmc_rate_adjustment[p]);
+    }
+
+    
     for(t_step = 0; t_step < N_TIME_STEP_PER_YEAR; t_step++){
 
 	t = t0 + t_step*TIME_STEP;
@@ -162,20 +173,37 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    if(t>=patch[0].param->start_time_hiv)
 		update_time_varying_hazard_allpatches(t,patch);
 
-	    if(MANICALAND_CASCADE==1){
 	    
-		if(t>=1989){
-		    if(i_run==0 && t==1989.0)
-			printf("Condom use now changes at each timestep\n");
-		    /* This function varies condom use uptake. 
-		       It incorporates the intervention (if it happens). */
-		    for(p = 0; p < NPATCHES; p++)
-			update_condomrates(t,patch[p].param);
-		}
+	    if(t>=1989){
+		
+		if(i_run==0 && t==1989.0)
+		    printf("Condom use now changes at each timestep\n");
+		/* This function varies condom use uptake. 
+		   It incorporates the intervention (if it happens). */
+		for(p = 0; p < NPATCHES; p++)
+		    update_condomrates(t,patch[p].param);
+	    }
+
+
+	    if(t>=patch[0].param->COUNTRY_ART_START){
+		for(p = 0; p < NPATCHES; p++)
+		    set_probability_starts_ART_if_positive_and_eligible(t, patch[p].param);
 	    }
 	    
+	    
+	    if(t>=patch[0].param->COUNTRY_VMMC_START){
+		if(i_run==0 && t==patch[0].param->COUNTRY_VMMC_START && MIHPSA_MODULE==1)
+		    printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
+
+		for(p = 0; p < NPATCHES; p++){
+		    //get_VMMC_rate_adjustment_foralreadycirc_hivpos(t, patch, p, vmmc_rate_adjustment);
+		    /* This function varies VMMC uptake on an annual basis. If MIHPSA_MODULE==1 it  overrides the values of p_use_VMMC_present[] set in input.c.*/		    
+		    update_VMMCrates(t,patch[p].param,vmmc_rate_adjustment[p]);
+		}
+	    }
 
 	}
+
 
         // Carry out main processes
         for(p = 0; p < NPATCHES; p++){
@@ -186,7 +214,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 								 file_data_store, scenario_flag);
         }
 	
-        
+
+	
         carry_out_partnership_processes_by_time_step(t_step, t0,patch, overall_partnerships, output,
 						     debug, file_data_store, scenario_flag);
         
@@ -295,14 +324,16 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	}
 
 	/* MIHPSA outputs are stored from 1990 onwards, in the timestep 1 July. */
-	if(MIHPSA_MODULE==1){
-	    if(t0>=1990){
-		/* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
-		if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
-		    for(p = 0; p < NPATCHES; p++)
-			store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
-	    }
+	//if(MIHPSA_MODULE==1){
+	// This file is now some additional outputs - useful for diagnostics, but not needed for every year from start of simulation.
+	
+	if(t0>=1990){
+	    /* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
+	    if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
+		for(p = 0; p < NPATCHES; p++)
+		    store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
 	}
+	//}
 	
     }
     
@@ -1117,16 +1148,6 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /* 12. VMMC (for Manicaland cascade - i.e. not part of HIV testing) */
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
-
-	if(MIHPSA_MODULE==1){	
-	    if(t_step==0 && t>=patch[p].param->COUNTRY_VMMC_START){
-		if(i_run==0 && t==patch[p].param->COUNTRY_VMMC_START)
-		    printf("Warning: Overriding p_use_VMMC for MIHPSA project\n");
-		/* This function varies VMMC uptake on an annual basis, overriding the values of p_use_VMMC[] set in input.c.
-		 Note that it only changes the pre-intervention values for now. */
-		update_VMMCrates(t,patch,p);
-	    }
-	}
 	
 	update_VMMCbarriers_from_ageing(t, t_step, patch, p);
 	if(t >= patch[p].param->COUNTRY_VMMC_START){

@@ -665,7 +665,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
             calendar_outputs->N_calendar_CD4_tests_popart[year_idx]++;
 
 	    /* Add diagnosis if needed: */
-	    if(MIHPSA_MODULE==1){
+	    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NNEWDIAGNOSES15PLUS==1){
 		if(indiv->ART_status==ARTNEG){
 		    printf("Error - POpART test???\n");
 		    int age = floor(t - indiv->DoB);
@@ -697,7 +697,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
 
 	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
-	    if(MIHPSA_MODULE==1){
+	    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NNEWDIAGNOSES15PLUS==1){
 		if(indiv->ART_status==ARTNEG){
 		    printf("Error - PopART testing???\n");
 		    int age = floor(t - indiv->DoB);
@@ -733,7 +733,7 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
 
 	    update_ART_state_population_counters_ARTcascade_change(t, patch[p].n_infected_by_all_strata, indiv->ART_status, ARTNAIVE, indiv, FALSE);
 
-	    if(MIHPSA_MODULE==1){
+	    if(MIHPSA_MODULE==1 || EXTENDED_OUTPUTS_NNEWDIAGNOSES15PLUS==1){
 		if(indiv->ART_status==ARTNEG){
 		    int age = floor(t - indiv->DoB);
 		    printf("Error - PopART testing\n");
@@ -1180,12 +1180,10 @@ void carry_out_VMMC_events_per_timestep(int t_step, double t, patch_struct *patc
             //printf("Person %ld with circ=%d is being scheduled for VMMC healing.\n",
             //      indiv->id,indiv->circ);
 
-	    /* Add to VMMC count for MIHPSA project if needed: */
-	    if(MIHPSA_MODULE==1){
-		int age = floor(t - indiv->DoB);
-		if(age>=15 && age <=49)
-		    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
-	    }
+	    /* Add to VMMC count to extended outputs: */
+	    int age = floor(t - indiv->DoB);
+	    if(age>=15 && age <=49)
+		patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15plus++;
 
             schedule_vmmc_healing(indiv, patch[p].param, patch[p].vmmc_events,
                 patch[p].n_vmmc_events, patch[p].size_vmmc_events, t);

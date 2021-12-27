@@ -79,16 +79,23 @@ typedef struct{
 
 /* Sub-structure of params, containing HIV prevention cascade parameters: */
 typedef struct{
-    /* N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
+    /* Probability of getting VMMC at present (and in future in the absence of interventions (last index 0) or with interventions (index 1)). N_X_PREVENTIONBARRIER_GROUPS to make this easier to generalise. */
     /* The 2 is the number of interventions (i=0-no intervention, i=1-with prevention barrier intervention). */
-    double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
-    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_VMMC_present[N_VMMC_PREVENTIONBARRIER_GROUPS][2];
 
+
+    /* Probability of getting VMMC at a given time. This is calculated in the function update_VMMCrates(). */
+    double p_use_VMMC[N_VMMC_PREVENTIONBARRIER_GROUPS];
+    
     /* Probability of using a condom at a given time. This is calculated in the function update_condomrates().
      Note that we don't have the second index that p_use_cond_casual_present[][] has, because this stores the condom use calculated at a given time for a given intervention scenarion. */
     double p_use_cond_casual[N_COND_PREVENTIONBARRIER_GROUPS];
     double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS];
 
+
+    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
+
+    
     /* This is the probability of using a condom at present (and in the future, in the absence of further interventions - the [2] represents no intervention (0) or intervention (1))). */
     double p_use_cond_casual_present[N_COND_PREVENTIONBARRIER_GROUPS][2];
     double p_use_cond_LT_present[N_COND_PREVENTIONBARRIER_GROUPS][2];
@@ -416,6 +423,7 @@ typedef struct {
     int end_time_simul;
     double COUNTRY_HIV_TEST_START;
     double COUNTRY_ART_START;
+    double COUNTRY_EMERGENCY_ART_START;
     double COUNTRY_CD4_350_START;
     double COUNTRY_CD4_500_START;
     double COUNTRY_IMMEDIATE_ART_START;
@@ -586,11 +594,18 @@ typedef struct {
     //double p_collect_cd4_test_results_cd4_under200;
 
     /* This represents the probability that, given you've just collected the results of your HIV test and have found out you are HIV+, that you get your CD4 test results. Note that once you get your CD4 results you will (I think?) start ART with probability 1. */
-    double p_collect_cd4_test_results_cd4_nonpopart;
+    //double p_collect_cd4_test_results_cd4_nonpopart; // Substituted for p_collect_cd4_test_results_and_start_ART_YYYY in Manicaland.
     double p_collect_cd4_test_results_cd4_popartYEAR1;
     double p_collect_cd4_test_results_cd4_popartYEAR2onwards;
 
+    double p_collect_cd4_test_results_and_start_ART_2008; /* Probability of starting ART if you test positive and pick up test results up to 2008. */
+    double p_collect_cd4_test_results_and_start_ART_2010;
+    double p_collect_cd4_test_results_and_start_ART_current;
 
+    double p_collect_cd4_test_results_and_start_ART; /* This is what the model uses at each timestep. */
+
+    double p_collect_cd4_test_results_and_remain_in_cascade; /* Probability that someone not eligible for ART yet, but who has just got a positive HIV test result, picks up CD4 and remains in cascade.*/
+    
     /* Given you've just started ART several events can happen with the following probabilities: */
     double p_dies_earlyart_cd4[NCD4]; /* you die early */
     double p_leaves_earlyart_cd4_over200_if_not_die_early; /* drop out (high CD4) conditional on not dying */

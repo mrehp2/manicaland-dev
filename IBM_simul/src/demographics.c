@@ -425,10 +425,9 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
    - draws a Bernoulli RV based on this probability.
    - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
 int get_art_status_of_mtct_new_adult(double t, parameters *param){
-    double p_knows_status=0.0; /* Pufall et al. R5 Manicaland found 19/73 HIV+ children aged 2-14 were aware of status, but 17/19 were on ART. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4239054/. So assume almost everyone aware of status is on ART - and anyone not on ART isn't aware of status. */
     if (t<1991) // so we don't keep printing out the reminder!
 	printf("Need to add p_knows_status to param\n");
-    if (gsl_ran_bernoulli(rng,(p_knows_status))==1)   /* knows serostatus (but not on ART). */
+    if (gsl_ran_bernoulli(rng,(param->p_mtct_nonART_new_adult_knows_status))==1)   /* knows serostatus (but not on ART). */
 	return ARTNAIVE;
     else{
         return ARTNEG;

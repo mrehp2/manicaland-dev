@@ -978,7 +978,7 @@ void update_VMMCrates_MIHPSA(int t, parameters *param){
 }
 
 
-/* Function allows condom rates to vary each year. 
+/* Function allows condom rates to vary each year.
    Designed for MIHPSA project, but can be used elsewhere. */
 void update_condomrates(double t, parameters *param){
     if(MIHPSA_MODULE==1)

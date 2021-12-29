@@ -425,8 +425,6 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
    - draws a Bernoulli RV based on this probability.
    - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
 int get_art_status_of_mtct_new_adult(double t, parameters *param){
-    if (t<1991) // so we don't keep printing out the reminder!
-	printf("Need to add p_knows_status to param\n");
     if (gsl_ran_bernoulli(rng,(param->p_mtct_nonART_new_adult_knows_status))==1)   /* knows serostatus (but not on ART). */
 	return ARTNAIVE;
     else{

@@ -459,6 +459,9 @@ int main(int argc,char *argv[]){
                 patch[p].param = allrunparameters[p] + i_run; /* Use pointer arithmetic. */
                 //print_param_struct(patch,p);      /* For debugging. */
 
+		/* Generates an age-adjustment vector used to adjust HIV testing by age. Gender is done directly parametrically. */
+		generate_p_HIV_background_testing_age_adjustment_factor(patch);
+
                 if(CHECKPARAMS == 1){
                     /* Check if parameters plausible (if not, then inputs and/or param ranges may
                     be wrong so check). */

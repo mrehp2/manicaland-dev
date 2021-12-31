@@ -2584,7 +2584,6 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
 	exit(1);
     }
 
-
 }
 
 

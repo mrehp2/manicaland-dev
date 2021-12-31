@@ -143,15 +143,17 @@ double per_woman_fertility_rate(int age, parameters *param, int y0, double f){
 
 
 void get_mtct_fraction(double t, patch_struct *patch, int p, double *proportion_of_hiv_positive_infants, double *proportion_of_hiv_pos_infants_on_art){
-    // No transmission if before MTCT started. 
+    // No transmission if before MTCT started.
+
+    /* For ART we need the % of children on ART to roughly match at the time *when they become adults*. */
+    double t_ART = t + AGE_ADULT;
+
     if (t<patch[p].param->T_FIRST_MTCT_DATAPOINT){
 	*proportion_of_hiv_positive_infants = 0.0;
-	*proportion_of_hiv_pos_infants_on_art = 0.0;
     }
     // Assume transmission remains constant after end of Spectrum projections:
     else if (t>=patch[p].param->T_LAST_MTCT_DATAPOINT){
 	*proportion_of_hiv_positive_infants =  patch[p].param->mtct_probability[N_MAX_MTCT_TIMEPOINTS-1]*patch[p].param->prop_births_to_hivpos_mothers[N_MAX_MTCT_TIMEPOINTS-1];
-	*proportion_of_hiv_pos_infants_on_art  = patch[p].param->prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS-1];
     }
     else{
 	/* Otherwise interpolate by year: */
@@ -165,6 +167,26 @@ void get_mtct_fraction(double t, patch_struct *patch, int p, double *proportion_
 	}
 
 	*proportion_of_hiv_positive_infants =   f*patch[p].param->mtct_probability[y+1]*patch[p].param->prop_births_to_hivpos_mothers[y+1] + (1-f)*(patch[p].param->mtct_probability[y]*patch[p].param->prop_births_to_hivpos_mothers[y]);
+    }
+
+    if (t_ART<patch[p].param->T_FIRST_MTCT_DATAPOINT){
+	*proportion_of_hiv_pos_infants_on_art = 0.0;
+    }
+    // Assume transmission remains constant after end of Spectrum projections:
+    else if (t_ART>=patch[p].param->T_LAST_MTCT_DATAPOINT){
+	*proportion_of_hiv_pos_infants_on_art  = patch[p].param->prop_children_on_ART_spectrum[N_MAX_MTCT_TIMEPOINTS-1];
+    }
+    else{
+	/* Otherwise interpolate by year: */
+	int y = floor(t_ART-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	/* Fraction of a current year: */
+	double f = (t_ART-y-patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	if (f<0||f>1){
+	    printf("f=%lf, t=%lf, y=%i T=%lf\n",f,t_ART,y,patch[p].param->T_FIRST_MTCT_DATAPOINT);
+	    printf("Error in get_mtct_fraction(): f needs to be in [0,1]\nExiting.\n");
+	    exit(1);
+	}
+
 	*proportion_of_hiv_pos_infants_on_art  = f*patch[p].param->prop_children_on_ART_spectrum[y+1] + (1-f)*patch[p].param->prop_children_on_ART_spectrum[y];
     }
     //printf("In get_mtct_fraction(): %lf %lf %lf\n",t,*proportion_of_hiv_positive_infants,*proportion_of_hiv_pos_infants_on_art);
@@ -403,14 +425,9 @@ void create_mtct_templates(mtct_hiv_template *mtct_hiv_template_no_art, paramete
    - draws a Bernoulli RV based on this probability.
    - returns ARTNEG if never tested positive, and ARTNAIVE if they have. */
 int get_art_status_of_mtct_new_adult(double t, parameters *param){
-    double p_knows_status=1.0;
-    if (t<1991) // so we don't keep printing out the reminder!
-	printf("Need to add p_knows_status to param\n");
-    if (gsl_ran_bernoulli(rng,(p_knows_status))==1)   /* knows serostatus (but not on ART). */
+    if (gsl_ran_bernoulli(rng,(param->p_mtct_nonART_new_adult_knows_status))==1)   /* knows serostatus (but not on ART). */
 	return ARTNAIVE;
     else{
-	/* For now we assume everyone infected via MTCT knows their status (but doesn't have to be on ART). */
-	printf("Check this - shouldn't happen.\n");
         return ARTNEG;
     }
 }
@@ -717,7 +734,6 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
 
 	new_adult->debug_last_cascade_event_index = -1;     /* Variable does not seem to be used (09/12/2019). */
 
-	
 	add_hiv_info_for_new_hiv_positive_adult(new_adult, hivstatus, t, param, patch, p);
 	
 	/* Add this person to the hiv pos counter - as they're a new adult there is no 'old' counter to update. Note that we can only do this once new_adult->ART_status has been assigned. */
@@ -2968,8 +2984,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
     else
 	j = 0;
     patch[p].child_population[1].n_child[j] = n_birth_hivpos-n_birth_hivpos_art;
-
-
 
     
     /* Store number of HIV+, and on ART new births: */

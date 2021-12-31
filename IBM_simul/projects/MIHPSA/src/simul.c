@@ -173,7 +173,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    if(t>=patch[0].param->start_time_hiv)
 		update_time_varying_hazard_allpatches(t,patch);
 
-	    
+
 	    if(t>=1989){
 		
 		if(i_run==0 && t==1989.0)

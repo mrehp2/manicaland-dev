@@ -1757,6 +1757,7 @@ void print_cascade_params(parameters *param){
     printf("param->p_collect_cd4_test_results_and_start_ART_2008=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2008);
     printf("param->p_collect_cd4_test_results_and_start_ART_2010=%lg\n",param->p_collect_cd4_test_results_and_start_ART_2010);
     printf("param->p_collect_cd4_test_results_and_start_ART_current=%lg\n",param->p_collect_cd4_test_results_and_start_ART_current);
+    printf("param->p_mtct_nonART_new_adult_knows_status=%lg\n",param->p_mtct_nonART_new_adult_knows_status);
 
     for (icd4=0; icd4<NCD4; icd4++)
         printf("param->p_dies_earlyart_cd4[icd4]=%lg\n",param->p_dies_earlyart_cd4[icd4]);
@@ -2468,6 +2469,13 @@ void check_if_parameters_plausible(parameters *param){
 
     if (param->p_collect_cd4_test_results_and_start_ART_current<0.5 || param->p_collect_cd4_test_results_and_start_ART_current>1){
         printf("Error:param->p_collect_cd4_test_results_and_start_ART_current is outside expected range [0.5,1]\nExiting\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    if (param->p_mtct_nonART_new_adult_knows_status<0.0 || param->p_mtct_nonART_new_adult_knows_status>0.3){
+        printf("Error:param->p_mtct_nonART_new_adult_knows_status is outside expected range [0.0,0.3]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

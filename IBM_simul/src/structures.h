@@ -615,8 +615,7 @@ typedef struct {
 
     double p_collect_cd4_test_results_and_remain_in_cascade; /* Probability that someone not eligible for ART yet, but who has just got a positive HIV test result, picks up CD4 and remains in cascade.*/
 
-    double p_mtct_nonART_new_adult_knows_status; /* This is the probability that a new adult (who was infected as a child) but who isn't on ART will be aware of their status. Pufall et al. R5 Manicaland found 19/73 HIV+ children aged 2-14 were aware of status, but 17 of those were on ART (so 2/19 aware but not on ART) https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4239054/. 
-						    As there isn't a route for people who are aware of status to start ART, we assume everyone aware of status is on ART - and anyone not on ART isn't aware of status. */
+    double p_mtct_nonART_new_adult_knows_status; /* This is the probability that a new adult (who was infected as a child) but who isn't on ART will be aware of their status.  */
     
     /* Given you've just started ART several events can happen with the following probabilities: */
     double p_dies_earlyart_cd4[NCD4]; /* you die early */

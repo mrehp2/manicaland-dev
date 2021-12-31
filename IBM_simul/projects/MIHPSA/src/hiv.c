@@ -2252,11 +2252,13 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
     individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, 
     int country_setting){
     
-    int aa,k,g;
+    int aa,ai,k,g;
     
     // Array for storing probability of an indiv getting tested in the next window. 
     // Can be made more complex to allow differences by age, past history of testing. 
     double *p_test;
+
+    double p_test_indiv; /* individual's probability of getting an HIV test - depends on age and sex. */
     
     p_test = malloc(N_GENDER*sizeof(double));
     double t_gap;
@@ -2264,34 +2266,39 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
     // Draw probability that an indiv with some given characteristics (currently sex only) is tested in the next testing window (probability also depends on current time),store it in p_test
     probability_get_hiv_test_in_next_window(p_test, &t_gap, country_setting, year, 
         param->COUNTRY_HIV_TEST_START, param);
-    
+
     for(g = 0; g < N_GENDER; g++){
         // For all but the age group 80+ (which is in a separate part of the age_list struct)
         for(aa = 0; aa < MAX_AGE - AGE_ADULT; aa++){
+            ai = age_list->age_list_by_gender[g]->youngest_age_group_index + aa; /* ai is the index of the array age_list->number_per_age_group of the age group of people you want to be dead */
+            while (ai>(MAX_AGE-AGE_ADULT-1))
+                ai = ai - (MAX_AGE-AGE_ADULT);
+	    p_test_indiv = p_test[g]*param->p_HIV_background_testing_age_adjustment_factor[aa];
+
             // For each individual in that annual age group, schedule their first HIV test
-            for(k = 0; k < age_list->age_list_by_gender[g]->number_per_age_group[aa]; k++){
+            for(k = 0; k < age_list->age_list_by_gender[g]->number_per_age_group[ai]; k++){
                 
                 // Only schedule tests for people who are not "HIV+ and aware of serostatus"
-                if(age_list->age_list_by_gender[g]->age_group[aa][k]->ART_status == ARTNEG){
+                if(age_list->age_list_by_gender[g]->age_group[ai][k]->ART_status == ARTNEG){
 
-                    schedule_hiv_test_fixedtime(age_list->age_list_by_gender[g]->age_group[aa][k],
+                    schedule_hiv_test_fixedtime(age_list->age_list_by_gender[g]->age_group[ai][k],
                         param, year, cascade_events, n_cascade_events, size_cascade_events, 
-                        t_gap, country_setting, p_test);
+                        t_gap, country_setting, p_test_indiv);
                     
                     if(
-                    (age_list->age_list_by_gender[g]->age_group[aa][k]->id == FOLLOW_INDIVIDUAL) &&
-                    (age_list->age_list_by_gender[g]->age_group[aa][k]->patch_no == FOLLOW_PATCH)
+                    (age_list->age_list_by_gender[g]->age_group[ai][k]->id == FOLLOW_INDIVIDUAL) &&
+                    (age_list->age_list_by_gender[g]->age_group[ai][k]->patch_no == FOLLOW_PATCH)
                     ){
-                        if(age_list->age_list_by_gender[g]->age_group[aa][k]->next_cascade_event==-1 && age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[0]==-1 && age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[1]==-1)
-                        printf("No new HIV test scheduled for adult %ld in year %i\n", age_list->age_list_by_gender[g]->age_group[aa][k]->id,year);
+                        if(age_list->age_list_by_gender[g]->age_group[ai][k]->next_cascade_event==-1 && age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[0]==-1 && age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[1]==-1)
+                        printf("No new HIV test scheduled for adult %ld in year %i\n", age_list->age_list_by_gender[g]->age_group[ai][k]->id,year);
 			else{
 			    printf("Scheduling new HIV test for adult %ld, ", 
-				   age_list->age_list_by_gender[g]->age_group[aa][k]->id);
+				   age_list->age_list_by_gender[g]->age_group[ai][k]->id);
                         
 			    printf("gender = %d (event type %i) at time index %li array index = %li\n", 
-				   g, age_list->age_list_by_gender[g]->age_group[aa][k]->next_cascade_event,
-				   age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[0],
-				   age_list->age_list_by_gender[g]->age_group[aa][k]->idx_cascade_event[1]);
+				   g, age_list->age_list_by_gender[g]->age_group[ai][k]->next_cascade_event,
+				   age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[0],
+				   age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[1]);
                         }
                         fflush(stdout);
                     }
@@ -2304,10 +2311,11 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
             
             // Only schedule tests for people who are not "HIV+ and aware of serostatus"
             if(age_list->age_list_by_gender[g]->oldest_age_group[k]->ART_status == ARTNEG){
+		p_test_indiv = p_test[g]*param->p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT];
                 
                 schedule_hiv_test_fixedtime(age_list->age_list_by_gender[g]->oldest_age_group[k],
                     param, year, cascade_events, n_cascade_events, size_cascade_events, t_gap,
-                    country_setting, p_test);
+                    country_setting, p_test_indiv);
                 
                 if(
                 (age_list->age_list_by_gender[g]->oldest_age_group[k]->id == FOLLOW_INDIVIDUAL) &&
@@ -2442,7 +2450,7 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
             param->time_to_background_HIVtest_exponent, param->time_to_background_HIVtest_midpoint);
     
     double x = gsl_ran_exponential(rng, mean_time_to_test);
-    
+
     if(x <= TIME_STEP){
         x = TIME_STEP;
     }
@@ -2497,6 +2505,31 @@ void set_probability_starts_ART_if_positive_and_eligible(double t, parameters *p
 }
 
 
+void generate_p_HIV_background_testing_age_adjustment_factor(patch_struct *patch){
+    int a, p;
+
+    for(p=0; p < NPATCHES; p++){
+	
+	//patch[p].param->p_HIV_background_testing_age_adjustment_factor_youngest_age_group = 0.0;
+
+	for(a=0; a<12; a++){ /* up to 24. */
+	    patch[p].param->p_HIV_background_testing_age_adjustment_factor[a] = patch[p].param->p_HIV_background_testing_age_adjustment_factor_youngest_age_group;
+	    //printf("Lowest age %i = %lf\n",a+AGE_ADULT,patch[p].param->p_HIV_background_testing_age_adjustment_factor[a]);	    
+	}
+	for(a=12; a<32; a++){ /* 25-44. */
+
+	    patch[p].param->p_HIV_background_testing_age_adjustment_factor[a] = 1 - (1-patch[p].param->p_HIV_background_testing_age_adjustment_factor_youngest_age_group) * (32-a)/20.0;
+	    //printf("Middle age %i = %lf\n",a+AGE_ADULT,patch[p].param->p_HIV_background_testing_age_adjustment_factor[a]);
+	}
+
+	for(a=32; a<=(MAX_AGE-AGE_ADULT); a++){ /* 45+ */
+	    patch[p].param->p_HIV_background_testing_age_adjustment_factor[a] = 1.0;
+	    //printf("Old age %i = %lf\n",a+AGE_ADULT,patch[p].param->p_HIV_background_testing_age_adjustment_factor[a]);
+	    
+	}
+    }
+}
+
 void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int country_setting,
     int year, int COUNTRY_HIV_TEST_START, parameters *param){
     /*
@@ -2527,27 +2560,39 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
         printf("probability_get_hiv_test_in_next_window() ");
         printf("called before start of HIV testing.\n");
     }
+
     
     if(year == COUNTRY_HIV_TEST_START){
-        /* This refers to the period [COUNTRY_HIV_TEST_START, 2006]. */
-        p_test[MALE] = param->p_HIV_background_testing_female_pre2006 * param->RR_HIV_background_testing_male;
-        p_test[FEMALE] = param->p_HIV_background_testing_female_pre2006;
-        *t_gap = 2006 - COUNTRY_HIV_TEST_START;
-    }else{
-        p_test[MALE] = param->p_HIV_background_testing_female_current*param->RR_HIV_background_testing_male;
+        /* This refers to the period [COUNTRY_HIV_TEST_START, 2005]. */
+        p_test[MALE] = param->p_HIV_background_testing_male_pre2005;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_pre2005;
+        *t_gap = 2005 - COUNTRY_HIV_TEST_START;
+    }else if(year>=2013){
+        p_test[MALE] = param->p_HIV_background_testing_male_current;
         p_test[FEMALE] = param->p_HIV_background_testing_female_current;
         *t_gap = 1;
+    }else if((year>=2005) && (year<2010)){
+        p_test[MALE] = param->p_HIV_background_testing_male_2005_2010;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2005_2010;
+        *t_gap = 1;
+    }else if((year>=2010) && (year<2013)){
+        p_test[MALE] = param->p_HIV_background_testing_male_2010_2013;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2010_2013;
+        *t_gap = 1;
+    }else{
+	printf("Error - unknown year in probability_get_hiv_test_in_next_window(). Exiting\n");
+	exit(1);
     }
+
 }
 
 
 void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year, 
     individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, double t_gap,
-    int country_setting, double *p_test){
+    int country_setting, double p_test_indiv){
     /* For a given individual draw when they will next have an HIV test
     
-    
-    The probability of having a test is gender-specific and listed in the array `p_test`.  The 
+    The probability of having a test is age and gender-specific.  The 
     period of time in which the HIV test has to occur is between `year` and `year + t_gap`.  The 
     time until the test is drawn as a uniform random variable between these periods.  
     
@@ -2569,8 +2614,7 @@ void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year,
     t_gap : double
         Period of time (in years) in which the test should occur.  
     country_setting : int
-    p_test : pointer to an array of doubles
-        Array of the gender-specific probability of having an HIV test.  
+    p_test_indiv : age and sex-specific probability of having an HIV test.  
     
     Returns
     -------
@@ -2582,15 +2626,14 @@ void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year,
 
     // Draw to see if this person will test or not
     double x_test = gsl_rng_uniform(rng);
-    
-    if(x_test > p_test[indiv->gender]){
+
+    if(x_test > p_test_indiv){
         /* No test this time, so make sure they are unscheduled: */
         indiv->next_cascade_event = NOEVENT;
         indiv->idx_cascade_event[0] = NOEVENT;
         indiv->idx_cascade_event[1] = -1;
     }else{ 
         // Schedule a test
-
         // Determine when the test will be held (time_hiv_test). 
         // Draw a uniform random variable from 0 to t_gap 
         // This has to happen before the end of the current testing window, hence the "-TIME_STEP"

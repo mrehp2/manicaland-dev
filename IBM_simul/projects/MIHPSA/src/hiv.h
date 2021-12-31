@@ -64,9 +64,10 @@ void schedule_generic_cascade_event(individual* , parameters *, double , individ
     long *, long *, double);
 void schedule_new_hiv_test(individual *, parameters *, double, individual ***, long *, long *);
 void set_probability_starts_ART_if_positive_and_eligible(double , parameters *);
+void generate_p_HIV_background_testing_age_adjustment_factor(patch_struct *);
 void probability_get_hiv_test_in_next_window(double *, double *, int , int , int , parameters *);
 void schedule_hiv_test_fixedtime(individual* , parameters *, int , individual ***, long *, 
-    long *, double , int , double *);
+    long *, double , int , double );
 void hiv_test_process(individual* , parameters *, double, individual ***, long *, long *, 
     individual ***, long *, long *, cumulative_outputs_struct *, calendar_outputs_struct *, 
     individual ***, long *, long *, patch_struct *, int , debug_struct *);

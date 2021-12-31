@@ -581,9 +581,18 @@ typedef struct {
 
     /* Cascade probabilities: */
 
-    double p_HIV_background_testing_female_pre2006; /* Baseline probability of a women having an HIV test in the background cascade from start of HIV testing until 2006. */
-    double p_HIV_background_testing_female_current; /* Baseline annual probability of a women having an annual test in the background cascade. */
-    double RR_HIV_background_testing_male; /* Decrease in annual probability of an HIV test for men (cp to women) so we can fit VS in PC24. */
+    double p_HIV_background_testing_female_pre2005; /* Baseline probability of a woman having an HIV test in the background cascade from start of HIV testing until 2006. */
+    double p_HIV_background_testing_female_2005_2010; /* Baseline probability of a woman having an HIV test in the background cascade 2005-2009.99. */
+    double p_HIV_background_testing_female_2010_2013; /* Baseline probability of a woman having an HIV test in the background cascade 2010-2012.99. */
+    double p_HIV_background_testing_female_current; /* Baseline annual probability of a woman having an annual test in the background cascade from 2013 onwards. */
+    double p_HIV_background_testing_male_pre2005; /* Baseline probability of a man having an HIV test in the background cascade from start of HIV testing until 2006. */
+    double p_HIV_background_testing_male_2005_2010; /* Baseline probability of a man having an HIV test in the background cascade 2005-2009.99. */
+    double p_HIV_background_testing_male_2010_2013; /* Baseline probability of a man having an HIV test in the background cascade 2010-2012.99. */
+    double p_HIV_background_testing_male_current; /* Baseline annual probability of a man having an annual test in the background cascade from 2013 onwards. */
+
+    /* Factor to take into account that HIV awareness is *much* lower in younger people. To be based on Manicaland HIV awareness prevalence. */
+    double p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT+1];
+    double p_HIV_background_testing_age_adjustment_factor_youngest_age_group; /* Set in param_cascade.txt and used to generate p_HIV_background_testing_age_adjustment_factor[]. */
 
     double HIV_rapid_test_sensitivity_CHIPS;       /* Represents the sensitivity of the rapid HIV test used by CHiPs. We might want this to be time-varying (to reflect better training/test kits used later in trial). */
     double HIV_rapid_test_sensitivity_ANC;       /* Represents the sensitivity of the rapid HIV test used in ANC testing (for Simon's routine testing misclassification project).  */
@@ -605,6 +614,8 @@ typedef struct {
     double p_collect_cd4_test_results_and_start_ART; /* This is what the model uses at each timestep. */
 
     double p_collect_cd4_test_results_and_remain_in_cascade; /* Probability that someone not eligible for ART yet, but who has just got a positive HIV test result, picks up CD4 and remains in cascade.*/
+
+    double p_mtct_nonART_new_adult_knows_status; /* This is the probability that a new adult (who was infected as a child) but who isn't on ART will be aware of their status.  */
     
     /* Given you've just started ART several events can happen with the following probabilities: */
     double p_dies_earlyart_cd4[NCD4]; /* you die early */

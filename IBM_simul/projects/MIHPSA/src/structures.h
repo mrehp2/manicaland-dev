@@ -510,6 +510,8 @@ typedef struct {
 
     double cumulative_p_misclassify_cd4[NCD4][NCD4]; /* the order ij is the same as in the ATHENA analysis */
 
+    double p_emergency_ART; /* Probability of starting emergency ART (i.e. due to clinical symptoms) once CD4<200. */
+    
     /********** partnerships **********/
 
     /* assortativity = proportion of contacts made within the same risk group ; 1-assortativity is the proportion of contacts made at random */
@@ -581,15 +583,32 @@ typedef struct {
 
     /* Cascade probabilities: */
 
-    double p_HIV_background_testing_female_pre2005; /* Baseline probability of a woman having an HIV test in the background cascade from start of HIV testing until 2006. */
-    double p_HIV_background_testing_female_2005_2010; /* Baseline probability of a woman having an HIV test in the background cascade 2005-2009.99. */
-    double p_HIV_background_testing_female_2010_2013; /* Baseline probability of a woman having an HIV test in the background cascade 2010-2012.99. */
-    double p_HIV_background_testing_female_current; /* Baseline annual probability of a woman having an annual test in the background cascade from 2013 onwards. */
-    double p_HIV_background_testing_male_pre2005; /* Baseline probability of a man having an HIV test in the background cascade from start of HIV testing until 2006. */
-    double p_HIV_background_testing_male_2005_2010; /* Baseline probability of a man having an HIV test in the background cascade 2005-2009.99. */
-    double p_HIV_background_testing_male_2010_2013; /* Baseline probability of a man having an HIV test in the background cascade 2010-2012.99. */
-    double p_HIV_background_testing_male_current; /* Baseline annual probability of a man having an annual test in the background cascade from 2013 onwards. */
-
+    double p_HIV_background_testing_female_pre2005; /* Baseline probability of a woman having an HIV test in the background cascade from start of HIV testing until 2005. */
+    double p_HIV_background_testing_female_2005_2010; /* Baseline probability of a woman having an HIV test in the background cascade 2005-2010.99. */
+    double p_HIV_background_testing_female_2011;
+    double p_HIV_background_testing_female_2012;
+    double p_HIV_background_testing_female_2013;
+    double p_HIV_background_testing_female_2014;
+    double p_HIV_background_testing_female_2015;
+    double p_HIV_background_testing_female_2016;
+    double p_HIV_background_testing_female_2017;
+    double p_HIV_background_testing_female_2018;
+    double p_HIV_background_testing_female_2019;
+    double p_HIV_background_testing_female_2020;
+    double p_HIV_background_testing_female_current;
+    double p_HIV_background_testing_male_pre2005; /* Baseline probability of a man having an HIV test in the background cascade from start of HIV testing until 2005. */
+    double p_HIV_background_testing_male_2005_2010;
+    double p_HIV_background_testing_male_2011;
+    double p_HIV_background_testing_male_2012;
+    double p_HIV_background_testing_male_2013;
+    double p_HIV_background_testing_male_2014;
+    double p_HIV_background_testing_male_2015;
+    double p_HIV_background_testing_male_2016;
+    double p_HIV_background_testing_male_2017;
+    double p_HIV_background_testing_male_2018;
+    double p_HIV_background_testing_male_2019;
+    double p_HIV_background_testing_male_2020;
+    double p_HIV_background_testing_male_current;
     /* Factor to take into account that HIV awareness is *much* lower in younger people. To be based on Manicaland HIV awareness prevalence. */
     double p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT+1];
     double p_HIV_background_testing_age_adjustment_factor_youngest_age_group; /* Set in param_cascade.txt and used to generate p_HIV_background_testing_age_adjustment_factor[]. */

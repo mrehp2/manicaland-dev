@@ -198,7 +198,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		for(p = 0; p < NPATCHES; p++){
 		    //get_VMMC_rate_adjustment_foralreadycirc_hivpos(t, patch, p, vmmc_rate_adjustment);
 		    /* This function varies VMMC uptake on an annual basis. If MIHPSA_MODULE==1 it  overrides the values of p_use_VMMC_present[] set in input.c.*/		    
-		    update_VMMCrates(t,patch[p].param,vmmc_rate_adjustment[p]);
+		    update_VMMCrates(t0,patch[p].param,vmmc_rate_adjustment[p]);
 		}
 	    }
 

@@ -1214,14 +1214,14 @@ void next_hiv_event(individual* indiv, individual ***hiv_pos_progression,
             (DO_HIV_TESTING == 1) && 
             (ALLOW_EMERGENCY_ART == 1)
         ){
-            double time_emergency_start_ART = get_time_emergency_start_ART(indiv,param,t);
-            
-            /* Decide if individual will start ART because of low CD4 (and symptoms) - at which
+	    
+             /* Decide if individual will start ART because of low CD4 (and symptoms) - at which
             point they may die quickly on ART - or die without starting ART: */
-
-            if (time_emergency_start_ART < time_to_next_event){
+	    //if (time_emergency_start_ART < time_to_next_event){
+	    
+	    if(gsl_ran_bernoulli(rng, param->p_emergency_ART) == 1){
                 
-                time_to_next_event = time_emergency_start_ART; 
+                time_to_next_event = get_time_emergency_start_ART(indiv,param,t);
                 // Assume always a non-popart test.
                 cumulative_outputs->N_total_CD4_tests_nonpopart++;
                 calendar_outputs->N_calendar_CD4_tests_nonpopart[year_idx]++;
@@ -2567,17 +2567,53 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
         p_test[MALE] = param->p_HIV_background_testing_male_pre2005;
         p_test[FEMALE] = param->p_HIV_background_testing_female_pre2005;
         *t_gap = 2005 - COUNTRY_HIV_TEST_START;
-    }else if(year>=2013){
+    }else if(year>=2021){
         p_test[MALE] = param->p_HIV_background_testing_male_current;
         p_test[FEMALE] = param->p_HIV_background_testing_female_current;
         *t_gap = 1;
-    }else if((year>=2005) && (year<2010)){
+    }else if((year>=2005) && (year<2011)){
         p_test[MALE] = param->p_HIV_background_testing_male_2005_2010;
         p_test[FEMALE] = param->p_HIV_background_testing_female_2005_2010;
         *t_gap = 1;
-    }else if((year>=2010) && (year<2013)){
-        p_test[MALE] = param->p_HIV_background_testing_male_2010_2013;
-        p_test[FEMALE] = param->p_HIV_background_testing_female_2010_2013;
+    }else if(year==2011){
+        p_test[MALE] = param->p_HIV_background_testing_male_2011;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2011;
+        *t_gap = 1;
+    }else if(year==2012){
+        p_test[MALE] = param->p_HIV_background_testing_male_2012;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2012;
+        *t_gap = 1;
+    }else if(year==2013){
+        p_test[MALE] = param->p_HIV_background_testing_male_2013;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2013;
+        *t_gap = 1;
+    }else if(year==2014){
+        p_test[MALE] = param->p_HIV_background_testing_male_2014;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2014;
+        *t_gap = 1;
+    }else if(year==2015){
+        p_test[MALE] = param->p_HIV_background_testing_male_2015;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2015;
+        *t_gap = 1;
+    }else if(year==2016){
+        p_test[MALE] = param->p_HIV_background_testing_male_2016;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2016;
+        *t_gap = 1;
+    }else if(year==2017){
+        p_test[MALE] = param->p_HIV_background_testing_male_2017;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2017;
+        *t_gap = 1;
+    }else if(year==2018){
+        p_test[MALE] = param->p_HIV_background_testing_male_2018;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2018;
+        *t_gap = 1;
+    }else if(year==2019){
+        p_test[MALE] = param->p_HIV_background_testing_male_2019;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2019;
+        *t_gap = 1;
+    }else if(year==2020){
+        p_test[MALE] = param->p_HIV_background_testing_male_2020;
+        p_test[FEMALE] = param->p_HIV_background_testing_female_2020;
         *t_gap = 1;
     }else{
 	printf("Error - unknown year in probability_get_hiv_test_in_next_window(). Exiting\n");

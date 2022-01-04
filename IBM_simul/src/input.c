@@ -1296,6 +1296,10 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_collect_cd4_test_results_and_remain_in_cascade));
         check_if_cannot_read_param(checkreadok,"param_local->p_collect_cd4_test_results_and_remain_in_cascade");
 
+        checkreadok = fscanf(param_file,"%lg",&(param_local->p_emergency_ART));
+        check_if_cannot_read_param(checkreadok,"param_local->p_emergency_ART");
+	
+
         checkreadok = fscanf(param_file,"%lg",&(param_local->p_mtct_nonART_new_adult_knows_status));
         check_if_cannot_read_param(checkreadok,"param_local->p_mtct_nonART_new_adult_knows_status");
 	

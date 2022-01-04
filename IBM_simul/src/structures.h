@@ -510,6 +510,8 @@ typedef struct {
 
     double cumulative_p_misclassify_cd4[NCD4][NCD4]; /* the order ij is the same as in the ATHENA analysis */
 
+    double p_emergency_ART; /* Probability of starting emergency ART (i.e. due to clinical symptoms) once CD4<200. */
+    
     /********** partnerships **********/
 
     /* assortativity = proportion of contacts made within the same risk group ; 1-assortativity is the proportion of contacts made at random */

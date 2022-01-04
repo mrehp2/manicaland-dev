@@ -1214,14 +1214,14 @@ void next_hiv_event(individual* indiv, individual ***hiv_pos_progression,
             (DO_HIV_TESTING == 1) && 
             (ALLOW_EMERGENCY_ART == 1)
         ){
-            double time_emergency_start_ART = get_time_emergency_start_ART(indiv,param,t);
             
-            /* Decide if individual will start ART because of low CD4 (and symptoms) - at which
+             /* Decide if individual will start ART because of low CD4 (and symptoms) - at which
             point they may die quickly on ART - or die without starting ART: */
+	    //if (time_emergency_start_ART < time_to_next_event){
 
-            if (time_emergency_start_ART < time_to_next_event){
+	    if(gsl_ran_bernoulli(rng, param->p_emergency_ART) == 1){
                 
-                time_to_next_event = time_emergency_start_ART; 
+                time_to_next_event = get_time_emergency_start_ART(indiv,param,t);
                 // Assume always a non-popart test.
                 cumulative_outputs->N_total_CD4_tests_nonpopart++;
                 calendar_outputs->N_calendar_CD4_tests_nonpopart[year_idx]++;

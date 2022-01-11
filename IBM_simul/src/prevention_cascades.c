@@ -776,7 +776,7 @@ void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch
 
 void update_VMMCrates(int t, parameters *param, double *adjustment_to_rate){
     if(MIHPSA_MODULE==1)
-	update_VMMCrates_MIHPSA(t, param);
+	update_VMMCrates_MIHPSA(t, param, adjustment_to_rate);
     else
 	update_VMMCrates_Manicaland(t, param, adjustment_to_rate);
 }
@@ -893,22 +893,22 @@ void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to
 
 /* Function allows VMMC rates to vary each year. 
    Designed for MIHPSA project, but can take into account the fact that VMMC uptake has been quite non-linear. */
-void update_VMMCrates_MIHPSA(int t, parameters *param){
+void update_VMMCrates_MIHPSA(int t, parameters *param, double *adjustment_to_rate){
 
     /* We have data for 12 years from C:\Users\mpickles\Dropbox (SPH Imperial College)\projects\MIHPSA_Zimabwe2021\Copy of HIVcalibrationData_Zimbabwe.xlsx. */
-    double VMMCrate_young[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
-    double VMMCrate_old[12] = {0.0011,0.0037,0.0108,0.0113,0.0252,0.0426,0.0529,0.0565,0.0683,0.0887,0.0991,0.0276};
+    double VMMCrate_young[12] = {0.0005,0.0021,0.0063,0.0095,0.0157,0.0287,0.0392,0.0430,0.0467,0.0556,0.0623,0.0397};
+    double VMMCrate_old[12] = {0.0005,0.0021,0.0063,0.0095,0.0157,0.0287,0.0392,0.0430,0.0467,0.0556,0.0623,0.0397};
 
     /* We set these to be zero: */
     param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M] = 0;
     param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_TOO_OLD_M] = 0;
     param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_NEVERSEX_M] = 0;
 
-    if(t>2019){
-	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10]; /* Use 2018 pre-COVID value. */
-	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10]; /* Use 2018 pre-COVID value. */
+    if(t>2021){
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10]*adjustment_to_rate[0]; /* Use 2018-19 pre-COVID value. */
+	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10]*adjustment_to_rate[1]; /* Use 2018-19 pre-COVID value. */
     }
-    else if(t<2008){
+    else if(t<2010){
 	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = 0;
 	param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = 0;
     }
@@ -916,55 +916,54 @@ void update_VMMCrates_MIHPSA(int t, parameters *param){
     else{
 	switch(t)
 	    {
-	    case 2008:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[0];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[0];
-		break;
-	    case 2009:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[1];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[1];
-		break;
 	    case 2010:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[2];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[2];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[0]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[0]*adjustment_to_rate[1];
 		break;
 	    case 2011:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[3];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[3];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[1]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[1]*adjustment_to_rate[1];
 		break;
 	    case 2012:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[4];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[4];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[2]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[2]*adjustment_to_rate[1];
 		break;
 	    case 2013:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[5];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[5];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[3]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[3]*adjustment_to_rate[1];
 		break;
 	    case 2014:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[6];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[6];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[4]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[4]*adjustment_to_rate[1];
 		break;
 	    case 2015:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[7];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[7];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[5]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[5]*adjustment_to_rate[1];
 		break;
 	    case 2016:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[8];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[8];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[6]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[6]*adjustment_to_rate[1];
 		break;
 	    case 2017:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[9];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[9];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[7]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[7]*adjustment_to_rate[1];
 		break;
 	    case 2018:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[8]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[8]*adjustment_to_rate[1];
 		break;
 	    case 2019:
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[11];
-		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[11];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[9]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[9]*adjustment_to_rate[1];
 		break;
-
+	    case 2020:
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[10]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[10]*adjustment_to_rate[1];
+		break;
+	    case 2021:
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_YOUNG_M] = VMMCrate_young[11]*adjustment_to_rate[0];
+		param->barrier_params.p_use_VMMC[i_VMMC_PREVENTIONBARRIER_OLD_M] = VMMCrate_old[11]*adjustment_to_rate[1];
+		break;
 	    default:
 		printf("Default ");
 	    }

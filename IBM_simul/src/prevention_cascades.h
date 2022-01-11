@@ -60,7 +60,7 @@ void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch
 void update_VMMCrates(int t, parameters *param, double *adjustment_to_rate);
 void get_VMMC_rate_adjustment_foralreadycirc_hivpos(double t, patch_struct *patch, int p, double adjustment_to_rate[2]);
 void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to_rate);
-void update_VMMCrates_MIHPSA(int t, parameters *param);
+void update_VMMCrates_MIHPSA(int t, parameters *param, double *adjustment_to_rate);
     
 void update_condomrates(double t, parameters *param);
 void update_condomrates_MIHPSA(double t, parameters *param);

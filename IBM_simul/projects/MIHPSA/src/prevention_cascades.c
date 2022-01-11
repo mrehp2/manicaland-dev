@@ -896,8 +896,6 @@ void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to
 void update_VMMCrates_MIHPSA(int t, parameters *param, double *adjustment_to_rate){
 
     /* We have data for 12 years from C:\Users\mpickles\Dropbox (SPH Imperial College)\projects\MIHPSA_Zimabwe2021\Copy of HIVcalibrationData_Zimbabwe.xlsx. */
-    //double VMMCrate_young[12] = {0.0010,0.0032,0.0094,0.0098,0.0216,0.0359,0.0429,0.0436,0.0502,0.0614,0.0633,0.0161};
-    //double VMMCrate_old[12] = {0.0010,0.0032,0.0094,0.0098,0.0216,0.0359,0.0429,0.0436,0.0502,0.0614,0.0633,0.0161};
     double VMMCrate_young[12] = {0.0005,0.0021,0.0063,0.0095,0.0157,0.0287,0.0392,0.0430,0.0467,0.0556,0.0623,0.0397};
     double VMMCrate_old[12] = {0.0005,0.0021,0.0063,0.0095,0.0157,0.0287,0.0392,0.0430,0.0467,0.0556,0.0623,0.0397};
 

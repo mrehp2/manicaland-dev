@@ -1179,12 +1179,12 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    if(t_step==tstep_prevention_cascade_intervention){
 		if(patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_VMMC(t, patch, p);
-		    printf("Running VMMC prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
+		    printf("Running VMMC prevention cascade intervention %i at t=%lf\n ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
 		}
 		
 		if(patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_PrEP(t, patch, p);
-		    printf("Running PrEP prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
+		    printf("Running PrEP prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
 		}
 
 		/* This function redraws condom use in *existing* partnerships where condoms are not already used. Note that an individual's preferences for condoms is automatically updated via the function update_condomrates(). */

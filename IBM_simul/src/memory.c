@@ -85,8 +85,8 @@ void blank_individual_array(individual *individual_population, int id_counter){
 	/* } */
 
 	/* Default value for each of these is 0. */
-	individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0;
-	// These 3 are now pointers to an existing thing, so not needed. 
+	// These are now pointers to an existing thing, so not needed. 
+	//individual_population[i_id].cascade_barriers.p_will_use_PrEP = 0;
 	//individual_population[i_id].cascade_barriers.p_will_get_VMMC = 0; 
 	//individual_population[i_id].cascade_barriers.p_want_to_use_condom_long_term_partner = 0;
 	//individual_population[i_id].cascade_barriers.p_want_to_use_condom_casual_partner = 0;

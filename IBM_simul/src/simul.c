@@ -185,6 +185,11 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    }
 
 
+	    if(t>=patch[0].param->PrEP_background_params->year_start_background){
+		for(p = 0; p < NPATCHES; p++)	
+		    update_PrEPrates(t,patch[p].param);
+	    }
+	    
 	    if(t>=patch[0].param->COUNTRY_ART_START){
 		for(p = 0; p < NPATCHES; p++)
 		    set_probability_starts_ART_if_positive_and_eligible(t, patch[p].param);
@@ -1102,7 +1107,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	update_PrEPbarriers_from_ageing(t, t_step, patch, p);
 
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
+
 	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
+
 	}
     }
 
@@ -1179,12 +1186,12 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    if(t_step==tstep_prevention_cascade_intervention){
 		if(patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_VMMC(t, patch, p);
-		    printf("Running VMMC prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
+		    printf("Running VMMC prevention cascade intervention %i at t=%lf\n ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
 		}
 		
 		if(patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_PrEP(t, patch, p);
-		    printf("Running PrEP prevention cascade intervention %i at t=%lf. ",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
+		    printf("Running PrEP prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
 		}
 
 		/* This function redraws condom use in *existing* partnerships where condoms are not already used. Note that an individual's preferences for condoms is automatically updated via the function update_condomrates(). */

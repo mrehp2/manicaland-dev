@@ -126,17 +126,18 @@ int index_HIV_prevention_cascade_condom(int age, int g){
 
 
 /* Functions assign the probability of getting PrEP / VMMC / condom preferences
-   based on characteristics (currently age, sex) as well as whether there's an intervention to remove barriers and increase usage at that time. */
-void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params, int i_PrEP_intervention_running_flag){
+   based on characteristics (currently age, sex) as well as whether there's an intervention to remove barriers and increase usage at that time. 
+   Need to pass a pointer to barrier_params as otherwise we create a local copy of barrier_params (and then assigning p_will_use_PrEP to that address fails, as the address is freed once we return from the function)*/
+void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params){
     int age = (int) floor(t-indiv->DoB);
     int g = indiv->gender;
     if(indiv->id==FOLLOW_INDIVIDUAL){
 	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
 	printf("Age=%i gender=%i n_partners=%li\n",age,g,indiv->n_lifetime_partners);
     }
-    indiv->cascade_barriers.p_will_use_PrEP = barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)][i_PrEP_intervention_running_flag];
+    indiv->cascade_barriers.p_will_use_PrEP = &(barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)]);
     if(indiv->id==FOLLOW_INDIVIDUAL)
-	printf("Following change, PrEP probability is now %lf\n",indiv->cascade_barriers.p_will_use_PrEP);
+	printf("Following change, PrEP probability is now %lf\n",*(indiv->cascade_barriers.p_will_use_PrEP));
 }
 
 /* Need to pass a pointer to barrier_params as otherwise we create a local copy of barrier_params (and then assigning p_will_get_VMMC to that address fails, as the address is freed once we return from the function). */
@@ -163,19 +164,6 @@ void assign_individual_condom_prevention_cascade(double t, individual *indiv, ca
 */
 void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrier_params *barrier_params, int scenario_flag){
 
-    int i_PrEP_intervention_running_flag;
-    
-    if (t<barrier_params->t_start_prevention_cascade_intervention){
-	i_PrEP_intervention_running_flag = 0;
-    }
-    else{
-	i_PrEP_intervention_running_flag = barrier_params->i_PrEP_barrier_intervention_flag;
-    }
-
-    /* if(t>2007){ */
-    /* 	printf("Exiting1\n"); */
-    /* 	exit(1); */
-    /* } */
     
     if(indiv->gender==MALE)
 	assign_individual_VMMC_prevention_cascade(t, indiv, barrier_params);
@@ -184,7 +172,7 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
     if(indiv->id==FOLLOW_INDIVIDUAL)
 	printf("Modifying PrEP HIV prevention cascade probability in set_preventon_cascade_barriers() at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
     
-    assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params, i_PrEP_intervention_running_flag);
+    assign_individual_PrEP_prevention_cascade(t, indiv, barrier_params);
 
     /* No need to specify if condom intervention is running, because that is dealt with in p_use_condom_casual/LT[], which is updated at each timestep. */
     assign_individual_condom_prevention_cascade(t, indiv, barrier_params);
@@ -266,10 +254,11 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
 		if (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED){
-		    if(indiv->cascade_barriers.p_will_use_PrEP>0){
+		    if(*(indiv->cascade_barriers.p_will_use_PrEP)>0){
 			/* Now convert to a per-timestep probability: */
-			p_will_use_PrEP_per_timestep = 1.0-pow(1.0-indiv->cascade_barriers.p_will_use_PrEP,TIME_STEP);
+			p_will_use_PrEP_per_timestep = 1.0-pow(1.0-*(indiv->cascade_barriers.p_will_use_PrEP),TIME_STEP);
 			x = gsl_rng_uniform (rng);
+
 
 			if(x <= p_will_use_PrEP_per_timestep){
 			    start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
@@ -384,9 +373,6 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
     individual *indiv;
     
-    /* Store scenario for easier readability. */
-    int intervention_scenario = patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
-
     /* PrEP unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
     if(PREP_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
 	printf("Code issue - prevention_cascade_intervention_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
@@ -405,7 +391,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
 	
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-		assign_individual_PrEP_prevention_cascade(t, indiv, &(patch[p].param->barrier_params), intervention_scenario);
+		assign_individual_PrEP_prevention_cascade(t, indiv, &(patch[p].param->barrier_params));
 	    }
 	    
 	}
@@ -659,7 +645,7 @@ void update_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, 
 
 void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update, int g){
 
-    int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
+    //int intervention_scenario = (t<patch[p].param->barrier_params.t_start_prevention_cascade_intervention) ? 0:patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag;
 
     int aa, ai, i;
     // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
@@ -685,7 +671,7 @@ void update_specific_age_PrEPbarriers_from_ageing(double t, int t_step, patch_st
 	    if(indiv->id==FOLLOW_INDIVIDUAL)
 		printf("Modifying PrEP HIV prevention cascade probability due to birthday at time t=%lf for id=%li age%i\n",t,indiv->id,(int) floor(t-indiv->DoB));
 		
-	    assign_individual_PrEP_prevention_cascade(t, indiv, &(patch[p].param->barrier_params), intervention_scenario);
+	    assign_individual_PrEP_prevention_cascade(t, indiv, &(patch[p].param->barrier_params));
 	    
 	}
     }
@@ -774,6 +760,39 @@ void update_condombarriers_from_ageing(double t, int t_step, patch_struct *patch
 }
 
 
+
+/* Function allows PrEP rates to vary each year.
+   Designed for MIHPSA project, but can be used elsewhere. */
+void update_PrEPrates(double t, parameters *param){
+    //if(MIHPSA_MODULE==1)
+    //update_PrEPrates_MIHPSA(t, param);
+    //else
+    //update_PrEPrates_Manicaland(t, param);
+
+    int i_PrEP_preventionbarrier_group;
+    int intervention_scenario;    /* Stores scenario for easier readability. */
+
+    if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
+        intervention_scenario = param->barrier_params.i_PrEP_barrier_intervention_flag;
+
+    }
+    else{
+	intervention_scenario = 0; /* pre-intervention. */
+	
+    }
+
+    
+    for(i_PrEP_preventionbarrier_group=0; i_PrEP_preventionbarrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_PrEP_preventionbarrier_group++){
+	param->barrier_params.p_use_PrEP[i_PrEP_preventionbarrier_group] = param->barrier_params.p_use_PrEP_present[i_PrEP_preventionbarrier_group][intervention_scenario];
+    }
+
+    
+}
+
+
+
+
+
 void update_VMMCrates(int t, parameters *param, double *adjustment_to_rate){
     if(MIHPSA_MODULE==1)
 	update_VMMCrates_MIHPSA(t, param, adjustment_to_rate);
@@ -842,7 +861,7 @@ void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to
     
     int intervention_scenario;    /* Stores scenario for easier readability. */
     if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
-        intervention_scenario = param->barrier_params.i_condom_barrier_intervention_flag;
+        intervention_scenario = param->barrier_params.i_VMMC_barrier_intervention_flag;
 	
     }
     else{

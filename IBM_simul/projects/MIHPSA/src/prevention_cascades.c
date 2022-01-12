@@ -842,7 +842,7 @@ void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to
     
     int intervention_scenario;    /* Stores scenario for easier readability. */
     if(t>=param->barrier_params.t_start_prevention_cascade_intervention){
-        intervention_scenario = param->barrier_params.i_condom_barrier_intervention_flag;
+        intervention_scenario = param->barrier_params.i_VMMC_barrier_intervention_flag;
 	
     }
     else{

@@ -3069,8 +3069,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 
 	/* VMMC: */
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]>0.8){
-		printf("Error:param->barrier_params.p_use_VMMC_present is outside expected range [0,0.8]\nExiting\n");
+	    if (param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]>0.99){
+		printf("Error:param->barrier_params.p_use_VMMC_present is outside expected range [0,0.99]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
@@ -3088,8 +3088,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 		exit(1);
 	    }
 
-	    if (param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]>0.7){
-		printf("Error:param->barrier_params.p_use_cond_LT_present[][] is outside expected range [0,0.7]\nExiting\n");
+	    if (param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]>0.99){
+		printf("Error:param->barrier_params.p_use_cond_LT_present[][] is outside expected range [0,0.99]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);

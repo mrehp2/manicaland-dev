@@ -54,7 +54,7 @@ struct partnership{
 typedef struct{
 
     //double PrEP_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland PrEP cascade would be (cascade steps Motivation, Access, . */
-    double p_will_use_PrEP; /* Probability will use PrEP this timestep given barriers and individual characteristics. */
+    double *p_will_use_PrEP; /* Probability will use PrEP this timestep given barriers and individual characteristics. */
     
     //double VMMC_cascade_barriers[N_CASCADE_BARRIER_STEPS]; /* Represent how challenging each step in the Manicaland VMMC cascade would be. */
     /* Personal preference for using condom with long-term and short-term partners. 
@@ -93,7 +93,8 @@ typedef struct{
     double p_use_cond_LT[N_COND_PREVENTIONBARRIER_GROUPS];
 
 
-    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
+    double p_use_PrEP[N_PrEP_PREVENTIONBARRIER_GROUPS];
+    double p_use_PrEP_present[N_PrEP_PREVENTIONBARRIER_GROUPS][2];
 
     
     /* This is the probability of using a condom at present (and in the future, in the absence of further interventions - the [2] represents no intervention (0) or intervention (1))). */

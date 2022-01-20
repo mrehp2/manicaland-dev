@@ -830,8 +830,10 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     // Add children who have just been born to the child population
     // the number of kids is randomly drawn based on fertility rate, current adult pop size, etc
     add_new_kids(t, patch, p);
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0))
-	count_number_by_age_gender_risk_cascade_cd4(patch, p, t);
+
+    /* Creates the debugging file Validate_count_by_age_gender_risk_cascade.csv. */
+    //if (t>2000 && (t-floor(t)<1e-9) && (p==0))
+    //count_number_by_age_gender_risk_cascade_cd4(patch, p, t);
 
 
     /// Validation of age groups:

@@ -2802,14 +2802,19 @@ void add_new_kids(double t, patch_struct *patch, int p){
     int n_hivpos_artvs[NCD4];
     int n_hivpos_artvu[NCD4];
     int n_hivpos_cascadedropout[NCD4];
-    
+
+    int DEBUGGING_OUTPUT_CASCADE = 0;
+
+    /* These are used in making debugging output file Output_count_by_age_gender_risk_cascade.csv: */
     char tempstring[30];
     char outputstring[3000];
-    memset(tempstring, '\0', sizeof(tempstring));
-    memset(outputstring, '\0', sizeof(outputstring));
+    if(DEBUGGING_OUTPUT_CASCADE==1){
+	memset(tempstring, '\0', sizeof(tempstring));
+	memset(outputstring, '\0', sizeof(outputstring));
 
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	sprintf(outputstring,"%lf,",t);    
+	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
+	    sprintf(outputstring,"%lf,",t);    
+	}
     }
     
     //printf("t=%6.4lf\n",t);
@@ -2868,37 +2873,38 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	    }
 	}
     
-	
-	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	    if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
-		sprintf(tempstring,"%li,",n_hivpos);
-		strcat(outputstring,tempstring);
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
+	if(DEBUGGING_OUTPUT_CASCADE==1){
+
+	    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
+		if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
+		    sprintf(tempstring,"%li,",n_hivpos);
 		    strcat(outputstring,tempstring);
+		    for (icd4=0;icd4<NCD4;icd4++){	    
+			sprintf(tempstring,"%i,",n_hivpos_unaware[icd4]);
+			strcat(outputstring,tempstring);
+		    }
+		    for (icd4=0;icd4<NCD4;icd4++){	    
+			sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
+			strcat(outputstring,tempstring);
+		    }
+		    for (icd4=0;icd4<NCD4;icd4++){
+			sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
+			strcat(outputstring,tempstring);
+		    }
+		    for (icd4=0;icd4<NCD4;icd4++){
+			sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
+			strcat(outputstring,tempstring);
+		    }
+		    for (icd4=0;icd4<NCD4;icd4++){
+			sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
+			strcat(outputstring,tempstring);
+		    }
+		    for (icd4=0;icd4<NCD4;icd4++){
+			sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
+			strcat(outputstring,tempstring);
+		    }
 		}
-		for (icd4=0;icd4<NCD4;icd4++){	    
-		    sprintf(tempstring,"%i,",n_hivpos_aware_neverart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_earlyart[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvs[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_artvu[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-		for (icd4=0;icd4<NCD4;icd4++){
-		    sprintf(tempstring,"%i,",n_hivpos_cascadedropout[icd4]);
-		    strcat(outputstring,tempstring);
-		}
-	    }
-	    
+	    }	    
 	}
 
 	
@@ -2917,13 +2923,14 @@ void add_new_kids(double t, patch_struct *patch, int p){
     }
 
 
-
-    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
-	strcat(outputstring,"\n");
-	FILE *infile;
-	infile = fopen("Output_count_by_age_gender_risk_cascade.csv","a");
-	fprintf(infile,"%s",outputstring);
-	fclose(infile);
+    if(DEBUGGING_OUTPUT_CASCADE==1){
+	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
+	    strcat(outputstring,"\n");
+	    FILE *infile;
+	    infile = fopen("Output_count_by_age_gender_risk_cascade.csv","a");
+	    fprintf(infile,"%s",outputstring);
+	    fclose(infile);
+	}
     }
 	    
     /* Store number of new births for model validation/debugging: */

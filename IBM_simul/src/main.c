@@ -378,8 +378,8 @@ int main(int argc,char *argv[]){
     char *calibration_output_filename[NPATCHES];
 
     /* For debugging cascade counts - CHECK if these are supposed to be the same */
-    create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
-    create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
+    //create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
+    //create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
 
     if(WRITE_CALIBRATION == 1){
 

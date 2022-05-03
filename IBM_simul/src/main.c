@@ -831,7 +831,8 @@ int main(int argc,char *argv[]){
                     for(p = 0; p < NPATCHES; p++){
                         // Write the annual data stored in annual_outputs_string to a file
                         // called Annual_outputs.csv.
-                        write_annual_outputs(file_data_store, output, p);
+			if(WRITE_ANNUAL_OUTPUTS==1)
+			    write_annual_outputs(file_data_store, output, p);
                         
                         if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){
                             write_cost_effectiveness_outputs(file_data_store, output, p);

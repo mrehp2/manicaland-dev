@@ -40,38 +40,70 @@
 int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex){
     /* Put female first as more efficient: */
 
-    
-    
-    if(g==FEMALE){
-	if(ever_had_sex==0)
-	    return i_PrEP_PREVENTIONBARRIER_NEVERSEX_F;
-	else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
-	    return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
-	else if(age<=24)
-	    return i_PrEP_PREVENTIONBARRIER_YOUNG_F;
-	else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
-	    return i_PrEP_PREVENTIONBARRIER_OLD_F;
-	else
-	    return i_PrEP_PREVENTIONBARRIER_TOO_OLD_F;
+    /* PREP_ELIGIBLE_CRITERIA: 1 - all sexually active (by age); 2 - those with casual partners only; 3 - those with casual partners OR known sd regular partners. */
+    if(PREP_ELIGIBLE_CRITERIA==1){
+	if(g==FEMALE){
+	    if(ever_had_sex==0)
+		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F;
+	    else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
+	    else if(age<=24)
+		return i_PrEP_PREVENTIONBARRIER_YOUNG_F;
+	    else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_OLD_F;
+	    else
+		return i_PrEP_PREVENTIONBARRIER_TOO_OLD_F;
+	}
+	else if(g==MALE){
+	    if(ever_had_sex==0)
+		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M;
+	    else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M;
+	    else if(age<=29)
+		return i_PrEP_PREVENTIONBARRIER_YOUNG_M;
+	    else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_OLD_M;
+	    else
+		return i_PrEP_PREVENTIONBARRIER_TOO_OLD_M;
+	}
+	else{
+	    /* Should never get here: */
+	    printf("Error: Unexpected age/sex combination in index_HIV_prevention_cascade_PrEP(). Exiting\n");
+	    exit(1);
+	}
     }
-    else if(g==MALE){
-	if(ever_had_sex==0)
-	    return i_PrEP_PREVENTIONBARRIER_NEVERSEX_M;
-	else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
-	    return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M;
-	else if(age<=29)
-	    return i_PrEP_PREVENTIONBARRIER_YOUNG_M;
-	else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
-	    return i_PrEP_PREVENTIONBARRIER_OLD_M;
-	else
-	    return i_PrEP_PREVENTIONBARRIER_TOO_OLD_M;
+    else if(PREP_ELIGIBLE_CRITERIA==2){
+	if(g==FEMALE){
+	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
+	    else if(ever_had_sex==0)
+		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F;
+	    else if(age<=24)
+		return i_PrEP_PREVENTIONBARRIER_YOUNG_F;
+	    else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_OLD_F;
+	    else
+		return i_PrEP_PREVENTIONBARRIER_TOO_OLD_F;
+	}
+	else if(g==MALE){
+	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M;
+	    else if(ever_had_sex==0)
+		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M;
+	    else if(age<=29)
+		return i_PrEP_PREVENTIONBARRIER_YOUNG_M;
+	    else if(age<=PREP_MAX_AGE_PREVENTION_CASCADE)
+		return i_PrEP_PREVENTIONBARRIER_OLD_M;
+	    else
+		return i_PrEP_PREVENTIONBARRIER_TOO_OLD_M;
+	}
+	else{
+	    /* Should never get here: */
+	    printf("Error: Unexpected age/sex combination in index_HIV_prevention_cascade_PrEP(). Exiting\n");
+	    exit(1);
+	}
     }
-    else{
-	/* Should never get here: */
-	printf("Error: Unexpected age/sex combination in index_HIV_prevention_cascade_PrEP(). Exiting\n");
-	exit(1);
-    }
-
+	
 }
 
 

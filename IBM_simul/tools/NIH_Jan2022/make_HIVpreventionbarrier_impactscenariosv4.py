@@ -111,7 +111,7 @@ dictionary_agegroups = {'M15_29':"M_young", 'M30_54':"M_old", 'F15_24':"F_young"
 #       - access - highest in data is 84%. Assume can be up to 100%.
 #       - effective use - forgets pills, partner disapproval. Assume can be 90%.
 
-intervention_barrier_levels = {"Male condoms":[0.9, 1.0, 0.9],"PrEP":[0.3,1.0,0.9],"VMMC":[0.9,1.0,0.9]}
+intervention_barrier_levels = {"Male condoms":[0.75, 1.0, 0.9],"PrEP":[0.3,1.0,0.9],"VMMC":[0.9,1.0,0.9]}
 
 
 # This contains the pre-existing parameters:
@@ -148,7 +148,7 @@ pops = {"VMMC":['M15_29', 'M30_54'],"PrEP":['M15_29', 'M30_54', 'F15_24', 'F25_5
 for tool in prevention_methods+["All_tools"]:
 
     # The "1" means intervene in this barrier. The barriers are
-    for barriers in ["increase_motivation","increase_access","increase_effuse","remove_barriers"]:
+    for barriers in ["allbarriers","increase_motivation","increase_access","increase_effuse","remove_barriers"]:
         if tool=="Male condoms":
             # Remove the "male" from male condom:
             tool_filenametag = "cond"
@@ -168,8 +168,6 @@ for tool in prevention_methods+["All_tools"]:
             new_param_values[tool] = {}
             list_i_to_change[tool] = {}
             tool_list = [tool]
-            print("Tool_list=",tool_list)
-            print("Tool=",tool)
             
         for a_tool in tool_list:
             for population in pops[a_tool]:
@@ -178,7 +176,7 @@ for tool in prevention_methods+["All_tools"]:
             # These are the names of the column in the baseline param_processed_patch0_barriers.csv that we will modify (i_to_change is then the column number):
                 paramfile_column_name = dictionary_tool_paramnames[a_tool]+dictionary_agegroups[population]+"_intervention"
                 list_i_to_change[a_tool][population] = header.index(paramfile_column_name)
-                print("List of col nos to change",list_i_to_change)
+                #print("List of col nos to change",list_i_to_change)
                     
                 # Calculate the probability of the given population using the given tool for this "barrier" scenario:
                 if(barriers=="increase_motivation"):
@@ -213,7 +211,7 @@ for tool in prevention_methods+["All_tools"]:
                 
             
         param_outputdir = "param_"+tool_filenametag+"_all_priority_pops_"+barriers+"/"
-        print(param_outputdir)
+        print("MakeX",param_outputdir)
 
         if (os.path.isdir(param_outputdir)):
             print("Dir ",param_outputdir,"already exists. Exiting")
@@ -232,83 +230,82 @@ for tool in prevention_methods+["All_tools"]:
 
 #############################################################################
 # Generate scenarios for "Motivation+access" for all priority populations and tools:
+GENERATE_MOTIVATION_ACCESS_SCENARIO = 1
+if (GENERATE_MOTIVATION_ACCESS_SCENARIO==1):
+    pops = {"VMMC":['M15_29', 'M30_54'],"PrEP":['M15_29', 'M30_54', 'F15_24', 'F25_54'],"Male condoms":['M15_29', 'M30_54', 'F15_24', 'F25_54']}
 
-pops = {"VMMC":['M15_29', 'M30_54'],"PrEP":['M15_29', 'M30_54', 'F15_24', 'F25_54'],"Male condoms":['M15_29', 'M30_54', 'F15_24', 'F25_54']}
+    # Go through all tools, populations and intervention scenarios ("barriers"):
+    for tool in prevention_methods+["All_tools"]:
 
-# Go through all tools, populations and intervention scenarios ("barriers"):
-for tool in prevention_methods+["All_tools"]:
-
-    # The "1" means intervene in this barrier. The barriers are
-    barriers = "increase_motivation_access"
-    if tool=="Male condoms":
-        # Remove the "male" from male condom:
-        tool_filenametag = "cond"
-    else:
-        tool_filenametag = tool
+        # The "1" means intervene in this barrier. The barriers are
+        barriers = "increase_motivation_access"
+        if tool=="Male condoms":
+            # Remove the "male" from male condom:
+            tool_filenametag = "cond"
+        else:
+            tool_filenametag = tool
 
 
 
-    # This will store the new_param_value for the given tool(s) and all priority populations
-    new_param_values = {}
-    list_i_to_change = {}
-    if(tool=="All_tools"):
-        new_param_values = {x:{} for x in prevention_methods}
-        list_i_to_change = {x:{} for x in prevention_methods}
-        tool_list = prevention_methods[:]
-    else:
-        new_param_values[tool] = {}
-        list_i_to_change[tool] = {}
-        tool_list = [tool]
-        print("Tool_list=",tool_list)
-        print("Tool=",tool)
+        # This will store the new_param_value for the given tool(s) and all priority populations
+        new_param_values = {}
+        list_i_to_change = {}
+        if(tool=="All_tools"):
+            new_param_values = {x:{} for x in prevention_methods}
+            list_i_to_change = {x:{} for x in prevention_methods}
+            tool_list = prevention_methods[:]
+        else:
+            new_param_values[tool] = {}
+            list_i_to_change[tool] = {}
+            tool_list = [tool]
+
             
-    for a_tool in tool_list:
-        for population in pops[a_tool]:
-
-
-        # These are the names of the column in the baseline param_processed_patch0_barriers.csv that we will modify (i_to_change is then the column number):
-            paramfile_column_name = dictionary_tool_paramnames[a_tool]+dictionary_agegroups[population]+"_intervention"
-            list_i_to_change[a_tool][population] = header.index(paramfile_column_name)
-            print("List of col nos to change",list_i_to_change)
-                    
-            # Calculate the probability of the given population using the given tool for this "barrier" scenario:
-            new_param_values[a_tool][population] = intervention_barrier_levels[a_tool][0]*intervention_barrier_levels[a_tool][1]*cascade_data[a_tool][population][2]
-
-            if(a_tool=="VMMC"):
-                # Multiply by 0.20524131132744 to convert from a cumulative % circumcised to an annual %. The value is obtained in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMC\Model_VMMC_uptake_FINAL.xlsx - it is the % of VMMC operations from 2013-2019 (from DHIS-2 data) that occurred in 2019. Assume that this same multiplier holds now.
-                new_param_values[a_tool][population] = new_param_values[a_tool][population]*0.20524131132744
-        
-        
-    # This is the header for the updated param_processed_patch0_barriers.csv file:
-    new_dataset = " ".join(baseline_data[0])+"\n"
-            
-    # Now swap in the new probability for each parameter set (i.e. line in the file):
-    for line in baseline_data[1:]:
-        updated_line = line[:]
         for a_tool in tool_list:
             for population in pops[a_tool]:
-                i_to_change = list_i_to_change[a_tool][population]
-                updated_line[i_to_change] = str(new_param_values[a_tool][population])
 
-        new_dataset += " ".join(updated_line)+"\n"
+
+                # These are the names of the column in the baseline param_processed_patch0_barriers.csv that we will modify (i_to_change is then the column number):
+                paramfile_column_name = dictionary_tool_paramnames[a_tool]+dictionary_agegroups[population]+"_intervention"
+                list_i_to_change[a_tool][population] = header.index(paramfile_column_name)
+            
+                # Calculate the probability of the given population using the given tool for this "barrier" scenario:
+                new_param_values[a_tool][population] = intervention_barrier_levels[a_tool][0]*intervention_barrier_levels[a_tool][1]*cascade_data[a_tool][population][2]
+
+                if(a_tool=="VMMC"):
+                    # Multiply by 0.20524131132744 to convert from a cumulative % circumcised to an annual %. The value is obtained in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMC\Model_VMMC_uptake_FINAL.xlsx - it is the % of VMMC operations from 2013-2019 (from DHIS-2 data) that occurred in 2019. Assume that this same multiplier holds now.
+                    new_param_values[a_tool][population] = new_param_values[a_tool][population]*0.20524131132744
                 
+        
+        # This is the header for the updated param_processed_patch0_barriers.csv file:
+        new_dataset = " ".join(baseline_data[0])+"\n"
+    
+        # Now swap in the new probability for each parameter set (i.e. line in the file):
+        for line in baseline_data[1:]:
+            updated_line = line[:]
+            for a_tool in tool_list:
+                for population in pops[a_tool]:
+                    i_to_change = list_i_to_change[a_tool][population]
+                    updated_line[i_to_change] = str(new_param_values[a_tool][population])
+
+            new_dataset += " ".join(updated_line)+"\n"
+        
             
-    param_outputdir = "param_"+tool_filenametag+"_all_priority_pops_"+barriers+"/"
-    print(param_outputdir)
+        param_outputdir = "param_"+tool_filenametag+"_all_priority_pops_"+barriers+"/"
 
-    if (os.path.isdir(param_outputdir)):
-        print("Dir ",param_outputdir,"already exists. Exiting")
-        sys.exit(1)
+        if (os.path.isdir(param_outputdir)):
+            print("Dir ",param_outputdir,"already exists. Exiting")
+            sys.exit(1)
 
 
-    # Copies the other param_*.csv files to the directory dir_to_check (having first made that directory):
-    copy_non_intervention_files([intervention_param_file],param_outputdir)                
-    # Now write the altered prevention cascade csv file:
-    outfile = open(param_outputdir+intervention_param_file,"w")
-    outfile.write(new_dataset)
-    outfile.close()
-            
-
+        # Copies the other param_*.csv files to the directory dir_to_check (having first made that directory):
+        print("Making0",param_outputdir)
+        copy_non_intervention_files([intervention_param_file],param_outputdir)                
+        # Now write the altered prevention cascade csv file:
+        outfile = open(param_outputdir+intervention_param_file,"w")
+        outfile.write(new_dataset)
+        outfile.close()
+    
+    
 
 
 #############################################################################
@@ -360,12 +357,11 @@ for tool in prevention_methods:
                 
             
             param_outputdir = "param_"+tool_filenametag+"_"+population+"_"+barriers+"/"
-            print(param_outputdir)
+            print("Making1",param_outputdir)
 
             if (os.path.isdir(param_outputdir)):
                 print("Dir ",param_outputdir,"already exists. Exiting")
                 sys.exit(1)
-
 
             # Copies the other param_*.csv files to the directory dir_to_check (having first made that directory):
             copy_non_intervention_files([intervention_param_file],param_outputdir)                
@@ -414,7 +410,7 @@ for tool in prevention_methods:
         # The "1" means intervene in this barrier. The barriers are
         for barriers in ["allbarriers","increase_motivation","increase_access","increase_effuse","remove_barriers"]:
             if tool=="Male condoms":
-                print("Male condoms")
+                #print("Male condoms")
                 # Remove the "male" from male condom:
                 tool_filenametag = "cond"
                 if barriers=="allbarriers":
@@ -434,9 +430,12 @@ for tool in prevention_methods:
             
             intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns '+popart_ibm_intervention_flag+'\n'
 
-
+#############################################
 # Special runs:
-for barriers in ["increase_motivation","increase_access","increase_effuse","remove_barriers"]:
+#############################################
+
+# all priority pops:
+for barriers in ["allbarriers","increase_motivation","increase_access","increase_effuse","remove_barriers"]:
 
     intervention_script += 'outputdirectory="./param_PrEP_all_priority_pops_'+barriers+'/"\n'
     intervention_script += 'mkdir -p $outputdirectory/Output\n'
@@ -448,17 +447,42 @@ for barriers in ["increase_motivation","increase_access","increase_effuse","remo
 
     intervention_script += 'outputdirectory="./param_cond_all_priority_pops_'+barriers+'/"\n'
     intervention_script += 'mkdir -p $outputdirectory/Output\n'
-    intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 111\n'
+    if barriers in ["allbarriers"]:
+        intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 110\n'
+    else:
+        intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 111\n'
 
     intervention_script += 'outputdirectory="./param_All_tools_all_priority_pops_'+barriers+'/"\n'
     intervention_script += 'mkdir -p $outputdirectory/Output\n'
-    intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 111\n'
+    if barriers in ["allbarriers"]: 
+        intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 110\n'
+    else:
+        intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 111\n'
 
-for tool in prevention_methods+["All_tools"]:
-    intervention_script += 'outputdirectory="./param_'+tool+'_all_priority_pops_increase_motivation_access/"\n'
-    intervention_script += 'mkdir -p $outputdirectory/Output\n'
-    intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns 110\n'
+
+# Motivation+access scenatio:
+if (GENERATE_MOTIVATION_ACCESS_SCENARIO==1):
+    for tool in prevention_methods+["All_tools"]:
+        if tool=="Male condoms":
+            # Remove the "male" from male condom:
+            tool_filenametag = "cond"
+            popart_ibm_intervention_flag="111"
+        else:
+            tool_filenametag = tool
+            if tool in ["All_tools"]:
+                popart_ibm_intervention_flag="111"
+            else:
+                popart_ibm_intervention_flag="110" 
+           
+        param_outputdir = "param_"+tool_filenametag+"_all_priority_pops_increase_motivation_access/"
             
+        
+        intervention_script += 'outputdirectory="./'+param_outputdir+'"\n'
+        intervention_script += 'mkdir -p $outputdirectory/Output\n'
+        
+        intervention_script += '$ibmdir/popart-simul.exe $outputdirectory $nruns '+popart_ibm_intervention_flag+'\n'
+
+
 bash_script_file = open("run_all_scenarios.sh","w")
 bash_script_file.write(intervention_script)
 bash_script_file.close()

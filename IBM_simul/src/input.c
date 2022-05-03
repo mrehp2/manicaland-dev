@@ -2720,12 +2720,12 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	    //printf("i=%i after param_local->barrier_params.p_use_VMMC_present[i_barrier_group][1] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC_present[i_barrier_group][1]);
 	}
 
-	for (i_barrier_group=0; i_barrier_group<i_PrEP_PREVENTIONBARRIER_NEVERSEX_M; i_barrier_group++){
+	for (i_barrier_group=0; i_barrier_group<i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M; i_barrier_group++){
 	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_PrEP_present[i_barrier_group][1]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_present[][1]");
 	}
-	param_local->barrier_params.p_use_PrEP_present[i_PrEP_PREVENTIONBARRIER_NEVERSEX_M][1] = 0.0;
-	param_local->barrier_params.p_use_PrEP_present[i_PrEP_PREVENTIONBARRIER_NEVERSEX_F][1] = 0.0;
+	param_local->barrier_params.p_use_PrEP_present[i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M][1] = 0.0;
+	param_local->barrier_params.p_use_PrEP_present[i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F][1] = 0.0;
 	
 
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    

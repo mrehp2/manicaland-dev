@@ -2811,7 +2811,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
     if(DEBUGGING_OUTPUT_CASCADE==1){
 	memset(tempstring, '\0', sizeof(tempstring));
 	memset(outputstring, '\0', sizeof(outputstring));
-
 	if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
 	    sprintf(outputstring,"%lf,",t);    
 	}
@@ -2874,7 +2873,6 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	}
     
 	if(DEBUGGING_OUTPUT_CASCADE==1){
-
 	    if (t>2000 && (t-floor(t)<1e-9) && (p==0)){
 		if ((aa+AGE_ADULT>40) && (aa+AGE_ADULT<43)){
 		    sprintf(tempstring,"%li,",n_hivpos);
@@ -2932,7 +2930,7 @@ void add_new_kids(double t, patch_struct *patch, int p){
 	    fclose(infile);
 	}
     }
-	    
+
     /* Store number of new births for model validation/debugging: */
     patch[p].DEBUG_NBIRTHS = patch[p].DEBUG_NBIRTHS + n_births;
 

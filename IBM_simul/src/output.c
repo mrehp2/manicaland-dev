@@ -5273,11 +5273,11 @@ void write_population_HIVpreventioncascade(file_struct *file_data_store, output_
 	case i_PrEP_PREVENTIONBARRIER_TOO_OLD_F:
 	    strncpy(group_text, "F55+", 19);	    
 	    break;
-	case i_PrEP_PREVENTIONBARRIER_NEVERSEX_M:
-	    strncpy(group_text, "Mneversex", 19);	    
+	case i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M:
+	    strncpy(group_text, "Mineligible", 19);	    
 	    break;
-	case i_PrEP_PREVENTIONBARRIER_NEVERSEX_F:
-	    strncpy(group_text, "Fneversex", 19);	    
+	case i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F:
+	    strncpy(group_text, "Fineligible", 19);	    
 	    break;
 	default:
 	    printf("Error - unknown value of i_PrEP=%i in write_population_HIVpreventioncascade(). Exiting\n",i);

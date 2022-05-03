@@ -69,6 +69,7 @@
 
 #define DEBUG_HIV_PREVENTION_CASCADES 0 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
 
+#define WRITE_ANNUAL_OUTPUTS 0 // if 1, then write Annual_outputs*.csv files.
 #define WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS 0 // if 1 then writes files of the form Annual_partnerships_outputs_*.csv
 
 #define WRITE_HIVSURVIVAL_OUTPUT 0 /*  Generates the files HIVsurvival_individualdata.csv - containing DoB, DoD, gender, date first on ART etc for all HIV+ in simulation. */
@@ -394,6 +395,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define MANICALAND_CASCADE 1 // 1 if use Manicaland cascade machinery, 0 otherwise.
 
 /* Use this to define/access the p_use_X[] for each prevention method X (PrEP/VMMC/condoms) in cascade_barrier_params substructure. */
+#define PREP_ELIGIBLE_CRITERIA 1
 #define N_PrEP_PREVENTIONBARRIER_GROUPS 10 // Number of groups that we subdivide the population into, for PrEP.
 #define i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M 0
 #define i_PrEP_PREVENTIONBARRIER_YOUNG_M 1
@@ -403,8 +405,9 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define i_PrEP_PREVENTIONBARRIER_YOUNG_F 5
 #define i_PrEP_PREVENTIONBARRIER_OLD_F 6
 #define i_PrEP_PREVENTIONBARRIER_TOO_OLD_F 7
-#define i_PrEP_PREVENTIONBARRIER_NEVERSEX_M 8
-#define i_PrEP_PREVENTIONBARRIER_NEVERSEX_F 9
+/* Ineligible despite being in the allowed age group (either because they've never had sex; or because they're not in a casual or sd relationship). Eligibility is determined by PREP_ELIGIBLE_CRITERIA abvoe. */
+#define i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M 8
+#define i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F 9
 
 
 #define N_VMMC_PREVENTIONBARRIER_GROUPS 5 // Number of groups that we subdivide the population into, for VMMC.

@@ -69,6 +69,7 @@
 
 #define DEBUG_HIV_PREVENTION_CASCADES 0 // if 1, then writes files HIVPrevCasc_Indiv_runR_tYYYY.csv in the current directory. Each file contains the HIV prevention cascade probabilities for each individual at a specified time YYYY (currently 2018,2020,2022 - two times before and one after a cascade intervention). This allows us to check that the probabilities are correctly assigned for all individuals (using ../tests/test_HIV_prevention_cascade.R)
 
+#define WRITE_ANNUAL_OUTPUTS 0 // if 1, then write Annual_outputs*.csv files.
 #define WRITE_ANNUAL_PARTNERSHIPS_OUTPUTS 0 // if 1 then writes files of the form Annual_partnerships_outputs_*.csv
 
 #define WRITE_HIVSURVIVAL_OUTPUT 0 /*  Generates the files HIVsurvival_individualdata.csv - containing DoB, DoD, gender, date first on ART etc for all HIV+ in simulation. */

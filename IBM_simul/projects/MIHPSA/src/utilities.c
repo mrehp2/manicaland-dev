@@ -2342,16 +2342,16 @@ void check_if_parameters_plausible(parameters *param){
     }
 
 
-    if (param->factor_for_slower_progression_ART_VU<0 || param->factor_for_slower_progression_ART_VU>5){
-        printf("Error: param->factor_for_slower_progression_ART_VU is outside expected range [0,5]\nExiting\n");
+    if (param->factor_for_slower_progression_ART_VU<0 || param->factor_for_slower_progression_ART_VU>20){
+        printf("Error: param->factor_for_slower_progression_ART_VU is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);
     }
 
 
-    if (param->factor_for_slower_progression_ART_VU<0 || param->factor_for_slower_progression_ART_VU>5){
-        printf("Error: param->factor_for_slower_progression_ART_VU is outside expected range [0,5]\nExiting\n");
+    if (param->factor_for_slower_progression_ART_VU<0 || param->factor_for_slower_progression_ART_VU>20){
+        printf("Error: param->factor_for_slower_progression_ART_VU is outside expected range [0,20]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

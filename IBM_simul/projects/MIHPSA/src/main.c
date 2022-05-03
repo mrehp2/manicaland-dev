@@ -378,8 +378,8 @@ int main(int argc,char *argv[]){
     char *calibration_output_filename[NPATCHES];
 
     /* For debugging cascade counts - CHECK if these are supposed to be the same */
-    create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
-    create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
+    //create_header_for_cascade_count_files("Validate_count_by_age_gender_risk_cascade.csv", 40, 43);
+    //create_header_for_cascade_count_files("Output_count_by_age_gender_risk_cascade.csv", 40, 43);
 
     if(WRITE_CALIBRATION == 1){
 
@@ -831,7 +831,8 @@ int main(int argc,char *argv[]){
                     for(p = 0; p < NPATCHES; p++){
                         // Write the annual data stored in annual_outputs_string to a file
                         // called Annual_outputs.csv.
-                        write_annual_outputs(file_data_store, output, p);
+			if(WRITE_ANNUAL_OUTPUTS==1)
+			    write_annual_outputs(file_data_store, output, p);
                         
                         if(WRITE_COST_EFFECTIVENESS_OUTPUT == 1){
                             write_cost_effectiveness_outputs(file_data_store, output, p);

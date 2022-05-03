@@ -1,12 +1,17 @@
+# Basic target-fitting script, used for MIHPSA project in Python3.
+# Survey data is specified explicitly below in survey_prevM/F, with standard erros se_M/F.
+# Model runs are read from subdirectories in "resultsdir" (of the form RESULTS$X).
+# We then try to fit within TARGET_WIDTH*se of means for each outcome at each timepoint t_survey.
+# This is then written to a file called "resultsdir"+targetfits_MIHPSA.txt.
+
 import sys, os, glob, re
 
 
-#mihpsafiledir = "params/Output/"
-mihpsafiledir = "."
-#Combined 15-49	18.1	0.33	15.2	0.5	13.4	0.332	11.5
-#Male	15-49	14.5	0.46	12.3	0.4154	10.7	0.412	8.6
-#Female	15-49	21.1	0.35	17.7	0.4463	15.9	0.385	14.8
+TARGET_WIDTH = 2.0
+resultsdir = "RESULTS/"
 
+
+# This is the MIHPSA data on HIV prevalences (mean + s.e.)
 survey_prevM = [14.5,12.3,10.7,8.6]
 survey_prevF = [21.1,17.7,15.9,14.8]
 
@@ -15,7 +20,6 @@ se_F = [0.35,0.4463,0.385,0.5]
 
 t_survey = [2005,2010,2015,2020]
 
-TARGET_WIDTH = 4
 
 def get_MIHPSA_indices(mihpsa_filename):
     mihpsa_file = open(mihpsa_filename,"r")
@@ -78,11 +82,11 @@ def get_results_dirs(root_dir):
 
 
 def target_fit_dir(mihpsarootdir):
-
+    
     outstring = ""
-    
+    nfits = 0
     mihpsa_resultsdirs = get_results_dirs(mihpsarootdir)
-    
+    print(f"Looking in {mihpsa_resultsdirs}")
     for mihpsafiledir in mihpsa_resultsdirs:
         mihpsafiles = glob.glob(mihpsafiledir + "/Output/MIHPSA_output_CL*.csv")
         [i_NpopM15_49,i_NpopF15_49,i_PosM15_49,i_PosF15_49] = get_MIHPSA_indices(mihpsafiles[0])
@@ -113,9 +117,10 @@ def target_fit_dir(mihpsarootdir):
 
                 
             d = check_target_fit(outputs_prevalence_M15_49,outputs_prevalence_F15_49,TARGET_WIDTH)
-            if (d<2):
+            if (d<TARGET_WIDTH):
                 outstring += make_summary_fit(f,d)+"\n"
-
+                nfits += 1
+    print(f"Number of fits to width {TARGET_WIDTH} ={nfits}")
     return outstring
                         
 
@@ -123,8 +128,7 @@ def target_fit_dir(mihpsarootdir):
 
     
 
-resultsdir = "RESULTS/"
 fit_data = target_fit_dir(resultsdir)
-outfile = open("targetfits_MIHPSA.txt","w")
+outfile = open(resultsdir+"/targetfits_MIHPSA.txt","w")
 outfile.write(fit_data)
 outfile.close()

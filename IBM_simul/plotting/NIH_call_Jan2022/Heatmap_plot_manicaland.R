@@ -16,16 +16,47 @@ high.col <- brewer.pal(9,"Greens")[9]
 
 # Based on https://jcoliver.github.io/learn-r/006-heatmaps.html
 
+
+# Original function - not currently used.
 tidy.dataset <- function(m,name.impact)
 {
     # Rename columns of dataset:
     names(m) <- c("Tool","Barriers","Population",name.impact)
+    levels(m$Tool)[levels(m$Tool)=="cond"] <- "Condom"
+    levels(m$Tool)[levels(m$Tool)=="All_tools"] <- "All"
+    m$Tool <- factor(m$Tool, levels=c("PrEP","VMMC","Condom","All"))
+    levels(m$Barriers) <- c("None","Access","Effective use","Motivation","All lowered")
+    m$Barriers <- factor(m$Barriers, levels=c("None","Motivation","Access","Effective use","All lowered"))
+    return(m)
+}
+
+
+# Remove the "All_tools" option:
+tidy.dataset.remove.alltools <- function(m,name.impact)
+{
+    # Rename columns of dataset:
+    names(m) <- c("Tool","Barriers","Population",name.impact)
+    m <- m[!(m$Tool %in% "All_tools"),]
     levels(m$Tool)[levels(m$Tool)=="cond"] <- "Condom"
     m$Tool <- factor(m$Tool, levels=c("PrEP","VMMC","Condom"))
     levels(m$Barriers) <- c("None","Access","Effective use","Motivation","All lowered")
     m$Barriers <- factor(m$Barriers, levels=c("None","Motivation","Access","Effective use","All lowered"))
     return(m)
 }
+
+
+tidy.dataset.including.alltools <- function(m,name.impact)
+{
+    # Rename columns of dataset:
+    names(m) <- c("Tool","Barriers","Population",name.impact)
+    levels(m$Tool)[levels(m$Tool)=="cond"] <- "Condom"
+    levels(m$Tool)[levels(m$Tool)=="All_tools"] <- "All"
+    m$Tool <- factor(m$Tool, levels=c("PrEP","VMMC","Condom","All"))
+    levels(m$Barriers) <- c("None","Access","Effective use","Motivation","All lowered")
+    m$Barriers <- factor(m$Barriers, levels=c("None","Motivation","Access","Effective use","All lowered"))
+    return(m)
+}
+
 
 stop.negative.impact <- function(m)
 {
@@ -34,7 +65,11 @@ stop.negative.impact <- function(m)
 }
 
 m.prop.inf <- read.csv("prop_infections_heatmap.csv",sep=",",header=FALSE)
-m.prop.inf <- tidy.dataset(m.prop.inf,"Prop.Averted")
+m.prop.inf <- tidy.dataset.remove.alltools(m.prop.inf,"Prop.Averted")
+
+# Use this one to incldue the "All_tools" panel:
+#m.prop.inf <- tidy.dataset.including.alltools(m.prop.inf,"Prop.Averted")
+
 # Use this to force impacts to be >=0 (0 if negative).
 m.prop.inf <- stop.negative.impact(m.prop.inf)
 # Rescale to % averted:
@@ -42,12 +77,12 @@ m.prop.inf$Prop.Averted <- 100*m.prop.inf$Prop.Averted
 m.prop.inf$Population <- factor(m.prop.inf$Population, levels = c("F15_24","F25_54","M15_29","M30_54","all_priority_pops"))
 
 m.N.inf <- read.csv("N_infections_heatmap.csv",sep=",",header=FALSE)
-m.N.inf <- tidy.dataset(m.N.inf,"N.Averted")
+m.N.inf <- tidy.dataset.remove.alltools(m.N.inf,"N.Averted")
 # Use this to force impacts to be >=0 (0 if negative).
 m.N.inf <- stop.negative.impact(m.N.inf)
 
 m.incidence <- read.csv("Incidence_heatmap.csv",sep=",",header=FALSE)
-m.incidence <- tidy.dataset(m.incidence,"Incidence")
+m.incidence <- tidy.dataset.remove.alltools(m.incidence,"Incidence")
 m.incidence$Incidence <- 100*m.incidence$Incidence
 
 
@@ -73,7 +108,7 @@ draw.heatmap <- function(m,pop.names,outcome.name,graph.title)
         ylab(label="Barrier lowered") +
         facet_grid(~ Tool, scales = "free_x", space = "free_x")+
         ggtitle(graph.title)+
-        theme(text = element_text(size=14)) + 
+        theme(text = element_text(size=13)) + 
         scale_fill_gradient(name = outcome.name,
                             low = low.col,
                             high = high.col) +
@@ -95,7 +130,7 @@ draw.heatmap.truncated <- function(m,pop.names,outcome.name,graph.title)
         ylab(label="Barrier lowered") +
         facet_grid(~ Tool, scales = "free_x", space = "free_x")+
         ggtitle(graph.title)+
-        theme(text = element_text(size=14)) + 
+        theme(text = element_text(size=13)) + 
         scale_fill_gradient(labels = c("0", "5", "10", "15", "20", "25", ">=30"), breaks=seq(0,30,5), name = outcome.name,
                             low = low.col,
                             high = high.col) +
@@ -121,7 +156,7 @@ dev.off()
 # Version of the heatmap where we truncated at 30% impact (so that the all/all scenario doesn't dominate)
 m.prop.inf.trunc <- m.prop.inf
 m.prop.inf.trunc$Prop.Averted <- pmin(m.prop.inf.trunc$Prop.Averted,30)
-propinf.heatmap.trunc <- draw.heatmap.truncated(m.prop.inf.trunc,pops,"% reduction","% reduction in infections by removing barriers")
+propinf.heatmap.trunc <- draw.heatmap.truncated(m.prop.inf.trunc,pops,"% reduction","")
 pdf("PropInfHeatmap_truncated.pdf",width=16,height=10)
 propinf.heatmap.trunc
 dev.off()
@@ -139,21 +174,7 @@ incidence.heatmap
 dev.off()
 
 
-########################################
-# Using base graphics:
-########################################
 
-#barrier.list <- c("allbarriers","increase_motivation","increase_access","increase_effuse","remove_barriers")
-
-#m.PrEP <- read.csv("prop_infections_heatmap_PrEP.csv",sep=",",header=FALSE)
-#heatmap(m.PrEP,Rowv=NA , Colv=NA, labRow=barrier.list, labCol=c("M15_29","M30_54","F15_24","F25_54"),xlab="Population",ylab="Barrier")
-
-
-prop.heatmap <- ggplot(data = m, mapping = aes(x = Population,
-                                               y = Barriers,
-                                               fill = 100*Prop.Averted)) +
-    geom_tile() +
-    xlab(label = "Population") +
     ylab(label="Barrier lowered") +
     facet_grid(~ Tool, scales = "free_x", space = "free_x")+
     scale_fill_gradient(name = "% averted",

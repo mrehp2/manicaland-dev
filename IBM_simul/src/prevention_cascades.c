@@ -37,11 +37,14 @@
 /* Function converts individual-level characteristics into an index for barrier_params parameter arrays (p_use_PrEP).
    Current characteristics are age, sex, number of partners (if this is zero, then never had sex - so variable is called ever_have_sex here, and should be treated as boolean).
 */
-int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex){
+int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
     /* Put female first as more efficient: */
-
+    int g = indiv->gender;
     /* PREP_ELIGIBLE_CRITERIA: 1 - all sexually active (by age); 2 - those with casual partners only; 3 - those with casual partners OR known sd regular partners. */
+
     if(PREP_ELIGIBLE_CRITERIA==1){
+	/* 0 if never had sex, 1 if had. */
+	int ever_had_sex = (indiv->n_lifetime_partners==0)?0:1;
 	if(g==FEMALE){
 	    if(ever_had_sex==0)
 		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F;
@@ -73,6 +76,8 @@ int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex){
 	}
     }
     else if(PREP_ELIGIBLE_CRITERIA==2){
+	/* 0 if never had sex, 1 if had. */
+	int ever_had_sex = (indiv->n_lifetime_partners==0)?0:1;
 	if(g==FEMALE){
 	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
@@ -162,12 +167,12 @@ int index_HIV_prevention_cascade_condom(int age, int g){
    Need to pass a pointer to barrier_params as otherwise we create a local copy of barrier_params (and then assigning p_will_use_PrEP to that address fails, as the address is freed once we return from the function)*/
 void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, cascade_barrier_params *barrier_params){
     int age = (int) floor(t-indiv->DoB);
-    int g = indiv->gender;
     if(indiv->id==FOLLOW_INDIVIDUAL){
 	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
-	printf("Age=%i gender=%i n_partners=%li\n",age,g,indiv->n_lifetime_partners);
+	printf("Age=%i gender=%i n_partners=%li\n",age,indiv->gender,indiv->n_lifetime_partners);
     }
-    indiv->cascade_barriers.p_will_use_PrEP = &(barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,g,indiv->n_lifetime_partners)]);
+
+    indiv->cascade_barriers.p_will_use_PrEP = &(barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,indiv)]);
     if(indiv->id==FOLLOW_INDIVIDUAL)
 	printf("Following change, PrEP probability is now %lf\n",*(indiv->cascade_barriers.p_will_use_PrEP));
 }

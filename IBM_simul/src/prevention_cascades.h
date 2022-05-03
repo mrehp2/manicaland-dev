@@ -27,7 +27,7 @@
 //#include "debug.h"
 
 
-int index_HIV_prevention_cascade_PrEP(int age, int g, int ever_had_sex);
+int index_HIV_prevention_cascade_PrEP(int age, individual *indiv);
 int index_HIV_prevention_cascade_VMMC(int age, int ever_had_sex);
 int index_HIV_prevention_cascade_condom(int age, int g);
 

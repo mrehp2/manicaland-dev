@@ -300,6 +300,12 @@ extern int POPART_SAMPLING_FRAME_ESTABLISHED;
 
 #define N_RISK 3
 
+/* Number of types of partnership formed in the IBM. Currently 2 (long-term and casual). */
+#define N_PARTNER_TYPES 2
+/* Order of indexing should reflect that in the param_partnerships.txt. */
+#define LONGTERM 0
+#define CASUAL 1
+
 /* codes for sex riskiness of an individual. Note if we change these, then need to change RISK_GP_NAMES (defined in constants.c). */
 #define LOW 0
 #define MEDIUM 1

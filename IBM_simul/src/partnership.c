@@ -33,7 +33,7 @@
 /******************************** functions *****************************/
 /************************************************************************/
 
-/* Function does: fill in pair as a partnership between ind1 and ind2 formed at t_form_partnership
+/* Function does: fill in pair as a partnership between ind1 and ind2 formed at t_form_partnership (partnership type = ptype)
  *                  adds the pair to planned_breakups and n_planned_breakups
  *                  updates susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership accordingly
  *                  updates susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership accordingly
@@ -43,7 +43,7 @@
  * function arguments: pointer to the pair and the 2 individuals, time of partnership formation, pointer to partnership lists, poiter to parameters.
  * Function returns: nothing */
 
-void new_partnership(individual* ind1, individual* ind2, double t_form_partnership,
+void new_partnership(individual* ind1, individual* ind2, int ptype, double t_form_partnership,
         all_partnerships *overall_partnerships,
         parameters *param, debug_struct *debug,
 		     file_struct *file_data_store){
@@ -126,7 +126,7 @@ void new_partnership(individual* ind1, individual* ind2, double t_form_partnersh
 
     /* duration (in number of time steps) of the partnership */
 
-    pair->duration_in_time_steps = time_to_partnership_dissolution(param,ind1->sex_risk,ind2->sex_risk, ind1->patch_no, ind2->patch_no); //// IF WE WANT SOMETHING ASYMETRICAL ACCORDING TO GENDER WILL NEED TO SPECIFY WHICH IS THE MALE AND WHICH IS THE FEMALE
+    pair->duration_in_time_steps = time_to_partnership_dissolution(param,ind1->sex_risk,ind2->sex_risk, ptype, ind1->patch_no, ind2->patch_no); //// IF WE WANT SOMETHING ASYMETRICAL ACCORDING TO GENDER WILL NEED TO SPECIFY WHICH IS THE MALE AND WHICH IS THE FEMALE
 
     if(DEBUG_PARTNERSHIP_DURATION ==1)
     {
@@ -362,7 +362,7 @@ void new_partnership(individual* ind1, individual* ind2, double t_form_partnersh
  * drawn from a unique Exp distribution with mean 10 years, discretized so that it is exactly a multiple of time steps
  * the number returned is the number of time steps from formation to dissolution
  * this should be changed so that the function is realistic and different according to the risk group of the two partners */
-int time_to_partnership_dissolution(parameters *param, int r1, int r2, int p, int q){ //// IF WE WANT SOMETHING ASYMETRICAL ACCORDING TO GENDER WILL NEED TO SPECIFY WHICH IS THE MALE AND WHICH IS THE FEMALE
+int time_to_partnership_dissolution(parameters *param, int r1, int r2, int ptype, int p, int q){ //// IF WE WANT SOMETHING ASYMETRICAL ACCORDING TO GENDER WILL NEED TO SPECIFY WHICH IS THE MALE AND WHICH IS THE FEMALE
     int overall_risk;
 
     /* This essentially does overall_risk=max(r1,r2) */
@@ -373,9 +373,9 @@ int time_to_partnership_dissolution(parameters *param, int r1, int r2, int p, in
     else
         overall_risk=LOW;
 
-    //int t_partnership_dissolution = (int) (gsl_ran_exponential (rng, param->breakup_scale_lambda[overall_risk])* N_TIME_STEP_PER_YEAR);
+    //int t_partnership_dissolution = (int) (gsl_ran_exponential (rng, param->breakup_scale_lambda[ptype][overall_risk])* N_TIME_STEP_PER_YEAR);
     /* For Weibull(lambda,k) k=1 corresponds to the exponential dist. k<1 means prob of failure decreases over time, k>1 means increases over time. */
-    //int t_partnership_dissolution = (int) (gsl_ran_weibull(rng, param->breakup_scale_lambda[overall_risk], param->breakup_shape_k[overall_risk])* N_TIME_STEP_PER_YEAR);
+    //int t_partnership_dissolution = (int) (gsl_ran_weibull(rng, param->breakup_scale_lambda[ptype][overall_risk], param->breakup_shape_k[overall_risk])* N_TIME_STEP_PER_YEAR);
     //printf("Using Weibull\n");
     /* Using Gamma distribution: */
     /* gsl_ran_gamma(rng,a,b). a = shape k, b = scale theta. */
@@ -384,19 +384,19 @@ int time_to_partnership_dissolution(parameters *param, int r1, int r2, int p, in
     int t_partnership_dissolution;
     if(p==q) // within patch
     {
-        t_partnership_dissolution = (int) (gsl_ran_gamma (rng, param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_within_patch[overall_risk])* N_TIME_STEP_PER_YEAR);
+        t_partnership_dissolution = (int) (gsl_ran_gamma (rng, param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_within_patch[ptype][overall_risk])* N_TIME_STEP_PER_YEAR);
         /*if (r1==HIGH && r2==HIGH)
         {
-            printf("mean duration of partnership INSIDE should be (a=%lg*b=%lg) = %lg\n",param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_within_patch[overall_risk], param->breakup_shape_k[overall_risk]* param->breakup_scale_lambda_within_patch[overall_risk]);
+            printf("mean duration of partnership INSIDE should be (a=%lg*b=%lg) = %lg\n",param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_within_patch[ptype][overall_risk], param->breakup_shape_k[overall_risk]* param->breakup_scale_lambda_within_patch[ptype][overall_risk]);
             fflush(stdout);
         }*/
 
     }else // between patch
     {
-        t_partnership_dissolution = (int) (gsl_ran_gamma (rng, param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_between_patch[overall_risk])* N_TIME_STEP_PER_YEAR);
+        t_partnership_dissolution = (int) (gsl_ran_gamma (rng, param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_between_patch[ptype][overall_risk])* N_TIME_STEP_PER_YEAR);
         /*if (r1==HIGH && r2==HIGH)
         {
-            printf("mean duration of partnership INSIDE should be (a=%lg*b=%lg) = %lg\n",param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_between_patch[overall_risk], param->breakup_shape_k[overall_risk]* param->breakup_scale_lambda_between_patch[overall_risk]);
+            printf("mean duration of partnership INSIDE should be (a=%lg*b=%lg) = %lg\n",param->breakup_shape_k[overall_risk], param->breakup_scale_lambda_between_patch[ptype][overall_risk], param->breakup_shape_k[overall_risk]* param->breakup_scale_lambda_between_patch[ptype][overall_risk]);
             fflush(stdout);
         }*/
 
@@ -753,17 +753,17 @@ void update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(partner
 }
 
 
-void draw_nb_new_partnerships(patch_struct *patch, parameters *param, int patch_f, int patch_m){
+void draw_nb_new_partnerships(patch_struct *patch, parameters *param, int ptype, int patch_f, int patch_m){
     
    /* Function does: fills in param->balanced_nb_f_to_m with the number of new partnerships between a female of age ag_f, risk r_f and a male of age ag_m, risk r_m over a time unit
     * function arguments: pointers to the population_size, the stratified_population_size, and the parameters
     * Function returns: nothing
     * NOTE: the functions used within this are defined in utilities.c */
     
-    calcul_n_new_partners_f_to_m(patch, param, patch_f, patch_m);
+    calcul_n_new_partners_f_to_m(patch, param, ptype, patch_f, patch_m);
     //printf("calcul_n_new_partners_f_to_m between patch_f %d and patch_m %d: %lg\n", patch_f, patch_m,param->unbalanced_nb_f_to_m[2][2][3][2]);
     //fflush(stdout);
-    calcul_n_new_partners_m_to_f(patch, param, patch_f, patch_m);
+    calcul_n_new_partners_m_to_f(patch, param, ptype, patch_f, patch_m);
     //printf("calcul_n_new_partners_m_to_f between patch_f %d and patch_m %d: %lg\n", patch_f, patch_m,param->unbalanced_nb_m_to_f[3][2][3][2]);
     //fflush(stdout);
     balance_contacts_arithmetic(param);
@@ -772,8 +772,8 @@ void draw_nb_new_partnerships(patch_struct *patch, parameters *param, int patch_
 }
 
 
-void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, int r_f, int ag_m, 
-    int r_m, int *n_non_matchable, all_partnerships *overall_partnerships, patch_struct *patch, 
+void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, int r_f, int ag_m,  
+			     int r_m, int ptype, int *n_non_matchable, all_partnerships *overall_partnerships, patch_struct *patch, 
     int patch_f, int patch_m, debug_struct *debug, file_struct *file_data_store){
     
     /*
@@ -921,7 +921,7 @@ void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, i
                     //fflush(stdout);
                     
                     new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]],
-                            popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]],
+				    popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]], ptype, 
 				    time, overall_partnerships, param, debug, file_data_store);
                     
                     (*overall_partnerships->n_partnerships) ++;
@@ -969,7 +969,7 @@ void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, i
             }else /* if the initially selected male was not already in a partnership with this female */
             {
                 /* form a partnership */
-                new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]], popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]], time, overall_partnerships, param, debug, file_data_store);
+                new_partnership(popn_pgar[patch_f][FEMALE][ag_f][r_f][overall_partnerships->new_partners_f_sorted[overall_partnerships->shuffled_idx[k]]], popn_pgar[patch_m][MALE][ag_m][r_m][overall_partnerships->new_partners_m[k]], ptype, time, overall_partnerships, param, debug, file_data_store);
                 (*overall_partnerships->n_partnerships)++;
                 /* remove the corresponding idx_available_partnership right away, for females */
                 idx_found = 0;
@@ -1085,9 +1085,7 @@ void draw_n_new_partnerships(double time, long n, parameters *param, int ag_f, i
 }
 
 
-void draw_new_partnerships(double time, all_partnerships *overall_partnerships, patch_struct *patch,
-    parameters *param, int patch_f, int patch_m, debug_struct *debug, 
-			   file_struct *file_data_store){
+void draw_new_partnerships(double time, all_partnerships *overall_partnerships, patch_struct *patch, parameters *param, int patch_f, int patch_m, int ptype, debug_struct *debug, file_struct *file_data_store){
     // !!! here I kept param as an argument as we may want to generate a parameter set which is a
     // "mix" betwen the parameters of two patches if these are different
 
@@ -1108,7 +1106,8 @@ void draw_new_partnerships(double time, all_partnerships *overall_partnerships, 
         parameters of the model
     
     patch_f, patch_m : int
-    
+
+    ptype: int, representing the type of partnership (0=long-term, 1=casual).
     debug : pointer to a debug_struct struct
     
     file_data_store: pointer to a file_struct struct
@@ -1126,7 +1125,7 @@ void draw_new_partnerships(double time, all_partnerships *overall_partnerships, 
     int tmp = 0;
     int index = 0;
 
-    draw_nb_new_partnerships(patch, param, patch_f, patch_m);
+    draw_nb_new_partnerships(patch, param, ptype, patch_f, patch_m);
     
     // Loop through all age/risk groups of both genders
     for(ag_f = 0; ag_f < N_AGE; ag_f++){
@@ -1157,14 +1156,14 @@ void draw_new_partnerships(double time, all_partnerships *overall_partnerships, 
                     ////////////////////////////////////////
 
                     draw_n_new_partnerships(time, param->balanced_nb_f_to_m[ag_f][r_f][ag_m][r_m], 
-                        param, ag_f, r_f, ag_m, r_m, &n_non_matchable, overall_partnerships, patch, 
+					    param, ag_f, r_f, ag_m, r_m, ptype, &n_non_matchable, overall_partnerships, patch, 
 					    patch_f, patch_m, debug, file_data_store);
                     
                     tmp = n_non_matchable;
                     /* if some of the pairs could not be formed because they were already in a partnership together and we couldn't find another suitable male for that female, we redraw the corresponding number of pairs */
                     while(tmp > 0 && index < 10){ /// HERE THE CONDITION index<10 is to avoid an infinite loop, think better about how to deal with the case where it's just impossible to form a new partnership (e.g. 1 available partner in each group but they are already in partnership)
                         index++;
-                        draw_n_new_partnerships(time, n_non_matchable, param, ag_f, r_f, ag_m, r_m,
+                        draw_n_new_partnerships(time, n_non_matchable, param, ag_f, r_f, ag_m, r_m, ptype,
                             &tmp, overall_partnerships, patch, patch_f, patch_m, debug, 
                             file_data_store);
                         

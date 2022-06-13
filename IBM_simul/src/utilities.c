@@ -325,7 +325,7 @@ void calcul_p_risk(int g, double p_risk[N_RISK][N_RISK], stratified_population_s
 }
 
 
-void calcul_n_new_partners_f_to_m(patch_struct *patch, parameters *param, int patch_f, int patch_m){
+void calcul_n_new_partners_f_to_m(patch_struct *patch, parameters *param, int ptype, int patch_f, int patch_m){
     int ag_f, ag_m ; /* indexes of ages for females and males */
     int r_f, r_m ; /* indexes of risk groups for females and males */
 
@@ -349,10 +349,10 @@ void calcul_n_new_partners_f_to_m(patch_struct *patch, parameters *param, int pa
                     //fflush(stdout);
                     if(patch_f==patch_m)
                     {
-                        param->unbalanced_nb_f_to_m[ag_f][r_f][ag_m][r_m] = TIME_STEP*patch[patch_f].n_population->pop_size_per_gender_age_risk[FEMALE][ag_f][r_f]*param->c_per_gender_within_patch[FEMALE][ag_f]*param->relative_number_partnerships_per_risk[r_f]*param->p_age_per_gender[FEMALE][ag_f][ag_m]*param->p_risk_per_gender[FEMALE][r_f][r_m];
+                        param->unbalanced_nb_f_to_m[ag_f][r_f][ag_m][r_m] = TIME_STEP*patch[patch_f].n_population->pop_size_per_gender_age_risk[FEMALE][ag_f][r_f]*param->c_per_gender_within_patch[ptype][FEMALE][ag_f]*param->relative_number_partnerships_per_risk[ptype][r_f]*param->p_age_per_gender[ptype][FEMALE][ag_f][ag_m]*param->p_risk_per_gender[FEMALE][r_f][r_m];
                     }else
                     {
-                        param->unbalanced_nb_f_to_m[ag_f][r_f][ag_m][r_m] = TIME_STEP*patch[patch_f].n_population->pop_size_per_gender_age_risk[FEMALE][ag_f][r_f]*param->c_per_gender_between_patches[FEMALE][ag_f]*param->relative_number_partnerships_per_risk[r_f]*param->p_age_per_gender[FEMALE][ag_f][ag_m]*param->p_risk_per_gender[FEMALE][r_f][r_m];
+                        param->unbalanced_nb_f_to_m[ag_f][r_f][ag_m][r_m] = TIME_STEP*patch[patch_f].n_population->pop_size_per_gender_age_risk[FEMALE][ag_f][r_f]*param->c_per_gender_between_patches[ptype][FEMALE][ag_f]*param->relative_number_partnerships_per_risk[ptype][r_f]*param->p_age_per_gender[ptype][FEMALE][ag_f][ag_m]*param->p_risk_per_gender[FEMALE][r_f][r_m];
                     }
                     /* In English this means that the number of new partnerships within a time step between female ages ag_f risk r_f and males aged ag_m risk r_m,
                      * as desired by the females
@@ -368,7 +368,7 @@ void calcul_n_new_partners_f_to_m(patch_struct *patch, parameters *param, int pa
 }
 
 
-void calcul_n_new_partners_m_to_f(patch_struct *patch, parameters *param, int patch_f, int patch_m){
+void calcul_n_new_partners_m_to_f(patch_struct *patch, parameters *param, int ptype, int patch_f, int patch_m){
     int ag_f, ag_m ; /* indexes of ages for females and males */
     int r_f, r_m ; /* indexes of risk groups for females and males */
 
@@ -390,10 +390,10 @@ void calcul_n_new_partners_m_to_f(patch_struct *patch, parameters *param, int pa
                 {
                     if(patch_f==patch_m)
                     {
-                        param->unbalanced_nb_m_to_f[ag_m][r_m][ag_f][r_f] = TIME_STEP*patch[patch_m].n_population->pop_size_per_gender_age_risk[MALE][ag_m][r_m]*param->c_per_gender_within_patch[MALE][ag_m]*param->relative_number_partnerships_per_risk[r_m]*param->p_age_per_gender[MALE][ag_m][ag_f]*param->p_risk_per_gender[MALE][r_m][r_f];
+                        param->unbalanced_nb_m_to_f[ag_m][r_m][ag_f][r_f] = TIME_STEP*patch[patch_m].n_population->pop_size_per_gender_age_risk[MALE][ag_m][r_m]*param->c_per_gender_within_patch[ptype][MALE][ag_m]*param->relative_number_partnerships_per_risk[ptype][r_m]*param->p_age_per_gender[ptype][MALE][ag_m][ag_f]*param->p_risk_per_gender[MALE][r_m][r_f];
                     }else
                     {
-                        param->unbalanced_nb_m_to_f[ag_m][r_m][ag_f][r_f] = TIME_STEP*patch[patch_m].n_population->pop_size_per_gender_age_risk[MALE][ag_m][r_m]*param->c_per_gender_between_patches[MALE][ag_m]*param->relative_number_partnerships_per_risk[r_m]*param->p_age_per_gender[MALE][ag_m][ag_f]*param->p_risk_per_gender[MALE][r_m][r_f];
+                        param->unbalanced_nb_m_to_f[ag_m][r_m][ag_f][r_f] = TIME_STEP*patch[patch_m].n_population->pop_size_per_gender_age_risk[MALE][ag_m][r_m]*param->c_per_gender_between_patches[ptype][MALE][ag_m]*param->relative_number_partnerships_per_risk[ptype][r_m]*param->p_age_per_gender[ptype][MALE][ag_m][ag_f]*param->p_risk_per_gender[MALE][r_m][r_f];
                     }
                 }
             }
@@ -524,36 +524,39 @@ int get_manicaland_round(double t, parameters *param, double *f){
 
 }
 
-void calculate_current_c_within_patch(parameters *param, double rr_m[2], double rr_f[2]){
+void calculate_current_c_within_patch(parameters *param, double rr_m[2], double rr_f[2], int ptype){
     int ag, i_young_old;
     for(ag = 0; ag < N_AGE; ag++){
 	i_young_old = (ag<=1) ? 0 : 1;
-
-	param->c_per_gender_within_patch[FEMALE][ag] = param->c_per_gender_within_patch_baseline[FEMALE][ag] * rr_f[i_young_old];
-	param->c_per_gender_within_patch[MALE][ag] = param->c_per_gender_within_patch_baseline[MALE][ag] * rr_m[i_young_old];
 	
+	param->c_per_gender_within_patch[ptype][FEMALE][ag] = param->c_per_gender_within_patch_baseline[ptype][FEMALE][ag] * rr_f[i_young_old];
+	param->c_per_gender_within_patch[ptype][MALE][ag] = param->c_per_gender_within_patch_baseline[ptype][MALE][ag] * rr_m[i_young_old];
+	    
 	
-	//printf("param->c_per_gender_within_patch[FEMALE][ag] = %lf param->c_per_gender_within_patch[MALE][ag] = %lf\n",param->c_per_gender_within_patch[FEMALE][ag],param->c_per_gender_within_patch[MALE][ag]);
-	}
+	//printf("param->c_per_gender_within_patch[ptype][FEMALE][ag] = %lf param->c_per_gender_within_patch[ptype][MALE][ag] = %lf\n",param->c_per_gender_within_patch[ptype][FEMALE][ag],param->c_per_gender_within_patch[ptype][MALE][ag]);
+    }
 }
 
-void calculate_c_between_patches(parameters *param){
+void calculate_c_between_patches(parameters *param, int ptype){
 
     int npatches_minus_one = NPATCHES-1;
     int ag;
+
     for(ag = 0; ag < N_AGE; ag++){
 	if (NPATCHES==1){ 	    /* If only 1 patch, then no mixing between patches. */
-	    param->c_per_gender_between_patches[FEMALE][ag] = 0;
-	    param->c_per_gender_between_patches[MALE][ag] = 0;
+
+	    param->c_per_gender_between_patches[ptype][FEMALE][ag] = 0;
+	    param->c_per_gender_between_patches[ptype][MALE][ag] = 0;
 	}
 	else if (NPATCHES>1){
-	    param->c_per_gender_between_patches[FEMALE][ag] =
+	    param->c_per_gender_between_patches[ptype][FEMALE][ag] =
 		param->rel_rate_partnership_formation_between_patches *
-		param->c_per_gender_within_patch[FEMALE][ag] / npatches_minus_one;
+		param->c_per_gender_within_patch[ptype][FEMALE][ag] / npatches_minus_one;
 	    
-	    param->c_per_gender_between_patches[MALE][ag] =
+	    param->c_per_gender_between_patches[ptype][MALE][ag] =
 		param->rel_rate_partnership_formation_between_patches *
-		param->c_per_gender_within_patch[MALE][ag] / npatches_minus_one;
+		param->c_per_gender_within_patch[ptype][MALE][ag] / npatches_minus_one;
+	    
 	}
 	else{
 	    printf("Error in value of NPATCHES. Exiting\n");
@@ -565,21 +568,23 @@ void calculate_c_between_patches(parameters *param){
     }
 }
 
-/* Function called each timestep (once the cohort starts) in simul.c to update the number of new partners per unit time (c_per_gender_within_patch[][]). Code is also called by read_partnership_params() in input.c to set the pre-cohort values.
+/* Function called each timestep (once the cohort starts) in simul.c to update the number of new partners per unit time (c_per_gender_within_patch_LT/casual[][]). Code is also called by read_partnership_params() in input.c to set the pre-cohort values.
    Function only does meaningful work in Zimbabwe for now (using R1-R7 Manicaland cohort), but could be used elsewhere if data available. For other settings it just sets c=c_baseline.
-   In other settings it just keeps c_per_gender_within_patch[][] constant at the baseline value.
+   In other settings it just keeps c_per_gender_within_patch_LT/casual[][] constant at the baseline value.
    Function loops through patches, and also updates c_per_gender_between_patches[][] if needed (if in Zimbabwe, and NPATCHES>1).
 */
 void update_number_new_partners(double t, patch_struct *patch){
     int p, round;
     int g,ag;
-
+    int ptype;
+    
     if(patch[0].country_setting!=ZIMBABWE){
 	/* Keep constant for all time: */
 	for(p = 0; p < NPATCHES; p++){
 	    for(g=0 ; g<N_GENDER ; g++){
 		for(ag = 0; ag < N_AGE; ag++)
-		    patch[p].param->c_per_gender_within_patch[g][ag] = patch[p].param->c_per_gender_within_patch_baseline[g][ag];
+		    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+			patch[p].param->c_per_gender_within_patch[ptype][g][ag] = patch[p].param->c_per_gender_within_patch_baseline[ptype][g][ag];
 	    }
 	}
 	return;
@@ -590,42 +595,46 @@ void update_number_new_partners(double t, patch_struct *patch){
     double rr_f[2], rr_m[2]; /* Temp store for the specific rr being used. The "2" are young/old (correspond to rr_mean_ly_F/M_byround[2][NCOHORTROUNDS]. */
     int i_young_old; /* Index for rr_f/m[]. Takes value 0/1, used as rr_mean_ly stratified into young/old (roughly <23, 23+ - note that I currently use <25, 25+ in the R script). */
     double f; /* Interpolation factor between rounds. */
+
+
     for(p = 0; p < NPATCHES; p++){
 	round = get_manicaland_round(t, patch[p].param, &f);
 
-	/* After the latest cohort round: */
-	if(round==(NCOHORTROUNDS-1)){
-	    /* Assume same RR as last round in future: */
-	    for(i_young_old=0; i_young_old<2; i_young_old++){
-		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][NCOHORTROUNDS];
-		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][NCOHORTROUNDS];
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    /* After the latest cohort round: */
+	    if(round==(NCOHORTROUNDS-1)){
+		/* Assume same RR as last round in future: */
+		for(i_young_old=0; i_young_old<2; i_young_old++){
+		    rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][NCOHORTROUNDS];
+		    rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][NCOHORTROUNDS];
+		}
 	    }
-	}
-	/* Code is called by read_partnership_params() to set pre-cohort values: */
-	else if(round==0 && f==0){
-	    for(i_young_old=0; i_young_old<2; i_young_old++){
-		/* Assume same RR as first round for pre-cohort: */
-		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][0];
-		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][0];
+	    /* Code is called by read_partnership_params() to set pre-cohort values: */
+	    else if(round==0 && f==0){
+		for(i_young_old=0; i_young_old<2; i_young_old++){
+		    /* Assume same RR as first round for pre-cohort: */
+		    rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][0];
+		    rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][0];
+		}
 	    }
-	}
-	
-	else{
-	    for(i_young_old=0; i_young_old<2; i_young_old++){
-		rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_F_byround[i_young_old][round+1]*f;
-		rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_M_byround[i_young_old][round+1]*f;
+	    
+	    else{
+		for(i_young_old=0; i_young_old<2; i_young_old++){
+		    rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_F_byround[i_young_old][round+1]*f;
+		    rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][round]*(1-f) + patch[p].param->rr_mean_ly_M_byround[i_young_old][round+1]*f;
+		}
 	    }
-	}	    
-
-
-
-	calculate_current_c_within_patch(patch[p].param, rr_m, rr_f);
 	
 
-	/* Now deal with between patches (note - if NPATCHES=1 then this is zero for all time, and is set in read_partnership_params()). */
-	if (NPATCHES>1)
-	    calculate_c_between_patches(patch[p].param);
 
+
+	    calculate_current_c_within_patch(patch[p].param, rr_m, rr_f, ptype);
+	
+
+	    /* Now deal with between patches (note - if NPATCHES=1 then this is zero for all time, and is set in read_partnership_params()). */
+	    if (NPATCHES>1)
+		calculate_c_between_patches(patch[p].param, ptype);
+	}
     }
 }
     
@@ -1686,30 +1695,44 @@ void print_hsv2_params(parameters *param){
 
 void print_partnership_params(parameters *param){
     int g, ag, bg, r;
+    int ptype;
     
     printf("param->assortativity=%lg\n",param->assortativity);
     printf("param->prop_compromise_from_males=%lg\n",param->prop_compromise_from_males);
 
     for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch[FEMALE][ag]=%lg\n",param->c_per_gender_within_patch[FEMALE][ag]);
+        printf("param->c_per_gender_within_patch_LT[FEMALE][ag]=%lg\n",param->c_per_gender_within_patch_LT[FEMALE][ag]);
     for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch[MALE][ag]=%lg\n",param->c_per_gender_within_patch[MALE][ag]);
+        printf("param->c_per_gender_within_patch_LT[MALE][ag]=%lg\n",param->c_per_gender_within_patch_LT[MALE][ag]);
+
+    for (ag=0; ag<N_AGE; ag++)
+        printf("param->c_per_gender_within_patch_casual[FEMALE][ag]=%lg\n",param->c_per_gender_within_patch_casual[FEMALE][ag]);
+    for (ag=0; ag<N_AGE; ag++)
+        printf("param->c_per_gender_within_patch_casual[MALE][ag]=%lg\n",param->c_per_gender_within_patch_casual[MALE][ag]);
 
     printf("param->rel_rate_partnership_formation_between_patches=%lg\n",param->rel_rate_partnership_formation_between_patches);
 
-    for (r=0; r<N_RISK; r++)
-        printf("param->relative_number_partnerships_per_risk[r]=%lg\n",param->relative_number_partnerships_per_risk[r]);
-    for (g=0; g<N_GENDER; g++)
-        for (ag=0; ag<N_AGE; ag++)
-            for (bg=0; bg<N_AGE; bg++)
-                printf("param->p_age_per_gender[g][ag][bg]=%lg\n",param->p_age_per_gender[g][ag][bg]);
-
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){    
+	for (r=0; r<N_RISK; r++)
+	    printf("param->relative_number_partnerships_per_risk[ptype][r]=%lg\n",param->relative_number_partnerships_per_risk[ptype][r]);
+    }
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){    
+	for (g=0; g<N_GENDER; g++)
+	    for (ag=0; ag<N_AGE; ag++)
+		for (bg=0; bg<N_AGE; bg++)
+		    printf("param->p_age_per_gender[ptype][g][ag][bg]=%lg\n",param->p_age_per_gender[ptype][g][ag][bg]);
+    }
+    
     for(r=0 ; r<N_RISK ; r++)
         printf("param->max_n_part_noage[r]=%d\n",param->max_n_part_noage[r]);
-    for(r=0 ; r<N_RISK ; r++)
-        printf("param->breakup_scale_lambda_within_patch[r]=%lg\n",param->breakup_scale_lambda_within_patch[r]);
-    for(r=0 ; r<N_RISK ; r++)
-        printf("param->breakup_scale_lambda_between_patch[r]=%lg\n",param->breakup_scale_lambda_between_patch[r]);
+
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++)
+	for(r=0 ; r<N_RISK ; r++)
+	    printf("param->breakup_scale_lambda_within_patch[ptype][r]=%lg\n",param->breakup_scale_lambda_within_patch[ptype][r]);
+
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++)
+	for(r=0 ; r<N_RISK ; r++)
+	    printf("param->breakup_scale_lambda_between_patch[ptype][r]=%lg\n",param->breakup_scale_lambda_between_patch[ptype][r]);    
     for(r=0 ; r<N_RISK ; r++)
         printf("param->breakup_shape_k[r]=%lg\n",param->breakup_shape_k[r]);
 }
@@ -2001,6 +2024,7 @@ void check_if_parameters_plausible(parameters *param){
     
     
     int g, ag, bg, icd4, jcd4, spvl, hsv, r, a_unpd, y, ap;
+    int ptype;
     int dhs_round;
     double temp;
     
@@ -2388,17 +2412,20 @@ void check_if_parameters_plausible(parameters *param){
         exit(1);
     }
 
-    for (g=0; g<N_GENDER; g++){
-        for (ag=0; ag<N_AGE; ag++){
-            for (bg=0; bg<N_AGE; bg++){
-                if (param->p_age_per_gender[g][ag][bg]<0 || param->p_age_per_gender[g][ag][bg]>1){
-                    printf("Error:param->p_age_per_gender[g][ag][bg]=%lf is outside expected range [0,1]\nExiting\n",param->p_age_per_gender[g][ag][bg]);
-                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                    fflush(stdout);
-                    exit(1);
-                }
-            }
-        }
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){    
+
+	for (g=0; g<N_GENDER; g++){
+	    for (ag=0; ag<N_AGE; ag++){
+		for (bg=0; bg<N_AGE; bg++){
+		    if (param->p_age_per_gender[ptype][g][ag][bg]<0 || param->p_age_per_gender[ptype][g][ag][bg]>1){
+			printf("Error:param->p_age_per_gender[ptype][g][ag][bg]=%lf is outside expected range [0,1]\nExiting\n",param->p_age_per_gender[ptype][g][ag][bg]);
+			printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+			fflush(stdout);
+			exit(1);
+		    }
+		}
+	    }
+	}
     }
 
 
@@ -2881,30 +2908,36 @@ void check_if_parameters_plausible(parameters *param){
 
 
 
-    for(ag=0; ag<N_AGE; ag++){
-        if (param->c_per_gender_within_patch[FEMALE][ag]<0 || param->c_per_gender_within_patch[FEMALE][ag]>20){
-            printf("Error:param->c_per_gender_within_patch[FEMALE][ag] is outside expected range [0,20]\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	for(ag=0; ag<N_AGE; ag++){
+	    if (param->c_per_gender_within_patch[ptype][FEMALE][ag]<0 || param->c_per_gender_within_patch[ptype][FEMALE][ag]>20){
+		printf("Error:param->c_per_gender_within_patch[ptype][FEMALE][ag] is outside expected range [0,20]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
+	for (ag=0; ag<N_AGE; ag++){
+	    if (param->c_per_gender_within_patch[ptype][MALE][ag]<0 || param->c_per_gender_within_patch[ptype][MALE][ag]>30){
+		printf("Error:param->c_per_gender_within_patch[ptype][MALE][ag] is outside expected range [0,30]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
     }
-    for (ag=0; ag<N_AGE; ag++){
-        if (param->c_per_gender_within_patch[MALE][ag]<0 || param->c_per_gender_within_patch[MALE][ag]>30){
-            printf("Error:param->c_per_gender_within_patch[MALE][ag] is outside expected range [0,30]\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){    
+	for (r=0; r<N_RISK; r++){
+	    if (param->relative_number_partnerships_per_risk[ptype][r]<0 || param->relative_number_partnerships_per_risk[ptype][r]>50){
+		printf("Error:param->relative_number_partnerships_per_risk[ptype][r] is outside expected range [0,50]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
     }
-    for (r=0; r<N_RISK; r++){
-        if (param->relative_number_partnerships_per_risk[r]<0 || param->relative_number_partnerships_per_risk[r]>50){
-            printf("Error:param->relative_number_partnerships_per_risk[r] is outside expected range [0,50]\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
-    }
+    
     for(r=0 ; r<N_RISK ; r++){
         if (param->max_n_part_noage[r]<0 || param->max_n_part_noage[r]>20){
             printf("Error:param->max_n_part_noage[r] is outside expected range [0,20]\nExiting\n");
@@ -2913,22 +2946,29 @@ void check_if_parameters_plausible(parameters *param){
             exit(1);
         }
     }
-    for(r=0 ; r<N_RISK ; r++){
-        if (param->breakup_scale_lambda_within_patch[r]<0 || param->breakup_scale_lambda_within_patch[r]>45){
-            printf("Error:param->breakup_scale_lambda_within_patch[r=%i]=%6.4lf is outside expected range [0,45]\nExiting\n",r,param->breakup_scale_lambda_within_patch[r]);
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){    
+	for(r=0 ; r<N_RISK ; r++){
+	    if (param->breakup_scale_lambda_within_patch[ptype][r]<0 || param->breakup_scale_lambda_within_patch[ptype][r]>45){
+		printf("Error:param->breakup_scale_lambda_within_patch[ptype=%i][r=%i]=%6.4lf is outside expected range [0,45]\nExiting\n",ptype,r,param->breakup_scale_lambda_within_patch[ptype][r]);
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
     }
-    for(r = 0; r < N_RISK; r++){
-        if(param->breakup_scale_lambda_between_patch[r] < 0 || param->breakup_scale_lambda_between_patch[r] > 30){
-            printf("Error:param->breakup_scale_lambda_between_patch[r] is outside expected range [0,30]\nExiting\n");
-            printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-            fflush(stdout);
-            exit(1);
-        }
+
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	for(r = 0; r < N_RISK; r++){
+	    if(param->breakup_scale_lambda_between_patch[ptype][r] < 0 || param->breakup_scale_lambda_between_patch[ptype][r] > 30){
+		printf("Error:param->breakup_scale_lambda_between_patch[ptype][r] is outside expected range [0,30]\nExiting\n");
+		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+		fflush(stdout);
+		exit(1);
+	    }
+	}
     }
+
     for(r = 0; r < N_RISK; r++){
         if(param->breakup_shape_k[r] < 0 || param->breakup_shape_k[r] > 20){
             printf("Error:param->breakup_shape_k[r] is outside expected range [0,20]\nExiting\n");

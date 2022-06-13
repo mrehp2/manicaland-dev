@@ -747,7 +747,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
     
     FILE * param_file;
     int g, ag, r, bg, i_run;
-
+    int ptype; /* Index for type of partnership (e.g. long-term, casual). */
     int round; /* Round of the Manicaland cohort. */
     
     char param_file_name[LONGSTRINGLENGTH];
@@ -788,25 +788,29 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
         checkreadok = fscanf(param_file,"%lg", &(param_local->prop_compromise_from_males));
         check_if_cannot_read_param(checkreadok, "param_local->prop_compromise_from_males");
 
-        for(ag = 0; ag < N_AGE ; ag++){
-            checkreadok = fscanf(param_file, "%lg",
-                &(param_local->c_per_gender_within_patch_baseline[FEMALE][ag]));
-            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline");
-        }
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(ag = 0; ag < N_AGE ; ag++){
+		checkreadok = fscanf(param_file, "%lg",
+				     &(param_local->c_per_gender_within_patch_baseline[ptype][[FEMALE][ag])));
+		check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline[ptype]");
+	    }
 
-        for(ag = 0; ag < N_AGE; ag++){
-            checkreadok = fscanf(param_file, "%lg", 
-                &(param_local->c_per_gender_within_patch_baseline[MALE][ag]));
-            check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline");
-        }
-
+	    for(ag = 0; ag < N_AGE; ag++){
+		checkreadok = fscanf(param_file, "%lg", 
+				     &(param_local->c_per_gender_within_patch_baseline[ptype][MALE][ag]));
+		check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline[ptype]");
+	    }
+	}
+	
         checkreadok = fscanf(param_file, "%lg", &c_multiplier);
         check_if_cannot_read_param(checkreadok, "c_multiplier");
         
-        for(ag = 0; ag < N_AGE; ag++){
-            param_local->c_per_gender_within_patch_baseline[FEMALE][ag] *= c_multiplier;
-            param_local->c_per_gender_within_patch_baseline[MALE][ag] *= c_multiplier;
-        }
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(ag = 0; ag < N_AGE; ag++){
+		param_local->c_per_gender_within_patch_baseline[ptype][FEMALE][ag] *= c_multiplier;
+		param_local->c_per_gender_within_patch_baseline[ptype][MALE][ag] *= c_multiplier;	
+	    }
+	}
 
 	/* Modify the number of partners (to allow people earlier in the epidemic to have more partners for example). 
 	   At present this is only for Zimbabwe (using Manicaland cohort). */
@@ -844,15 +848,17 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 
 	    double rr_f[2] = {param_local->rr_mean_ly_F_byround[0][0],param_local->rr_mean_ly_F_byround[1][0]};
 	    double rr_m[2] = {param_local->rr_mean_ly_M_byround[0][0],param_local->rr_mean_ly_M_byround[1][0]};
-	    /* Assigns param_local->c_per_gender_within_patch given param_local->c_per_gender_within_patch_baseline: */
+	    /* Assigns param_local->c_per_gender_within_patch[LT AND casual] given param_local->c_per_gender_within_patch_baseline[LT/casual]: */
 
 	    calculate_current_c_within_patch(param_local, rr_m, rr_f);
 	    
 	}
 	else{ /* For non-Zimbabwe settings, the number of partners never changes (unless there's something similar to the Manicaland cohort): */
-	    for(ag = 0; ag < N_AGE; ag++){
-		param_local->c_per_gender_within_patch[FEMALE][ag] = param_local->c_per_gender_within_patch_baseline[FEMALE][ag];
-		param_local->c_per_gender_within_patch[MALE][ag] = param_local->c_per_gender_within_patch_baseline[MALE][ag];
+	    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+
+		for(ag = 0; ag < N_AGE; ag++){
+		    param_local->c_per_gender_within_patch[ptype][FEMALE][ag] = param_local->c_per_gender_within_patch_baseline[ptype][FEMALE][ag];
+		    param_local->c_per_gender_within_patch[ptype][MALE][ag] = param_local->c_per_gender_within_patch_baseline[ptype][MALE][ag];
 	    }
 	}
 	
@@ -862,7 +868,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
         check_if_cannot_read_param(checkreadok,
             "param_local->rel_rate_partnership_formation_between_patches");
 
-	/* This calculates param->c_per_gender_between_patches[][] based on c_per_gender_within_patch and rel_rate_partnership_formation_between_patches. */
+	/* This calculates param->c_per_gender_between_patches[][] based on c_per_gender_within_patch[LT/casual] and rel_rate_partnership_formation_between_patches. */
 
 	calculate_c_between_patches(param_local);
 	
@@ -870,58 +876,62 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
         checkreadok = fscanf(param_file, "%lg", &(param_local->rr_hiv_between_vs_within_patch));
         check_if_cannot_read_param(checkreadok, "param_local->rr_hiv_between_vs_within_patch");
 
-        for(r = 0; r < N_RISK ; r++){
-            checkreadok = fscanf(param_file, "%lg", 
-                &(param_local->relative_number_partnerships_per_risk[r]));
-            check_if_cannot_read_param(checkreadok, 
-                "param_local->relative_number_partnerships_per_risk");
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(r = 0; r < N_RISK ; r++){
+		checkreadok = fscanf(param_file, "%lg", 
+				     &(param_local->relative_number_partnerships_per_risk[ptype][r]));
+		check_if_cannot_read_param(checkreadok, 
+					   "param_local->relative_number_partnerships_per_risk[ptype]");
             
-            // Because we're now defining everything relative to the low risk group we need this to
-            // be forced to 1
-            if(r == 0){
-                param_local->relative_number_partnerships_per_risk[r] = 1.0;
-            }
-        }
-
+		// Because we're now defining everything relative to the low risk group we need this to
+		// be forced to 1
+		if(r == 0){
+		    param_local->relative_number_partnerships_per_risk[ptype][r] = 1.0;
+		}
+	    }
+	}
+	
         // The parameters p_age_per_gender are not directly read in the input files 
         // what is read is p1, p2/(1-p1), p3/(1-p1-p2), etc... 
         // this avoids having constraints on these probabilities summing to 1.  
 
         double p_age_per_gender_wrong_scale[N_GENDER][N_AGE][N_AGE], fact, check_sum;
 
-        for(g = 0; g < N_GENDER; g++){
-            for(ag = 0; ag < N_AGE; ag++){
-                //printf("--- INDEX PERSON IN AGE GROUP %d; probability of choosing partner in each age group is:\n",ag);
-                fact = 1;
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(g = 0; g < N_GENDER; g++){
+		for(ag = 0; ag < N_AGE; ag++){
+		    //printf("--- INDEX PERSON IN AGE GROUP %d; probability of choosing partner in each age group is:\n",ag);
+		    fact = 1;
                 
-                check_sum = 0;
-                for(bg = 0; bg < N_AGE; bg++){
+		    check_sum = 0;
+		    for(bg = 0; bg < N_AGE; bg++){
+			
+			checkreadok = fscanf(param_file, "%lg", 
+					     &(p_age_per_gender_wrong_scale[g][ag][bg]));
+			check_if_cannot_read_param(checkreadok, "param_local->p_age_per_gender");
                     
-                    checkreadok = fscanf(param_file, "%lg", 
-                        &(p_age_per_gender_wrong_scale[g][ag][bg]));
-                    check_if_cannot_read_param(checkreadok, "param_local->p_age_per_gender");
-                    
-                    param_local->p_age_per_gender[g][ag][bg] =
-                        p_age_per_gender_wrong_scale[g][ag][bg] * fact;
-                    
-                    fact -= param_local->p_age_per_gender[g][ag][bg];
-                    
-                    //printf("%lg\t",param_local->p_age_per_gender[g][ag][bg]);
-                    check_sum += param_local->p_age_per_gender[g][ag][bg];
-                }
-                //printf("\n");
-                //fflush(stdout);
+			param_local->p_age_per_gender[ptype][g][ag][bg] =
+			    p_age_per_gender_wrong_scale[g][ag][bg] * fact;
+			
+			fact -= param_local->p_age_per_gender[ptype][g][ag][bg];
+			
+			//printf("%lg\t",param_local->p_age_per_gender[g][ag][bg]);
+			check_sum += param_local->p_age_per_gender[ptype][g][ag][bg];
+		    }
+		    //printf("\n");
+		    //fflush(stdout);
                 
-                if(fabs(check_sum - 1.0) > 1e-12){
-                    printf("In input.c the sum of param_local->p_age_per_gender[g][ag][bg] ");
-                    printf("over bg is 1-%e for ag=%d. Exiting", check_sum - 1.0, ag);
-                    printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
-                    fflush(stdout);
-                    exit(1);
-                }
-            }
-        }
-
+		    if(fabs(check_sum - 1.0) > 1e-12){
+			printf("In input.c the sum of param_local->p_age_per_gender[ptype][g][ag][bg] ");
+			printf("over bg is 1-%e for ag=%d. Exiting", check_sum - 1.0, ag);
+			printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+			fflush(stdout);
+			exit(1);
+		    }
+		}
+	    }
+	}
+	
         //printf("------- UPON READING PARAM_PARTNERSHIPS -------\n");
         //fflush(stdout);
 
@@ -934,15 +944,18 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             //fflush(stdout);
         }
 
-        for(r = 0; r < N_RISK; r++){
-            checkreadok = fscanf(param_file, "%lg", 
-                &(param_local->breakup_scale_lambda_within_patch[r]));
-            check_if_cannot_read_param(checkreadok,
-                "param_local->breakup_scale_lambda_within_patch");
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(r = 0; r < N_RISK; r++){
+		checkreadok = fscanf(param_file, "%lg", 
+				     &(param_local->breakup_scale_lambda_within_patch[ptype][r]));
+		check_if_cannot_read_param(checkreadok,
+					   "param_local->breakup_scale_lambda_within_patch[ptype][r]");
             
-            //printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
-            //fflush(stdout);
-        }
+		//printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[ptype][r]);
+		//fflush(stdout);
+	    }
+	}
+	
         for(r = 0; r < N_RISK; r++){
             checkreadok = fscanf(param_file, "%lg", &(param_local->breakup_shape_k[r]));
             check_if_cannot_read_param(checkreadok, "param_local->breakup_shape_k");
@@ -950,17 +963,18 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
         
         checkreadok = fscanf(param_file, "%lg", &breakup_scale_multiplier_overall);
         check_if_cannot_read_param(checkreadok, "breakup_scale_multiplier_overall");
-        
-        for(r = 0; r < N_RISK; r++){
-            param_local->breakup_scale_lambda_within_patch[r] *= breakup_scale_multiplier_overall;
-        }
+        for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(r = 0; r < N_RISK; r++){
+		param_local->breakup_scale_lambda_within_patch[ptype][r] *= breakup_scale_multiplier_overall;
+	    }
+	}
 
         checkreadok = fscanf(param_file, "%lg", &breakup_scale_multiplier_between_vs_within_patch);
         check_if_cannot_read_param(checkreadok, "breakup_scale_multiplier_between_vs_within_patch");
         
         for(r = 0; r < N_RISK; r++){
-            param_local->breakup_scale_lambda_between_patch[r] =
-                param_local->breakup_scale_lambda_within_patch[r] *
+            param_local->breakup_scale_lambda_between_patch[ptype][r] =
+                param_local->breakup_scale_lambda_within_patch[ptype][r] *
                 breakup_scale_multiplier_between_vs_within_patch;
         }
 
@@ -973,10 +987,12 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
             fflush(stdout);
         }
 
-        for(r=0; r<N_RISK; r++){
-            printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[r]);
-            fflush(stdout);
-        }
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+           for(r=0; r<N_RISK; r++){
+	      printf("param_local->breakup_scale_lambda_within_patch in risk group %d is %lg\n",r,param_local->breakup_scale_lambda_within_patch[ptype][r]);
+              fflush(stdout);
+	   }
+	}
         for(r=0; r<N_RISK; r++){
             printf("param_local->breakup_shape_k in risk group %d is %lg\n",r,param_local->breakup_shape_k[r]);
             fflush(stdout);

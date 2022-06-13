@@ -20,9 +20,9 @@
 
 #include "structures.h"
 
-void new_partnership(individual* , individual* , double , all_partnerships *, parameters *, 
+void new_partnership(individual* , individual* , int, double , all_partnerships *, parameters *, 
 		     debug_struct *, file_struct *);
-int time_to_partnership_dissolution(parameters *, int r_m, int r_f, int p_m, int p_f);
+int time_to_partnership_dissolution(parameters *, int r_m, int r_f, int ptype, int p_m, int p_f);
 void breakup(double, partnership*, all_partnerships *);
 void update_list_available_partners_breakup(double , partnership* , population_partners*, 
     population_size_all_patches *);
@@ -33,10 +33,10 @@ void remove_susceptible_from_list_hsv2serodiscordant_partnership(individual* ind
 void update_list_susceptibles_in_serodiscordant_partnerships_breakup(partnership* , 
     individual** , long *);
 void update_list_susceptibles_in_hsv2serodiscordant_partnerships_breakup(partnership* breakup, individual** susceptible_in_hsv2serodiscordant_partnership, long *n_susceptible_in_hsv2serodiscordant_partnership);
-void draw_nb_new_partnerships(patch_struct *, parameters *, int, int);
-void draw_n_new_partnerships(double , long, parameters *, int , int , int , int , int *,
+void draw_nb_new_partnerships(patch_struct *, parameters *, int, int, int);
+void draw_n_new_partnerships(double , long, parameters *, int , int , int , int , int, int *,
         all_partnerships *, patch_struct *, int , int , debug_struct *, file_struct *);
-void draw_new_partnerships(double , all_partnerships *, patch_struct *, parameters *, int , int , 
+void draw_new_partnerships(double , all_partnerships *, patch_struct *, parameters *, int , int , int, 
 			   debug_struct *, file_struct *);
 
 void set_first_sex_characteristics(double , individual *, parameters *);

@@ -522,36 +522,36 @@ typedef struct {
     double prop_compromise_from_males;
 
     /* Average number of new partners per year within the patch. *This is now calculated per timestep* */
-    double c_per_gender_within_patch[N_GENDER][N_AGE];
+    double c_per_gender_within_patch[N_PARTNER_TYPES][N_GENDER][N_AGE];
     /* We calculate c_per_gender_within_path as c_per_gender_within_patch_baseline multiplied by a scale factor that accounts for how the mean number of partners per year varies between rounds in Manicaland (as a function of age, sex and time). This calculation is made at the beginning of each timestep in  */
-    double c_per_gender_within_patch_baseline[N_GENDER][N_AGE];
+    double c_per_gender_within_patch_baseline[N_PARTNER_TYPES][N_GENDER][N_AGE];
 
     double rr_mean_ly_F_byround[2][NCOHORTROUNDS]; /* The '2' is i=0 (young)/i=1 (old). */
     double rr_mean_ly_M_byround[2][NCOHORTROUNDS];
 
     double rel_rate_partnership_formation_between_patches;
-    double c_per_gender_between_patches[N_GENDER][N_AGE]; // this is equal to c_per_gender_within_patch * rel_rate_partnership_formation_between_patches / (NPATCHES-1) (implicitly assuming that partnerships not within patch are split equally & randomly between other patches)
+    double c_per_gender_between_patches[N_PARTNER_TYPES][N_GENDER][N_AGE]; // this is equal to c_per_gender_within_patch * rel_rate_partnership_formation_between_patches / (NPATCHES-1) (implicitly assuming that partnerships not within patch are split equally & randomly between other patches)
 
     /* relative riskiness of between patch partnership compared to within patch */
     double rr_hiv_between_vs_within_patch;
 
     /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group (for LT/casual partnerships respectively). */
-    double relative_number_partnerships_per_risk_LT[N_RISK]; 
-    double relative_number_partnerships_per_risk_casual[N_RISK]; /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group */
-    /* relative_number_partnerships_per_risk_LT/casual[0] BOTH HAVE TO BE 1 */
+    double relative_number_partnerships_per_risk[ptype][N_RISK]; 
+
+    /* relative_number_partnerships_per_risk[LT/casual][0] BOTH HAVE TO BE 1 */
 
     /* Distribution of sexual partners over age  */
-    double p_age_per_gender[N_GENDER][N_AGE][N_AGE]; /* constraint: sum_i p_age_per_gender[N_GENDER][N_AGE][i] = 1 */
+    double p_age_per_gender[N_PARTNER_TYPES][N_GENDER][N_AGE][N_AGE]; /* constraint: sum_i p_age_per_gender[N_GENDER][N_AGE][i] = 1 */
 
     /* Maximum number of partners by risk group: */
     int max_n_part_noage[N_RISK];
 
     /* These are parameters used in time_to_partnership_dissolution() to determine when a partnership will break up.
      * At present I am assuming a Weibull distribution. */
-    double breakup_scale_lambda_within_patch[N_RISK];
+    double breakup_scale_lambda_within_patch[N_PARTNER_TYPES][N_RISK];
     double breakup_shape_k[N_RISK];
 
-    double breakup_scale_lambda_between_patch[N_RISK];
+    double breakup_scale_lambda_between_patch[N_PARTNER_TYPES][N_RISK];
 
     /********************************************************************/
     /* the following ones are not read in a file as their values change

@@ -411,6 +411,8 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
     double t;
     int p, q;
 
+    int ptype;  /* Index for type of partnership (e.g. long-term, casual). */
+    
      /* Current time in yrs. */
     t = t0 + t_step * TIME_STEP;
 
@@ -443,18 +445,20 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
     /* Now draw new partnerships (ie allocate people with available partnerships to these
     partnerships) and update all applicable lists (available partners, partnerships, serodiscordant
     couples (if applicable) and schedule a future breakup. */
-    
-    for(p = 0; p < NPATCHES; p++){
-        
-        //q = 1-p; // for between patches partnerships only
-        //q = p; // for within patches partnerships only
-        
-        for(q = 0; q < NPATCHES; q++){
-            
-            /* Draw partnerships between females in patch p and males in patch q */
-            draw_new_partnerships(t, overall_partnerships, patch, patch[p].param, p, q, debug,
-                file_data_store);
-        }
+    /* Loop over partnership types (long-term/casual): */
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	for(p = 0; p < NPATCHES; p++){
+	    
+	    //q = 1-p; // for between patches partnerships only
+	    //q = p; // for within patches partnerships only
+	    
+	    for(q = 0; q < NPATCHES; q++){
+		
+		/* Draw partnerships between females in patch p and males in patch q */
+		draw_new_partnerships(t, overall_partnerships, patch, patch[p].param, p, q, ptype, debug, file_data_store);
+				      
+	    }
+	}
     }
     
     /************************************************************************/

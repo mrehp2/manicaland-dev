@@ -78,5 +78,6 @@ void update_new_male_circumcision_file(int , int , char *);
 void write_to_new_male_circumcision_file(patch_struct *, int , char *, int );
 
 void write_individual_HIVpreventioncascade_barriers(double , patch_struct *, int , int );
+void print_partnership_duration_distribution(patch_struct *);
 
 #endif /* DEBUG_H_ */

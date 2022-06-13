@@ -2583,6 +2583,7 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
 	printf("Error - unknown year in probability_get_hiv_test_in_next_window(). Exiting\n");
 	exit(1);
     }
+    //printf("Calling probability_get_hiv_test_in_next_window() in t=%i, t_gap=%lf, p_test = %lf %lf\n",year,*t_gap,p_test[MALE],p_test[FEMALE]);
 
 }
 

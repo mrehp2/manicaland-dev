@@ -535,8 +535,10 @@ typedef struct {
     /* relative riskiness of between patch partnership compared to within patch */
     double rr_hiv_between_vs_within_patch;
 
-    double relative_number_partnerships_per_risk[N_RISK]; /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group */
-    /* relative_number_partnerships_per_risk[0] HAS TO BE 1 */
+    /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group (for LT/casual partnerships respectively). */
+    double relative_number_partnerships_per_risk_LT[N_RISK]; 
+    double relative_number_partnerships_per_risk_casual[N_RISK]; /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group */
+    /* relative_number_partnerships_per_risk_LT/casual[0] BOTH HAVE TO BE 1 */
 
     /* Distribution of sexual partners over age  */
     double p_age_per_gender[N_GENDER][N_AGE][N_AGE]; /* constraint: sum_i p_age_per_gender[N_GENDER][N_AGE][i] = 1 */

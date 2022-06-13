@@ -5124,8 +5124,6 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-
-		
 		N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(aa+AGE_ADULT,indiv)][indiv->PrEP_cascade_status]++;
 		if(g==MALE)
 		    N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(aa+AGE_ADULT,indiv->n_lifetime_partners)][indiv->circ]++;

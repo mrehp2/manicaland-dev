@@ -186,6 +186,8 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 
 
 	    if(t>=patch[0].param->PrEP_background_params->year_start_background){
+		// Mike's code (May 2022) to print current distribution of durations of partnerships.
+		//print_partnership_duration_distribution(patch);
 		for(p = 0; p < NPATCHES; p++)	
 		    update_PrEPrates(t,patch[p].param);
 	    }
@@ -764,6 +766,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    // Note - only need to call this if the first test is before 2005 - otherwise the following years if statement will capture this. 
 	    if (patch[p].param->COUNTRY_HIV_TEST_START<=2004)
 		draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
+	    printf("Setting up initial HIV cascade events at t=%lf\n",t);
         }
     }
     // Again, this has to be called before deaths_natural_causes() or individual_death_AIDS() 
@@ -771,7 +774,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     if((HIVTESTSCHEDULE == 1) && (t0 >= 2005) && (t_step == 0) && DO_HIV_TESTING == 1){
          // Schedule these annually starting in 2007:
         
-        //printf("Drawing new HIV test events at time %f\n",t);
+        printf("Drawing new HIV test events at time %f\n",t);
         draw_hiv_tests(patch[p].param, patch[p].age_list, t0, patch[p].cascade_events,
             patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].country_setting);
     }

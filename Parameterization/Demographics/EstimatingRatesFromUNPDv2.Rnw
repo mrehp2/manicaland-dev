@@ -283,8 +283,8 @@ rownames(mortality.coeffs.women) <- c("Intercept","Coeff")
 \begin{landscape}
 <<results=tex,echo=FALSE>>=
 
-print(xtable(mortality.coeffs.men,digits=2,caption=paste0("Parameters for ",country," men mortality"),size="\\small"))
-print(xtable(mortality.coeffs.women,digits=2,caption=paste0("Parameters for ",country," women mortality"),size="\\small"))
+print(xtable(mortality.coeffs.men,digits=4,caption=paste0("Parameters for ",country," men mortality"),size="\\small"))
+print(xtable(mortality.coeffs.women,digits=4,caption=paste0("Parameters for ",country," women mortality"),size="\\small"))
 
 @
 

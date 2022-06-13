@@ -2513,3 +2513,51 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
     fclose(PREVENTION_CASCADE_INDIV_BARRIER_FILE);
     
 }
+
+
+
+void print_partnership_duration_distribution(patch_struct *patch){
+    int g, aa, ai, i, number_per_age_group;
+    int i_partner;
+    individual *indiv;
+    /* Temporary store of data from current year. */
+    char temp_string[50000];
+    char temp_string2[500]; 
+    sprintf(temp_string,"Sex,Age.gp,n.partners,durations\n");
+   
+    for(g = 0; g < N_GENDER; g++){
+        for(aa=0; aa<(MAX_AGE-AGE_ADULT); aa++){
+            ai = aa + patch[0].age_list->age_list_by_gender[g]->youngest_age_group_index;
+            while (ai>(MAX_AGE-AGE_ADULT-1)){
+                ai = ai - (MAX_AGE-AGE_ADULT);
+            }
+	    
+	    /* Loop through everyone in this age group: */
+	    number_per_age_group = patch[0].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	    for(i = 0; i < number_per_age_group; i++){
+		indiv = patch[0].age_list->age_list_by_gender[g]->age_group[ai][i];
+		if(indiv->n_partners==0){
+		    sprintf(temp_string2,"%i,%i,%i\n",g,aa,indiv->n_partners);
+		}
+		else{
+		    sprintf(temp_string2,"%i,%i,%i,",g,aa,indiv->n_partners);
+		}
+		join_strings_with_check(temp_string, temp_string2, 50000,
+					"temp_string and temp_string2 in print_partnership_duration_distribution()");
+
+		for (i_partner=0; i_partner<indiv->n_partners; i_partner++){
+		    if(i_partner<(indiv->n_partners-1))
+			sprintf(temp_string2,"%i,",indiv->partner_pairs[i_partner]->duration_in_time_steps);
+		    else
+			sprintf(temp_string2,"%i\n",indiv->partner_pairs[i_partner]->duration_in_time_steps);			
+		    join_strings_with_check(temp_string, temp_string2, 50000,
+					    "temp_string and temp_string2 in print_partnership_duration_distribution()");
+		}
+		
+	    }
+	}
+    }
+    printf("PARTNER DURATION QQQ%s",temp_string);
+    exit(1);
+}
+

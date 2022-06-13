@@ -76,12 +76,19 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
 	}
     }
     else if(PREP_ELIGIBLE_CRITERIA==2){
-	/* 0 if never had sex, 1 if had. */
-	int ever_had_sex = (indiv->n_lifetime_partners==0)?0:1;
+        int has_casual_partner = 0;
+	for (int i_partner=0; i_partner<indiv->n_partners; i_partner++){
+	    if(indiv->partner_pairs[i_partner]->duration_in_time_steps<N_TIME_STEP_PER_YEAR){
+		has_casual_partner = 1;
+		break;
+	    }
+	}
+	printf("Has casual partner: %i\n",has_casual_partner);
+
 	if(g==FEMALE){
 	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_F;
-	    else if(ever_had_sex==0)
+	    else if(has_casual_partner==0)
 		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F;
 	    else if(age<=24)
 		return i_PrEP_PREVENTIONBARRIER_YOUNG_F;
@@ -93,7 +100,7 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
 	else if(g==MALE){
 	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
 		return i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M;
-	    else if(ever_had_sex==0)
+	    else if(has_casual_partner==0)
 		return i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M;
 	    else if(age<=29)
 		return i_PrEP_PREVENTIONBARRIER_YOUNG_M;

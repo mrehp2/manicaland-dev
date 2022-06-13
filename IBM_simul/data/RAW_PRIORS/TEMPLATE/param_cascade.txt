@@ -11,7 +11,7 @@ p_HIV_background_testing_male_2005_2010 [0.022-0.053]
 p_HIV_background_testing_male_2010_2013 [0.107-0.160]
 p_HIV_background_testing_male_current [0.255-0.339] // Annual baseline probability of a female having an HIV test from 2013 onwards in the background cascade
 p_HIV_background_testing_age_adjustment_factor_youngest_age_group [0.1-0.5] // This scales HIV testing rates in younger age groups. Value is derived to fit HIV awareness/on ART cascade for Manicaland. 0.5 was too high - see if 0.3 works.
-HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC.
+HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC. Not used in Manicaland.
 p_collect_hiv_test_results_cd4_over200 0.97 //
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 
 p_collect_cd4_test_results_and_start_ART_2008 0.1 // This is the probability of getting CD4 results AND starting ART given collected HIV test results. It varies piecewise linearly. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\HIV_testing_notes2021.xlsx for derivation from Manicaland cohort (based in part on trial-and-error). For PopART it was  [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic.
@@ -42,7 +42,7 @@ t_cd4_whenartfirstavail_min 0.0 // Assumption - meam of 12 months to start ART (
 t_cd4_whenartfirstavail_max 2.0 // Assumption as above (0-2 years gives mean of 1 year).
 t_delay_hivtest_to_cd4test_nonpopart_min 0.02083333 // Time from (positive) HIV test to CD4 test. Mugglin Trop Health 2012: somewhere between same day and median of 60 days. So minimum of 1 timestep (to avoid scheduling issues)
 t_delay_hivtest_to_cd4test_nonpopart_max 0.5 // Rosen and Fox (PLOS Med 2011) have upper limit of 6 months in their review.
-t_start_art_nonpopart_mean 0.14575 // E-mail from Lebby (Malebogo Tlhajoane <m.tlhajoane@gmail.com>, 01 October 2019 20:07): "Days between HIV diagnosis and ART initiation (after treat-all was introduced): Mean = 53.2, Median = 11, SD = 141.4". 53.2/365=0.14575.
+t_start_art_nonpopart_mean 0.14575 // Used in Manicaland. E-mail from Lebby (Malebogo Tlhajoane <m.tlhajoane@gmail.com>, 01 October 2019 20:07): "Days between HIV diagnosis and ART initiation (after treat-all was introduced): Mean = 53.2, Median = 11, SD = 141.4". 53.2/365=0.14575.
 t_end_vs_becomevu_nonpopart_min 0.01 // Assumption to match timescale of Vinikoor 
 t_end_vs_becomevu_nonpopart_max 6.0 // Assumption to match timescale of Vinikoor
 t_end_vs_dropout_nonpopart_min 1.0 // CF assumption to have 5% drop out per year
@@ -51,7 +51,7 @@ t_end_vu_becomevs_nonpopart_min 0.01 // **** FIX ME**** To match timescale for b
 t_end_vu_becomevs_nonpopart_max 6.0 // **** FIX ME**** To match timescale for becoming virally unsuppressed
 t_end_vu_dropout_nonpopart_min 1.0 // As for t_end_vs_dropout_nonpopart_min **** FIX ME**** 
 t_end_vu_dropout_nonpopart_max 20.0 //
-p_circ_nopopart BY_COUNTRY // Probability of 'background' VMMC
-t_get_vmmc_nonpopart_min 0 // Chosen as we schedule VMMC annually (so t_get_vmmc lies in [0,1]).
-t_get_vmmc_nonpopart_max 1.0 // 
-t_vmmc_healing 0.038 // Cori 2014 table S6 (page 12) tau_heal=26, corresponding to 2 weeks healing period. Approximate 2/52 ~ 0.038.
+p_circ_nopopart BY_COUNTRY // Probability of 'background' VMMC. Not used for Manicaland.
+t_get_vmmc_nonpopart_min 0 // Chosen as we schedule VMMC annually (so t_get_vmmc lies in [0,1]) - this is the time following a negative HIV test that someone agreeing to VMMC gets it. Not used for Manicaland.
+t_get_vmmc_nonpopart_max 1.0 // Not used for Manicaland.
+t_vmmc_healing 0.038 // Cori 2014 table S6 (page 12) tau_heal=26, corresponding to 2 weeks healing period. Approximate 2/52 ~ 0.038. Not used for Manicaland.

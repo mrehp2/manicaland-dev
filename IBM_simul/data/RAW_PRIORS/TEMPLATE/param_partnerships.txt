@@ -5,10 +5,10 @@ c_m_LT FROM_R_PARTNERSHIP_ANALYSIS
 c_f_casual FROM_R_PARTNERSHIP_ANALYSIS
 c_m_casual FROM_R_PARTNERSHIP_ANALYSIS
 c_multiplier [0.5-4.0] // Boosts (or reduces) the number of partnerships compared to what is reported in PC0. Add a bit of range here.  High assumption set is [0.5-4.0], low assumption set is [0.625-5.0].
-rr_mean_ly_young_F_byround 1.13 1.26 1.00 0.84 0.82 1.00 1.00 // Currently derived in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Cohort_analysis\changes_in_npartner_over_time.R. Code calculates the mean of the annual number of partners per year among young (<25) and old (25+) women and men, divided by the round 6 value of the mean. Each number represents the value at a given round. For R7 we set it to 1 for now (true values are 1.52, 1.73, 1.06, 0.79)
-rr_mean_ly_old_F_byround 1.29 1.02 1.09 1.02 0.84 1.00 1.00
-rr_mean_ly_young_M_byround 3.71 2.32 1.95 1.19 0.73 1.00 1.00
-rr_mean_ly_old_M_byround 1.41 1.03 1.08 0.91 0.68 1.00 1.00
+rr_mean_ly_young_F_byround 0.76 0.53 0.68 0.54 0.54 0.66 1.00 // Currently derived in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Cohort_analysis\changes_in_npartner_over_timeJune2022.R. Code calculates the mean of the annual number of partners per year among young (<25) and old (25+) women and men, divided by the round 7 value of the mean. Each number represents the value at a given round. We ignore R8 because of covid.
+rr_mean_ly_old_F_byround 0.91 0.71 0.79 0.74 0.61 0.73 1.00
+rr_mean_ly_young_M_byround 3.55 2.23 1.88 1.13 0.67 0.93 1.00
+rr_mean_ly_old_M_byround 1.74 1.29 1.36 1.14 0.86 1.26 1.00
 rel_rate_partnership_formation_between_patches FROM_R_PARTNERSHIP_ANALYSIS
 rr_hiv_between_vs_within_patch FROM_R_PARTNERSHIP_ANALYSIS
 relative_number_partnerships_per_risk_LT FROM_R_PARTNERSHIP_ANALYSIS

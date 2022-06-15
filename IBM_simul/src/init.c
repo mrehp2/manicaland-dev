@@ -434,6 +434,12 @@ void set_up_population(int p, patch_struct *patch, population *pop, int scenario
     person_template.n_lifetime_partners_outside = 0;
     person_template.n_lifetimeminusoneyear_partners_outside = 0;
     person_template.n_partnersminusoneyear = 0;
+    for(int ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+        person_template.n_partners_by_partnership_type[ptype] = 0;
+	person_template.n_lifetime_partners_by_partnership_type[ptype] = 0;
+    }
+
+
     person_template.idx_serodiscordant = -1;              /* Not in a serodiscordant partnership */
     person_template.idx_hsv2_serodiscordant = -1;              /* Not in a hsv-2 serodiscordant partnership */
 

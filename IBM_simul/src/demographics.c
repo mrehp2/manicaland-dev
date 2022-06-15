@@ -751,7 +751,10 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
     new_adult->n_partners = 0;         
     new_adult->n_HIVpos_partners = 0;
     new_adult->n_HSV2pos_partners = 0;
-
+    for(int ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	new_adult->n_partners_by_partnership_type[ptype] = 0;
+	new_adult->n_lifetime_partners_by_partnership_type[ptype] = 0;
+    }
 
 
     // At present set_max_n_partners() does not actually use age group or gender.
@@ -1956,6 +1959,10 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
         {
             a_partner->n_partners_outside--;
         }
+
+	/* Look up the type of partnership, and reduce that by 1: */
+	a_partner->n_partners_by_partnership_type[a_partnership_ptr->partnership_type]--;
+	
         /* Get the age group of this partner: */
         ag = get_age_group(a_partner->DoB,t, AGE_GROUPS, N_AGE);
 

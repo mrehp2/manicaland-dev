@@ -47,7 +47,7 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p);
 void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p);
 
 void generate_intervention_increase_in_partnership_condom_use_lookuptable(cascade_barrier_params *barrier_params);
-void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, double duration_partnership);
+void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, int ptype);
 void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p);
 
 void update_specific_age_VMMCbarriers_from_ageing(double t, int t_step, patch_struct *patch, int p, int age_to_update);

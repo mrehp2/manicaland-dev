@@ -127,7 +127,9 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
     /* duration (in number of time steps) of the partnership */
 
     pair->duration_in_time_steps = time_to_partnership_dissolution(param,ind1->sex_risk,ind2->sex_risk, ptype, ind1->patch_no, ind2->patch_no); //// IF WE WANT SOMETHING ASYMETRICAL ACCORDING TO GENDER WILL NEED TO SPECIFY WHICH IS THE MALE AND WHICH IS THE FEMALE
-
+    /* Type of partnership: */
+    pair->partnership_type = ptype;
+    
     if(DEBUG_PARTNERSHIP_DURATION ==1)
     {
 
@@ -174,6 +176,7 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
 
     /* updating the partners of ind1 and ind2 accordingly */
     ind1->n_partners++;
+    ind1->n_partners_by_partnership_type[ptype]++;
     ind1->partner_pairs[ind1->n_partners-1] = pair;
     if(ind2->HIV_status>0 && ind1->HIV_status==0) /* then we need to tell ind1 that he has a new HIV partner */
     {
@@ -186,10 +189,10 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
     }
 
     ind1->n_lifetime_partners++;
-
-
+    ind1->n_lifetime_partners_by_partnership_type[ptype]++;
     
     ind2->n_partners++;
+    ind2->n_partners_by_partnership_type[ptype]++;
     ind2->partner_pairs[ind2->n_partners-1] = pair;
     if(ind1->HIV_status>0 && ind2->HIV_status==0)  /* then we need to tell ind2 that he has a new HIV partner */
     {
@@ -201,7 +204,7 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
         ind2->partner_pairs_HIVpos[ind2->n_HIVpos_partners-1] = pair;
     }
     ind2->n_lifetime_partners++;
-
+    ind2->n_lifetime_partners_by_partnership_type[ptype]++;
 
     /* If either partner is having first sex (so this is their first partner), then set up any necessary first sex characteristics: */
     if(ind1->n_lifetime_partners==1)
@@ -491,6 +494,9 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
 
             /* decreasing the number of partners by 1 */
             who->n_partners--;
+	    /* Decrease the number of partners of this partnership type by 1: */
+	    who->n_partners_by_partnership_type[breakup->partnership_type]--;
+	    
             /* copying the last partner in place of this one - NOTE FOR DEBUGGING: AC does this the opposite way to MP who firstly swaps with the n-1 entry and then decreases n. */
             who->partner_pairs[index_partner] = who->partner_pairs[who->n_partners];
 

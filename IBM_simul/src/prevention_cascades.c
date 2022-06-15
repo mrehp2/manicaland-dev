@@ -76,13 +76,15 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
 	}
     }
     else if(PREP_ELIGIBLE_CRITERIA==2){
-        int has_casual_partner = 0;
+        int has_casual_partner = (indiv->n_partners_by_partnership_type[CASUAL]==0)?0:1;
+	/*
 	for (int i_partner=0; i_partner<indiv->n_partners; i_partner++){
-	    if(indiv->partner_pairs[i_partner]->duration_in_time_steps<N_TIME_STEP_PER_YEAR){
+	    if(indiv->partner_pairs[i_partner]->partnership_type==CASUAL){
 		has_casual_partner = 1;
 		break;
 	    }
 	}
+	*/
 	printf("Has casual partner: %i\n",has_casual_partner);
 
 	if(g==FEMALE){
@@ -176,7 +178,7 @@ void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, casc
     int age = (int) floor(t-indiv->DoB);
     if(indiv->id==FOLLOW_INDIVIDUAL){
 	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
-	printf("Age=%i gender=%i n_partners=%li\n",age,indiv->gender,indiv->n_lifetime_partners);
+	printf("Age=%i gender=%i n_partners=%i n_casual_partners=%i\n",age,indiv->gender,indiv->n_partners,indiv->n_partners_by_partnership_type[CASUAL]);
     }
 
     indiv->cascade_barriers.p_will_use_PrEP = &(barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,indiv)]);
@@ -475,7 +477,7 @@ void generate_intervention_increase_in_partnership_condom_use_lookuptable(cascad
 
 /* Function called when a condom barrier prevention intervention occurs, potentially changing condom use in existing partnerships (*starting condom use in partnership where condoms were not used before*).
    Function called by ******. */
-void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, double duration_partnership){
+void update_partnership_condom_use_in_response_to_intervention(individual *indiv1, individual *indiv2, cascade_barrier_params barrier_params, double t, int ptype){
     
     double change_in_p_use_condom; /* We want to calculate what the extra probability of using a condom is; */
     double x;  /* RV to see if condom is used or not. */
@@ -498,7 +500,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
     
 
     /* Look at change in probability: */    
-    if (duration_partnership<1.0){
+    if (ptype==CASUAL){
 	change_in_p_use_condom = barrier_params.change_in_p_use_condom_casual[index_HIV_prevention_cascade_condom(ageM,MALE)][index_HIV_prevention_cascade_condom(ageF,FEMALE)-N_COND_PREVENTIONBARRIER_GROUPS_M];
     }
     /* Long-term partnership: */
@@ -578,7 +580,7 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
     individual *partner;
     long id;
     int n_partners;
-    double duration_partnership;
+    int ptype;
 
     /* Store scenario for easier readability. */
     int intervention_scenario = patch[p].param->barrier_params.i_condom_barrier_intervention_flag;
@@ -612,8 +614,8 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 		    if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==NOCOND){
 			partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 			if (id< partner->id){
-			    duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
-			    update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, duration_partnership);				    //get_partnership_condom_use(indiv, partner, t, duration_partnership);
+			    ptype = indiv->partner_pairs[i_partners]->partnership_type;
+			    update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, ptype);				    //get_partnership_condom_use(indiv, partner, t, duration_partnership);
 			}
 		    }		    
 
@@ -633,8 +635,8 @@ void prevention_cascade_intervention_condom(double t, patch_struct *patch, int p
 		if (indiv->cascade_barriers.use_condom_in_this_partnership[i_partners]==NOCOND){
 		    partner = indiv->partner_pairs[i_partners]->ptr[1-g];
 		    if (id< partner->id){
-			duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
-			update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, duration_partnership);				//get_partnership_condom_use(indiv, partner, t, duration_partnership);
+			ptype = indiv->partner_pairs[i_partners]->partnership_type;
+			update_partnership_condom_use_in_response_to_intervention(indiv, partner, patch[p].param->barrier_params, t, ptype);				//get_partnership_condom_use(indiv, partner, t, duration_partnership);
 		    }		    
 
 		}

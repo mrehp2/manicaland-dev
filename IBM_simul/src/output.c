@@ -34,7 +34,7 @@
 * print_partners()
     for a given individual print all their partner ids (and their HIV+ partners if HIV-).
 * print_partnership()
-    prints the ids of people in a given partnership, and the duration of their partnership.
+    prints the ids of people in a given partnership, the type of partnership (LT/casual), and the duration of their partnership.
 * print_HIV_status()
     prints the HIV status of a given individual.
 * print_demographics()
@@ -494,7 +494,7 @@ void print_partners(individual *indiv){
 /* Used in checks.c to output the two individual ids of the people in a given partnership, and the duration of their partnership. */
 void print_partnership(partnership *pair)
 {
-    printf("Individuals %ld and %ld are in a partnership which will last for %lg years from time of formation.\n",pair->ptr[0]->id,pair->ptr[1]->id, pair->duration_in_time_steps*TIME_STEP);
+    printf("Individuals %ld and %ld are in a partnership of type %i which will last for %lg years from time of formation.\n",pair->ptr[0]->id,pair->ptr[1]->id, pair->partnership_type, pair->duration_in_time_steps*TIME_STEP);
 }
 
 
@@ -4989,15 +4989,14 @@ void add_to_condom_use_prevention_cascade_counts(int aa, int g, individual *indi
     int n_partners_casual_indiv = 0;
     int n_partners_LT_usecond_indiv = 0;
     int n_partners_casual_usecond_indiv = 0;
-
-    double duration_partnership;
+    int ptype;
     
     /* Now check this person's partnerships: */
     for (i_partners=0; i_partners<n_partners; i_partners++){
 
-	duration_partnership = indiv->partner_pairs[i_partners]->duration_in_time_steps *TIME_STEP;
+	ptype = indiv->partner_pairs[i_partners]->partnership_type;
 
-	if(duration_partnership<1.0){
+	if(ptype==CASUAL){
 	    n_partners_casual_indiv++;
 	    n_partners_casual_usecond_indiv += indiv->cascade_barriers.use_condom_in_this_partnership[i_partners];
 	}

@@ -45,9 +45,11 @@ typedef struct partnership partnership;
 
 struct partnership{
     /* Structure partnership contains one pointer to a list of 2 persons, 
-    and the time after which break-up occurs (in the absence of death): */
+    the time after which break-up occurs (in the absence of death), and
+    the type of partnership ("ptype": LONGTERM, CASUAL, etc): */
     individual* ptr[2];
     int duration_in_time_steps;
+    int partnership_type;
 };
 
 
@@ -223,6 +225,11 @@ struct individual{
 
     long n_partnersminusoneyear; /* Counts the number of partners that someone has had at the start of the current year. Thus n_partnersminusoneyear + n_lifetime_partners-n_lifetimeminusoneyear_partners gives the number of partners in the most recent years (existing + new)*/
 
+    /* Counters by partnership type (LT/casual etc). 
+       Should sum to n_partners, n_lifetime_partners. */
+    int n_partners_by_partnership_type[N_PARTNER_TYPES];
+    int n_lifetime_partners_by_partnership_type[N_PARTNER_TYPES];
+    
     int VISITED_BY_CHIPS_THISROUND;  /* Records whether a person has been visited by CHiPs (=1) or not (=0) this round. */
     int VISITEDBYCHIPS_TO_INIT_ART;  /* This is a flag used to generate survival curves for ART initiation. */
     int NCHIPSVISITS;                /* Records the number of visits a person has had by CHiPs throughout their life. */

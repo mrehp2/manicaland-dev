@@ -2467,7 +2467,7 @@ void write_individual_HIVpreventioncascade_barriers(double t, patch_struct *patc
 		N_partners_condom_used_casual = 0;
 
 		for(i_partners=0; i_partners<indiv->n_partners; i_partners++){
-		    if(indiv->partner_pairs[i_partners]->duration_in_time_steps>N_TIME_STEP_PER_YEAR){
+		    if(indiv->partner_pairs[i_partners]->partnership_type==LONGTERM){
 			N_partners_condom_used_LT += indiv->cascade_barriers.use_condom_in_this_partnership[i_partners];
 			N_partners_LT++;
 		    }

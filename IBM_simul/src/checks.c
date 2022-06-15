@@ -78,6 +78,23 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
     indiv3->n_partners = 0;
     indiv4->n_partners = 0;
 
+    indiv1->n_lifetime_partners = 0;
+    indiv2->n_lifetime_partners = 0;
+    indiv3->n_lifetime_partners = 0;
+    indiv4->n_lifetime_partners = 0;
+
+    for(int ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+        indiv1->n_partners_by_partnership_type[ptype] = 0;
+	indiv1->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv2->n_partners_by_partnership_type[ptype] = 0;
+	indiv2->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv3->n_partners_by_partnership_type[ptype] = 0;
+	indiv3->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv4->n_partners_by_partnership_type[ptype] = 0;
+	indiv4->n_lifetime_partners_by_partnership_type[ptype] = 0;
+    }
+
+    
     indiv1->n_HIVpos_partners = 0;
     indiv2->n_HIVpos_partners = 0;
     indiv3->n_HIVpos_partners = 0;
@@ -202,6 +219,23 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
     indiv3->n_partners = 0;
     indiv4->n_partners = 0;
 
+    indiv1->n_lifetime_partners = 0;
+    indiv2->n_lifetime_partners = 0;
+    indiv3->n_lifetime_partners = 0;
+    indiv4->n_lifetime_partners = 0;
+
+    for(int ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+        indiv1->n_partners_by_partnership_type[ptype] = 0;
+	indiv1->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv2->n_partners_by_partnership_type[ptype] = 0;
+	indiv2->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv3->n_partners_by_partnership_type[ptype] = 0;
+	indiv3->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv4->n_partners_by_partnership_type[ptype] = 0;
+	indiv4->n_lifetime_partners_by_partnership_type[ptype] = 0;
+    }
+
+    
     indiv1->n_HIVpos_partners = 0;
     indiv2->n_HIVpos_partners = 0;
     indiv3->n_HIVpos_partners = 0;
@@ -365,6 +399,23 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
     indiv3->n_partners = 0;
     indiv4->n_partners = 0;
 
+    indiv1->n_lifetime_partners = 0;
+    indiv2->n_lifetime_partners = 0;
+    indiv3->n_lifetime_partners = 0;
+    indiv4->n_lifetime_partners = 0;
+
+    for(int ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+        indiv1->n_partners_by_partnership_type[ptype] = 0;
+	indiv1->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv2->n_partners_by_partnership_type[ptype] = 0;
+	indiv2->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv3->n_partners_by_partnership_type[ptype] = 0;
+	indiv3->n_lifetime_partners_by_partnership_type[ptype] = 0;
+        indiv4->n_partners_by_partnership_type[ptype] = 0;
+	indiv4->n_lifetime_partners_by_partnership_type[ptype] = 0;
+    }
+    
+    
     indiv1->n_HIVpos_partners = 0;
     indiv2->n_HIVpos_partners = 0;
     indiv3->n_HIVpos_partners = 0;

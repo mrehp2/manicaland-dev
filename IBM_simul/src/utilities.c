@@ -533,7 +533,7 @@ void calculate_current_c_within_patch(parameters *param, double rr_m[2], double 
 	param->c_per_gender_within_patch[ptype][MALE][ag] = param->c_per_gender_within_patch_baseline[ptype][MALE][ag] * rr_m[i_young_old];
 	    
 	
-	//printf("param->c_per_gender_within_patch[ptype][FEMALE][ag] = %lf param->c_per_gender_within_patch[ptype][MALE][ag] = %lf\n",param->c_per_gender_within_patch[ptype][FEMALE][ag],param->c_per_gender_within_patch[ptype][MALE][ag]);
+	//printf("AAparam->c_per_gender_within_patch[ptype=%i][FEMALE][ag=%i] = %lf param->c_per_gender_within_patch[ptype][MALE][ag] = %lf\n",ptype,ag,param->c_per_gender_within_patch[ptype][FEMALE][ag],param->c_per_gender_within_patch[ptype][MALE][ag]);
     }
 }
 
@@ -585,11 +585,12 @@ void update_number_new_partners(double t, patch_struct *patch){
 		for(ag = 0; ag < N_AGE; ag++)
 		    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
 			patch[p].param->c_per_gender_within_patch[ptype][g][ag] = patch[p].param->c_per_gender_within_patch_baseline[ptype][g][ag];
+		    }
 	    }
 	}
 	return;
     }
-
+    
     /* Now deal with Zimbabwe: */
 
     double rr_f[2], rr_m[2]; /* Temp store for the specific rr being used. The "2" are young/old (correspond to rr_mean_ly_F/M_byround[2][NCOHORTROUNDS]. */
@@ -605,8 +606,8 @@ void update_number_new_partners(double t, patch_struct *patch){
 	    if(round==(NCOHORTROUNDS-1)){
 		/* Assume same RR as last round in future: */
 		for(i_young_old=0; i_young_old<2; i_young_old++){
-		    rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][NCOHORTROUNDS];
-		    rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][NCOHORTROUNDS];
+		    rr_f[i_young_old] = patch[p].param->rr_mean_ly_F_byround[i_young_old][NCOHORTROUNDS-1];
+		    rr_m[i_young_old] = patch[p].param->rr_mean_ly_M_byround[i_young_old][NCOHORTROUNDS-1];
 		}
 	    }
 	    /* Code is called by read_partnership_params() to set pre-cohort values: */
@@ -636,7 +637,16 @@ void update_number_new_partners(double t, patch_struct *patch){
 		calculate_c_between_patches(patch[p].param, ptype);
 	}
     }
+    /* To check rr_f/m: 
+    printf("DEBUG_RR_PARTNER_BY_ROUNDt=%lf ",t);
+    for(i_young_old=0; i_young_old<2; i_young_old++){
+	printf("rr_f[%i]=%lf ",i_young_old,rr_f[i_young_old]);
+	printf("rr_m[%i]=%lf ",i_young_old,rr_m[i_young_old]);
+    } 
+    printf("\n");
+    */
 }
+
     
 
 void update_time_varying_hazard_onepatch(double t, parameters *param){
@@ -1700,15 +1710,20 @@ void print_partnership_params(parameters *param){
     printf("param->assortativity=%lg\n",param->assortativity);
     printf("param->prop_compromise_from_males=%lg\n",param->prop_compromise_from_males);
 
-    for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch_LT[FEMALE][ag]=%lg\n",param->c_per_gender_within_patch_LT[FEMALE][ag]);
-    for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch_LT[MALE][ag]=%lg\n",param->c_per_gender_within_patch_LT[MALE][ag]);
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	for (ag=0; ag<N_AGE; ag++)
+	    printf("param->c_per_gender_within_patch[ptype][FEMALE][ag]=%lg\n",param->c_per_gender_within_patch[ptype][FEMALE][ag]);
+	for (ag=0; ag<N_AGE; ag++)
+	    printf("param->c_per_gender_within_patch[ptype][MALE][ag]=%lg\n",param->c_per_gender_within_patch[ptype][MALE][ag]);
+    }
 
-    for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch_casual[FEMALE][ag]=%lg\n",param->c_per_gender_within_patch_casual[FEMALE][ag]);
-    for (ag=0; ag<N_AGE; ag++)
-        printf("param->c_per_gender_within_patch_casual[MALE][ag]=%lg\n",param->c_per_gender_within_patch_casual[MALE][ag]);
+    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	for (ag=0; ag<N_AGE; ag++)
+	    printf("param->c_per_gender_within_patch_baseline[ptype][FEMALE][ag]=%lg\n",param->c_per_gender_within_patch_baseline[ptype][FEMALE][ag]);
+	for (ag=0; ag<N_AGE; ag++)
+	    printf("param->c_per_gender_within_patch_baseline[ptype][MALE][ag]=%lg\n",param->c_per_gender_within_patch_baseline[ptype][MALE][ag]);
+    }
+    
 
     printf("param->rel_rate_partnership_formation_between_patches=%lg\n",param->rel_rate_partnership_formation_between_patches);
 
@@ -1736,6 +1751,7 @@ void print_partnership_params(parameters *param){
     for(r=0 ; r<N_RISK ; r++)
         printf("param->breakup_shape_k[r]=%lg\n",param->breakup_shape_k[r]);
 }
+
 
 void print_time_params(parameters *param){
     int i;
@@ -2905,7 +2921,6 @@ void check_if_parameters_plausible(parameters *param){
         fflush(stdout);
         exit(1);
     }
-
 
 
     for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){

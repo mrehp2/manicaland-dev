@@ -37,8 +37,7 @@
 // -------
 // Nothing; performs a test
 
-void check_partnership_formation(all_partnerships *overall_partnerships, parameters *param, 
-    debug_struct *debug, file_struct *file_data_store){
+void check_partnership_formation(all_partnerships *overall_partnerships, parameters *param, debug_struct *debug, file_struct *file_data_store, int ptype){
 
     printf("-------------------------------------\n");
     printf("Check partnership formation:\n");
@@ -97,13 +96,13 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
     print_partners(indiv4);
 
     /* forming partnership between them and checking things are OK */
-    new_partnership( indiv1, indiv3,param->start_time_simul, 
+    new_partnership( indiv1, indiv3,ptype, param->start_time_simul, 
 		     overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership( indiv1, indiv4, param->start_time_simul, 
+    new_partnership( indiv1, indiv4,ptype,  param->start_time_simul, 
         overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership( indiv2, indiv4, param->start_time_simul, 
+    new_partnership( indiv2, indiv4,ptype,  param->start_time_simul, 
         overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
 
@@ -142,7 +141,7 @@ void check_partnership_formation(all_partnerships *overall_partnerships, paramet
 
 void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p, 
     all_partnerships *overall_partnerships, output_struct *output, debug_struct *debug, 
-    file_struct *file_data_store){
+    file_struct *file_data_store, int ptype){
 
     int i;
 
@@ -228,13 +227,13 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
     print_HIV_status(indiv4);
 
     /* forming partnership between them and checking things are OK */
-    new_partnership(indiv1, indiv3, patch[p].param->start_time_simul, 
+    new_partnership(indiv1, indiv3, ptype, patch[p].param->start_time_simul, 
         overall_partnerships, patch[p].param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership(indiv1, indiv4, patch[p].param->start_time_simul, 
+    new_partnership(indiv1, indiv4, ptype, patch[p].param->start_time_simul, 
         overall_partnerships, patch[p].param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership(indiv2, indiv4, patch[p].param->start_time_simul, 
+    new_partnership(indiv2, indiv4, ptype, patch[p].param->start_time_simul, 
         overall_partnerships, patch[p].param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
 
@@ -319,7 +318,7 @@ void check_partnership_formation_and_HIV_acquisition(patch_struct *patch, int p,
 // 
 
 void check_partnership_dissolution(all_partnerships *overall_partnerships, parameters *param, 
-    debug_struct *debug, file_struct *file_data_store){
+				   debug_struct *debug, file_struct *file_data_store, int ptype){
     
     long initial_n_partnerships = *overall_partnerships->n_partnerships;
     int i;
@@ -377,13 +376,13 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
     indiv4->n_HSV2pos_partners = 0;
 
     /* forming partnership between them and checking things are OK */
-    new_partnership(indiv1, indiv3, param->start_time_simul, 
+    new_partnership(indiv1, indiv3, ptype, param->start_time_simul, 
         overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership(indiv1, indiv4, param->start_time_simul, 
+    new_partnership(indiv1, indiv4, ptype, param->start_time_simul, 
         overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
-    new_partnership(indiv2, indiv4, param->start_time_simul, 
+    new_partnership(indiv2, indiv4, ptype, param->start_time_simul, 
         overall_partnerships, param, debug, file_data_store);
     (*overall_partnerships->n_partnerships) ++;
 
@@ -488,7 +487,7 @@ void make_fake_population(population_size *n_pop, stratified_population_size *n_
 // Returns
 // -------
 
-void check_draw_number_partnership(patch_struct *patch, int p){
+void check_draw_number_partnership(patch_struct *patch, int p, int ptype){
 
     /* filling in a population at random */
     make_fake_population(patch[p].n_population, patch[p].n_population_stratified);
@@ -499,7 +498,7 @@ void check_draw_number_partnership(patch_struct *patch, int p){
     /* drawing number of partnerships between subgroups of this population */
     int ag_f, r_f, ag_m, r_m;
 
-    draw_nb_new_partnerships(patch, patch[p].param,0,0);
+    draw_nb_new_partnerships(patch, patch[p].param, ptype, 0,0);
 
     for(ag_f = 0; ag_f < N_AGE; ag_f++){
         for(r_f = 0; r_f < N_RISK; r_f++){

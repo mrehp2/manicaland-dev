@@ -325,7 +325,7 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 /* This function returns the geometric mean of the individual-level preferences to generate a partner-level probability. 
    Make no assumptions about gender - so could be used for MSM in future. 
 */
-double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, double duration_partnership){
+double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, int ptype){
 
     /* Individual-level preferences for using condom: */
     double p_use_condom1, p_use_condom2;
@@ -333,7 +333,9 @@ double calculate_partnership_condom_cascade_probability(individual *indiv1, indi
     double p_use_condom;
 
     //p_use_condom1 = generate_individual_condom_preference(indiv1, t, duration_partnership, condom_cascade_scenario);
-    if (duration_partnership<1.0){
+    //p_use_condom1 = *(indiv1->cascade_barriers.p_want_to_use_condom[ptype]);
+    //p_use_condom2 = *(indiv2->cascade_barriers.p_want_to_use_condom[ptype]);
+    if (ptype==CASUAL){
 	p_use_condom1 = *(indiv1->cascade_barriers.p_want_to_use_condom_casual_partner);
 	p_use_condom2 = *(indiv2->cascade_barriers.p_want_to_use_condom_casual_partner);
     }
@@ -349,11 +351,11 @@ double calculate_partnership_condom_cascade_probability(individual *indiv1, indi
 
 /* Function uses individual-level condom barriers to determine if a partnership will use a condom (or not).
    Function called when a partnership is formed in new_partnership(), and also when there is an intervention to modify condom barriers in function intervention_condom_cascade(). */
-void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership){
+void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, int ptype){
     double p_use_condom, x;
 
     /* Works out the partnership probability of using a condom given the individual-level preferences for using a condom (takes the geometric means of them). */
-    p_use_condom = calculate_partnership_condom_cascade_probability(indiv1, indiv2, t, duration_partnership);
+    p_use_condom = calculate_partnership_condom_cascade_probability(indiv1, indiv2, t, ptype);
 
     /* Now draw a random number to see if they will use condoms: */
     x = gsl_rng_uniform (rng);

@@ -300,7 +300,6 @@ int main(int argc,char *argv[]){
     /* Read all the parameter sets - there should be n_runs of them. */
     read_param(input_file_directory, allrunparameters, n_runs, patch);
 
-
     for(i = 0; i < n_runs; i++){
         for(p = 0; p < NPATCHES; p++){
             for(ir = 1; ir < NCHIPSROUNDS; ir++){
@@ -458,6 +457,7 @@ int main(int argc,char *argv[]){
             for(p = 0; p < NPATCHES; p++){
                 patch[p].param = allrunparameters[p] + i_run; /* Use pointer arithmetic. */
                 //print_param_struct(patch,p);      /* For debugging. */
+		//print_partnership_params(patch[0].param);
 
 		/* Generates an age-adjustment vector used to adjust HIV testing by age. Gender is done directly parametrically. */
 		generate_p_HIV_background_testing_age_adjustment_factor(patch);
@@ -1063,7 +1063,7 @@ int main(int argc,char *argv[]){
         /*********************************************************/
 
         patch[0].param = allrunparameters[0];
-        
+
         /* The following functions or groups or functions are to be used ONE AT A TIME and without
         the main simulation working, otherwise individuals with same indexes will be created
         several times! */
@@ -1073,22 +1073,24 @@ int main(int argc,char *argv[]){
         prints output. Memory for these is allocated and freed inside the function. */
         
         reinitialize_arrays_to_default(0, patch, overall_partnerships, output);
+	/* Can set partnership type in check_partnership_formation/dissolution etc to be LONGTERM or CASUAL by hand. */
+	int ptype = LONGTERM;
         check_partnership_formation(overall_partnerships, allrunparameters[0], 
-            debug, file_data_store);
+				    debug, file_data_store, ptype);
 
         /***** Check 2 *****/
         /* Same as check_partnership_formation but with possible HIV transmission within
         partnerships. NOTE - only does patch p=0 at present. */
         reinitialize_arrays_to_default(0, patch, overall_partnerships, output);
         check_partnership_formation_and_HIV_acquisition(patch, 0, overall_partnerships, 
-            output, debug, file_data_store);
+            output, debug, file_data_store, ptype);
 
         /* This standalone function creates 2 women and 2 men, forms partnerships, then dissolves
         some of them (at a time NOT given by the duration of the partnerships, so e.g. this is what
         would happen if one of the partners die). */
         reinitialize_arrays_to_default(0, patch, overall_partnerships, output);
         check_partnership_dissolution(overall_partnerships, allrunparameters[0], 
-            debug, file_data_store);
+            debug, file_data_store, ptype);
 
         /* The functions below first creates an arbitrary population_size object with a certain
         distribution of the population and then calculates and prints the number of partnerships to
@@ -1096,7 +1098,7 @@ int main(int argc,char *argv[]){
         distribution (This allows checking that partnerships are drawn preferentially with similar
         age/risk groups) */
         reinitialize_arrays_to_default(0, patch, overall_partnerships, output);
-        check_draw_number_partnership(patch, 0);
+        check_draw_number_partnership(patch, 0, ptype);
 
         /*********************************************************/
         /*** CHECKS AND DEBUGGING DEMOGRAPHICS ***/

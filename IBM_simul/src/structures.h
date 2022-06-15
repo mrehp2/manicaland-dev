@@ -536,7 +536,7 @@ typedef struct {
     double rr_hiv_between_vs_within_patch;
 
     /* relative number of partnerships formed each year by individuals in a certain risk group, relative to a LOWER risk group person of the same sex and age group (for LT/casual partnerships respectively). */
-    double relative_number_partnerships_per_risk[ptype][N_RISK]; 
+    double relative_number_partnerships_per_risk[N_PARTNER_TYPES][N_RISK]; 
 
     /* relative_number_partnerships_per_risk[LT/casual][0] BOTH HAVE TO BE 1 */
 

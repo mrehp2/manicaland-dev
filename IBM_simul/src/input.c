@@ -791,7 +791,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
 	    for(ag = 0; ag < N_AGE ; ag++){
 		checkreadok = fscanf(param_file, "%lg",
-				     &(param_local->c_per_gender_within_patch_baseline[ptype][[FEMALE][ag])));
+				     &(param_local->c_per_gender_within_patch_baseline[ptype][FEMALE][ag]));
 		check_if_cannot_read_param(checkreadok, "param_local->c_per_gender_within_patch_baseline[ptype]");
 	    }
 
@@ -811,7 +811,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 		param_local->c_per_gender_within_patch_baseline[ptype][MALE][ag] *= c_multiplier;	
 	    }
 	}
-
+    
 	/* Modify the number of partners (to allow people earlier in the epidemic to have more partners for example). 
 	   At present this is only for Zimbabwe (using Manicaland cohort). */
 	if(country_setting==ZIMBABWE){
@@ -823,7 +823,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 		    check_if_cannot_read_param(checkreadok, "param_local->rr_mean_ly_F_byround[i_young_old][round]");
 		}
 	    }
-	    
+		    
 	    for(i_young_old=0; i_young_old<2; i_young_old++){
 		for(round=0; round <NCOHORTROUNDS; round++){
 		    checkreadok = fscanf(param_file, "%lg", &(param_local->rr_mean_ly_M_byround[i_young_old][round]));
@@ -850,7 +850,8 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 	    double rr_m[2] = {param_local->rr_mean_ly_M_byround[0][0],param_local->rr_mean_ly_M_byround[1][0]};
 	    /* Assigns param_local->c_per_gender_within_patch[LT AND casual] given param_local->c_per_gender_within_patch_baseline[LT/casual]: */
 
-	    calculate_current_c_within_patch(param_local, rr_m, rr_f);
+	    for(ptype=0; ptype<N_PARTNER_TYPES; ptype++)
+		calculate_current_c_within_patch(param_local, rr_m, rr_f, ptype);
 	    
 	}
 	else{ /* For non-Zimbabwe settings, the number of partners never changes (unless there's something similar to the Manicaland cohort): */
@@ -859,6 +860,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 		for(ag = 0; ag < N_AGE; ag++){
 		    param_local->c_per_gender_within_patch[ptype][FEMALE][ag] = param_local->c_per_gender_within_patch_baseline[ptype][FEMALE][ag];
 		    param_local->c_per_gender_within_patch[ptype][MALE][ag] = param_local->c_per_gender_within_patch_baseline[ptype][MALE][ag];
+		}
 	    }
 	}
 	
@@ -870,7 +872,8 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 
 	/* This calculates param->c_per_gender_between_patches[][] based on c_per_gender_within_patch[LT/casual] and rel_rate_partnership_formation_between_patches. */
 
-	calculate_c_between_patches(param_local);
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++)
+	    calculate_c_between_patches(param_local,ptype);
 	
 
         checkreadok = fscanf(param_file, "%lg", &(param_local->rr_hiv_between_vs_within_patch));
@@ -971,12 +974,14 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
 
         checkreadok = fscanf(param_file, "%lg", &breakup_scale_multiplier_between_vs_within_patch);
         check_if_cannot_read_param(checkreadok, "breakup_scale_multiplier_between_vs_within_patch");
-        
-        for(r = 0; r < N_RISK; r++){
-            param_local->breakup_scale_lambda_between_patch[ptype][r] =
-                param_local->breakup_scale_lambda_within_patch[ptype][r] *
-                breakup_scale_multiplier_between_vs_within_patch;
-        }
+
+	for(ptype=0; ptype<N_PARTNER_TYPES; ptype++){
+	    for(r = 0; r < N_RISK; r++){
+		param_local->breakup_scale_lambda_between_patch[ptype][r] =
+		    param_local->breakup_scale_lambda_within_patch[ptype][r] *
+		    breakup_scale_multiplier_between_vs_within_patch;
+	    }
+	}
 
         /*printf("------- AFTER READING PARAM_PARTNERSHIPS AND DOING SOME CALCULATION -------\n");
         fflush(stdout);

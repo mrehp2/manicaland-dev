@@ -117,7 +117,7 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
 	    exit(1);
 	}
     }
-	
+    return 999;
 }
 
 

@@ -14,11 +14,11 @@ p_HIV_background_testing_age_adjustment_factor_youngest_age_group [0.1-0.5] // T
 HIV_rapid_test_sensitivity_ANC 0.93 // This is the sensitivity of the rapid HIV test used in ANC. Not used in Manicaland.
 p_collect_hiv_test_results_cd4_over200 0.97 //
 p_collect_hiv_test_results_cd4_under200 1.0 // FIXED Really high so no need to differentiate by CD4? 
-p_collect_cd4_test_results_and_start_ART_2008 0.1 // This is the probability of getting CD4 results AND starting ART given collected HIV test results. It varies piecewise linearly. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\HIV_testing_notes2021.xlsx for derivation from Manicaland cohort (based in part on trial-and-error). For PopART it was  [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic.
-p_collect_cd4_test_results_and_start_ART_2010 0.95
+p_collect_cd4_test_results_and_start_ART_2008 0.1 // Dummy value for now (20 June 2022). This was the probability of getting CD4 results AND starting ART given collected HIV test results. It varies piecewise linearly. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\HIV_testing_notes2021.xlsx for derivation from Manicaland cohort (based in part on trial-and-error). For PopART it was  [0.75-0.95] // [0.58-0.84] Mugglin Trop Healt review 77.6% (95% CI 71.0– 84.2). Heffernan had 57.7 (41.8-72.9). Clouse JAIDS 2013 had 69.8% (66.7-72.9) in an SA clinic.
+p_collect_cd4_test_results_and_start_ART_2010 0.95 // Dummy value for now (20 June 2022).
 p_collect_cd4_test_results_and_start_ART_current 0.95
 p_collect_cd4_test_results_and_remain_in_cascade 0.95 // Probability that someone who has just tested HIV+ picks up CD4 result and remains in care cascade.
-p_emergency_ART 0.5 // Probability of getting emergency ART if needed.
+p_emergency_ART [0-1] // Probability of getting emergency ART if needed.
 p_mtct_nonART_new_adult_knows_status 0.0 // Pufall et al. R5 Manicaland found 19/73 HIV+ children aged 2-14 were aware of status, but 17 of those were on ART (so 2/19 aware but not on ART) https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4239054/. As there isn't a route for people who are aware of status to start ART, we assume everyone aware of status is on ART - and anyone not on ART isn't aware of status.
 p_dies_earlyart_cd4_over500 0.0 // FIXED Assumption for now
 p_dies_earlyart_cd4_350_500 0.0 // FIXED Assumption for now

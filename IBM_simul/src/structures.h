@@ -1268,9 +1268,9 @@ typedef struct{ /* structure which contains all the strings that are outputted *
 
     
     // Counter for the number of incident infections in a PC round
-    long PC_ROUND_INFECTIONS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS - 1];
+    long PC_ROUND_INFECTIONS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
     // Counter for person-timesteps so as we can calculate person years
-    long PC_ROUND_PERSON_TIMESTEPS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS - 1];
+    long PC_ROUND_PERSON_TIMESTEPS[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
     
     long PC_NPOP[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];
     long PC_NPOSITIVE[NPATCHES][N_GENDER][PC_AGE_RANGE_MAX][NPC_ROUNDS];

@@ -2489,18 +2489,18 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
 
 
 void set_probability_starts_ART_if_positive_and_eligible(double t, parameters *param){
-
-    if(t<=2008){
-	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008;
-    }
-    else if(t>=2018){
-	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_current;
-    }
-    else if(t>=2010){
-	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2010 + (param->p_collect_cd4_test_results_and_start_ART_current - param->p_collect_cd4_test_results_and_start_ART_2010)*(t-2010)/(2018.0-2010.0);
-    }else{
-	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008 + (param->p_collect_cd4_test_results_and_start_ART_2010 - param->p_collect_cd4_test_results_and_start_ART_2008)*(t-2008)/(2010.0-2008.0);
-    }	
+    param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_current;
+    /* if(t<=2008){ */
+    /* 	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008; */
+    /* } */
+    /* else if(t>=2018){ */
+    /* 	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_current; */
+    /* } */
+    /* else if(t>=2010){ */
+    /* 	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2010 + (param->p_collect_cd4_test_results_and_start_ART_current - param->p_collect_cd4_test_results_and_start_ART_2010)*(t-2010)/(2018.0-2010.0); */
+    /* }else{ */
+    /* 	param->p_collect_cd4_test_results_and_start_ART = param->p_collect_cd4_test_results_and_start_ART_2008 + (param->p_collect_cd4_test_results_and_start_ART_2010 - param->p_collect_cd4_test_results_and_start_ART_2008)*(t-2008)/(2010.0-2008.0); */
+    /* }	 */
 	
 }
 

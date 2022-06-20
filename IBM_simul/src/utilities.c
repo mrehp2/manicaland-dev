@@ -2519,8 +2519,8 @@ void check_if_parameters_plausible(parameters *param){
     }
 
 
-    if (param->p_emergency_ART<0.3 || param->p_emergency_ART>1){
-        printf("Error:param->p_emergency_ART is outside expected range [0.3,1]\nExiting\n");
+    if (param->p_emergency_ART<0.0 || param->p_emergency_ART>1){
+        printf("Error:param->p_emergency_ART is outside expected range [0,1]\nExiting\n");
         printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
         fflush(stdout);
         exit(1);

@@ -1,23 +1,27 @@
 t_start_prevention_cascade_intervention 2021.0 // If there is a barrier cascade intervention, this is the time (in years) when it starts.
 p_use_VMMC_too_young 0.0  // Annual probability of getting VMMC pre-intervention M aged 14-15 - assumed zero (younger are circumcised by a separate process).
-p_use_VMMC_young_present 0.0458 // [0.0406-0.0514]  // Circumcision for 15-29 year olds. See "Louisa prevention cascade" tab in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMC\Model_VMMC_uptake_FINAL.xlsx.
-p_use_VMMC_old_present 0.0204 // [0.0171-0.0244]  //  VMMC pre-intervention M aged 30-55 
+p_use_VMMC_young_present 0.05 // [0.0406-0.0514]  // Circumcision for 15-29 year olds. See "Louisa prevention cascade" tab in C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Model\VMMC\Model_VMMC_uptake_FINAL.xlsx.
+p_use_VMMC_old_present 0.02 // [0.0171-0.0244]  //  VMMC pre-intervention M aged 30-55 
 p_use_VMMC_too_old 0.0  // VMMC pre-intervention M aged >55 - assumed zero.
 p_use_VMMC_neversex 0.0  // VMMC pre-intervention M if never had sex.
 p_use_PrEP_M_too_young 0.0  // PrEP pre-intervention M aged <15 - assumed zero.
-p_use_PrEP_M_young  0.0010 // [0.0001-0.0074]  // PrEP pre-intervention M aged 15-29
-p_use_PrEP_M_old 0.0018 //  [0.0005-0.0073]  // PrEP pre-intervention M aged 30-55
+p_use_PrEP_M_young  0.003   // PrEP pre-intervention M aged 15-29
+p_use_PrEP_M_old 0.002 //  PrEP pre-intervention M aged 30-55
 p_use_PrEP_M_too_old 0.0  // PrEP pre-intervention M aged >55 - assumed zero.
 p_use_PrEP_F_too_young 0.0  // PrEP pre-intervention F aged <15 - assumed zero.
-p_use_PrEP_F_young  0.0053 // [0.0014-0.0117]  // PrEP pre-intervention F aged 15-24
-p_use_PrEP_F_old 0.0049 // [0.0026-0.0091]  // PrEP pre-intervention F aged 25-55
+p_use_PrEP_F_young  0.0   // PrEP pre-intervention F aged 15-24
+p_use_PrEP_F_old 0.005   // PrEP pre-intervention F aged 25-55
 p_use_PrEP_F_too_old 0.0  // PrEP pre-intervention F aged >55 - assumed zero.
 p_use_PrEP_M_neversex 0.0 // PrEP pre-intervention M if never had sex
 p_use_PrEP_F_neversex 0.0 // PrEP pre-intervention F if never had sex
-p_use_cond_casual_M_young 0.4419 // [0.4106-0.4736]  // Casual partner condom use pre-intervention M aged <=29. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Cascades\cascade_model_parameters.xlsx (louisa's file) column M - i.e. using condoms.
-p_use_cond_casual_M_old 0.2603 // [0.2351-0.2871]  // Casual partner condom use pre-intervention M aged 30+
-p_use_cond_casual_F_young 0.1272 // [0.1091-0.1478]  // Casual partner condom use pre-intervention F aged <=24
-p_use_cond_casual_F_old 0.1126 // [0.0996-0.1271]  // Casual partner condom use pre-intervention F aged 25+
+p_use_cond_LT_M_young 0.04   // LT partner condom use pre-intervention M aged <=29. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Cascades\prevention_cascade.csv  column L - i.e. using condoms.
+p_use_cond_LT_M_old 0.08 // [0.2351-0.2871]  // LT partner condom use pre-intervention M aged 30+
+p_use_cond_LT_F_young 0.03 // [0.1091-0.1478]  // LT partner condom use pre-intervention F aged <=24
+p_use_cond_LT_F_old 0.08 // [0.0996-0.1271]  // LT partner condom use pre-intervention F aged 25+
+p_use_cond_casual_M_young 0.46 // [0.4106-0.4736]  // Casual partner condom use pre-intervention M aged <=29. See C:\Users\mpickles\Dropbox (SPH Imperial College)\Manicaland\Cascades\cascade_model_parameters.xlsx (louisa's file) column M - i.e. using condoms.
+p_use_cond_casual_M_old 0.41 // [0.2351-0.2871]  // Casual partner condom use pre-intervention M aged 30+
+p_use_cond_casual_F_young 0.41 // [0.1091-0.1478]  // Casual partner condom use pre-intervention F aged <=24
+p_use_cond_casual_F_old 0.49 // [0.0996-0.1271]  // Casual partner condom use pre-intervention F aged 25+
 p_use_VMMC_M_too_young_intervention 0
 p_use_VMMC_M_young_intervention 0.0458
 p_use_VMMC_M_old_intervention 0.0204

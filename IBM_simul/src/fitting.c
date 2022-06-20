@@ -52,7 +52,7 @@ int load_fitting_data_n(char *file_directory){
     int checkreadok;
 
     // Add path before file name
-    strncpy(fitting_file_name,file_directory,LONGSTRINGLENGTH);
+    strncpy(fitting_file_name,file_directory,LONGSTRINGLENGTH-1);
     add_slash(fitting_file_name);
     join_strings_with_check(fitting_file_name, "fitting_data_processed.txt", LONGSTRINGLENGTH, 
         "'fitting_data_processed.txt' and fitting_file_name in load_fitting_data_n()");
@@ -102,7 +102,7 @@ void load_fitting_data(char *file_directory, fitting_data_struct *fitting_data, 
     int checkreadok;
 
     // Add path before file name
-    strncpy(fitting_file_name, file_directory, LONGSTRINGLENGTH);
+    strncpy(fitting_file_name, file_directory, LONGSTRINGLENGTH-1);
     add_slash(fitting_file_name); 
     join_strings_with_check(fitting_file_name, "fitting_data_processed.txt", LONGSTRINGLENGTH, 
         "'fitting_data_processed.txt' and fitting_file_name in load_fitting_data()");

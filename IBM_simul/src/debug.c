@@ -763,7 +763,7 @@ void output_life_expectancy(char *output_file_directory, patch_struct *patch, in
 
 
 
-    strncpy(life_expectancy_filename,output_file_directory,LONGSTRINGLENGTH);
+    strncpy(life_expectancy_filename,output_file_directory,LONGSTRINGLENGTH-1);
     add_slash(life_expectancy_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
     join_strings_with_check(life_expectancy_filename, "LifeExpectancy", LONGSTRINGLENGTH, "'LifeExpectancy' and life_expectancy_filename in output_life_expectancy()");
     join_strings_with_check(life_expectancy_filename, templabel, LONGSTRINGLENGTH, "templabel and life_expectancy_filename in output_life_expectancy()");
@@ -2347,7 +2347,7 @@ void check_partnership_condom_use_consistent(individual *indiv1, individual *ind
 
 void update_new_male_circumcision_file(int i_run, int i_start, char *output_dir){
     char output_filename[LONGSTRINGLENGTH];
-    strncpy(output_filename, output_dir, LONGSTRINGLENGTH);
+    strncpy(output_filename, output_dir, LONGSTRINGLENGTH-1);
     FILE *MALE_CIRC_FILE;
 
     add_slash(output_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
@@ -2369,7 +2369,7 @@ void write_to_new_male_circumcision_file(patch_struct *patch, int p, char *outpu
     char output_filename[LONGSTRINGLENGTH];
     FILE *MALE_CIRC_FILE;
 
-    strncpy(output_filename, output_dir, LONGSTRINGLENGTH);
+    strncpy(output_filename, output_dir, LONGSTRINGLENGTH-1);
 
     add_slash(output_filename); /* Adds a / or \ as needed if working in directory other than current local dir. */
     strcat(output_filename, "New_male_circumcision_overtime.csv");
@@ -2560,4 +2560,58 @@ void print_partnership_duration_distribution(patch_struct *patch){
     printf("PARTNER DURATION QQQ%s",temp_string);
     exit(1);
 }
+
+
+/* At a fixed time (normally most recent round of data, e.g. R7 Manicaland), go through all the existing partnerships, outputting characteristics for each. 
+***WARNING: we loop through *men* only so we don't double-count partnerships. 
+*/
+void print_partnership_snapshot(patch_struct *patch, int t){
+    int g, aa, ai, i, number_per_age_group;
+    int i_partner;
+    individual *male;
+    /* Temporary store of data from current year. */
+    char temp_string[50000];
+    char temp_stringM[500]; /* Store the male partner's characteristics. */
+    //char temp_stringF[500]; /* Store the female partner's characteristics. */
+    sprintf(temp_string,"Sex,Age.gp,n.partners,durations\n");
+
+
+    g=MALE; /* We loop over partnerships of men. */
+    for(aa=0; aa<(MAX_AGE-AGE_ADULT); aa++){
+	ai = aa + patch[0].age_list->age_list_by_gender[g]->youngest_age_group_index;
+	while (ai>(MAX_AGE-AGE_ADULT-1)){
+	    ai = ai - (MAX_AGE-AGE_ADULT);
+	}
+	    
+	/* Loop through everyone in this age group: */
+	number_per_age_group = patch[0].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	
+	for(i = 0; i < number_per_age_group; i++){
+	    male = patch[0].age_list->age_list_by_gender[g]->age_group[ai][i];
+	    for (i_partner=0; i_partner < (male->n_partners); i_partner++){
+		//male->partner_pairs[i_partner]->partnership_type;
+		//male->partner_pairs[i_partner]->ptr[FEMALE]->DoB;
+		//male->partner_pairs[i_partner]->ptr[FEMALE]->sex_risk;
+		
+
+		
+		sprintf(temp_stringM,"%i,%i,%i\n",g,aa,male->n_partners);
+	    }
+	}
+    }
+}
+	/*     join_strings_with_check(temp_string, temp_string2, 50000, */
+	/* 			    "temp_string and temp_string2 in print_partnership_duration_distribution()"); */
+	    
+
+	/* 	    sprintf(temp_string2,"%i,",indiv->partner_pairs[i_partner]->duration_in_time_steps); */
+	/* 	else */
+	/* 		sprintf(temp_string2,"%i\n",indiv->partner_pairs[i_partner]->duration_in_time_steps);			 */
+	/* 	    join_strings_with_check(temp_string, temp_string2, 50000, */
+	/* 				    "temp_string and temp_string2 in print_partnership_duration_distribution()"); */
+	/* } */
+		
+	
+
+
 

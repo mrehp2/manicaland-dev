@@ -3522,7 +3522,7 @@ void print_partners_outside_community(char *output_file_directory, individual *i
     char temp[100]; /* Temporary store to convert numbers etc. */
 
     memset(partnership_outfilename, '\0', sizeof(partnership_outfilename));
-    strncpy(partnership_outfilename,output_file_directory,LONGSTRINGLENGTH);
+    strncpy(partnership_outfilename,output_file_directory,LONGSTRINGLENGTH-1);
     add_slash(partnership_outfilename); /* Adds a / or \ as needed if working in directory other than current local dir. */
     strcat(partnership_outfilename,"Partner_outside_inside");
     sprintf(temp,"_patch%i.csv",p);
@@ -3618,7 +3618,7 @@ void initialise_partners_outside_community_file(char *output_file_directory, int
     char temp[100]; /* Temporary store to convert numbers etc. */
 
     memset(partnership_outfilename, '\0', sizeof(partnership_outfilename));
-    strncpy(partnership_outfilename,output_file_directory,LONGSTRINGLENGTH);
+    strncpy(partnership_outfilename,output_file_directory,LONGSTRINGLENGTH-1);
     add_slash(partnership_outfilename); /* Adds a / or \ as needed if working in directory other than current local dir. */
     strcat(partnership_outfilename,"Partner_outside_inside");
     sprintf(temp,"_patch%i.csv",p);

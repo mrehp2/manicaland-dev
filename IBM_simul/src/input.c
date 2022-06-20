@@ -94,7 +94,7 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
     
     for(p = 0; p < NPATCHES; p++){
         sprintf(patch_number, "%i", p);
-        strncpy(patch_tag, file_directory, LONGSTRINGLENGTH);
+        strncpy(patch_tag, file_directory, LONGSTRINGLENGTH-1);
         
         /* Adds a / or \ as needed if working in directory other than current local dir. */
         add_slash(patch_tag);
@@ -165,7 +165,7 @@ void read_patch_info(char *file_directory, patch_struct *patch){
     double temp_int; /* Used to convert float/double to int. */
 
     // Add path before file name
-    strncpy(patchinfo_file_name, file_directory, LONGSTRINGLENGTH);
+    strncpy(patchinfo_file_name, file_directory, LONGSTRINGLENGTH-1);
     
     /* Add a / or \ as needed if working in directory other than current local dir. */
     add_slash(patchinfo_file_name);
@@ -259,7 +259,7 @@ void read_demographic_params(char *patch_tag, parameters *allrunparameters, int 
     /********************************************************************/
     // Add path before file name.
     
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "demographics.csv");
 
     // Open parameter file; print error if file not found.
@@ -289,7 +289,7 @@ void read_demographic_params(char *patch_tag, parameters *allrunparameters, int 
     /*******************  Mortality data  ********************/
     /*********************************************************/
     // Add path before file name.
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "mortality.csv");
     
     // Open parameter file; print error if file not found.
@@ -346,7 +346,7 @@ void read_demographic_params(char *patch_tag, parameters *allrunparameters, int 
     /*********************************************************/
     
     // Add path before file name
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "fertility.csv");
 
     // Open parameter file; print error if file not found
@@ -414,7 +414,7 @@ void read_hiv_params(char *patch_tag, parameters *allrunparameters, int n_runs, 
     
     
     FILE * param_file;
-    char param_file_name[LONGSTRINGLENGTH];
+    char param_file_name[LONGSTRINGLENGTH+1];
     int spvl, icd4, checkreadok, i_run;
     double p_misclassify_cd4[NCD4], temp;
     
@@ -655,7 +655,7 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     
     
     FILE * param_file;
-    char param_file_name[LONGSTRINGLENGTH];
+    char param_file_name[LONGSTRINGLENGTH+1];
     int checkreadok, i_run, hsv;
     
     // Temp variable to avoid having to write allparameters+i_run 
@@ -759,7 +759,7 @@ void read_partnership_params(char *patch_tag, parameters *allrunparameters, int 
     double c_multiplier, breakup_scale_multiplier_overall, temp_int;
     double breakup_scale_multiplier_between_vs_within_patch;
     
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "partnerships.csv");
 
     // Open parameter file
@@ -1044,7 +1044,7 @@ void read_time_params(char *patch_tag, parameters *allrunparameters, int n_runs,
     double temp_int;
     double temp;
     
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "times.csv");
 
     // Open parameter file
@@ -1211,7 +1211,7 @@ void read_cascade_params(char *patch_tag, parameters *allrunparameters, int n_ru
     parameters *param_local;
     int checkreadok;
 
-    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);
     strcat(param_file_name, "cascade.csv");
 
     /******************* opening parameter file ********************/
@@ -1480,7 +1480,7 @@ void read_mtct_params(char *patch_tag, parameters *allrunparameters, int n_runs)
 
     int checkreadok;
 
-    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);
     strcat(param_file_name, "mtct.csv");
 
     /******************* opening parameter file ********************/
@@ -1581,7 +1581,7 @@ void read_popart_params(char *patch_tag, parameters *allrunparameters, int n_run
     double CHIPS_END_STARTOFTIMESTEP;
 
     
-    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);
     strcat(param_file_name, "popart.csv");
 
     /******************* opening parameter file ********************/
@@ -1840,7 +1840,7 @@ void read_chips_uptake_params(char *patch_tag, parameters *allrunparameters){
     for(chips_round = 0; chips_round <= NCHIPSROUNDS; chips_round++){
         
         // Add path before file name.
-        strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+        strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);
         
         if(chips_round < NCHIPSROUNDS){
             // Chips round files are labelled 1,2,3,4
@@ -1997,7 +1997,7 @@ void read_pc0_enrolment_params(char *patch_tag, int community_id, parameters *al
 
     for (pc_round=0;pc_round<NPC_ROUNDS;pc_round++){
 
-        strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);   // Adding path before file name.
+        strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);   // Adding path before file name.
         sprintf(temp_tag,"PC%i_community%i.csv",pc_round,community_id);   // NOTE - we use pc_round+1 so the round files are labelled 1,2,3,4.
         strcat(param_file_name, temp_tag);
 
@@ -2208,7 +2208,7 @@ void read_pc_future_params(char *patch_tag, parameters *allrunparameters, int n_
     /*******************  adding path before file name ********************/
     char param_file_name[LONGSTRINGLENGTH];
 
-    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH);
+    strncpy(param_file_name,patch_tag,LONGSTRINGLENGTH-1);
     strcat(param_file_name, "PC.csv");
 
 
@@ -2312,7 +2312,7 @@ void read_initial_params(char *patch_tag, parameters *allrunparameters, int n_ru
     /*******************  adding path before file name ********************/
     char param_file_name[LONGSTRINGLENGTH];
 
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "init.csv");
 
     /******************* opening parameter file ********************/
@@ -2512,7 +2512,7 @@ double read_PrEP_background_uptake_params(char *patch_tag, parameters *allrunpar
     //(or equivalently &allparameters[i_run]).
     parameters *param_local;
 
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "PrEP_background.csv");
 
     // Open parameter file
@@ -2591,7 +2591,7 @@ double read_PrEP_intervention_uptake_params(char *patch_tag, parameters *allrunp
     //(or equivalently &allparameters[i_run]).
     parameters *param_local;
 
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "PrEP_intervention.csv");
 
     // Open parameter file
@@ -2677,7 +2677,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
     /*******************  adding path before file name ********************/
     char param_file_name[LONGSTRINGLENGTH];
 
-    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH);
+    strncpy(param_file_name, patch_tag, LONGSTRINGLENGTH-1);
     strcat(param_file_name, "barriers.csv");
 
     /******************* opening parameter file ********************/
@@ -2716,18 +2716,18 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_PrEP_present[][]");
 	    
 	}
-	    
+
+	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
+	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][0]));
+	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][]");
+	}
+
+	
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
 	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][0]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual_present[][]");
 	}
 
-	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
-	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][0] = param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][0];
-	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]));
-	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][]");
-	}
 
     
 	/**** Now the intervention: */
@@ -2802,7 +2802,7 @@ long get_python_seed(char *file_directory){
     FILE *PYTHON_SEED_FILE;
     PYTHON_SEED_FILE = fopen("", "r");
     char python_seed_filename[LONGSTRINGLENGTH];
-    strncpy(python_seed_filename, file_directory, LONGSTRINGLENGTH);
+    strncpy(python_seed_filename, file_directory, LONGSTRINGLENGTH-1);
     
     /* Adds a / or \ as needed if working in directory other than current local dir. */
     add_slash(python_seed_filename);

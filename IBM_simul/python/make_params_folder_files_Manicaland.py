@@ -630,7 +630,7 @@ def read_partnership_data(country, partnership_analysis_dir):
         
         #check = check_whether_data_file_up_to_date(infilename, partnership_analysis_source_files, print_warning_only)
     elif country=="ZIMBABWE":
-        partnership_analysis_source_files = [join(partnership_analysis_dir, "Partnership_parameterization_Manicaland_20-11-2019.R")]        
+        partnership_analysis_source_files = [join(partnership_analysis_dir, "Partnership_parameterization_Manicaland_22_June_2022.R")]        
         check = check_whether_data_file_up_to_date(infilename, partnership_analysis_source_files, print_warning_only)
 
 

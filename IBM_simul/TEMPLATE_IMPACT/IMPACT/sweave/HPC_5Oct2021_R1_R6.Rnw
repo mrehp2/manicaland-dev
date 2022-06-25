@@ -899,7 +899,7 @@ wpp.f.distribition <- extract.wpp.age.dist(wpp.data.f,year)
 
 # Normalise (to total population):
 wpp.m.distribition.norm <- wpp.m.distribition/sum(wpp.m.distribition+wpp.f.distribition)
-wpp.f.distribition.norm <- wpp.f.distribition/sum(wpp.f.distribition+wpp.f.distribition)
+wpp.f.distribition.norm <- wpp.f.distribition/sum(wpp.m.distribition+wpp.f.distribition)
 
 
 

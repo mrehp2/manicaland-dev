@@ -2754,9 +2754,10 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_casual_present[][1]");
 	}
 
-	/* For now, we keep casual and long-term condom use the same (as Louisa's analysis cannot distinguish). */
+	/* Assume intervention only changes condom use in casual group: */
 	for (i_barrier_group=0; i_barrier_group<N_COND_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][1] = param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][1];
+	    //param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][1] = param_local->barrier_params.p_use_cond_casual_present[i_barrier_group][1];
+	    param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][1] = param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][0];
 	    //checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_cond_LT_present[i_barrier_group][i_barrier_intervention]));
 	    //check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_cond_LT_present[][1]");
 	}

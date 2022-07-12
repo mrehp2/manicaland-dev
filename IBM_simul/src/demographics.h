@@ -56,7 +56,7 @@ void remove_dead_person_from_susceptible_in_hsv2serodiscordant_partnership(indiv
 void remove_dead_person_from_list_available_partners(double, individual *,population_partners *,
     population_size_all_patches *);
 void remove_dead_persons_partners(individual *, population_partners *, 
-    population_size_all_patches *, double );
+    population_size_all_patches *, double , parameters *);
 void remove_from_hiv_pos_progression(individual *, individual ***, long *, long *, 
     double, parameters *, population_size_one_year_age_hiv_by_stage_treatment *, int);
 void remove_from_cascade_events(individual *, individual ***, long *, long *, double, parameters *);

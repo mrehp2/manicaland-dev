@@ -85,7 +85,6 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
 	    }
 	}
 	*/
-	printf("Has casual partner: %i\n",has_casual_partner);
 
 	if(g==FEMALE){
 	    if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
@@ -125,16 +124,30 @@ int index_HIV_prevention_cascade_PrEP(int age, individual *indiv){
    Current characteristics are age, number of partners (if this is zero, then never had sex - so variable is called ever_have_sex here, and should be treated as boolean).
 */
 int index_HIV_prevention_cascade_VMMC(int age, int ever_had_sex){
-    if(ever_had_sex==0)
-	return i_VMMC_PREVENTIONBARRIER_NEVERSEX_M;
-    else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
-	return i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M;
-    else if(age<=29)
-	return i_VMMC_PREVENTIONBARRIER_YOUNG_M;
-    else if(age<=VMMC_MAX_AGE_PREVENTION_CASCADE)
-	return i_VMMC_PREVENTIONBARRIER_OLD_M;
-    else
-	return i_VMMC_PREVENTIONBARRIER_TOO_OLD_M;
+    /* VMMC_ELIGIBLE_CRITERIA: 1 - only those who have ever had sex; 2 - all men. */
+
+    if(VMMC_ELIGIBLE_CRITERIA==1){
+	if(ever_had_sex==0)
+	    return i_VMMC_PREVENTIONBARRIER_NEVERSEX_M;
+	else if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+	    return i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M;
+	else if(age<=29)
+	    return i_VMMC_PREVENTIONBARRIER_YOUNG_M;
+	else if(age<=VMMC_MAX_AGE_PREVENTION_CASCADE)
+	    return i_VMMC_PREVENTIONBARRIER_OLD_M;
+	else
+	    return i_VMMC_PREVENTIONBARRIER_TOO_OLD_M;
+    }
+    else if(VMMC_ELIGIBLE_CRITERIA==2){
+	if(age<PREP_VMMC_MIN_AGE_PREVENTION_CASCADE)
+	    return i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M;
+	else if(age<=29)
+	    return i_VMMC_PREVENTIONBARRIER_YOUNG_M;
+	else if(age<=VMMC_MAX_AGE_PREVENTION_CASCADE)
+	    return i_VMMC_PREVENTIONBARRIER_OLD_M;
+	else
+	    return i_VMMC_PREVENTIONBARRIER_TOO_OLD_M;
+    }
 
     /* Should never get here: */
     printf("Error: Unexpected age in index_HIV_prevention_cascade_VMMC(). Exiting\n");
@@ -180,10 +193,16 @@ void assign_individual_PrEP_prevention_cascade(double t, individual *indiv, casc
 	printf("Modifying PrEP probability for id=%li at t=%lf.\n",indiv->id,t);
 	printf("Age=%i gender=%i n_partners=%i n_casual_partners=%i\n",age,indiv->gender,indiv->n_partners,indiv->n_partners_by_partnership_type[CASUAL]);
     }
+    //if(indiv->id==10541 && t>2020)
+    //    	printf("Prior to change at t=%lf, PrEP probability is %lf\n",t,*(indiv->cascade_barriers.p_will_use_PrEP));
 
     indiv->cascade_barriers.p_will_use_PrEP = &(barrier_params->p_use_PrEP[index_HIV_prevention_cascade_PrEP(age,indiv)]);
     if(indiv->id==FOLLOW_INDIVIDUAL)
 	printf("Following change, PrEP probability is now %lf\n",*(indiv->cascade_barriers.p_will_use_PrEP));
+
+    //if(indiv->id==10541 && t>2020)
+    //	printf("Following change at t=%lf, PrEP probability is now %lf\n",t,*(indiv->cascade_barriers.p_will_use_PrEP)); 
+
 }
 
 /* Need to pass a pointer to barrier_params as otherwise we create a local copy of barrier_params (and then assigning p_will_get_VMMC to that address fails, as the address is freed once we return from the function). */
@@ -410,10 +429,12 @@ void prevention_cascade_intervention_VMMC(double t, patch_struct *patch, int p){
 }
 
 
-/* This function represents an intervention that increases the probability that an individual will get PrEP from time t onwards (by reducing barriers).
-   Function goes through everyone (using age group), and calls function assign_individual_PrEP_cascade to update their PrEP prevention cascade barriers in response to the intervention. 
- */
-void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
+/* This function represents either 
+   1) The change at the start of the PrEP intervention.
+   Or
+   2) An intervention that increases the probability that an individual will get PrEP from time t onwards (by reducing barriers).
+   Function goes through everyone (using age group), and calls function assign_individual_PrEP_cascade to update their PrEP prevention cascade barriers as necessary.  */
+void modify_prevention_cascade_PrEP(double t, patch_struct *patch, int p){
 
     int aa, ai, g, i;
     int number_per_age_group;
@@ -423,7 +444,7 @@ void prevention_cascade_intervention_PrEP(double t, patch_struct *patch, int p){
     
     /* PrEP unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
     if(PREP_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
-	printf("Code issue - prevention_cascade_intervention_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
+	printf("Code issue - modify_prevention_cascade_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
 	exit(1);
     }
 	
@@ -512,7 +533,7 @@ void update_partnership_condom_use_in_response_to_intervention(individual *indiv
     
     
     if (change_in_p_use_condom<0 || change_in_p_use_condom>1){
-    	printf("Error: change in probability of using condom from intervention = %6.4lf. Exiting\n",change_in_p_use_condom);
+    	printf("Error: change in probability of using condom from intervention = %6.4lf for ptype=%i index_M=%i index_F=%i. Exiting\n",change_in_p_use_condom,ptype,index_HIV_prevention_cascade_condom(ageM,MALE),index_HIV_prevention_cascade_condom(ageF,FEMALE)-N_COND_PREVENTIONBARRIER_GROUPS_M);
     	exit(1);
     }    
     

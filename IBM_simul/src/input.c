@@ -2704,7 +2704,7 @@ void read_cascade_barrier_params(char *patch_tag, parameters *allrunparameters, 
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){	    
 	    checkreadok = fscanf(param_file,"%lg",&(param_local->barrier_params.p_use_VMMC_present[i_barrier_group][0]));
 	    check_if_cannot_read_param(checkreadok,"param_local->barrier_params.p_use_VMMC_present[][]");
-	    //printf("i=%i after param_local->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]);
+	    //printf("i=%i after param_local->barrier_params.p_use_VMMC_present[i_barrier_group][0] = %lf\n",i_barrier_group,param_local->barrier_params.p_use_VMMC_present[i_barrier_group][0]);
 	    
 	}
 

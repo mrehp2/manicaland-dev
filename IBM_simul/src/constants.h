@@ -302,7 +302,7 @@ extern int POPART_SAMPLING_FRAME_ESTABLISHED;
 
 /* Number of types of partnership formed in the IBM. Currently 2 (long-term and casual). */
 #define N_PARTNER_TYPES 2
-/* Order of indexing should reflect that in the param_partnerships.txt. */
+/* Index for ptype. Order of indexing should reflect that in the param_partnerships.txt. */
 #define LONGTERM 0
 #define CASUAL 1
 
@@ -401,7 +401,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define MANICALAND_CASCADE 1 // 1 if use Manicaland cascade machinery, 0 otherwise.
 
 /* Use this to define/access the p_use_X[] for each prevention method X (PrEP/VMMC/condoms) in cascade_barrier_params substructure. */
-#define PREP_ELIGIBLE_CRITERIA 1
+/* PREP_ELIGIBLE_CRITERIA: 1 - all sexually active (by age); 2 - those with casual partners only; 3 - those with casual partners OR known sd regular partners. */
+#define PREP_ELIGIBLE_CRITERIA 2
 #define N_PrEP_PREVENTIONBARRIER_GROUPS 10 // Number of groups that we subdivide the population into, for PrEP.
 #define i_PrEP_PREVENTIONBARRIER_TOO_YOUNG_M 0
 #define i_PrEP_PREVENTIONBARRIER_YOUNG_M 1
@@ -415,7 +416,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define i_PrEP_PREVENTIONBARRIER_INELIGIBLE_M 8
 #define i_PrEP_PREVENTIONBARRIER_INELIGIBLE_F 9
 
-
+#define VMMC_ELIGIBLE_CRITERIA 2
 #define N_VMMC_PREVENTIONBARRIER_GROUPS 5 // Number of groups that we subdivide the population into, for VMMC.
 #define i_VMMC_PREVENTIONBARRIER_TOO_YOUNG_M 0
 #define i_VMMC_PREVENTIONBARRIER_YOUNG_M 1

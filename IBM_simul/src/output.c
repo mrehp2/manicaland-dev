@@ -5123,10 +5123,12 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
 	    for(i = 0; i < number_per_age_group; i++){
 		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
-		N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(aa+AGE_ADULT,indiv)][indiv->PrEP_cascade_status]++;
-		if(g==MALE)
-		    N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(aa+AGE_ADULT,indiv->n_lifetime_partners)][indiv->circ]++;
-
+		if(indiv->HIV_status==UNINFECTED){
+		    N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(aa+AGE_ADULT,indiv)][indiv->PrEP_cascade_status]++;
+		    if(g==MALE)
+			N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(aa+AGE_ADULT,indiv->n_lifetime_partners)][indiv->circ]++;
+		}
+		
 		/* Adds counts for condom use to relevant arrays. */
 		add_to_condom_use_prevention_cascade_counts(aa,g,indiv,N_LT_partnerships_use_condom,N_alwaysusecondom_with_LTpartner,N_casual_partnerships_use_condom,N_alwaysusecondom_with_casualpartner);
 				
@@ -5138,10 +5140,12 @@ void store_HIV_prevention_barrier_outputs(patch_struct *patch, int p, output_str
 	number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_oldest_age_group;
 	for(i = 0; i < number_per_age_group; i++){
 	    indiv = patch[p].age_list->age_list_by_gender[g]->oldest_age_group[i];
-	    N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(MAX_AGE,indiv)][indiv->PrEP_cascade_status]++;
-	    if(g==MALE)
-		N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(MAX_AGE,indiv->n_lifetime_partners)][indiv->circ]++;
-
+	    if(indiv->HIV_status==UNINFECTED){
+		N_PrEPSTATUS_byPriorityGroup[index_HIV_prevention_cascade_PrEP(MAX_AGE,indiv)][indiv->PrEP_cascade_status]++;
+		if(g==MALE)
+		    N_VMMCSTATUS_byPriorityGroup[index_HIV_prevention_cascade_VMMC(MAX_AGE,indiv->n_lifetime_partners)][indiv->circ]++;
+	    }
+	    
 	    /* Adds counts for condom use to relevant arrays. */
 	    add_to_condom_use_prevention_cascade_counts(MAX_AGE,g,indiv,N_LT_partnerships_use_condom,N_alwaysusecondom_with_LTpartner,N_casual_partnerships_use_condom,N_alwaysusecondom_with_casualpartner);
 		

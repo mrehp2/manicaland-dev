@@ -193,6 +193,17 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
     
     ind2->n_partners++;
     ind2->n_partners_by_partnership_type[ptype]++;
+
+    /* if(ind1->id==10541){
+	int age=(int) floor(t_form_partnership-ind1->DoB);
+	printf("t=%6.4lf Formation for id=10541, type=%i n_casual=%i gender=%i age=%i prep_index=%i\n",t_form_partnership,ptype,ind1->n_partners_by_partnership_type[CASUAL],ind1->gender,age,index_HIV_prevention_cascade_PrEP(age,ind1));
+    }
+    else if(ind2->id==10541){
+	int age=(int) floor(t_form_partnership-ind2->DoB);
+	printf("t=%6.4lf Formation for id=10541, type=%i n_casual=%i  gender=%i age=%i prep_index=%i\n",t_form_partnership,ptype,ind2->n_partners_by_partnership_type[CASUAL],ind2->gender,age,index_HIV_prevention_cascade_PrEP(age,ind2));
+    }
+    */
+
     ind2->partner_pairs[ind2->n_partners-1] = pair;
     if(ind1->HIV_status>0 && ind2->HIV_status==0)  /* then we need to tell ind2 that he has a new HIV partner */
     {
@@ -212,6 +223,19 @@ void new_partnership(individual* ind1, individual* ind2, int ptype, double t_for
     if(ind2->n_lifetime_partners==1)
 	set_first_sex_characteristics(t_form_partnership, ind2, param);
 
+
+    /* If we have PrEP for casual partnerships, then update the PrEP probability for people who've now got a casual partner: */
+    if(ptype==CASUAL && PREP_ELIGIBLE_CRITERIA==2){
+	/* For efficiency purposes we don't update the PrEP probabilities until PrEP is available: */
+	if(t_form_partnership>=param->PrEP_background_params->year_start_background){
+	    if (ind1->n_partners_by_partnership_type[ptype]>=1){
+		assign_individual_PrEP_prevention_cascade(t_form_partnership, ind1, &(param->barrier_params));
+	    }
+	    if (ind2->n_partners_by_partnership_type[ptype]>=1){
+		assign_individual_PrEP_prevention_cascade(t_form_partnership, ind2, &(param->barrier_params));
+	    }
+	}
+    }
     
     /* Now HSV-2: */
         if(ind2->HSV2_status>HSV2_UNINFECTED && ind1->HSV2_status==HSV2_UNINFECTED) /* then we need to tell ind1 that he has a new HSV-2 partner */
@@ -421,9 +445,9 @@ int time_to_partnership_dissolution(parameters *param, int r1, int r2, int ptype
 /* Function does: breakup a given partnership and updates the lists of available partners and of serodiscordant couples accordingly
  * function arguments: the time at which partnership is broken up (double), a pointer to the partnership breaking up, pointer to a structure containing the lists of pop_available_partners and n_pop_available_partners, susceptible_in_serodiscordant_partnership and n_susceptible_in_serodiscordant_partnership,  susceptible_in_hsv2serodiscordant_partnership and n_susceptible_in_hsv2serodiscordant_partnership
  * Function returns: nothing */
-void breakup(double time_breakup, partnership* breakup, all_partnerships *overall_partnerships)
+void breakup(double time_breakup, partnership* breakup, all_partnerships *overall_partnerships, parameters *param)
 {
-
+    int ptype = breakup->partnership_type;
     /* Only breakup partnership if the two individuals are alive - otherwise nothing happens. */
     if(breakup->ptr[0]->cd4 > DEAD && breakup->ptr[1]->cd4 > DEAD)
     {
@@ -495,7 +519,7 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
             /* decreasing the number of partners by 1 */
             who->n_partners--;
 	    /* Decrease the number of partners of this partnership type by 1: */
-	    who->n_partners_by_partnership_type[breakup->partnership_type]--;
+	    who->n_partners_by_partnership_type[ptype]--;
 	    
             /* copying the last partner in place of this one - NOTE FOR DEBUGGING: AC does this the opposite way to MP who firstly swaps with the n-1 entry and then decreases n. */
             who->partner_pairs[index_partner] = who->partner_pairs[who->n_partners];
@@ -538,7 +562,27 @@ void breakup(double time_breakup, partnership* breakup, all_partnerships *overal
     printf("Simulated a total of: %ld breakups\n",n_breakups);
     fflush(stdout);*/
 
-        if((breakup->ptr[0]->id==FOLLOW_INDIVIDUAL  && breakup->ptr[0]->patch_no==FOLLOW_PATCH) || (breakup->ptr[1]->id==FOLLOW_INDIVIDUAL && breakup->ptr[1]->patch_no==FOLLOW_PATCH))
+	/* If we have PrEP for casual partnerships, then update the PrEP probability for people who've no longer got a casual partner: */
+	if(ptype==CASUAL && PREP_ELIGIBLE_CRITERIA==2){
+	    /* For efficiency purposes we don't update the PrEP probabilities until PrEP is available: */
+	    if(time_breakup>=param->PrEP_background_params->year_start_background){
+		if (male->n_partners_by_partnership_type[ptype]==0){
+		    assign_individual_PrEP_prevention_cascade(time_breakup, male, &(param->barrier_params));
+		    //if(male->id==10541)
+		    //printf("Reassigned PrEP probability following breakup for 10541\n");
+		}
+		if (female->n_partners_by_partnership_type[ptype]==0){
+		    assign_individual_PrEP_prevention_cascade(time_breakup, female, &(param->barrier_params));
+		}
+	    }
+	}
+    
+        /* if(breakup->ptr[0]->id==10541) */
+	/*     printf("t=%6.4lf Breakup for id=10541, type=%i n_casual=%i\n",time_breakup,ptype,breakup->ptr[0]->n_partners_by_partnership_type[CASUAL]); */
+	/*  if(breakup->ptr[1]->id==10541) */
+	/*     printf("t=%6.4lf Breakup for id=10541, type=%i n_casual=%i\n",time_breakup,ptype,breakup->ptr[1]->n_partners_by_partnership_type[CASUAL]); */
+
+	if((breakup->ptr[0]->id==FOLLOW_INDIVIDUAL  && breakup->ptr[0]->patch_no==FOLLOW_PATCH) || (breakup->ptr[1]->id==FOLLOW_INDIVIDUAL && breakup->ptr[1]->patch_no==FOLLOW_PATCH))
         {
             if (VERBOSE_OUTPUT==1){
                 printf("Finishing partnership breakup between individuals %ld from patch %d and %ld from patch %d\n",breakup->ptr[0]->id,breakup->ptr[0]->patch_no,breakup->ptr[1]->id,breakup->ptr[1]->patch_no);
@@ -1204,8 +1248,11 @@ void set_first_sex_characteristics(double t, individual *indiv, parameters *para
 	   Condom use doesn't matter (as can't use a condom without a partner). */
 	if(indiv->id==FOLLOW_INDIVIDUAL)
 	    printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i due to sexual debut\n",t,indiv->id,(int) floor(t-indiv->DoB));
-	
-	assign_individual_PrEP_prevention_cascade(t, indiv, &(param->barrier_params));
+
+	//if(indiv->id==10541)
+	//printf("Modifying PrEP HIV prevention cascade probability at time t=%lf for id=%li age%i due to sexual debut\n",t,indiv->id,(int) floor(t-indiv->DoB));
+	if(t>=param->PrEP_background_params->year_start_background)
+	    assign_individual_PrEP_prevention_cascade(t, indiv, &(param->barrier_params));
 
 	if(indiv->gender==MALE)
 	    assign_individual_VMMC_prevention_cascade(t, indiv, &(param->barrier_params));

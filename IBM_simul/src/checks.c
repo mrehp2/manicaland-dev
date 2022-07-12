@@ -461,11 +461,11 @@ void check_partnership_dissolution(all_partnerships *overall_partnerships, param
 
     /* dissolving partnership between them and checking things are OK */
     breakup(param->start_time_simul, 
-        &overall_partnerships->partner_pairs[initial_n_partnerships], overall_partnerships);
+        &overall_partnerships->partner_pairs[initial_n_partnerships], overall_partnerships, param);
 
     breakup(param->start_time_simul, 
         &overall_partnerships->partner_pairs[*overall_partnerships->n_partnerships-1], 
-        overall_partnerships);
+        overall_partnerships, param);
 
     printf("- After partnership dissolution:\n");
 

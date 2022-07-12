@@ -193,6 +193,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 		//}
 		for(p = 0; p < NPATCHES; p++)	
 		    update_PrEPrates(t,patch[p].param);
+		//printf("Indiv 10541 t=%6.4lf : p_prep=%lf\n",t,*(patch[0].individual_population[10541].cascade_barriers.p_will_use_PrEP));
 	    }
 	    
 	    if(t>=patch[0].param->COUNTRY_ART_START){
@@ -431,7 +432,7 @@ void carry_out_partnership_processes_by_time_step(int t_step, int t0, patch_stru
         of available partners and  partnership is removed from list of serodiscordant partnerships
         (if applicable). */
         breakup(t, overall_partnerships->planned_breakups[N_TIME_STEP_PER_YEAR*(t0 - patch[0].param->start_time_simul) + t_step][k], 
-            overall_partnerships);
+            overall_partnerships, patch[0].param);
     }
     
     /************************************************************************/
@@ -1114,6 +1115,11 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	}
     }
     else if(MANICALAND_CASCADE==1){
+
+	if((t0==patch[p].param->PrEP_background_params->year_start_background) && (t_step==patch[p].param->PrEP_background_params->timestep_start_background)){
+	    printf("Initialising PrEP probabilities at t=%lf\n",t);
+	    modify_prevention_cascade_PrEP(t, patch, p);
+	}
 	/*Need to do this before start of PrEP otherwise older people have wrong cascade probabilities as they pass the age threshold before the start of PrEP. */
 	update_PrEPbarriers_from_ageing(t, t_step, patch, p);
 
@@ -1198,12 +1204,15 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		if(patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag>0){
 		    prevention_cascade_intervention_VMMC(t, patch, p);
 		    printf("Running VMMC prevention cascade intervention %i at t=%lf\n ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
-		}
-		
+		}		
+		printf("Before\n");
+	        print_numbers_on_PrEP_by_age_sex(t, patch, p);
 		if(patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag>0){
-		    prevention_cascade_intervention_PrEP(t, patch, p);
+		    modify_prevention_cascade_PrEP(t, patch, p);
 		    printf("Running PrEP prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
 		}
+		printf("After intervention:\n");
+	        print_numbers_on_PrEP_by_age_sex(t, patch, p);
 
 		/* This function redraws condom use in *existing* partnerships where condoms are not already used. Note that an individual's preferences for condoms is automatically updated via the function update_condomrates(). */
 		if(patch[p].param->barrier_params.i_condom_barrier_intervention_flag>0){

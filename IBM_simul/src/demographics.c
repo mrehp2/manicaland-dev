@@ -1879,7 +1879,7 @@ void remove_dead_person_from_list_available_partners(double time_death, individu
  * Function also updates the partner's use_condom_in_this_partnership[] array so that the order still reflects that of their partners. 
  * Function returns: nothing. */        
 void remove_dead_persons_partners(individual *dead_person, population_partners *pop_available_partners, 
-        population_size_all_patches *n_pop_available_partners, double t){
+        population_size_all_patches *n_pop_available_partners, double t, parameters *param){
 
     int i,j,ag;
     /* All of these pointers will point to existing memory so no calls to malloc needed - they are there to make code readable. */
@@ -1961,7 +1961,19 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
         }
 
 	/* Look up the type of partnership, and reduce that by 1: */
-	a_partner->n_partners_by_partnership_type[a_partnership_ptr->partnership_type]--;
+	int ptype = a_partnership_ptr->partnership_type;
+	a_partner->n_partners_by_partnership_type[ptype]--;
+	if(a_partner->id==10541)
+	    printf("t=%6.4lf Death of partner for id=10541, type=%i n_casual=%i\n",t,ptype,a_partner->n_partners_by_partnership_type[CASUAL]);
+
+	/* If we have PrEP for casual partnerships, then update the PrEP probability for people who've no longer got a casual partner: */
+	if(ptype==CASUAL && PREP_ELIGIBLE_CRITERIA==2){
+	    /* For efficiency purposes we don't update the PrEP probabilities until PrEP is available: */
+	    if(t>=(param->PrEP_background_params->year_start_background)){
+		if (a_partner->n_partners_by_partnership_type[ptype]==0)
+		    assign_individual_PrEP_prevention_cascade(t, a_partner, &(param->barrier_params));
+	    }
+	}
 	
         /* Get the age group of this partner: */
         ag = get_age_group(a_partner->DoB,t, AGE_GROUPS, N_AGE);
@@ -2499,8 +2511,8 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
                     
                     remove_dead_persons_partners(person_dying,
                         overall_partnerships->pop_available_partners,
-                        overall_partnerships->n_pop_available_partners, t);
-
+			overall_partnerships->n_pop_available_partners, t,
+			patch[p].param);
 
                     if(person_dying->HIV_status > UNINFECTED){
                         // Note the final '1' argument means that the person is dying, 
@@ -2627,7 +2639,8 @@ void deaths_natural_causes(double t, patch_struct *patch, int p,
             
             remove_dead_persons_partners(person_dying,
                 overall_partnerships->pop_available_partners,
-                overall_partnerships->n_pop_available_partners, t);
+		overall_partnerships->n_pop_available_partners, t,
+	        patch[p].param);
             
             if(person_dying->HIV_status > UNINFECTED){
                 /* Note the final '1' argument means that the person is dying, not starting ART. */
@@ -3200,7 +3213,7 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
 
         remove_dead_person_from_list_available_partners(t, dead_person, pop_available_partners,n_pop_available_partners);
 
-        remove_dead_persons_partners(dead_person, pop_available_partners, n_pop_available_partners, t);
+        remove_dead_persons_partners(dead_person, pop_available_partners, n_pop_available_partners, t, patch[p].param);
 
         if (PRINT_DEBUG_DEMOGRAPHICS==1)
             printf("Calling deaths_natural_causes() with %i partners\n",dead_person->n_partners);
@@ -3248,7 +3261,7 @@ void individual_death_AIDS(age_list_struct *age_list, individual *dead_person,
 	    remove_from_hsv2_pos_progression(dead_person,  patch[p].hsv2_pos_progression, patch[p].n_hsv2_pos_progression, patch[p].size_hsv2_pos_progression, t, patch[p].param);
 
         remove_dead_person_from_list_available_partners(t, dead_person, pop_available_partners,n_pop_available_partners);
-        remove_dead_persons_partners(dead_person, pop_available_partners, n_pop_available_partners, t);
+        remove_dead_persons_partners(dead_person, pop_available_partners, n_pop_available_partners, t, patch[p].param);
 
         // WRONG CODE: the following line is a call which shouldn't be here as we call this function outside individual_death_AIDS, so this is a repeat call.
         // Have had problems with trying to remove the same dead person twice.

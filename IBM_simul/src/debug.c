@@ -2611,7 +2611,53 @@ void print_partnership_snapshot(patch_struct *patch, int t){
 	/* 				    "temp_string and temp_string2 in print_partnership_duration_distribution()"); */
 	/* } */
 		
+
+
+
+void print_numbers_on_PrEP_by_age_sex(double t, patch_struct *patch, int p){
+
+    int aa, ai, g, i;
+    int number_per_age_group;
+    
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+    /* PrEP unlikely to ever be offered to people this age - this is just a check, although it would be straightforward to extend the code to include older people. */
+    if(PREP_MAX_AGE_PREVENTION_CASCADE>MAX_AGE){
+	printf("Code issue - modify_prevention_cascade_PrEP() currently not set up to deal with PrEP being offered to people aged >79 year old\n");
+	exit(1);
+    }
 	
+    /* Go through all age-group-eligible people - modify if we only reach certain age groups etc (we assume that the intervention does not change the fact that these interventions are not available outside those age groups). */
+    for(g = 0; g < N_GENDER; g++){    
+	for(aa = (PREP_VMMC_MIN_AGE_PREVENTION_CASCADE-AGE_ADULT); aa < (PREP_MAX_AGE_PREVENTION_CASCADE - AGE_ADULT); aa++){
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);
+	
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
 
+	    int nprep = 0;
+	    double prop=0;
 
+	    for(i = 0; i < number_per_age_group; i++){
+		    
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+		prop += *(indiv->cascade_barriers.p_will_use_PrEP);
+		//		if (aa==(PREP_VMMC_MIN_AGE_PREVENTION_CASCADE-AGE_ADULT+5)){
+		//  printf("id=%li Age=%i gender=%i n_partners=%i n_casual_partners=%i p_prep=%6.4lf\n",indiv->id,aa,indiv->gender,indiv->n_partners,indiv->n_partners_by_partnership_type[CASUAL],*(indiv->cascade_barriers.p_will_use_PrEP));
+		//}
+		
+		if(indiv->PrEP_cascade_status==ONPREP_ADHERENT || indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT){
+		    nprep +=1;
+
+		}
+	    }
+	    //printf("%i ",nprep);
+	    printf("%6.4lf ",prop);
+	}
+	printf("\n");
+    }
+	
+}
 

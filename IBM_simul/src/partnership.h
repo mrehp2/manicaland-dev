@@ -23,7 +23,7 @@
 void new_partnership(individual* , individual* , int, double , all_partnerships *, parameters *, 
 		     debug_struct *, file_struct *);
 int time_to_partnership_dissolution(parameters *, int r_m, int r_f, int ptype, int p_m, int p_f);
-void breakup(double, partnership*, all_partnerships *);
+void breakup(double, partnership*, all_partnerships *, parameters *);
 void update_list_available_partners_breakup(double , partnership* , population_partners*, 
     population_size_all_patches *);
 void add_susceptible_to_list_serodiscordant_partnership(individual* , individual** , long *);

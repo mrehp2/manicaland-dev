@@ -3244,6 +3244,82 @@ void store_phylogenetic_transmission_output(output_struct *output, double time, 
 }
 
 
+
+/* Simpler phylo-style output (but just basic info). */
+void store_basic_transmission_output(output_struct *output, double time, individual* infectee, individual* infector, file_struct *file_data_store, int ptype, int cond){
+
+    ////// MEMORY CHECK THIS
+    char temp_string[100]; /* Temporary store of data from one transmission event. */
+
+    int partner_is_acute;
+    if(infector->HIV_status == ACUTE){
+        partner_is_acute = 1;
+    }else{
+        partner_is_acute = 0;
+    }
+
+    int partner_on_art = infector -> ART_status;
+
+    // Risk group of infected individual
+    char infected_risk_text[2];
+    if(infectee->sex_risk == LOW){
+	sprintf(infected_risk_text,"L");
+    }else if(infectee->sex_risk == MEDIUM){
+	sprintf(infected_risk_text,"M");
+    }else if(infectee->sex_risk == HIGH){
+	sprintf(infected_risk_text,"H");
+    }else{
+        printf("Unknown Sexual Risk Group\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+	
+    // Risk group of individual responsible for infection
+    char infector_risk_text[2];
+    if(infector->sex_risk == LOW){
+	sprintf(infector_risk_text,"L");
+    }else if(infector->sex_risk == MEDIUM){
+	sprintf(infector_risk_text,"M");
+    }else if(infector->sex_risk == HIGH){
+	sprintf(infector_risk_text,"H");
+    }else{
+        printf("Unknown Sexual Risk Group\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+
+    /* Format output: */
+    if (infector->gender==MALE)
+        sprintf(temp_string,"%6.4lf,%i,%i,%i,%i,%i,%i,%i,%i,M,%s,%s,%.2lf,%.2lf\n",
+	        time,ptype,partner_is_acute,partner_on_art,cond,infector->circ,
+	        infector->cd4,infector->n_partners,infectee->n_partners,
+		infected_risk_text,infector_risk_text,infectee->DoB,infector->DoB);
+    else
+        sprintf(temp_string,"%6.4lf,%i,%i,%i,%i,%i,%i,%i,%i,F,%s,%s,%.2lf,%.2lf\n",
+		time,ptype,partner_is_acute,partner_on_art,cond,infectee->circ,
+	        infector->cd4,infector->n_partners,infectee->n_partners,
+		infected_risk_text,infector_risk_text,infectee->DoB,infector->DoB);
+
+
+    
+    //print_here_string(temp_string,0);
+    /* The -2 is because in C the last character in any string of length n is "\0" - so we only have n-1 characters in the array we can write to. Make -2 instead of -1 to be a bit more sure! */
+    if((strlen(output->basic_transmission_output_string)+strlen(temp_string))>(BASIC_TRANSMISSION_OUTPUT_STRING_LENGTH-2)){
+        write_basic_transmission_data(file_data_store, output->basic_transmission_output_string);
+        /* Empty output->basic_transmission_output_string. To do this we just need to set the first character to be '\0'. */
+        (output->basic_transmission_output_string)[0] = '\0';
+    }
+
+
+    /* Add to existing basic_transmission output string. */
+    strcat(output->basic_transmission_output_string,temp_string);
+    
+}
+
+
 /* For initially drawn HIV+ create phylogenetics output as for function phylogenetic_transmission_output_trm() 
  * but with dummy values for infector (as these are seeded, so no infectors).
  *
@@ -3375,6 +3451,30 @@ void write_phylo_individual_data(file_struct *file_data_store, individual *indiv
 }
 
 
+
+
+
+void blank_basic_transmission_data_file(file_struct *file_data_store){
+    file_data_store->BASIC_TRANSMISSION_FILE = fopen(file_data_store->filename_basic_transmission,"w");
+    if(file_data_store->BASIC_TRANSMISSION_FILE == NULL){
+        printf("Cannot open basic_transmission file\n");
+        printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
+        fflush(stdout);
+        exit(1);
+    }
+
+    fprintf(file_data_store->BASIC_TRANSMISSION_FILE,"TimeOfInfection,PartnershipType,IsInfectorAcute,PartnerARTStatus,CondomUse,MaleCircumcision,InfectorCD4,Infector_NPartners,Infectee_NPartners,InfectorGender,InfecteeRiskGroup,InfectorRiskGroup,InfectedDoB,InfectorDoB\n");
+    fclose(file_data_store->BASIC_TRANSMISSION_FILE);
+
+}
+
+
+void write_basic_transmission_data(file_struct *file_data_store, char *basic_transmission_output_string){
+
+    file_data_store->BASIC_TRANSMISSION_FILE = fopen(file_data_store->filename_basic_transmission,"a");
+    fprintf(file_data_store->BASIC_TRANSMISSION_FILE,"%s",basic_transmission_output_string);
+    fclose(file_data_store->BASIC_TRANSMISSION_FILE);
+}
 
 
 

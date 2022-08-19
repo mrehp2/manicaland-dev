@@ -109,6 +109,8 @@
 #define PRINT_EACH_RUN_OUTPUT 1 /* 0 if don't want to generate an output file for every run (when calibrating at present this is the case), or 1 if we do. */
 #define WRITE_EVERYTIMESTEP 0 /* Generates the files Timestep_outputs*.csv */
 #define TIMESTEP_AGE 0 /* Generates the files Timestep_age_outputs_*.csv */
+
+#define WRITE_BASIC_TRANSMISSION_OUTPUT 1 /* Generates the basic_transmission.csv files, containing transmission information from patch 0 (a reduced subset of info compared to phylo transmission output). */
 #define PHYLO_PATCH 0                        /* At present just print phylo information from one patch. */
 #define WRITE_PHYLOGENETICS_OUTPUT 0 // 1    /* if 1 print phylo output to file, otherwise do not print */
 #define WRITE_PARTNERSHIP_NETWORK_SNAPSHOT 0 /* if 1 then print out the sexual network at fixed times to allow network plots.  Writes the files Partnership_network_*.csv to disk.  The years at which partnerships are output are hard-coded in main.c */
@@ -525,7 +527,8 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 
 #define DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP MAX_POP_SIZE/100   /* This is the default number of HIV+ people whose next progression event will happen in a given time step. Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. At some point in the future we will tune this to avoid too many reallocs(). */
-
+#define DEFAULT_N_PREP_PER_TIME_STEP MAX_POP_SIZE/100   /* This is the default number of HIV+ people whose next progression event will happen in a given time step. Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. At some point in the future we will tune this to avoid too many reallocs(). */
+#define DEFAULT_N_VMMC_PER_TIME_STEP MAX_POP_SIZE/100   /* This is the default number of HIV+ people whose next progression event will happen in a given time step. Taken to be moderately conservative - in a 50% prevalence population assume average of 1 HIV event per year. At some point in the future we will tune this to avoid too many reallocs(). */
 #define DEFAULT_N_HSV2_PROGRESS_PER_TIME_STEP MAX_POP_SIZE/100   /* Same, but for HSV-2. */
 
 #define DEFAULT_N_HIV_CASCADE_PER_TIME_STEP MAX_POP_SIZE/50   /* This is the default number of people who will have an HIV cascade event (HIV test, start ART etc) in a given time step.
@@ -557,6 +560,7 @@ double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
  * 50,000 transmission events per simulation. */
 
 #define PHYLO_OUTPUT_STRING_LENGTH 400000 // This stores the output (all transmission info) for a run.
+#define BASIC_TRANSMISSION_OUTPUT_STRING_LENGTH 400000 // This stores the output (less transmission info than phylo_output) for a run.
 //#define PHYLO_OUTPUT_STRING_LENGTH 4000000 // This stores the output (all transmission info) for a run.
 #define PHYLO_SCENARIO 0 /* used if we want to run several scenarios for PANGEA */
 

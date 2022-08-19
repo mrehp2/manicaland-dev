@@ -81,5 +81,6 @@ void write_individual_HIVpreventioncascade_barriers(double , patch_struct *, int
 void print_partnership_duration_distribution(patch_struct *);
 
 void print_numbers_on_PrEP_by_age_sex(double , patch_struct *, int );
-
+void print_numbers_VMMC_by_age(double t, patch_struct *patch, int p);
+void print_casual_condom_use_by_age_sex(double t, patch_struct *patch, int p);
 #endif /* DEBUG_H_ */

@@ -685,6 +685,26 @@ void update_time_varying_hazard_allpatches(double t, patch_struct *patch){
 }
 
 
+/* Function used in hiv_acquisition() to look up the partner index (in susceptible->partner_pairs[]) that corresponds to the index of the infecting partner. 
+   Output is used in basic_transmission output file.
+*/
+int get_i_partner(individual *susceptible, individual *infector, int partner_gender){
+    int i_partner_insusceptibleloop = 0;
+    while ((susceptible->partner_pairs[i_partner_insusceptibleloop]->ptr[partner_gender]->id)!=(infector->id)){
+	i_partner_insusceptibleloop++;
+	if (i_partner_insusceptibleloop>=susceptible->n_partners){
+	    printf("Can't find partner in hiv_acquisition(). Exiting\n");
+	    exit(1);
+	}
+    }
+    if((susceptible->partner_pairs[i_partner_insusceptibleloop]->ptr[partner_gender]->id)!=(infector->id)){
+	printf("Huh\n");
+	exit(1);
+    }
+    return i_partner_insusceptibleloop;
+}
+
+
 
 void copy_array_long(long *dest, long *orig, long size){
     /* Copy an array of long integers
@@ -1415,6 +1435,10 @@ void make_filenames_for_struct(file_label_struct *file_labels,
     concatenate_filename(file_data_store->filename_phylogenetic_individualdata,
         output_file_directory, file_labels->filename_label_bypatch[0],
         phylo_indiv_filename_temp);
+
+    concatenate_filename(file_data_store->filename_basic_transmission,
+        output_file_directory, file_labels->filename_label_bypatch[0],
+        "basic_transmission");
 
     concatenate_filename(file_data_store->filename_hivsurvival_individualdata,
         output_file_directory, file_labels->filename_label_bypatch[0],
@@ -3114,8 +3138,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 	
 	/* PrEP: */
 	for (i_barrier_group=0; i_barrier_group<N_PrEP_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_PrEP_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP_present[i_barrier_group][i_barrier_intervention]>0.4){
-		printf("Error:param->barrier_params.p_use_PrEP_present[][] is outside expected range [0,0.4]\nExiting\n");
+	    if (param->barrier_params.p_use_PrEP_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_PrEP_present[i_barrier_group][i_barrier_intervention]>1.0){
+		printf("Error:param->barrier_params.p_use_PrEP_present[][] is outside expected range [0,1.0]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);
@@ -3124,8 +3148,8 @@ void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *par
 
 	/* VMMC: */
 	for (i_barrier_group=0; i_barrier_group<N_VMMC_PREVENTIONBARRIER_GROUPS; i_barrier_group++){
-	    if (param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]>0.99){
-		printf("Error:param->barrier_params.p_use_VMMC_present is outside expected range [0,0.99]\nExiting\n");
+	    if (param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]<0 || param->barrier_params.p_use_VMMC_present[i_barrier_group][i_barrier_intervention]>1.0){
+		printf("Error:param->barrier_params.p_use_VMMC_present is outside expected range [0,1.0]\nExiting\n");
 		printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
 		fflush(stdout);
 		exit(1);

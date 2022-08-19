@@ -146,7 +146,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 
     /* Initialise the size of the arrays to the default: */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].size_cascade_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
+        patch[p].size_cascade_events[i] = DEFAULT_N_HIV_CASCADE_PER_TIME_STEP;
 
     /* Initialise the number of people in each group to be zero (as no PrEP at start of simulation): */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
@@ -154,7 +154,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 
     /* Initialise the size of the arrays to the default: */
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
-        patch[p].size_PrEP_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
+        patch[p].size_PrEP_events[i] = DEFAULT_N_PREP_PER_TIME_STEP;
     
     /* Initialise the number of people in each group to be zero 
      * (as no VMMC at start of simulation - note traditional MC is dealt with separately): */
@@ -163,7 +163,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
 
     /* Initialise the size of the arrays to the default: */
     for (i=0; i<N_TIME_STEP_PER_YEAR; i++)
-        patch[p].size_vmmc_events[i] = DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP;
+        patch[p].size_vmmc_events[i] = DEFAULT_N_VMMC_PER_TIME_STEP;
 
     for (i=0; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR; i++)
         overall_partnerships->n_planned_breakups[i] = 0;
@@ -240,6 +240,7 @@ void reinitialize_arrays_to_default(int p, patch_struct *patch, all_partnerships
     //memset(output->annual_outputs_string_knowserostatusandonart[p], '\0', SIZEOF_annual_outputs_tempstore*sizeof(char));
     /* Note we only blank calibration_outputs_combined_string every NRUNSPERWRITETOFILE runs - this is done in main.c at present. */
     memset(output->phylogenetics_output_string, '\0', PHYLO_OUTPUT_STRING_LENGTH*sizeof(char));
+    memset(output->basic_transmission_output_string, '\0', BASIC_TRANSMISSION_OUTPUT_STRING_LENGTH*sizeof(char));
     memset(output->MIHPSA_outputs_string[p], '\0', MIHPSA_OUTPUT_STRING_LENGTH*sizeof(char));
     memset(output->hazard_output_string, '\0', HAZARD_OUTPUT_STRING_LENGTH*sizeof(char));
     memset(output->cost_effectiveness_outputs_string[p], '\0',
@@ -270,6 +271,8 @@ void alloc_output_memory(output_struct **output)
     *output = malloc(sizeof(output_struct));
     int p;
     (*output)->phylogenetics_output_string = (char *)calloc(PHYLO_OUTPUT_STRING_LENGTH,sizeof(char));
+    (*output)->basic_transmission_output_string = (char *)calloc(BASIC_TRANSMISSION_OUTPUT_STRING_LENGTH,sizeof(char));
+
     (*output)->hazard_output_string = (char *)calloc(HAZARD_OUTPUT_STRING_LENGTH,sizeof(char));
     for (p=0;p<NPATCHES;p++){
         (*output)->annual_outputs_string[p] = (char *)calloc(SIZEOF_annual_outputs_string, sizeof(char));
@@ -777,7 +780,7 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
         for(i=0 ; i<MAX_N_YEARS*N_TIME_STEP_PER_YEAR ; i++){
-            (patch[p].PrEP_events)[i] = malloc(DEFAULT_N_HIV_CASCADE_PER_TIME_STEP*sizeof(individual*));
+            (patch[p].PrEP_events)[i] = malloc(DEFAULT_N_PREP_PER_TIME_STEP*sizeof(individual*));
             if((patch[p].PrEP_events)[i]==NULL){
                 printf("Unable to allocate PrEP_events[i] in alloc_all_memory. Execution aborted.");
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -815,7 +818,7 @@ void alloc_patch_memoryv2(patch_struct *patch){
             exit(1);
         }
         for(i=0 ; i<N_TIME_STEP_PER_YEAR ; i++){
-            (patch[p].vmmc_events)[i] = malloc(DEFAULT_N_HIV_PROGRESS_PER_TIME_STEP*sizeof(individual*));
+            (patch[p].vmmc_events)[i] = malloc(DEFAULT_N_VMMC_PER_TIME_STEP*sizeof(individual*));
             if((patch[p].vmmc_events)[i]==NULL){
                 printf("Unable to allocate vmmc_events[i] in alloc_all_memory. Execution aborted.");
                 printf("LINE %d; FILE %s\n", __LINE__, __FILE__);
@@ -1517,6 +1520,7 @@ void free_output_memory(output_struct *output){
     
     free(output->HIV_prevention_barrier_outputs_string);
     free(output->phylogenetics_output_string);
+    free(output->basic_transmission_output_string);
     free(output->hazard_output_string);
 
     free(output);

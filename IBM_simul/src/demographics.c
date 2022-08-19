@@ -1963,8 +1963,8 @@ void remove_dead_persons_partners(individual *dead_person, population_partners *
 	/* Look up the type of partnership, and reduce that by 1: */
 	int ptype = a_partnership_ptr->partnership_type;
 	a_partner->n_partners_by_partnership_type[ptype]--;
-	if(a_partner->id==10541)
-	    printf("t=%6.4lf Death of partner for id=10541, type=%i n_casual=%i\n",t,ptype,a_partner->n_partners_by_partnership_type[CASUAL]);
+	//if(a_partner->id==10541)
+	//	    printf("t=%6.4lf Death of partner for id=10541, type=%i n_casual=%i\n",t,ptype,a_partner->n_partners_by_partnership_type[CASUAL]);
 
 	/* If we have PrEP for casual partnerships, then update the PrEP probability for people who've no longer got a casual partner: */
 	if(ptype==CASUAL && PREP_ELIGIBLE_CRITERIA==2){

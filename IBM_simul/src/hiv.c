@@ -599,6 +599,15 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
         printf("-- susceptible->id %ld\n",susceptible->id);
         printf("-- infector->id %ld\n",susceptible -> partner_pairs_HIVpos[infector_index] -> ptr[partner_gender]->id);*/
 
+	// Reduced version of the phylo output:
+	if(p==0 && WRITE_BASIC_TRANSMISSION_OUTPUT==1){
+	    int i_partner_insusceptibleloop = get_i_partner(susceptible,infector, partner_gender);
+	    int ptype = susceptible->partner_pairs[i_partner_insusceptibleloop]->partnership_type;
+	    int condom_use = susceptible->cascade_barriers.use_condom_in_this_partnership[i_partner_insusceptibleloop];
+
+	    store_basic_transmission_output(output, time_infect, susceptible, susceptible->partner_pairs_HIVpos[infector_index]->ptr[partner_gender], file_data_store, ptype,condom_use);
+	}
+
         // Phylogenetic transmission outputs
         if(p == PHYLO_PATCH && WRITE_PHYLOGENETICS_OUTPUT == 1){
             store_phylogenetic_transmission_output(output, time_infect, susceptible, 

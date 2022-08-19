@@ -210,6 +210,7 @@ void assign_individual_VMMC_prevention_cascade(double t, individual *indiv, casc
 
     int age = (int) floor(t-indiv->DoB);
     indiv->cascade_barriers.p_will_get_VMMC = &(barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)]);
+    //if(t>=2020)
     //printf("id=%li %lf %lf\n",indiv->id,barrier_params->p_use_VMMC[index_HIV_prevention_cascade_VMMC(age,indiv->n_lifetime_partners)],*(indiv->cascade_barriers.p_will_get_VMMC));
 
 }
@@ -274,6 +275,10 @@ void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patc
 	    /* Only circumcise uncircumcised HIV- men (ignore TMC). */
 	    if (indiv->circ==UNCIRC && indiv->HIV_status==UNINFECTED){
 		if(*(indiv->cascade_barriers.p_will_get_VMMC)>0){
+		    if(*(indiv->cascade_barriers.p_will_get_VMMC)>1.0){
+			printf("*(indiv->cascade_barriers.p_will_get_VMMC)>1. Exiting\n");
+			exit(1);
+		    }
 		    p_will_get_VMMC_per_timestep = 1.0-pow(1.0-*(indiv->cascade_barriers.p_will_get_VMMC),TIME_STEP);
 		    x = gsl_rng_uniform (rng);
 		    /* indiv->cascade_barriers.p_will_get_VMMC is the per-timestep probability: */
@@ -321,6 +326,10 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 		if (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED){
 		    if(*(indiv->cascade_barriers.p_will_use_PrEP)>0){
 			/* Now convert to a per-timestep probability: */
+			if(*(indiv->cascade_barriers.p_will_use_PrEP)>1.0){
+			    printf("*(indiv->cascade_barriers.p_will_use_PrEP)>1.0. Exiting\n");
+			    exit(1);
+			}
 			p_will_use_PrEP_per_timestep = 1.0-pow(1.0-*(indiv->cascade_barriers.p_will_use_PrEP),TIME_STEP);
 			x = gsl_rng_uniform (rng);
 
@@ -956,7 +965,15 @@ void update_VMMCrates_Manicaland(int t, parameters *param, double *adjustment_to
 	if(t>=2019){
 	    for(i_vmmc_preventionbarrier_group=i_VMMC_PREVENTIONBARRIER_YOUNG_M; i_vmmc_preventionbarrier_group<=i_VMMC_PREVENTIONBARRIER_OLD_M; i_vmmc_preventionbarrier_group++){
 		i_adjustment = i_vmmc_preventionbarrier_group-i_VMMC_PREVENTIONBARRIER_YOUNG_M;
-		param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = param->barrier_params.p_use_VMMC_present[i_vmmc_preventionbarrier_group][intervention_scenario]*adjustment_to_rate[i_adjustment]; /* Note -we ignore COVID-19 here (so use last pre-covid value). */
+		/* Ensures that probability never exceeds 1 (otherwise the (1-p)^TIMESTEP fails. */
+		double temp = param->barrier_params.p_use_VMMC_present[i_vmmc_preventionbarrier_group][intervention_scenario]*adjustment_to_rate[i_adjustment]; /* Note -we ignore COVID-19 here (so use last pre-covid value). */
+		if(temp<=1.0)
+		    param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = temp;
+		else{
+		    // Note that this can get very big indeed once VMMC gets close to 100% as the adjustment factor becomes huge.
+		    //printf("Capping pVMMC = %lf\n",temp);
+		    param->barrier_params.p_use_VMMC[i_vmmc_preventionbarrier_group] = 1.0;
+		}
 	    }
 	}
     

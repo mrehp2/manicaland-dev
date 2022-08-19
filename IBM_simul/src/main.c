@@ -517,6 +517,10 @@ int main(int argc,char *argv[]){
                 blank_debugging_files(file_data_store);
             }
 
+	    if(WRITE_BASIC_TRANSMISSION_OUTPUT==1){
+		blank_basic_transmission_data_file(file_data_store);
+	    }
+
             for(p = 0; p < NPATCHES; p++){
                 /*********************************************************/
                 /*** Initializing population characteristics ***/
@@ -884,6 +888,10 @@ int main(int argc,char *argv[]){
 
             /* Only output the full stuff if run successfully fitted data. */
             if(fit_flag == 1){
+		if(WRITE_BASIC_TRANSMISSION_OUTPUT==1){
+		    write_basic_transmission_data(file_data_store, output->basic_transmission_output_string);
+		}
+		
                 if(WRITE_PHYLOGENETICS_OUTPUT >= 1 && PRINT_EACH_RUN_OUTPUT == 1){
                     /* call files to write individual data and transmission data to csv files: */
                     write_phylo_transmission_data(file_data_store, 

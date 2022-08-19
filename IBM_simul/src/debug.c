@@ -871,6 +871,14 @@ void output_life_expectancy(char *output_file_directory, patch_struct *patch, in
                 annual_mortality_rate_5to10 += exp(patch[p].param->mortality_rate_by_gender_age_intercept[g][1] + patch[p].param->mortality_rate_by_gender_age_slope[g][1]*(t+7.5));
             }
         }
+	if(annual_mortality_rate_under5>1.0){
+	    printf("Error - annual_mortality_rate_under5 is >1\n");
+	    exit(1);
+	}
+	if(annual_mortality_rate_5to10>1.0){
+	    printf("Error - annual_mortality_rate_5to10 is >1\n");
+	    exit(1);
+	}
         /* We take the average of the annual_mortality_rates over gender: */
         mortality_rate_under5 = 1- pow(1-annual_mortality_rate_under5/(N_GENDER*1.0),5);
         mortality_rate_5to10 = 1- pow(1-annual_mortality_rate_5to10/(N_GENDER*1.0),5);
@@ -2661,3 +2669,92 @@ void print_numbers_on_PrEP_by_age_sex(double t, patch_struct *patch, int p){
 	
 }
 
+
+
+void print_numbers_VMMC_by_age(double t, patch_struct *patch, int p){
+
+    int aa, ai, i;
+    int number_per_age_group;
+    
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+	
+    /* Go through all men 14-55 */
+    for(aa = 0; aa < (55-AGE_ADULT); aa++){
+	ai = patch[p].age_list->age_list_by_gender[MALE]->youngest_age_group_index + aa;            
+	while(ai > (MAX_AGE - AGE_ADULT - 1))
+	    ai = ai - (MAX_AGE - AGE_ADULT);
+	
+	number_per_age_group = patch[p].age_list->age_list_by_gender[MALE]->number_per_age_group[ai];
+	
+	int ncirc = 0;
+	int ntmc = 0;
+	
+	for(i = 0; i < number_per_age_group; i++){
+	    
+	    indiv = patch[p].age_list->age_list_by_gender[MALE]->age_group[ai][i];
+		
+	    if(indiv->circ==VMMC){
+		ncirc +=1;
+	    }
+	    else if(indiv->circ==TRADITIONAL_MC){
+		ntmc +=1;
+	    }
+	}
+	printf("Age %i prop_VMMC=%6.4lf prop_TMC=%6.4lf\n",aa+AGE_ADULT,ncirc/(1.0*number_per_age_group),ntmc/(1.0*number_per_age_group));
+    }
+	
+}
+
+
+
+void print_casual_condom_use_by_age_sex(double t, patch_struct *patch, int p){
+
+    int aa, ai, g, i;
+    int number_per_age_group;
+    int n_partners, i_partners; /* Number of partners of individual, and an index looping over partners. */
+    int n_partners_casual_indiv, n_partners_casual_usecond_indiv;
+    int ptype;
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory) 
+    individual *indiv;
+
+
+	
+    /* Go through all age-group-eligible people - modify if we only reach certain age groups etc (we assume that the intervention does not change the fact that these interventions are not available outside those age groups). */
+    for(g = 0; g < N_GENDER; g++){    
+	for(aa = (15-AGE_ADULT); aa < (54 - AGE_ADULT); aa++){
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;            
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);
+	
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+
+
+	    n_partners_casual_indiv = 0;
+	    n_partners_casual_usecond_indiv = 0;
+
+	    for(i = 0; i < number_per_age_group; i++){
+		    
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+		n_partners = indiv->n_partners;
+		/* Now check this person's partnerships: */
+		for (i_partners=0; i_partners<n_partners; i_partners++){
+		    
+		    ptype = indiv->partner_pairs[i_partners]->partnership_type;
+		    
+		    if(ptype==CASUAL){
+			n_partners_casual_indiv++;
+			n_partners_casual_usecond_indiv += indiv->cascade_barriers.use_condom_in_this_partnership[i_partners];
+		    }
+		    
+		//		if (aa==(PREP_VMMC_MIN_AGE_PREVENTION_CASCADE-AGE_ADULT+5)){
+		//  printf("id=%li Age=%i gender=%i n_partners=%i n_casual_partners=%i p_prep=%6.4lf\n",indiv->id,aa,indiv->gender,indiv->n_partners,indiv->n_partners_by_partnership_type[CASUAL],*(indiv->cascade_barriers.p_will_use_PrEP));
+		//}
+		
+		}
+	    }
+	    printf("Age %i n=%i ncond=%i propcond=%6.4lf\n",aa+AGE_ADULT,n_partners_casual_indiv,n_partners_casual_usecond_indiv,n_partners_casual_usecond_indiv/(1.0*n_partners_casual_indiv));
+	}
+    }
+    
+}

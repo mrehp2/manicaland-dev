@@ -157,7 +157,13 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	       (t_step==patch[0].param->CHIPS_START_TIMESTEP[0])){
 		gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset);
 	    }
-        }
+        }else if(SETTING==SETTING_MANICALAND && rng_seed_offset!=0){
+	    if((t0 == patch[0].param->COHORTYEAR[NCOHORTROUNDS-1]) &&
+	       (t_step==patch[0].param->COHORTTIMESTEP[NCOHORTROUNDS-1])){
+		gsl_rng_set(rng, patch[0].param->rng_seed + rng_seed_offset);
+		printf("Resetting time at t=%lf with offset=%i seed=%li \n",t0+t_step/48.0,rng_seed_offset,patch[0].param->rng_seed + rng_seed_offset);
+	    }
+	}	    
 
 
 	/* For Zimbabwe we want partner numbers to change over time.
@@ -1195,6 +1201,12 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     /************************************************************************/
     if(MANICALAND_CASCADE==1){
 	
+	if((t0==2019 || t0==2022 || t0==2025) && t_step==0){
+	    printf("T=%i\n",t0);
+	    print_numbers_VMMC_by_age(t, patch, p);
+	    //print_casual_condom_use_by_age_sex(t, patch, p);
+	}
+
 	int year_prevention_cascade_intervention = (int) floor(patch[p].param->barrier_params.t_start_prevention_cascade_intervention);
 
 	if(t0==year_prevention_cascade_intervention){
@@ -1205,14 +1217,14 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 		    prevention_cascade_intervention_VMMC(t, patch, p);
 		    printf("Running VMMC prevention cascade intervention %i at t=%lf\n ",patch[p].param->barrier_params.i_VMMC_barrier_intervention_flag,t);
 		}		
-		printf("Before\n");
-	        print_numbers_on_PrEP_by_age_sex(t, patch, p);
+		//printf("Before\n");
+	        //print_numbers_on_PrEP_by_age_sex(t, patch, p);
 		if(patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag>0){
 		    modify_prevention_cascade_PrEP(t, patch, p);
-		    printf("Running PrEP prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
+		    //printf("Running PrEP prevention cascade intervention %i at t=%lf\n",patch[p].param->barrier_params.i_PrEP_barrier_intervention_flag,t);
 		}
-		printf("After intervention:\n");
-	        print_numbers_on_PrEP_by_age_sex(t, patch, p);
+		//printf("After intervention:\n");
+	        //print_numbers_on_PrEP_by_age_sex(t, patch, p);
 
 		/* This function redraws condom use in *existing* partnerships where condoms are not already used. Note that an individual's preferences for condoms is automatically updated via the function update_condomrates(). */
 		if(patch[p].param->barrier_params.i_condom_barrier_intervention_flag>0){

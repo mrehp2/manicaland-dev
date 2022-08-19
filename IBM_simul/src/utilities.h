@@ -46,6 +46,7 @@ void calculate_c_between_patches(parameters *, int);
 void update_number_new_partners(double , patch_struct *);
 void update_time_varying_hazard_onepatch(double , parameters *);
 void update_time_varying_hazard_allpatches(double , patch_struct *);    
+int get_i_partner(individual *, individual *, int);
 
 void copy_array_long(long *, long *, long );
 int is_serodiscordant(partnership *);

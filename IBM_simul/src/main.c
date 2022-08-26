@@ -185,6 +185,11 @@ int main(int argc,char *argv[]){
     TYPE_RNG = gsl_rng_default;
     rng = gsl_rng_alloc (TYPE_RNG);
 
+    /* Use this to specify the random numebr generator used (currently mt19937). */
+    // printf("GSL_rng generator name = %s\n",gsl_rng_name(rng));
+
+
+    
     get_ulcer_duration();
 	
     

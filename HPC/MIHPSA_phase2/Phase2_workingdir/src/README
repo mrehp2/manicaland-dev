@@ -1,0 +1,6 @@
+I think that this person was put in PrEP in 2 different ways.
+
+Need to track the array PrEP_events to see when this person was added (they should be added twice in the same timestep).
+
+Then patch to make that impossible.
+

@@ -95,21 +95,21 @@ void count_adult_pop_by_gender(patch_struct *patch, int p, double *N_m, double *
 }
 
 
-void MIHPSA_determine_PrEP_scenario(double t, patch_struct *patch, int p){
+void MIHPSA_determine_PrEP_scenario(double t, patch_struct *patch, int p, debug_struct *debug){
     /* Until 2023, use default oral PrEP coverage: */
     if(t<2023.0){
-	sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
+	sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug);
     }
     else{
 	if(patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP){
 	    /* Run a version of the code that fixes PrEP coverage to be 37,144 AGYW 15-24 at risk (FSW or non-regular partner) from 2023 onwards. */
 	    if(t==2024)
 		printf("running MIHPSA scenario where oral PrEP is available for 15-24 at risk women, but capped, from 2023 onwards\n");
-	    MIHPSA_sweep_pop_for_PrEP_per_timestep(t, patch, p);
+	    MIHPSA_sweep_pop_for_PrEP_per_timestep(t, patch, p, debug);
 	}
 
 	else if((patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CURRENTORALPREP)){
-	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
+	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug);
 	}
 	else if((patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_NOORALPREP)){
 	    if(t==2023.0)
@@ -324,7 +324,8 @@ double MIHPSA_new_condomuse_when_CUPP_switchedoff(double original_condomuse, dou
 void initialise_MIHPSA_flags(patch_struct *patch, int p){
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.remove_SBCC=1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
 	    MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -340,7 +341,8 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
 
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.remove_CUPP=1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
 	    MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -361,7 +363,8 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
        MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP
        )
 	patch[p].param->MIHPSA_params.FLAGS.remove_VMMC_from2023 = 1;
-    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO)
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.remove_VMMC_from2023 = 0;
     else{
 	printf("Error - unknown MIHPSA scenario in initialise_MIHPSA_flags() for VMMC - exiting\n");
@@ -373,7 +376,8 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.only_ANC_PD_symptomatic_testing_from2023 = 1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -386,7 +390,7 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
     }
     
     /* Under essential, and all minimal, scenarios no oral PrEP from 2023 (unless specified): */
-    if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP || MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO)
+    if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP || MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_NOORALPREP;
     /* Under MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP scenario, oral PrEP coverage is fixed to be 37,144 AGYW 15-24 at risk (FSW or non-regular partner) from 2023 onwards. */
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP)

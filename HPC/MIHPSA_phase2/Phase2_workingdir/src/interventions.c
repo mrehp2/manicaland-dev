@@ -636,8 +636,12 @@ void chips_visit_person(individual *indiv, cumulative_outputs_struct *cumulative
     
     /* If their previous event was an HIV test, then at this step they are HIV tested by CHiPs. */
     if( (old_cascade_event == CASCADEEVENT_HIV_TEST_NONPOPART) 
-            || (old_cascade_event == CASCADEEVENT_HIV_TEST_POPART)){
-        
+            || (old_cascade_event == CASCADEEVENT_HIV_TEST_POPART) || (old_cascade_event == CASCADEEVENT_HIV_TEST_PrEP_NONPOPART)){
+	if(old_cascade_event == CASCADEEVENT_HIV_TEST_PrEP_NONPOPART){
+	    printf("Unexpected behaviour in chips_visit_person() - CHIPS visit when PrEP is available. Probably this is fine but please check\n");
+	    exit(1);
+	}
+
         /* Unschedule the current event from care cascade. */
         remove_from_cascade_events(indiv, cascade_events, n_cascade_events, 
                 size_cascade_events, t, param);
@@ -1622,7 +1626,7 @@ int get_prep_eligibility(individual *indiv){
 
 //********************************************************
 /* Carry out any event associated with the PrEP background in the current time step. */
-void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_struct *patch, int p){
+void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_struct *patch, int p, debug_struct *debug){
     
     /* 
     Arguments
@@ -1688,7 +1692,7 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 		//if (indiv->id==26812){
 		//   printf("Starting PrEP for 26812 ap=%i\n",ap);
 		//}
-		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
+		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
 		//printf("BStartijng PrEP for id=%li\n",indiv->id);
 
 		j+=1;
@@ -1710,7 +1714,7 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 
 //********************************************************
 /* Carry out any event associated with the PrEP intervention in the current time step. */
-void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch_struct *patch, int p){
+void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch_struct *patch, int p, debug_struct *debug){
     
     /* 
     Arguments
@@ -1777,7 +1781,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    if (prep_eligible==1){
 
 		/* They start PrEP due to intervention: */
-		start_PrEP_for_person(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t);
+		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
 		j+=1;
 	    }
 	    else{
@@ -1799,11 +1803,11 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 
 /* Function 
    PrEP is allowed for both men and women. */
-void start_PrEP_for_person(individual *indiv, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, cumulative_outputs_struct *cumulative_outputs, double t){
+void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, cumulative_outputs_struct *cumulative_outputs, double t, debug_struct *debug){
 
 
     double t_next_PrEP_event;   /* Time of next PrEP event. */
-    
+    //printf("Starting PrEP for person %li at t=%lf\n",indiv->id, t);
     /* FOr debugging: */
     if(indiv->cd4 == DUMMYVALUE){
         printf("Trying to start PrEP for a non-existent person id=%ld !!! Exitin//g\n",indiv->id);
@@ -1812,8 +1816,8 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
         exit(1);
     }
 
-    if(indiv->id == FOLLOW_INDIVIDUAL){
-	printf("In function start_PrEP_for_person id=%li current PrEP status=%i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,t);
+    if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
+	printf("Potentially starting PrEP in function start_PrEP_for_person() id=%li current PrEP status=%i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,t);
 	fflush(stdout);
     }
 
@@ -1845,15 +1849,48 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
 	}
 	/* In the Manicaland cascade PrEP is done on a timestep basis so this shouldn't happen. */
 	else if (MANICALAND_CASCADE==1){
-	    if(indiv->cd4 == DEAD)
+	    if(indiv->cd4 == DEAD){
 		printf("Error: individual %li died before receiving PrEP intervention. Exiting\n",indiv->id);
-	    else
+		exit(1);
+	    }
+	    else if(HIV_TEST_WHEN_ON_PrEP==0){
 		printf("Error: individual %li seroconverted before receiving PrEP intervention. Exiting\n",indiv->id);
-	    //}
-	    exit(1);
+		exit(1);
+	    }
+
 	}
     }
 
+    /************************************ HERE WE INCLUDE HIV TESTING *************************************/
+    /* In the other HIV_TEST_WHEN_ON_PrEP scenarios we assume that we only consider HIV-negative people (because otherwise when PrEP levels are high, the PrEP-related HIV test is a super-effective way to mop up all HIV+ individuals in primary pop - in reality we probably won't find all the primary pop people). */
+    if(HIV_TEST_WHEN_ON_PrEP==1){
+	if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
+	    printf("In function start_PrEP_for_person() id=%li we are removing this person from any scheduled future HIV test (as they will get HIV tested as part of being on PrEP (previous index was %li). They should be getting an HIV test now.\n",indiv->id,indiv->idx_cascade_event[0]);
+	    fflush(stdout);
+	}
+	/* Conduct an HIV tests, so remove this person from HIV testing this year if they've got one scheduled: */
+	remove_from_cascade_events(indiv, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, t, patch[p].param);
+	indiv->next_cascade_event=CASCADEEVENT_HIV_TEST_PrEP_NONPOPART;
+	/* Carry out HIV test for this person: */
+	hiv_test_process(indiv, patch[p].param, t, patch[p].cascade_events, 
+			 patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, 
+			 patch[p].n_hiv_pos_progression, patch[p].size_hiv_pos_progression, 
+			 patch[p].cumulative_outputs, patch[p].calendar_outputs, 
+			 patch[p].vmmc_events, patch[p].n_vmmc_events, patch[p].size_vmmc_events, 
+			 patch, p, debug);
+	if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
+	    if(indiv->ART_status==ARTNAIVE)
+		printf("Individual id=%li tested HIV+ when trying to initate PrEP at time t=%lf\n",indiv->id,t);
+	    fflush(stdout);
+	}
+	
+	/* If they test positive, then the ART initiation is dealt with by HIV_test_process(), so we can just move to the next person. */
+	if(indiv->ART_status==ARTNAIVE){
+	    //cumulative_outputs->N_total_seroconvert_before_starting_PrEP++;
+	    return;
+	}
+    }
+    /************************************ END OF PRE-PREP HIV TEST  *************************************/
 
 
     
@@ -1890,6 +1927,23 @@ void start_PrEP_for_person(individual *indiv, parameters *param, individual ***P
     
     indiv->date_most_recent_oralPrEP_initiation = t;
 
+
+    if(HIV_TEST_WHEN_ON_PrEP==1 || HIV_TEST_WHEN_ON_PrEP==2){
+	/* Note that t_next_PrEP_event is the calendar time of the next PrEP event. */
+	if((t_next_PrEP_event-t)>=ORALPREP_TIME_TO_NEXT_HIV_TEST){
+	    if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
+		printf("In function start_PrEP_for_person() id=%li we are scheduling a future HIV test as part of being on PrEP\n",indiv->id);
+		fflush(stdout);
+	    }
+	    indiv->next_cascade_event=CASCADEEVENT_HIV_TEST_PrEP_NONPOPART;
+	    schedule_new_PrEPrelated_hiv_test(indiv, param, t, 
+					      patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events);
+	    /* could also use existing schedule_new_hiv_test??? 
+	    schedule_new_hiv_test(indiv, param, t, 
+				  individual ***cascade_events, long *n_cascade_events, long *size_cascade_events)
+	    */
+	}
+    }
 }
 
 
@@ -2000,7 +2054,7 @@ void schedule_generic_PrEP_event(individual *indiv, parameters *param, individua
 }
 
 
-/* Legacy code? */
+/* Only called if MANICALAND_CASCADE==1. */
 void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p, cumulative_outputs_struct *cumulative_outputs){
     /*Carry out any event associated with PrEP in the current time step
     

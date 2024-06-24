@@ -2273,6 +2273,8 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
 		    int country_setting, patch_struct *patch, int p){
     
     int aa,ai,k,g;
+
+    individual *indiv;
     
     // Array for storing probability of an indiv getting tested in the next window. 
     // Can be made more complex to allow differences by age, past history of testing. 
@@ -2318,27 +2320,33 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
 
             // For each individual in that annual age group, schedule their first HIV test
             for(k = 0; k < age_list->age_list_by_gender[g]->number_per_age_group[ai]; k++){
-                
-                // Only schedule tests for people who are not "HIV+ and aware of serostatus"
-                if(age_list->age_list_by_gender[g]->age_group[ai][k]->ART_status == ARTNEG){
 
-                    schedule_hiv_test_fixedtime(age_list->age_list_by_gender[g]->age_group[ai][k],
-                        param, year, cascade_events, n_cascade_events, size_cascade_events, 
+		indiv = age_list->age_list_by_gender[g]->age_group[ai][k];
+		
+		/* Under certain situations we do not want to allow a person to be scheduled for an HIV test at this time.
+		   At present that is if the person is on PrEP and HIV_TEST_WHEN_ON_PrEP==1. */
+		int model_criterion_for_scheduling_hiv_test;
+		if(HIV_TEST_WHEN_ON_PrEP==1 && indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_PrEP_NONPOPART)
+		    model_criterion_for_scheduling_hiv_test = 0;
+		else
+		    model_criterion_for_scheduling_hiv_test = 1;
+		
+                // Only schedule tests for people who are not "HIV+ and aware of serostatus"
+                if(indiv->ART_status == ARTNEG && model_criterion_for_scheduling_hiv_test==1){
+
+                    schedule_hiv_test_fixedtime(indiv, param, year, cascade_events, n_cascade_events, size_cascade_events, 
                         t_gap, country_setting, p_test_indiv);
                     
-                    if(
-                    (age_list->age_list_by_gender[g]->age_group[ai][k]->id == FOLLOW_INDIVIDUAL) &&
-                    (age_list->age_list_by_gender[g]->age_group[ai][k]->patch_no == FOLLOW_PATCH)
-                    ){
-                        if(age_list->age_list_by_gender[g]->age_group[ai][k]->next_cascade_event==-1 && age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[0]==-1 && age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[1]==-1)
-                        printf("No new HIV test scheduled for adult %ld in year %i\n", age_list->age_list_by_gender[g]->age_group[ai][k]->id,year);
+                    if ((indiv->id == FOLLOW_INDIVIDUAL) && (indiv->patch_no == FOLLOW_PATCH)){
+                        if(indiv->next_cascade_event==-1 && indiv->idx_cascade_event[0]==-1 && indiv->idx_cascade_event[1]==-1)
+                        printf("No new HIV test scheduled for adult %ld in year %i\n", indiv->id,year);
 			else{
 			    printf("Scheduling new HIV test for adult %ld, ", 
-				   age_list->age_list_by_gender[g]->age_group[ai][k]->id);
+				   indiv->id);
 			    printf("gender = %d (event type %i) at time index %li array index = %li\n", 
-				   g, age_list->age_list_by_gender[g]->age_group[ai][k]->next_cascade_event,
-				   age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[0],
-				   age_list->age_list_by_gender[g]->age_group[ai][k]->idx_cascade_event[1]);
+				   g, indiv->next_cascade_event,
+				   indiv->idx_cascade_event[0],
+				   indiv->idx_cascade_event[1]);
                         }
                         fflush(stdout);
                     }
@@ -2348,26 +2356,29 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
         // For those in the last age group, loop through all individuals
         // Note - we may decide to switch this off
         for(k = 0; k < age_list->age_list_by_gender[g]->number_oldest_age_group; k++){ 
-            
-            // Only schedule tests for people who are not "HIV+ and aware of serostatus"
-            if(age_list->age_list_by_gender[g]->oldest_age_group[k]->ART_status == ARTNEG){
+
+	    indiv = age_list->age_list_by_gender[g]->oldest_age_group[k];
+		
+	    /* Under certain situations we do not want to allow a person to be scheduled for an HIV test at this time.
+	       At present that is if the person is on PrEP and HIV_TEST_WHEN_ON_PrEP==1. */
+	    int model_criterion_for_scheduling_hiv_test;
+	    if(HIV_TEST_WHEN_ON_PrEP==1 && indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_PrEP_NONPOPART)
+		model_criterion_for_scheduling_hiv_test = 0;
+	    else
+		model_criterion_for_scheduling_hiv_test = 1;
+	    
+            // Only schedule tests for people who are not "HIV+ and aware of serostatus" (and meet the other criteria)
+            if(indiv->ART_status == ARTNEG && model_criterion_for_scheduling_hiv_test==1){
 		p_test_indiv = p_test[g]*param->p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT];
                 
-                schedule_hiv_test_fixedtime(age_list->age_list_by_gender[g]->oldest_age_group[k],
-                    param, year, cascade_events, n_cascade_events, size_cascade_events, t_gap,
+                schedule_hiv_test_fixedtime(indiv, param, year, cascade_events, n_cascade_events, size_cascade_events, t_gap,
                     country_setting, p_test_indiv);
                 
-                if(
-                (age_list->age_list_by_gender[g]->oldest_age_group[k]->id == FOLLOW_INDIVIDUAL) &&
-                (age_list->age_list_by_gender[g]->oldest_age_group[k]->patch_no == FOLLOW_PATCH)
-                ){
+                if ((indiv->id == FOLLOW_INDIVIDUAL) && (indiv->patch_no == FOLLOW_PATCH)){
                     printf("Scheduling first HIV test  (at current year %i) ", year);
-                    printf("for OLDEST adult %ld, ", 
-                        age_list->age_list_by_gender[g]->oldest_age_group[k]->id);
+                    printf("for OLDEST adult %ld, ", indiv->id);
                     printf("gender = %d (event type %i)at time index %li, array index = %li\n",
-                    g, age_list->age_list_by_gender[g]->oldest_age_group[k]->next_cascade_event, 
-                    age_list->age_list_by_gender[g]->oldest_age_group[k]->idx_cascade_event[0], 
-                    age_list->age_list_by_gender[g]->oldest_age_group[k]->idx_cascade_event[1]);
+                    g, indiv->next_cascade_event, indiv->idx_cascade_event[0], indiv->idx_cascade_event[1]);
                     
                     fflush(stdout);
                 }
@@ -2514,6 +2525,37 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
             indiv->next_cascade_event = CASCADEEVENT_HIV_TEST_POPART;
         }
         
+        schedule_generic_cascade_event(indiv, param, time_hiv_test, cascade_events,
+            n_cascade_events, size_cascade_events, t);
+    }else{
+        // Some people never test (as exponential distribution we truncate any tests occuring after
+        // the end of the simulation).  
+        // Note that we do not need to unschedule this indiv from the cascade_event list as the
+        // event is this one and we are moving on in time
+        indiv->next_cascade_event = NOEVENT;
+        indiv->idx_cascade_event[0] = NOEVENT;
+        indiv->idx_cascade_event[1] = -1;
+    }
+}
+
+
+
+void schedule_new_PrEPrelated_hiv_test(individual* indiv, parameters *param, double t, 
+    individual ***cascade_events, long *n_cascade_events, long *size_cascade_events){
+   /* For a given individual on PrEP at time t, draw when they will next have a PrEP-related HIV test.  
+    */
+    
+    double time_hiv_test = t + ORALPREP_TIME_TO_NEXT_HIV_TEST;
+    
+    if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
+        printf("New PrEP-related HIV test for adult %ld scheduled at time %6.4f, with test at = %f\n", 
+	       indiv->id,t, time_hiv_test);
+        fflush(stdout);
+    }
+    
+    // Now call schedule_generic_cascade_event() to actually schedule the event
+    if(time_hiv_test < (param->end_time_simul)){
+	indiv->next_cascade_event = CASCADEEVENT_HIV_TEST_PrEP_NONPOPART;
         schedule_generic_cascade_event(indiv, param, time_hiv_test, cascade_events,
             n_cascade_events, size_cascade_events, t);
     }else{
@@ -3673,7 +3715,11 @@ void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p,
 
         else{
             /* At this point "indiv->next_cascade_event" is what happens to them now. We then draw a new "next event" after. */
-            if((indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_NONPOPART)||(indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_POPART)){
+            if((indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_NONPOPART)||(indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_POPART) || (indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_PrEP_NONPOPART)){
+		//if(indiv->next_cascade_event==CASCADEEVENT_HIV_TEST_PrEP_NONPOPART){
+		//    printf("Warning - unexpected behaviour for indiv=%li in carry_out_cascade_events_per_timestep() - function is called when the next cascade event is a PrEP-related HIV test. Probably this is OK, but please check.\n",indiv->id);
+		//    exit(1);
+		//}
                 /* Counters get modified in the function hiv_test_process. */
                 //debug->art_vars[p].cascade_transitions[indiv->ART_status+1][ARTNEG+1]++;
                 if (indiv->ART_status==ARTNAIVE)

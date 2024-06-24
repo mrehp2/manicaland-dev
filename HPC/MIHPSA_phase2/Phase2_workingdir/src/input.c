@@ -695,7 +695,8 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_condom_hsv2));
         check_if_cannot_read_param(checkreadok, "param_local->eff_condom_hsv2");
-	printf("eff_condom_hsv2=%lf\n",param_local->eff_condom_hsv2);
+	if(i_run==0)
+	    printf("eff_condom_hsv2=%lf\n",param_local->eff_condom_hsv2);
 
         checkreadok = fscanf(param_file,"%lg", &(param_local->eff_prep_semiadherent_hsv2));
         check_if_cannot_read_param(checkreadok, "param_local->eff_prep_semiadherent_hsv2");
@@ -706,12 +707,14 @@ void read_hsv2_params(char *patch_tag, parameters *allrunparameters, int n_runs,
 	    
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_circ_hsv2_vmmc));
         check_if_cannot_read_param(checkreadok, "param_local->eff_circ_hsv2_vmmc");
-	printf("eff_circ_hsv2_vmmc=%lf\n",param_local->eff_circ_hsv2_vmmc);
+	if(i_run==0)
+	    printf("eff_circ_hsv2_vmmc=%lf\n",param_local->eff_circ_hsv2_vmmc);
 
 	
 	checkreadok = fscanf(param_file,"%lg", &(param_local->eff_circ_hsv2_tmc));
         check_if_cannot_read_param(checkreadok, "param_local->eff_circ_hsv2_tmc");
-	printf("eff_circ_hsv2_tmc=%lf\n",param_local->eff_circ_hsv2_tmc);
+	if(i_run==0)
+	    printf("eff_circ_hsv2_tmc=%lf\n",param_local->eff_circ_hsv2_tmc);
 
 	
     }

@@ -2109,7 +2109,7 @@ void remove_from_cascade_events(individual *indiv, individual ***cascade_events,
     if (t<param->COUNTRY_HIV_TEST_START)
         return;
     if(indiv->id==FOLLOW_INDIVIDUAL && indiv->patch_no==FOLLOW_PATCH){
-        printf("Individual %ld at time %6.2f - removing from cascade events\n",indiv->id,t);
+        printf("Individual %ld at time %6.2f - removing from cascade events %li\n",indiv->id,t,indiv->idx_cascade_event[0]);
         fflush(stdout);
     }
 

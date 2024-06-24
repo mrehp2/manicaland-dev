@@ -25,7 +25,7 @@ void count_adult_pop_by_gender(patch_struct *patch, int p, double *N_m, double *
 
 double count_15plus_scale(patch_struct *patch, int p);
 
-void MIHPSA_determine_PrEP_scenario(double t, patch_struct *patch, int p);
+void MIHPSA_determine_PrEP_scenario(double t, patch_struct *patch, int p, debug_struct *);
 
 
 void mihpsa_minimalscenario_increasemulitplepartners(double , patch_struct *);

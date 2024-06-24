@@ -91,6 +91,23 @@ IBM_simul/Manicaland_hpc_dir/
 IBM_simul/Manicaland_hpc_dir_test/
 IBM_simul/OTHER_LAPTOP/
 
+HPC/MIHPSA_hpc_*
+HPC/MIHPSA_phase2/Phase2_workingdir/JUNK/
+HPC/MIHPSA_phase2/Phase2_workingdir/Manicaland_generated_priors_2022_06_29/
+HPC/MIHPSA_phase2/Phase2_workingdir/TEMPLATE_Manicaland_IBM_src/
+HPC/MIHPSA_phase2/Phase2_workingdir/broken_src/
+HPC/MIHPSA_phase2/Phase2_workingdir/broken_src_15june2024/
+HPC/MIHPSA_phase2/Phase2_workingdir/checks/
+HPC/MIHPSA_phase2/Phase2_workingdir/copy_outputs_Aug2023/
+HPC/MIHPSA_phase2/Phase2_workingdir/copy_temp/
+HPC/MIHPSA_phase2/Phase2_workingdir/temp*
+HPC/MIHPSA_phase2/Phase2_workingdir/test*
+HPC/MIHPSA_phase2/Phase2_workingdir/results*
+HPC/MIHPSA_phase2/Phase2_workingdir/broken*
+HPC/MIHPSA_phase2/Phase2_workingdir/*.pdf
+HPC/MIHPSA_phase2/Phase2_workingdir/*.csv
+HPC/hpc_2022*
+
 
 # Some output files:
 HIVPrevCasc_Indiv_run*.csv

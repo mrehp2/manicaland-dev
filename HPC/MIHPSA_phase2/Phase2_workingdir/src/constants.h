@@ -119,7 +119,7 @@
 
 #define WRITE_PARTNERSHIPS_AT_PC0 0 /* Generates Distr_n_lifetime_partners and Distr_n_partners_lastyear csv files. NEEDED FOR ReadAnnualOutputs-knitr.Rnw.  */
 
-#define FOLLOW_INDIVIDUAL -1 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
+#define FOLLOW_INDIVIDUAL -1 // 74867 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
 
 #define FOLLOW_PATCH 0 //1
 
@@ -514,12 +514,13 @@ extern const char RISK_GP_NAMES[N_RISK][5];
  0 = minimal scenario
  1 = essential scenario
  2 = PrEP scenario */
-#define MIHPSA_SCENARIO_FLAG 0
+#define MIHPSA_SCENARIO_FLAG 9
 
 #define MIHPSA_MINIMAL_SCENARIO 0
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC 10
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP 11
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP 12
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC 13
 
 #define MIHPSA_ESSENTIAL_SCENARIO 1
 #define MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP 2
@@ -589,7 +590,8 @@ double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
 /* Zimbabwe NSP 2025 target: Dropbox/projects/MIHPSA_Zimabwe2021/Phase2/MIHPSA Zimbabwe call 5July2023_withNotes.pptx slide 10 ('In the NSP there is a target of “90% by 2025 for all population groups at risk”') */
 #define MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP 0.9
 
-
+/* currently HIV test every 3 months while on oral PrEP: */
+#define ORALPREP_TIME_TO_NEXT_HIV_TEST 0.25
 
 /************************************************************************/
 /* Define macros (bits of code that we always use).

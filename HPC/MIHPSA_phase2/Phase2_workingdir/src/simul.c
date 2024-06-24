@@ -1137,19 +1137,19 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	if(t>=(patch[p].param->PrEP_background_params->year_start_background + patch[p].param->PrEP_background_params->timestep_start_background*TIME_STEP)){
 
 	    if(MIHPSA_MODULE==1)
-		MIHPSA_determine_PrEP_scenario(t, patch, p);
+		MIHPSA_determine_PrEP_scenario(t, patch, p, debug);
 	    else
 		//if((MIHPSA_SCENARIO_FLAG!=MIHPSA_MINIMAL_SCENARIO && MIHPSA_SCENARIO_FLAG!=MIHPSA_ESSENTIAL_SCENARIO) || (t<2023.0)){
-		sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p);
+		sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug);
 	    
 		
 	
 	    /* Essential scenario involves no PrEP: */
 	    /* }else if((MIHPSA_SCENARIO_FLAG==1) && (t>=2023.0)){ */
 	    /* 	printf("Doing nothing...\n"); */
-	    /* 	//sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p); */
+	    /* 	//sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug); */
 	    /* }else{ */
-	    /* 	sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p); */
+	    /* 	sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug); */
 	    /* } */
 	}
     }
@@ -1160,8 +1160,9 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
     
     if(t>=patch[p].param->PrEP_background_params->year_start_background+TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background){
 	if(MANICALAND_CASCADE==0)
-	    carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p);
+	    carry_out_PrEP_background_events_per_timestep(t_step, t, patch, p, debug);
 	else if(MANICALAND_CASCADE==1){
+	    /* This code doesn't have a PrEP-associated HIV test process (unlike all other PrEP events which call start_PrEP_for_person(). */
 	    carry_out_PrEP_events_per_timestep(t,patch, p, patch[p].cumulative_outputs);
 	}
 
@@ -1186,7 +1187,7 @@ int carry_out_processes_by_patch_by_time_step(int t_step, int t0, fitting_data_s
 	    
 	    if((t >= patch[p].param->PrEP_intervention_params->year_start_intervention + TIME_STEP*patch[p].param->PrEP_background_params->timestep_start_background )){
 		//printf("Carrying out PrEP intervention at t=%lf\n",t);
-		carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p);
+		carry_out_PrEP_intervention_events_per_timestep(t_step, t, patch, p, debug);
 	    }
 	}
     }

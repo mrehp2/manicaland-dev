@@ -39,6 +39,8 @@
 # 'Old' files:
 *.old
 
+# valgrind output:
+valgrind-out.txt
 
 # Files associated with the trial
 #data/RAW_PRIORS/community_dictionary_withtrialarm.csv

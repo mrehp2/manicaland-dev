@@ -475,7 +475,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 /* Note that these two numbers need to change if we add any states to the cascade: */
 #define NCASCADEEVENTS_NONPOPART 7      /* We test if (EVENT<NCASCADEEVENTS_NONPOPART) to determine if the event is due to popart (=1) or not (=0). */
 
-#define CASCADEEVENT_HIV_TEST_PrEP_NONPOPART -1 // -1 is OK, still counts as non-PopART.
+#define CASCADEEVENT_HIV_TEST_PrEP_NONPOPART -99 // -99 is OK, still counts as non-PopART. Note that -1=NOEVENT (so do not use that)
 #define CASCADEEVENT_HIV_TEST_NONPOPART 0
 #define CASCADEEVENT_CD4_TEST_NONPOPART 1
 #define CASCADEEVENT_START_ART_NONPOPART 2
@@ -514,7 +514,7 @@ extern const char RISK_GP_NAMES[N_RISK][5];
  0 = minimal scenario
  1 = essential scenario
  2 = PrEP scenario */
-#define MIHPSA_SCENARIO_FLAG 9
+#define MIHPSA_SCENARIO_FLAG 13
 
 #define MIHPSA_MINIMAL_SCENARIO 0
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC 10

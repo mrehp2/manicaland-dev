@@ -2275,7 +2275,7 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
     int aa,ai,k,g;
 
     individual *indiv;
-    
+
     // Array for storing probability of an indiv getting tested in the next window. 
     // Can be made more complex to allow differences by age, past history of testing. 
     double *p_test;
@@ -2330,6 +2330,9 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
 		    model_criterion_for_scheduling_hiv_test = 0;
 		else
 		    model_criterion_for_scheduling_hiv_test = 1;
+		/* if(year>=2024){ */
+		/*     printf("AA  model_criterion_for_scheduling_hiv_test=%i\n",model_criterion_for_scheduling_hiv_test); */
+		/* } */
 		
                 // Only schedule tests for people who are not "HIV+ and aware of serostatus"
                 if(indiv->ART_status == ARTNEG && model_criterion_for_scheduling_hiv_test==1){
@@ -2366,7 +2369,6 @@ void draw_hiv_tests(parameters *param, age_list_struct *age_list, int year,
 		model_criterion_for_scheduling_hiv_test = 0;
 	    else
 		model_criterion_for_scheduling_hiv_test = 1;
-	    
             // Only schedule tests for people who are not "HIV+ and aware of serostatus" (and meet the other criteria)
             if(indiv->ART_status == ARTNEG && model_criterion_for_scheduling_hiv_test==1){
 		p_test_indiv = p_test[g]*param->p_HIV_background_testing_age_adjustment_factor[MAX_AGE-AGE_ADULT];
@@ -2685,6 +2687,8 @@ void probability_get_hiv_test_in_next_window(double *p_test, double *t_gap, int 
 		/* Note - we don't need testing_adjustment as that ensures we have a constant # of tests - ANC/PD should increase with pop size. */
 		/* First calculate the "average" rate of testing (which would give ~1,489,869 tests in 2022 as given by MoH data. */
 		double approximate_testing_rate_nonminimal = ((p_test[MALE]/p_test[FEMALE])*0.37 + 0.37)/2.0;
+		printf("Here only_ANC_PD_symptomatic_testing_from2023 at t=%i rate=%6.4lf\n",year,approximate_testing_rate_nonminimal);
+
 		/* MoH provided data on women HIV tested in ANC & PD in 2022 (747,332) - this is 50.2% of all HIV tests in (men+women) in 2022 (1,489,869). . */
 		p_test[FEMALE] = approximate_testing_rate_nonminimal*0.502;
 		/* Men only test when symptomatic: */
@@ -2805,7 +2809,7 @@ void schedule_hiv_test_fixedtime(individual* indiv, parameters *param, int year,
 
     // Draw to see if this person will test or not
     double x_test = gsl_rng_uniform(rng);
-
+    
     if(x_test > p_test_indiv){
         /* No test this time, so make sure they are unscheduled: */
         indiv->next_cascade_event = NOEVENT;
@@ -3663,6 +3667,7 @@ void update_ART_state_population_counters_cd4_change(double t, population_size_o
  * */
 void carry_out_cascade_events_per_timestep(double t, patch_struct *patch, int p, all_partnerships *overall_partnerships, debug_struct *debug, file_struct *file_data_store){
 
+    
     int array_index_for_cascade_event = (int) (round((t - patch[p].param->COUNTRY_HIV_TEST_START) * N_TIME_STEP_PER_YEAR));
     int n_events = patch[p].n_cascade_events[array_index_for_cascade_event];
     individual *indiv;

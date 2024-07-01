@@ -1871,6 +1871,7 @@ void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parame
 	/* Conduct an HIV tests, so remove this person from HIV testing this year if they've got one scheduled: */
 	remove_from_cascade_events(indiv, patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, t, patch[p].param);
 	indiv->next_cascade_event=CASCADEEVENT_HIV_TEST_PrEP_NONPOPART;
+
 	/* Carry out HIV test for this person: */
 	hiv_test_process(indiv, patch[p].param, t, patch[p].cascade_events, 
 			 patch[p].n_cascade_events, patch[p].size_cascade_events, patch[p].hiv_pos_progression, 
@@ -1883,6 +1884,8 @@ void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parame
 		printf("Individual id=%li tested HIV+ when trying to initate PrEP at time t=%lf\n",indiv->id,t);
 	    fflush(stdout);
 	}
+
+	
 	
 	/* If they test positive, then the ART initiation is dealt with by HIV_test_process(), so we can just move to the next person. */
 	if(indiv->ART_status==ARTNAIVE){

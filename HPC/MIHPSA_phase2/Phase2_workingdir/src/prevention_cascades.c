@@ -269,7 +269,7 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
     individual *indiv;
     double x;
     double p_will_use_PrEP_per_timestep;
-    if((t-floor(t)<0.025))
+    if((t-floor(t)<0.01))
        printf("Using sweep_pop_for_PrEP_per_timestep_given_barriers() to determine PrEP initiation at t=%6.4lf\n",t);
     /* No reason why we would ever expect PrEP to be offered to very old people. */
     if (PREP_MAX_AGE_PREVENTION_CASCADE>79)

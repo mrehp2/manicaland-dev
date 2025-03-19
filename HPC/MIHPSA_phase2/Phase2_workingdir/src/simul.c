@@ -359,7 +359,7 @@ int carry_out_processes(int t0, fitting_data_struct *fitting_data, patch_struct 
 	    /* This corresponds to 1 July in the year (note - the .0 is to avoid integer division): */
 	    if(t_step==(int) round((191.0/365)*N_TIME_STEP_PER_YEAR))
 		for(p = 0; p < NPATCHES; p++)
-		    store_annual_outputs_MIHPSA(patch, p, output, t0 + t_step*TIME_STEP);
+		    store_annual_outputs_MIHPSA(patch, p, output, overall_partnerships, t0 + t_step*TIME_STEP);
 	}
 	//}
 	

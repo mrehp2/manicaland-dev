@@ -477,9 +477,14 @@ void hiv_acquisition(individual* susceptible, double time_infect, patch_struct *
 
     if (susceptible->PrEP_cascade_status>WAITINGTOSTARTPREP){
 	if (susceptible->PrEP_cascade_status==ONPREP_ADHERENT)
+	    /* Oral PrEP: */
 	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_prep_adherent);
 	else if (susceptible->PrEP_cascade_status==ONPREP_SEMIADHERENT)
 	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_prep_semiadherent);
+	else if (susceptible->PrEP_cascade_status==ONDAPIVIRINERING_PREP)
+	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_dapivirinering_prep);
+	else if (susceptible->PrEP_cascade_status==ONCABLA_PREP)
+	    total_hazard_ignore_circ = total_hazard_ignore_circ * (1.0-patch[p].param->eff_CABLA_prep);
     }
     
     /* Adjust according to the circumcision status of the susceptible: */
@@ -2543,11 +2548,18 @@ void schedule_new_hiv_test(individual* indiv, parameters *param, double t,
 
 
 void schedule_new_PrEPrelated_hiv_test(individual* indiv, parameters *param, double t, 
-    individual ***cascade_events, long *n_cascade_events, long *size_cascade_events){
+				       individual ***cascade_events, long *n_cascade_events, long *size_cascade_events, int PrEP_type){
    /* For a given individual on PrEP at time t, draw when they will next have a PrEP-related HIV test.  
     */
+
+    double time_hiv_test;
+    if(PrEP_type==PREPTYPE_DAILYORALPREP)
+        time_hiv_test = t + ORALPREP_TIME_TO_NEXT_HIV_TEST;
+    if(PrEP_type==PREPTYPE_DAPIVIRINERINGPREP)
+        time_hiv_test = t + DAPIVIRINERING_TIME_TO_NEXT_HIV_TEST;
+    if(PrEP_type==PREPTYPE_CABLAPREP)
+        time_hiv_test = t + CABLA_TIME_TO_NEXT_HIV_TEST;
     
-    double time_hiv_test = t + ORALPREP_TIME_TO_NEXT_HIV_TEST;
     
     if(indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
         printf("New PrEP-related HIV test for adult %ld scheduled at time %6.4f, with test at = %f\n", 

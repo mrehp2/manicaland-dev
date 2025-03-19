@@ -63,10 +63,11 @@ void blank_individual_array(individual *individual_population, int id_counter){
     blank_person_template.next_PrEP_event = DUMMYVALUE;
     blank_person_template.idx_PrEP_event[0] = DUMMYVALUE;
     blank_person_template.idx_PrEP_event[1] = DUMMYVALUE;
+    blank_person_template.reason_for_starting_PrEP = DUMMYVALUE;
     blank_person_template.date_most_recent_oralPrEP_initiation =  DUMMYVALUE;
     blank_person_template.date_most_recent_oralPrEP_stoppage =  DUMMYVALUE;
-    blank_person_template.date_most_recent_dapiverinePrEP_initiation =  DUMMYVALUE;
-    blank_person_template.date_most_recent_dapiverinePrEP_stoppage =  DUMMYVALUE;
+    blank_person_template.date_most_recent_dapivirineringPrEP_initiation =  DUMMYVALUE;
+    blank_person_template.date_most_recent_dapivirineringPrEP_stoppage =  DUMMYVALUE;
     blank_person_template.date_most_recent_CABLAPrEP_initiation =  DUMMYVALUE;
     blank_person_template.date_most_recent_CABLAPrEP_stoppage =  DUMMYVALUE;
     //blank_person_template.debug_last_PrEP_cascade_event_index = DUMMYVALUE;

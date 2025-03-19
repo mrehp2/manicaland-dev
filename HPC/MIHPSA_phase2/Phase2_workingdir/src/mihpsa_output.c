@@ -27,7 +27,7 @@ int get_MIHPSA_condom_use_last_act(individual *indiv){
 	return 0;
 }
 
-void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *output, double t){
+void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *output, all_partnerships *overall_partnerships, double t){
     /* Stores annual data (HIV prevalence, ART coverage, HIV incidence, new infections, number on ART, AIDS deaths, total deaths, number of HIV tests, test yield, % circ (either VMMC or TMC), viral suppression, condom use at last sex)
     for a single patch (patch `p`) in the output structure `output`.  
     
@@ -121,17 +121,21 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     long n_women_ever_oralPrEP_15to24 = 0;
     long n_women_used_dapivirinering_lastQ_15to24 = 0;
     long n_women_active_dapivirinering_lastQ_15to24 = 0;
-    long n_women_used_injectablePrEP_lastQ_15to24 = 0;
-    long n_women_active_injectablePrEP_lastQ_15to24 = 0;
+    long n_women_ever_dapivirinering_15to24 = 0;
+    long n_women_used_CABLA_lastQ_15to24 = 0;
+    long n_women_active_CABLA_lastQ_15to24 = 0;
+    long n_women_ever_CABLA_15to24 = 0;
 
-    /* Counters for women with SD partners: */
-    long n_women_used_oralPrEP_lastQ_15plus_sdpartner = 0;
-    long n_women_active_oralPrEP_lastQ_15plus_sdpartner = 0;
-    long n_women_ever_oralPrEP_15plus_sdpartner = 0;
+    /* Counters for adults 15+ (women only for DPV ring) with SD partners: */
+    long n_adults_used_oralPrEP_lastQ_15plus_sdpartner = 0;
+    long n_adults_active_oralPrEP_lastQ_15plus_sdpartner = 0;
+    long n_adults_ever_oralPrEP_15plus_sdpartner = 0;
     long n_women_used_dapivirinering_lastQ_15plus_sdpartner = 0;
     long n_women_active_dapivirinering_lastQ_15plus_sdpartner = 0;
-    long n_women_used_injectablePrEP_lastQ_15plus_sdpartner = 0;
-    long n_women_active_injectablePrEP_lastQ_15plus_sdpartner = 0;
+    long n_women_ever_dapivirinering_15plus_sdpartner = 0;
+    long n_adults_used_CABLA_lastQ_15plus_sdpartner = 0;
+    long n_adults_active_CABLA_lastQ_15plus_sdpartner = 0;
+    long n_adults_ever_CABLA_15plus_sdpartner = 0;
     
     int UPPER_AGE_LIM_YOUNG[N_GENDER];
     int UPPER_AGE_LIM_OLD[N_GENDER];
@@ -357,16 +361,45 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 		    }
 		}
 
-		
+	    		
 		/* If they are currently on PrEP, or stopped PrEP in the last quarter (note - we first have to test if they have ever started PrEP): */
+		
 		if(indiv->date_most_recent_oralPrEP_initiation<=t){
-		    /* Have ever initated oral PrEP: */
+		    /* Have ever initated oral PrEP (note this is regardless of whether it's through an AGYW intervention or e.g. as part of a sd couple): */
 		    n_women_ever_oralPrEP_15to24++;
-		    if((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT) || (t-(indiv->date_most_recent_oralPrEP_stoppage)<=0.25))
+
+		    /* For the used oral PrEP and active on oral PrEP, check if they did this as part of the AGYW intervention: */
+		    //if(indiv->reason_for_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION){
+		    if((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT) || (t-(indiv->date_most_recent_oralPrEP_stoppage)<=0.25)){			
 			n_women_used_oralPrEP_lastQ_15to24++;
-		    /* If they are have been on PrEP throughout the last quarter: */
+		    }
+		    /* If they are have been on oral PrEP throughout the last quarter: */
 		    if(((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT)) && (t-(indiv->date_most_recent_oralPrEP_initiation)>=0.25))
 			n_women_active_oralPrEP_lastQ_15to24++;
+			//}
+		}
+	    
+		if(indiv->date_most_recent_dapivirineringPrEP_initiation<=t){
+		    /* Have ever initated dapivirine ring PrEP: */
+		    n_women_ever_dapivirinering_15to24++;
+		    if((indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP) || (t-(indiv->date_most_recent_dapivirineringPrEP_stoppage)<=0.25))
+			n_women_used_dapivirinering_lastQ_15to24++;
+		    //else
+		    //	printf("PrEP status=%i date stoppage =%lf t=%lf\n",indiv->PrEP_cascade_status,indiv->date_most_recent_dapivirineringPrEP_stoppage,t);
+
+		    /* If they are have been on dapivirine ring PrEP throughout the last quarter: */
+		    if(((indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP)) && (t-(indiv->date_most_recent_dapivirineringPrEP_initiation)>=0.25))
+			n_women_active_dapivirinering_lastQ_15to24++;
+		}
+	    
+		if(indiv->date_most_recent_CABLAPrEP_initiation<=t){
+		    /* Have ever initated CABLA PrEP: */
+		    n_women_ever_CABLA_15to24++;
+		    if((indiv->PrEP_cascade_status==ONCABLA_PREP) || (t-(indiv->date_most_recent_CABLAPrEP_stoppage)<=0.25))
+			n_women_used_CABLA_lastQ_15to24++;
+		    /* If they are have been on CABLA PrEP throughout the last quarter: */
+		    if(((indiv->PrEP_cascade_status==ONCABLA_PREP)) && (t-(indiv->date_most_recent_CABLAPrEP_initiation)>=0.25))
+			n_women_active_CABLA_lastQ_15to24++;
 		}
 	    
 		
@@ -389,6 +422,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 		}
 	    }
 
+	    
 
 	    /* Get output to validate MIHPSA minimal scenario regarding reduction in condom use. */
 	    for(i_partner=0; i_partner<(indiv->n_partners); i_partner++){
@@ -407,8 +441,67 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    
 	}
     }
-    		    
 
+    // Loop through all susceptible individuals who are in serodiscordant partnerships
+    int k; /* Index through the list of individuals in serodiscordant partnerships: */
+    for(k = 0; k < overall_partnerships->n_susceptible_in_serodiscordant_partnership[0]; k++){
+        indiv = overall_partnerships->susceptible_in_serodiscordant_partnership[k];
+        // If the susceptible individual in the serodiscordant partnership is alive
+        if(indiv->cd4>DEAD){
+	    age = (int) floor(t - indiv->DoB);
+	    if(age>=15){
+		/* Check that they've ever started any type of PrEP: */
+		if((indiv->date_most_recent_oralPrEP_initiation<=t) || (indiv->date_most_recent_dapivirineringPrEP_initiation<=t) || (indiv->date_most_recent_CABLAPrEP_initiation<=t)){
+		    g = indiv->gender;
+		    //if(indiv->reason_for_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION){
+	    		
+		    /* If they are currently on PrEP, or stopped PrEP in the last quarter (note - we first have to test if they have ever started PrEP): */
+		    if(indiv->date_most_recent_oralPrEP_initiation<=t){
+			/* Have ever initated oral PrEP: */
+			n_adults_ever_oralPrEP_15plus_sdpartner++;
+			if((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT) || (t-(indiv->date_most_recent_oralPrEP_stoppage)<=0.25))
+			    n_adults_used_oralPrEP_lastQ_15plus_sdpartner++;
+			/* If they are have been on oral PrEP throughout the last quarter: */
+			if(((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT)) && (t-(indiv->date_most_recent_oralPrEP_initiation)>=0.25))
+			    n_adults_active_oralPrEP_lastQ_15plus_sdpartner++;
+		    }
+	    
+		    if(indiv->date_most_recent_dapivirineringPrEP_initiation<=t){
+			if(g==MALE){
+			    printf("Error - man %li on DPV. Exiting\n",indiv->id);
+			    exit(1);
+			}
+			/* Have ever initated dapivirine ring PrEP: */
+			n_women_ever_dapivirinering_15plus_sdpartner++;
+			if((indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP) || (t-(indiv->date_most_recent_dapivirineringPrEP_stoppage)<=0.25))
+			    n_women_used_dapivirinering_lastQ_15plus_sdpartner++;
+			//else
+			//printf("PrEP status=%i date initiation =%lf stoppage =%lf t=%lf\n",indiv->PrEP_cascade_status,indiv->date_most_recent_dapivirineringPrEP_initiation,indiv->date_most_recent_dapivirineringPrEP_stoppage,t);
+			/* If they are have been on dapivirine ring PrEP throughout the last quarter: */
+			if(((indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP)) && (t-(indiv->date_most_recent_dapivirineringPrEP_initiation)>=0.25))
+			    n_women_active_dapivirinering_lastQ_15plus_sdpartner++;
+		    }
+		    
+		    if(indiv->date_most_recent_CABLAPrEP_initiation<=t){
+			/* Have ever initated CABLA PrEP: */
+			n_adults_ever_CABLA_15plus_sdpartner++;
+			if((indiv->PrEP_cascade_status==ONCABLA_PREP) || (t-(indiv->date_most_recent_CABLAPrEP_stoppage)<=0.25))
+			    n_adults_used_CABLA_lastQ_15plus_sdpartner++;
+			/* If they are have been on CABLA PrEP throughout the last quarter: */
+			if(((indiv->PrEP_cascade_status==ONCABLA_PREP)) && (t-(indiv->date_most_recent_CABLAPrEP_initiation)>=0.25))
+			    n_adults_active_CABLA_lastQ_15plus_sdpartner++;
+		    }
+		}
+	    }
+	}
+    }
+
+    //////////////////////////////////////////////////
+
+    /* if(t>2023) */
+    /* 	printf("At t=%lf n_women_used_dapivirinering_lastQ_15to24=%li n_women_ever_dapivirinering_15to24=%li n_women_ever_dapivirinering_15plus_sdpartner=%li n_women_used_dapivirinering_lastQ_15plus_sdpartner=%li\n",t,n_women_used_dapivirinering_lastQ_15to24,n_women_ever_dapivirinering_15to24,n_women_ever_dapivirinering_15plus_sdpartner,n_women_used_dapivirinering_lastQ_15plus_sdpartner); */
+    
+			
 
     sprintf(temp_string, "%i,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
 	    (int) floor(t),npop_bysex_15to49[MALE],npop_bysex_15to49[FEMALE],
@@ -488,7 +581,7 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
     }
     
 
-    sprintf(temp_string2, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+    sprintf(temp_string2, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15plus[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15to24F,
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15to24[FEMALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_25to49[FEMALE],
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15plus[MALE],
@@ -508,22 +601,26 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    n_women_ever_oralPrEP_15to24,
 	    n_women_used_dapivirinering_lastQ_15to24,
 	    n_women_active_dapivirinering_lastQ_15to24,
-	    n_women_used_injectablePrEP_lastQ_15to24,
-	    n_women_active_injectablePrEP_lastQ_15to24,
-	    n_women_used_oralPrEP_lastQ_15plus_sdpartner,
-	    n_women_active_oralPrEP_lastQ_15plus_sdpartner,
-	    n_women_ever_oralPrEP_15plus_sdpartner,
+	    n_women_ever_dapivirinering_15to24,
+	    n_women_used_CABLA_lastQ_15to24,
+	    n_women_active_CABLA_lastQ_15to24,
+	    n_women_ever_CABLA_15to24,
+	    n_adults_used_oralPrEP_lastQ_15plus_sdpartner,
+	    n_adults_active_oralPrEP_lastQ_15plus_sdpartner,
+	    n_adults_ever_oralPrEP_15plus_sdpartner,
 	    n_women_used_dapivirinering_lastQ_15plus_sdpartner,
 	    n_women_active_dapivirinering_lastQ_15plus_sdpartner,
-	    n_women_used_injectablePrEP_lastQ_15plus_sdpartner,
-	    n_women_active_injectablePrEP_lastQ_15plus_sdpartner
+	    n_women_ever_dapivirinering_15plus_sdpartner,
+	    n_adults_used_CABLA_lastQ_15plus_sdpartner,
+	    n_adults_active_CABLA_lastQ_15plus_sdpartner,
+	    n_adults_ever_CABLA_15plus_sdpartner
 );
     strcat(temp_string, temp_string2);
 
     
     
         
-    sprintf(temp_string2, "%li,%li,%li,%li,%li,%li,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
+    sprintf(temp_string2, "%li,%li,%li,%li,%li,%li,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%8.6lf,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,",
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15plus[MALE],patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVinfections_15plus[FEMALE],
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newbirths,
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_newbirths_HIVpos,
@@ -536,6 +633,11 @@ void store_annual_outputs_MIHPSA(patch_struct *patch, int p, output_struct *outp
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->YLL_15plus_discounted[FEMALE],
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->YLL_children_under15_discounted,
 	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15to24F,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15to24F,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15plus_sdpartner,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15plus_sdpartner,
+	    patch[p].cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15plus_sdpartner,
 	    n_notonART_byCD4_15plus[0],n_notonART_byCD4_15plus[1],n_notonART_byCD4_15plus[2],n_notonART_byCD4_15plus[3],
 	    N_HIVneg_15plus_in_SD_partnership[MALE],N_HIVneg_15plus_in_SD_partnership[FEMALE],N_HIVneg_15plus_in_SD_partnership_noART[MALE],N_HIVneg_15plus_in_SD_partnership_noART[FEMALE],
 	    n_eversex_15plus[MALE],n_eversex_15plus[FEMALE],
@@ -607,11 +709,11 @@ void write_MIHPSA_outputs(file_struct *file_data_store, output_struct *output, i
     
     /* Print the header of the file */
     if(MIHPSA_MODULE==1)
-	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_HIVtests_15to24F,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus_male,N_newHIVdiagnoses_15plus_female,N_newHIVdiagnoses_15to24F,N_VMMC_cumulative_15_49,N_ARTinitiations_15plus,N_ARTreinitiations_15plus,N_ARTexperienced_bysex_15plus_male,N_ARTexperienced_bysex_15plus_female,N_ARTexperienced_bysex_younger_male,N_ARTexperienced_bysex_younger_female,N_ARTexperienced_bysex_older_male,N_ARTexperienced_bysex_older_female,n_women_at_elevatedrisk_15to24,n_women_at_elevatedrisk_andonoralPrEP_15to24,N_VS_bysex_younger_male,N_VS_bysex_younger_female,N_VS_bysex_older_male,N_VS_bysex_older_female,n_women_used_oralPrEP_lastQ_15to24,n_women_active_oralPrEP_lastQ_15to24,n_women_ever_oralPrEP_15to24,n_women_used_dapivirinering_lastQ_15to24,n_women_active_dapivirinering_lastQ_15to24,n_women_used_injectablePrEP_lastQ_15to24,n_women_active_injectablePrEP_lastQ_15to24,n_women_used_oralPrEP_lastQ_15plus_sdpartner,n_women_active_oralPrEP_lastQ_15plus_sdpartner,n_women_ever_oralPrEP_15plus_sdpartner,n_women_used_dapivirinering_lastQ_15plus_sdpartner,n_women_active_dapivirinering_lastQ_15plus_sdpartner,n_women_used_injectablePrEP_lastQ_15plus_sdpartner,n_women_active_injectablePrEP_lastQ_15plus_sdpartner,N_newHIVinfections_15plus_male,N_newHIVinfections_15plus_female,N_newbirths,N_newbirths_HIVpos,N_deaths_15plus_male,N_deaths_15plus_female,YLL_15plus_male,YLL_15plus_female,YLL_children_under15,YLL_15plus_male_discounted,YLL_15plus_female_discounted,YLL_children_under15_discounted,N_firsttime_oralPrEPinitiations_15to24F,n_notonART_byCD4_15plus[0],n_notonART_byCD4_15plus[1],n_notonART_byCD4_15plus[2],n_notonART_byCD4_15plus[3],N_HIVneg_in_SD_partnership_M15plus,N_HIVneg_in_SD_partnership_F15plus,N_HIVneg_in_SD_partnership_noART_M15plus,N_HIVneg_in_SD_partnership_noART_F15plus,n_eversex_M15plus,n_eversex_F15plus,n_usedcondomlastact_M15plus,n_usedcondomlastact_F15plus,nonART_M15_24,nonART_F15_24,naware_M15_24,naware_F15_24,N_HIVtests_15plus_symptomatic_male,N_HIVtests_15plus_symptomatic_female,n_concurrent_partnerships_15to49,n_multiple_partnerships_lastyear_15to49,prop_longtermpartnership_condomuse,prop_nonregpartnership_condomuse,prop_concurrentpartnership_condomuse\n");	
+	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to24_male,NPop_15to24_female,NPop_25to49_male,NPop_25to49_female,NPos_15to49_male,NPos_15to49_female,NPos_15to24_male,NPos_15to24_female,NPos_25to49_male,NPos_25to49_female,Ncirc_15to49,N_women_sexuallyactive_15to24,N_women_usecondomlastact_15to24,Npop_15plus_male,Npop_15plus_female,Npop_children_under15,Npos_15plus_male,Npos_15plus_female,Npos_children_under15,Naware_15plus_male,Naware_15plus_female,Naware_children_under15,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,N_deaths_20_59_male,N_deaths_20_59_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_AIDSdeaths_children_under15,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_HIVtests_15to24F,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus_male,N_newHIVdiagnoses_15plus_female,N_newHIVdiagnoses_15to24F,N_VMMC_cumulative_15_49,N_ARTinitiations_15plus,N_ARTreinitiations_15plus,N_ARTexperienced_bysex_15plus_male,N_ARTexperienced_bysex_15plus_female,N_ARTexperienced_bysex_younger_male,N_ARTexperienced_bysex_younger_female,N_ARTexperienced_bysex_older_male,N_ARTexperienced_bysex_older_female,n_women_at_elevatedrisk_15to24,n_women_at_elevatedrisk_andonoralPrEP_15to24,N_VS_bysex_younger_male,N_VS_bysex_younger_female,N_VS_bysex_older_male,N_VS_bysex_older_female,n_women_used_oralPrEP_lastQ_15to24,n_women_active_oralPrEP_lastQ_15to24,n_women_ever_oralPrEP_15to24,n_women_used_dapivirinering_lastQ_15to24,n_women_active_dapivirinering_lastQ_15to24,n_women_ever_dapivirinering_15to24,n_women_used_CABLA_lastQ_15to24,n_women_active_CABLA_lastQ_15to24,n_women_ever_CABLA_15to24,n_adults_used_oralPrEP_lastQ_15plus_sdpartner,n_adults_active_oralPrEP_lastQ_15plus_sdpartner,n_adults_ever_oralPrEP_15plus_sdpartner,n_women_used_dapivirinering_lastQ_15plus_sdpartner,n_women_active_dapivirinering_lastQ_15plus_sdpartner,n_women_ever_dapivirinering_15plus_sdpartner,n_adults_used_CABLA_lastQ_15plus_sdpartner,n_adults_active_CABLA_lastQ_15plus_sdpartner,n_adults_ever_CABLA_15plus_sdpartner,N_newHIVinfections_15plus_male,N_newHIVinfections_15plus_female,N_newbirths,N_newbirths_HIVpos,N_deaths_15plus_male,N_deaths_15plus_female,YLL_15plus_male,YLL_15plus_female,YLL_children_under15,YLL_15plus_male_discounted,YLL_15plus_female_discounted,YLL_children_under15_discounted,N_firsttime_oralPrEPinitiations_15to24F,N_firsttime_dapivirineringinitiations_15to24F,N_firsttime_CABLAinitiations_15to24F,N_firsttime_oralPrEPinitiations_15plus_sdpartner,N_firsttime_dapivirineringinitiations_15plus_sdpartner,N_firsttime_CABLAinitiations_15plus_sdpartner,n_notonART_byCD4_15plus[0],n_notonART_byCD4_15plus[1],n_notonART_byCD4_15plus[2],n_notonART_byCD4_15plus[3],N_HIVneg_in_SD_partnership_M15plus,N_HIVneg_in_SD_partnership_F15plus,N_HIVneg_in_SD_partnership_noART_M15plus,N_HIVneg_in_SD_partnership_noART_F15plus,n_eversex_M15plus,n_eversex_F15plus,n_usedcondomlastact_M15plus,n_usedcondomlastact_F15plus,nonART_M15_24,nonART_F15_24,naware_M15_24,naware_F15_24,N_HIVtests_15plus_symptomatic_male,N_HIVtests_15plus_symptomatic_female,n_concurrent_partnerships_15to49,n_multiple_partnerships_lastyear_15to49,prop_longtermpartnership_condomuse,prop_nonregpartnership_condomuse,prop_concurrentpartnership_condomuse\n");	
     
 
     else
-	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to29_male,NPop_15to24_female,NPop_30to54_male,NPop_25to54_female,NPos_15to49_male,NPos_15to49_female,NPos_15to29_male,NPos_15to24_female,NPos_30to54_male,NPos_25to54_female,Ncirc_15to49,Npop_15plus_male,Npop_15plus_female,Npos_15plus_male,Npos_15plus_female,Naware_15plus_male,Naware_15plus_female,Naware_15to29_male,Naware_15to24_female,Naware_30to54_male,Naware_25to54_female,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,NonART_15to29_male,NonART_15to24_female,NonART_30to54_male,NonART_25to54_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_HIVtests_15to24F,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus_male,N_newHIVdiagnoses_15plus_female,N_newHIVdiagnoses_15to24F,N_VMMC_cumulative_15_49,N_ARTinitiations_15plus,N_ARTreinitiations_15plus,N_ARTexperienced_bysex_15plus_male,N_ARTexperienced_bysex_15plus_female,N_ARTexperienced_bysex_younger_male,N_ARTexperienced_bysex_younger_female,N_ARTexperienced_bysex_older_male,N_ARTexperienced_bysex_older_female,n_women_at_elevatedrisk_15to24,n_women_at_elevatedrisk_andonoralPrEP_15to24,N_VS_bysex_younger_male,N_VS_bysex_younger_female,N_VS_bysex_older_male,N_VS_bysex_older_female,n_women_used_oralPrEP_lastQ_15to24,n_women_active_oralPrEP_lastQ_15to24,n_women_ever_oralPrEP_15to24,n_women_used_dapivirinering_lastQ_15to24,n_women_active_dapivirinering_lastQ_15to24,n_women_used_injectablePrEP_lastQ_15to24,n_women_active_injectablePrEP_lastQ_15to24,n_women_used_oralPrEP_lastQ_15plus_sdpartner,n_women_active_oralPrEP_lastQ_15plus_sdpartner,n_women_ever_oralPrEP_15plus_sdpartner,n_women_used_dapivirinering_lastQ_15plus_sdpartner,n_women_active_dapivirinering_lastQ_15plus_sdpartner,n_women_used_injectablePrEP_lastQ_15plus_sdpartner,n_women_active_injectablePrEP_lastQ_15plus_sdpartner,N_newHIVinfections_15plus_male,N_newHIVinfections_15plus_female,N_newbirths,N_newbirths_HIVpos,N_deaths_15plus_male,N_deaths_15plus_female,YLL_15plus_male,YLL_15plus_female,YLL_children_under15,YLL_15plus_male_discounted,YLL_15plus_female_discounted,YLL_children_under15_discounted,N_firsttime_oralPrEPinitiations_15to24F,n_notonART_byCD4_15plus[0],n_notonART_byCD4_15plus[1],n_notonART_byCD4_15plus[2],n_notonART_byCD4_15plus[3]\n");	
+	fprintf(MIHPSA_FILE,"Year,NPop_15to49_male,NPop_15to49_female,NPop_15to29_male,NPop_15to24_female,NPop_30to54_male,NPop_25to54_female,NPos_15to49_male,NPos_15to49_female,NPos_15to29_male,NPos_15to24_female,NPos_30to54_male,NPos_25to54_female,Ncirc_15to49,Npop_15plus_male,Npop_15plus_female,Npos_15plus_male,Npos_15plus_female,Naware_15plus_male,Naware_15plus_female,Naware_15to29_male,Naware_15to24_female,Naware_30to54_male,Naware_25to54_female,NonART_15plus_male,NonART_15plus_female,N_VS_15plus_male,N_VS_15plus_female,NonART_15to29_male,NonART_15to24_female,NonART_30to54_male,NonART_25to54_female,N_AIDSdeaths_15plus_male,N_AIDSdeaths_15plus_female,N_HIVtests_15plus_male,N_HIVtests_15plus_female,N_HIVtests_15to24F,N_newHIVinfections_15to24_male,N_newHIVinfections_25to49_male,N_newHIVinfections_15to24_female,N_newHIVinfections_25to49_female,N_newHIVdiagnoses_15plus_male,N_newHIVdiagnoses_15plus_female,N_newHIVdiagnoses_15to24F,N_VMMC_cumulative_15_49,N_ARTinitiations_15plus,N_ARTreinitiations_15plus,N_ARTexperienced_bysex_15plus_male,N_ARTexperienced_bysex_15plus_female,N_ARTexperienced_bysex_younger_male,N_ARTexperienced_bysex_younger_female,N_ARTexperienced_bysex_older_male,N_ARTexperienced_bysex_older_female,n_women_at_elevatedrisk_15to24,n_women_at_elevatedrisk_andonoralPrEP_15to24,N_VS_bysex_younger_male,N_VS_bysex_younger_female,N_VS_bysex_older_male,N_VS_bysex_older_female,n_women_used_oralPrEP_lastQ_15to24,n_women_active_oralPrEP_lastQ_15to24,n_women_ever_oralPrEP_15to24,n_women_used_dapivirinering_lastQ_15to24,n_women_active_dapivirinering_lastQ_15to24,n_women_ever_dapivirinering_15to24,n_women_used_CABLA_lastQ_15to24,n_women_active_CABLA_lastQ_15to24,n_women_ever_CABLA_15to24,n_adults_used_oralPrEP_lastQ_15plus_sdpartner,n_adults_active_oralPrEP_lastQ_15plus_sdpartner,n_adults_ever_oralPrEP_15plus_sdpartner,n_women_used_dapivirinering_lastQ_15plus_sdpartner,n_women_active_dapivirinering_lastQ_15plus_sdpartner,n_women_ever_dapivirinering_15plus_sdpartner,n_adults_used_CABLA_lastQ_15plus_sdpartner,n_adults_active_CABLA_lastQ_15plus_sdpartner,n_adults_ever_CABLA_15plus_sdpartner,N_newHIVinfections_15plus_male,N_newHIVinfections_15plus_female,N_newbirths,N_newbirths_HIVpos,N_deaths_15plus_male,N_deaths_15plus_female,YLL_15plus_male,YLL_15plus_female,YLL_children_under15,YLL_15plus_male_discounted,YLL_15plus_female_discounted,YLL_children_under15_discounted,N_firsttime_oralPrEPinitiations_15to24F,N_firsttime_dapivirineringinitiations_15to24F,N_firsttime_CABLAinitiations_15to24F,N_firsttime_oralPrEPinitiations_15plus_sdpartner,N_firsttime_dapivirineringinitiations_15plus_sdpartner,N_firsttime_CABLAinitiations_15plus_sdpartner,n_notonART_byCD4_15plus[0],n_notonART_byCD4_15plus[1],n_notonART_byCD4_15plus[2],n_notonART_byCD4_15plus[3]\n");	
 
     fprintf(MIHPSA_FILE, "%s\n", output->MIHPSA_outputs_string[p]);
     fclose(MIHPSA_FILE);

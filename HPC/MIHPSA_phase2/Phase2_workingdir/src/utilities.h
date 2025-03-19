@@ -90,4 +90,6 @@ void check_if_parameters_plausible(parameters *);
 void check_if_manicaland_prevention_cascade_parameters_plausible(parameters *);
 void check_if_popart_parameters_plausible(parameters *);
 
+void set_PrEP_stop_time(individual *, double );
+
 #endif /* UTILITIES_H_ */

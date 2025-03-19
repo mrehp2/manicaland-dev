@@ -24,7 +24,7 @@
 #include "utilities.h"
 
 int get_MIHPSA_condom_use_last_act(individual *);
-void store_annual_outputs_MIHPSA(patch_struct *, int , output_struct *, double );
+void store_annual_outputs_MIHPSA(patch_struct *, int , output_struct *, all_partnerships *, double );
 void write_MIHPSA_outputs(file_struct *, output_struct *, int );
 
 

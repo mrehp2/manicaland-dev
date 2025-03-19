@@ -156,10 +156,11 @@ struct individual{
     int PrEP_cascade_status;   /* Whether on PrEP (and whether adherent) or not. */
     int next_PrEP_event; /* Stores the next PrEP cascade event to occur to this person (due to either intervention or background). */ 
     long idx_PrEP_event[2]; /* The indices which locate this individual in the PrEP_event array. The first index is a function of the time to their next event (ie puts them in the group of people having a PrEP event at some timestep dt) and the second is their location in this group. */
+    int reason_for_starting_PrEP; /* Denotes current reason for being on PrEP (e.g. 15-24F priority population=1, in a serodiscordant partnership=2. Default (never on PrEP) is -1). */
     double date_most_recent_oralPrEP_initiation; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
     double date_most_recent_oralPrEP_stoppage; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
-    double date_most_recent_dapiverinePrEP_initiation; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
-    double date_most_recent_dapiverinePrEP_stoppage; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
+    double date_most_recent_dapivirineringPrEP_initiation; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
+    double date_most_recent_dapivirineringPrEP_stoppage; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
     double date_most_recent_CABLAPrEP_initiation; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
     double date_most_recent_CABLAPrEP_stoppage; /* Used to see whether they initated PrEP (any kind) this quarter, or if they have been on it continuously for the past X months. */
     
@@ -462,7 +463,7 @@ typedef struct {
     /********** PrEP: ********************/
     PrEP_background_params_struct *PrEP_background_params;
     PrEP_intervention_params_struct *PrEP_intervention_params;
-    double COUNTRY_T_PrEP_START;  /* Time PrEP is first available (used for indexing PrEP schedule). */
+    double COUNTRY_T_PrEP_START;  /* Time (oral) PrEP is first available (used for indexing PrEP schedule - including DVP and CABLA). */
     
     /********** times **********/
     double start_time_hiv;
@@ -507,7 +508,10 @@ typedef struct {
     double eff_prep_adherent;
     double eff_prep_semiadherent_hsv2;
     double eff_prep_adherent_hsv2;
-
+    
+    double eff_dapivirinering_prep;
+    double eff_CABLA_prep;
+    
     double eff_condom;
     double eff_condom_hsv2;
     
@@ -1081,8 +1085,11 @@ typedef struct{
     long N_VMMC_15to49;
     /* Counts the number of women who initiate PrEP for the first time: */
     long N_firsttime_oralPrEPinitiations_15to24F;
-    long N_firsttime_dapiverinePrEPinitiations_15to24F;
+    long N_firsttime_dapivirineringPrEPinitiations_15to24F;
     long N_firsttime_CABLAPrEPinitiations_15to24F;
+    long N_firsttime_oralPrEPinitiations_15plus_sdpartner;
+    long N_firsttime_dapivirineringPrEPinitiations_15plus_sdpartner;
+    long N_firsttime_CABLAPrEPinitiations_15plus_sdpartner;
 
     /* number of ART initiations (including reinitiations and first-time). */
     long N_ARTinitiations_15plus;

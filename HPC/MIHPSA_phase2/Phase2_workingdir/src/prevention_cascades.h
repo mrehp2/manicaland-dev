@@ -40,7 +40,8 @@ void set_prevention_cascade_barriers(individual *indiv, double t, cascade_barrie
 void sweep_pop_for_VMMC_per_timestep_given_barriers(double t, patch_struct *patch, int p);
 void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patch, int p, debug_struct *debug);
 void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p, debug_struct *debug);
-
+void MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD(double t, patch_struct *patch, int p, debug_struct *debug);
+     
 double calculate_partnership_condom_cascade_probability(individual *indiv1, individual *indiv2, double t, double t_partnership);
 void get_partnership_condom_use(individual *indiv1, individual *indiv2, double t, double duration_partnership);
 

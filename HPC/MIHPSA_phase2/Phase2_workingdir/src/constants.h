@@ -88,7 +88,7 @@
 #define PRINT_DEBUG_DEMOGRAPHICS 0      /* Prints extra demographic info to screen. */
 //#define PRINT_DEBUG_DEMOGRAPHICS_NEWADULTS 0 /* Prints to screen the number of adults created in a timestep. Used to check e.g. OneYearAgeGp_CL01_Za_A_V1.2_patch0_Rand10_Run1_0.csv to check have the correct number of new adults (ie that the number of people aged 14 is equal to the number of new adults in the previous year - apart from deaths. */
 #define WRITE_DEBUG_DEMOGRAPHICS_NBIRTHS_NEWADULTS_DEATHS 0           /* Generates the files BirthsNNewAdultsNdeaths.csv. For model validation. Outputs the number of births, new adults and deaths in a year. Compare with output of files produced by print_one_year_age_groups_including_kids() which allow us to see number of each of these in a year. */
-#define WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER 1         /* ???? For model validation. Outputs the age distribution of the adult population using UNPD 5 year age groups. */
+#define WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_BY_GENDER 0         /* ???? For model validation. Outputs the age distribution of the adult population using UNPD 5 year age groups. */
 #define WRITE_DEBUG_DEMOGRAPHICS_AGE_DISTRIBUTION_ONEYEARINCKIDS 0    /* Generates the files OneYearAgeGp.csv.  For model validation. Outputs the age distribution of the population in one year age groups including kids. Note that this is not by gender. */
 #define WRITE_DEBUG_DEMOGRAPHICS_LIFE_EXPECTANCY 0                    /* Generates the single file LifeExpectancy_Za.csv or LifeExpectancy_SA.csv ***ONLY IF*** the parameter end_time_simul is 2100 or later (so enough time for people to die). */
 #define PRINT_DEBUG_INPUT 0             /* Prints extra stuff to screen from input.c */
@@ -119,7 +119,7 @@
 
 #define WRITE_PARTNERSHIPS_AT_PC0 0 /* Generates Distr_n_lifetime_partners and Distr_n_partners_lastyear csv files. NEEDED FOR ReadAnnualOutputs-knitr.Rnw.  */
 
-#define FOLLOW_INDIVIDUAL -1 // 74867 // 30295 // 28101 //  -1 // 1972 // 2727 // 267 // 4328  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
+#define FOLLOW_INDIVIDUAL -1 // 15149 // 74867 // 30295  // if -1 then normal run, otherwise printing things and checking everything that happens to an individual with a certain ID
 
 #define FOLLOW_PATCH 0 //1
 
@@ -369,11 +369,21 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define NOT_PREP_INTERVENTION 0
 #define IS_PREP_INTERVENTION 1 
 
+#define REASON_START_PREP_DUMMYVALUE -1
+#define REASON_START_PREP_BACKGROUND 1
+#define REASON_START_PREP_INTERVENTION 2
+#define REASON_START_PREP_AGYWINTERVENTION 3
+#define REASON_START_PREP_SDPARTNERINTERVENTION 4
+
+
 /* Codes for indiv->PrEP_cascade_status. */
 #define NOTONPREP 0
 #define WAITINGTOSTARTPREP 1
-#define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes PrEP but not every risky act is protected. 
+#define ONPREP_SEMIADHERENT 2  // Tbc - something like 'takes (daily oral) PrEP but not every risky act is protected'. 
 #define ONPREP_ADHERENT 3      // PrEP at full efficacy.
+#define ONDAPIVIRINERING_PREP 10  // Uses dapivirine ring. Currently just one state (using lowish average effectiveness).
+#define ONCABLA_PREP 20  // Uses long-acting injectable cabotegravir PrEP. 
+
 
 /* Determines whether there are routine HIV tests associated with PrEP or not: */
 #define HIV_TEST_WHEN_ON_PrEP 1
@@ -521,6 +531,12 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP 11
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP 12
 #define MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC 13
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP 14
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP 15
+/* Women and men known to be on sero-discordant relationship, where the positve partner if off ART or on ART but not suppressed: */
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP 16
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP 17 /* Women only! */
+#define MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP 18
 
 #define MIHPSA_ESSENTIAL_SCENARIO 1
 #define MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP 2
@@ -530,8 +546,13 @@ extern const char RISK_GP_NAMES[N_RISK][5];
 
 /* Values for param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023: */
 #define MIHPSA_NOORALPREP 0
-#define MIHPSA_CAPPEDORALPREP 1
+#define MIHPSA_CAPPEDORALPREP_AGYW 1
 #define MIHPSA_CURRENTORALPREP 2
+#define MIHPSA_CAPPEDDAPIVIRINERINGPREP_AGYW 10
+#define MIHPSA_CAPPEDCABLAPREP_AGYW 20
+#define MIHPSA_CAPPEDORALPREP_SD 3
+#define MIHPSA_CAPPEDDAPIVIRINERINGPREP_SD 11
+#define MIHPSA_CAPPEDCABLAPREP_SD 21
 
 /* Use size=91 for Leigh's calculations, 101 if UNPD. */
 extern const int REMAINING_LIFE_EXPECTANCY_MALE[91];
@@ -585,13 +606,20 @@ double PER_PARTNERSHIP_HAZARD_TEMPSTORE[MAX_PARTNERSHIPS_PER_INDIVIDUAL];
 
 #define MIHPSA_OUTPUT_STRING_LENGTH 800000 // Store for MIHPSA Zimbabwe output.
 
-#define MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE 20000 // Maximum size of arrays in patch[p].MIHPSA_intervention_sample.
+#define MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE 400000 // Maximum size of arrays in patch[p].MIHPSA_intervention_sample.
 
 /* Zimbabwe NSP 2025 target: Dropbox/projects/MIHPSA_Zimabwe2021/Phase2/MIHPSA Zimbabwe call 5July2023_withNotes.pptx slide 10 ('In the NSP there is a target of “90% by 2025 for all population groups at risk”') */
 #define MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP 0.9
 
 /* currently HIV test every 3 months while on oral PrEP: */
 #define ORALPREP_TIME_TO_NEXT_HIV_TEST 0.25
+#define DAPIVIRINERING_TIME_TO_NEXT_HIV_TEST 0.25
+#define CABLA_TIME_TO_NEXT_HIV_TEST 0.16666
+
+#define PREPTYPE_DAILYORALPREP 1
+#define PREPTYPE_DAPIVIRINERINGPREP 2
+#define PREPTYPE_CABLAPREP 3
+
 
 /************************************************************************/
 /* Define macros (bits of code that we always use).

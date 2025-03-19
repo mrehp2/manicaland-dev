@@ -1692,7 +1692,7 @@ void carry_out_PrEP_background_events_per_timestep(int t_step, int year, patch_s
 		//if (indiv->id==26812){
 		//   printf("Starting PrEP for 26812 ap=%i\n",ap);
 		//}
-		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PREPTYPE_DAILYORALPREP, REASON_START_PREP_BACKGROUND);
 		//printf("BStartijng PrEP for id=%li\n",indiv->id);
 
 		j+=1;
@@ -1781,7 +1781,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 	    if (prep_eligible==1){
 
 		/* They start PrEP due to intervention: */
-		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+		start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PREPTYPE_DAILYORALPREP, REASON_START_PREP_INTERVENTION);
 		j+=1;
 	    }
 	    else{
@@ -1803,7 +1803,7 @@ void carry_out_PrEP_intervention_events_per_timestep(int t_step, int year, patch
 
 /* Function 
    PrEP is allowed for both men and women. */
-void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, cumulative_outputs_struct *cumulative_outputs, double t, debug_struct *debug){
+void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parameters *param, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, cumulative_outputs_struct *cumulative_outputs, double t, debug_struct *debug, int PrEP_type, int reason_starting_PrEP){
 
 
     double t_next_PrEP_event;   /* Time of next PrEP event. */
@@ -1817,7 +1817,7 @@ void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parame
     }
 
     if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
-	printf("Potentially starting PrEP in function start_PrEP_for_person() id=%li current PrEP status=%i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,t);
+	printf("Potentially starting PrEP in function start_PrEP_for_person() id=%li current PrEP status=%i, starting PrEP type %i at time t=%lf\n",indiv->id,indiv->PrEP_cascade_status,PrEP_type, t);
 	fflush(stdout);
     }
 
@@ -1900,47 +1900,116 @@ void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parame
     /* There is a probability that they will start PrEP in this timestep (which is a function of their PrEP cascade immediately start PrEP, and we schedule future PrEP events
        (stopping PrEP, becoming less adherent etc). : */
 
-    double x = gsl_rng_uniform(rng);
+    if(PrEP_type==PREPTYPE_DAILYORALPREP){
+	double x = gsl_rng_uniform(rng);
 
-    /* Here we allow for different PrEP adherence profiles if start due to intervention or not: */
-    double p_becomes_adherent;
-    p_becomes_adherent = param->PrEP_background_params->p_becomes_PrEP_adherent_background;
+	/* Here we allow for different PrEP adherence profiles if start due to intervention or not: */
+	double p_becomes_adherent;
+	p_becomes_adherent = param->PrEP_background_params->p_becomes_PrEP_adherent_background;
 
-    /* Individual initiates PrEP and is fully adherent: */
-    if (x<=p_becomes_adherent){
-	indiv->PrEP_cascade_status = ONPREP_ADHERENT;
-	//printf("Indiv %li is now on PrEP at t=%lf\n",indiv->id,t);
-	/* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
-	t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
-	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+	/* Individual initiates PrEP and is fully adherent: */
+	if (x<=p_becomes_adherent){
+	    indiv->PrEP_cascade_status = ONPREP_ADHERENT;
+	    //printf("Indiv %li is now on PrEP at t=%lf\n",indiv->id,t);
+	    /* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
+	    t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
+	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
 
-    }
-    /* Individual initiates PrEP but only semi-adherent: */
-    else{
-	indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
-	printf("Indiv %li is now semi-adherent on PrEP at t=%lf\n",indiv->id,t);
-	/* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
-	t_next_PrEP_event = draw_next_PrEP_event_from_semiadherent(indiv,t);
-	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+	}
+	/* Individual initiates PrEP but only semi-adherent: */
+	else{
+	    indiv->PrEP_cascade_status = ONPREP_SEMIADHERENT;
+	    printf("Indiv %li is now semi-adherent on PrEP at t=%lf\n",indiv->id,t);
+	    /* Decide what they will do next (if they will become more adherent, or eventually stop PrEP). */
+	    t_next_PrEP_event = draw_next_PrEP_event_from_semiadherent(indiv,t);
+	    schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
 	
+	}
+	/* If this person has no previous oral PrEP initiation time, then this is a first-time initiation: */
+	if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT){
+	    if(reason_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;
+	    else if(reason_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15plus_sdpartner++;
+	    else if(reason_starting_PrEP!=REASON_START_PREP_BACKGROUND && reason_starting_PrEP!=REASON_START_PREP_INTERVENTION){
+		printf("Error: Unknown reason for starting PrEP. Exiting\n");
+		exit(1);
+	    }
+	}
+	
+	indiv->date_most_recent_oralPrEP_initiation = t;
     }
-    /* If this person has no previous oral PrEP initiation time, then this is a first-time initiation: */
-    if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT)
-	cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;
-    
-    indiv->date_most_recent_oralPrEP_initiation = t;
+    else if(PrEP_type==PREPTYPE_DAPIVIRINERINGPREP){
+	indiv->PrEP_cascade_status = ONDAPIVIRINERING_PREP;
+	//printf("Indiv %li is now on dapivirine ring PrEP at t=%lf\n",indiv->id,t);
+	/* Decide what they will do next: */
+	t_next_PrEP_event = draw_next_dapivirineringPrEP_event_from_initiation(indiv,t);
+	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
 
+	/* If this person has no previous dapivirine ring PrEP initiation time, then this is a first-time initiation: */
+	if(indiv->date_most_recent_dapivirineringPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT){
+	    if(reason_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15to24F++;
+	    else if(reason_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15plus_sdpartner++;
+	    else{
+		printf("Error: Unknown reason for starting PrEP. Exiting\n");
+		exit(1);
+	    }
+	}
+	indiv->date_most_recent_dapivirineringPrEP_initiation = t;
+    }
+    else if(PrEP_type==PREPTYPE_CABLAPREP){
+	indiv->PrEP_cascade_status = ONCABLA_PREP;
+	//printf("Indiv %li is now on long-acting injectable Cabotegravir PrEP at t=%lf\n",indiv->id,t);
+	/* Decide what they will do next: */
+	t_next_PrEP_event = draw_next_CABLAPrEP_event_from_initiation(indiv,t);
+	schedule_generic_PrEP_event(indiv, param, PrEP_events, n_PrEP_events, size_PrEP_events, t, t_next_PrEP_event);
+
+	/* If this person has no previous CABLA PrEP initiation time, then this is a first-time initiation: */
+	if(indiv->date_most_recent_CABLAPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT){
+	    if(reason_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15to24F++;
+	    else if(reason_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION)
+		cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15plus_sdpartner++;
+	    else{
+		printf("Error: Unknown reason for starting PrEP. Exiting\n");
+		exit(1);
+	    }
+	}
+	indiv->date_most_recent_CABLAPrEP_initiation = t;
+    }
+    else{
+	printf("Unknown PrEP type in function start_PrEP_for_person(). Exiting\n");
+	fflush(stdout);
+	exit(1);
+    }
+
+    /* Set the reason for starting PrEP: */
+    indiv->reason_for_starting_PrEP = reason_starting_PrEP;
 
     if(HIV_TEST_WHEN_ON_PrEP==1 || HIV_TEST_WHEN_ON_PrEP==2){
 	/* Note that t_next_PrEP_event is the calendar time of the next PrEP event. */
-	if((t_next_PrEP_event-t)>=ORALPREP_TIME_TO_NEXT_HIV_TEST){
+	double THIS_PREPTYPE_TIME_TO_NEXT_HIV_TEST;
+	if(PrEP_type==PREPTYPE_DAILYORALPREP)
+	    THIS_PREPTYPE_TIME_TO_NEXT_HIV_TEST = ORALPREP_TIME_TO_NEXT_HIV_TEST;
+	else if(PrEP_type==PREPTYPE_DAPIVIRINERINGPREP)
+	    THIS_PREPTYPE_TIME_TO_NEXT_HIV_TEST = DAPIVIRINERING_TIME_TO_NEXT_HIV_TEST;
+	else if(PrEP_type==PREPTYPE_CABLAPREP)
+	    THIS_PREPTYPE_TIME_TO_NEXT_HIV_TEST = CABLA_TIME_TO_NEXT_HIV_TEST;
+	else{
+	    printf("Unknown PrEP type in function start_PrEP_for_person(). Exiting\n");
+	    fflush(stdout);
+	    exit(1);
+	}
+	if((t_next_PrEP_event-t)>=THIS_PREPTYPE_TIME_TO_NEXT_HIV_TEST){
 	    if(indiv->id == FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH){
 		printf("In function start_PrEP_for_person() id=%li we are scheduling a future HIV test as part of being on PrEP\n",indiv->id);
 		fflush(stdout);
 	    }
 	    indiv->next_cascade_event=CASCADEEVENT_HIV_TEST_PrEP_NONPOPART;
 	    schedule_new_PrEPrelated_hiv_test(indiv, param, t, 
-					      patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events);
+					      patch[p].cascade_events, patch[p].n_cascade_events, patch[p].size_cascade_events, PrEP_type);
 	    /* could also use existing schedule_new_hiv_test??? 
 	    schedule_new_hiv_test(indiv, param, t, 
 				  individual ***cascade_events, long *n_cascade_events, long *size_cascade_events)
@@ -1951,7 +2020,7 @@ void start_PrEP_for_person(individual *indiv, patch_struct *patch, int p, parame
 
 
 
-/* Decide what the next PrEP event will be for indiv who is currently adherent.
+/* Decide what the next (daily oral) PrEP event will be for indiv who is currently adherent.
    Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
 double draw_next_PrEP_event_from_adherent(individual *indiv, double t){
     indiv->next_PrEP_event = PREP_STOP;
@@ -1963,6 +2032,7 @@ double draw_next_PrEP_event_from_adherent(individual *indiv, double t){
 }
 
 
+
 /* Decide what the next PrEP event will be for indiv who is currently semi-adherent.
    Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
 double draw_next_PrEP_event_from_semiadherent(individual *indiv, double t){
@@ -1971,6 +2041,28 @@ double draw_next_PrEP_event_from_semiadherent(individual *indiv, double t){
     //return t + 1.0;
     return t + 0.5;
 }
+
+/* Decide when person stops using dapiviring ring PrEP.
+   Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
+double draw_next_dapivirineringPrEP_event_from_initiation(individual *indiv, double t){
+    indiv->next_PrEP_event = PREP_STOP;
+    /* Uniform random number between 0.4 and 0.6. */
+    double x = 0.4 + gsl_rng_uniform(rng) * 0.2;
+    return t + x;
+    //return t + 1.0;
+}
+
+
+/* Decide when person stops using long-acting injectable cabotegravir PrEP.
+   Modifies indiv->next_PrEP_event and returns the time at which this will happen. */
+double draw_next_CABLAPrEP_event_from_initiation(individual *indiv, double t){
+    indiv->next_PrEP_event = PREP_STOP;
+    /* Uniform random number between 0.4 and 0.6. */
+    double x = 0.4 + gsl_rng_uniform(rng) * 0.2;
+    return t + x;
+    //return t + 1.0;
+}
+
 
 
 /* Function adds a PrEP event to the array PrEP_events[][] for an individual `indiv` at time `t_next_PrEP_event`. 
@@ -2123,19 +2215,27 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p, cu
 		printf("individual %li PrEP status %i seroconverted2 before PrEP event %i at t=%lf.\n",indiv->id,indiv->PrEP_cascade_status,indiv->next_PrEP_event,t);
 			
 	}
-
+    
 
 	/* If uncircumcised but waiting for VMMC then at this timestep they get circumcised. */
         if (indiv->next_PrEP_event==BECOME_PREP_FULLYADHERENT){
 	    /* Only counts as initiation if not switching: */
 	    if(indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP){
 		/* If this person has no previous oral PrEP initiation time, then this is a first-time initiation: */
-		if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT)
-		    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;
+		if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT){
+		    if(indiv->reason_for_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION)
+			cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;
+		    else if(indiv->reason_for_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION)
+			cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15plus_sdpartner++;
+		    else if(indiv->reason_for_starting_PrEP!=REASON_START_PREP_BACKGROUND && indiv->reason_for_starting_PrEP!=REASON_START_PREP_INTERVENTION){
+			printf("Error: Unknown reason for starting PrEP. Exiting\n");
+			exit(1);
+		    }
+		}
 		indiv->date_most_recent_oralPrEP_initiation = t;
 	    }
 	    indiv->PrEP_cascade_status=ONPREP_ADHERENT;
-
+	    
 	    /* Decide what they will do next (if they will become less adherent, or eventually stop PrEP). */
 	    t_next_PrEP_event = draw_next_PrEP_event_from_adherent(indiv,t);
 	    schedule_generic_PrEP_event(indiv, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, t, t_next_PrEP_event);
@@ -2143,8 +2243,17 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p, cu
 	else if (indiv->next_PrEP_event==BECOME_PREP_SEMIADHERENT){
 	    if(indiv->PrEP_cascade_status==NOTONPREP || indiv->PrEP_cascade_status==WAITINGTOSTARTPREP){
 		/* If this person has no previous oral PrEP initiation time, then this is a first-time initiation: */
-		if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT)
-		    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;		
+		if(indiv->date_most_recent_oralPrEP_initiation==PREP_DUMMY_DATEMOSTRECENTPREPINIT){
+		    if(indiv->reason_for_starting_PrEP==REASON_START_PREP_AGYWINTERVENTION)
+			cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F++;
+		    else if(indiv->reason_for_starting_PrEP==REASON_START_PREP_SDPARTNERINTERVENTION)
+			cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15plus_sdpartner++;
+		    else if(indiv->reason_for_starting_PrEP!=REASON_START_PREP_BACKGROUND && indiv->reason_for_starting_PrEP!=REASON_START_PREP_INTERVENTION){
+			printf("Error: Unknown reason for starting PrEP. Exiting\n");
+			exit(1);
+		    }
+		}
+		
 		indiv->date_most_recent_oralPrEP_initiation = t;
 	    }
 	    indiv->PrEP_cascade_status=ONPREP_SEMIADHERENT;
@@ -2155,8 +2264,10 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p, cu
 
 	/* No future need for PrEP (or no longer eligible due to age?). */
 	else if (indiv->next_PrEP_event==PREP_STOP){
+	    /* Set the correct PrEP stop time variable (e.g. indiv->date_most_recent_oralPrEP_stoppage) for the PrEP modality they are stopping. Note - this needs to be done before we set their PrEP status to nothing. */
+	    set_PrEP_stop_time(indiv, t);
+	    
 	    indiv->PrEP_cascade_status=NOTONPREP;
-	    indiv->date_most_recent_oralPrEP_stoppage = t;	    
 	    if (indiv->id == FOLLOW_INDIVIDUAL && indiv->patch_no == FOLLOW_PATCH){
 		printf("+++++In carry_out_PrEP_events_per_timestep() at t=%6.4lf, indiv %li had PrEP eevnts %ld %ld, and is now stopping PrEP.\n", t, indiv->id,indiv->idx_PrEP_event[0],indiv->idx_PrEP_event[1]);
 	    }
@@ -2177,7 +2288,9 @@ void carry_out_PrEP_events_per_timestep(double t, patch_struct *patch, int p, cu
 
 
 
-/* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. */
+/* Function deals with what happens when someone finds out they are HIV+ in hiv_test_process() function in hiv.c. 
+   Stops any type of PrEP (oral, ring, injectable).
+*/
 void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_events, long *size_PrEP_events, double t, parameters *param, cumulative_outputs_struct *cumulative_outputs){
 
     /* /\* FOR DEBUGGING: *\/ */
@@ -2212,3 +2325,4 @@ void cancel_PrEP(individual *indiv, individual ***PrEP_events, long *n_PrEP_even
     //indiv->next_PrEP_event = PREP_NOEVENT;
 
 }
+

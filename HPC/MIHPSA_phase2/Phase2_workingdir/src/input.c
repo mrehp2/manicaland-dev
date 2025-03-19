@@ -22,6 +22,7 @@
 #include "constants.h"
 #include "utilities.h"
 #include "prevention_cascades.h"
+#include "mihpsa.h"
 #include<math.h>
 
 /************************************************************************/
@@ -126,7 +127,14 @@ void read_param(char *file_directory, parameters **param, int n_runs, patch_stru
 	
         /* Read in the parameters related to initial conditions. */
         read_initial_params(patch_tag, param[p], n_runs);
+
+	/* Quick MIHPSA hack to set dapivirine ring and CABLA parameters: */
+	MIHPSA_hack_set_PrEP_parameters(param[p], n_runs);
+
     }
+
+
+
     
     // Calling outside the patch loop to avoid a valgrind error where patch[1] is not initialised.
     if (SETTING==SETTING_POPART){

@@ -2252,7 +2252,7 @@ void check_constants_consistency(){
     }
 }
 
-
+/* Checks number on PrEP (all types of PrEP - including dapivirine ring and CABLA included). */
 void check_prep_uptake(double t, int t_step, patch_struct *patch, int p){
     int ap, t_i;
     int aa_temp, ai_temp, i;
@@ -2302,7 +2302,7 @@ void check_prep_uptake(double t, int t_step, patch_struct *patch, int p){
     	    /* Now loop over women in each year age group: */
     	    for (i=0; i<patch[p].age_list->age_list_by_gender[FEMALE]->number_per_age_group[ai_temp]; i++){
     		indiv = &(patch[p].individual_population[patch[p].age_list->age_list_by_gender[FEMALE]->age_group[ai_temp][i]->id]);
-    		if (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT){
+    		if (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT || indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP || indiv->PrEP_cascade_status==ONCABLA_PREP){
     		    if ((indiv->cd4==DEAD) || (indiv->HIV_status>UNINFECTED))
     			printf("Error - person %li is either dead or HIV+. HIV=%i PrEP=%i\n",indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
     		    else

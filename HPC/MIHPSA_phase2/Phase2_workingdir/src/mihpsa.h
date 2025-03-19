@@ -40,5 +40,6 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p);
 
 void fix_MIHPSA_parameters(patch_struct *patch, int p);
 
+void MIHPSA_hack_set_PrEP_parameters(parameters *allrunparameters, int n_runs);
 
 #endif /* MIHPSA_H_ */

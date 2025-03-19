@@ -5,7 +5,7 @@ import collections  # Used to check for duplicates
 
 
 ## Use as flag to create outputs:
-MIHPSA_SCENARIO = 7
+MIHPSA_SCENARIO = 99
 
 ## 1 - Essential scenario
 ## 2 - Essential + PrEP scenario
@@ -1834,6 +1834,8 @@ else:
 
 
 
+
+
 if(MIHPSA_SCENARIO==1):
     print("Essential scenario")
     mihpsafiledir = "params_essential/Output/"
@@ -1871,7 +1873,13 @@ elif(MIHPSA_SCENARIO==7):
     mihpsafiledir = "results_minimal_plusPrEP/Output/"
     output_file_flows = "MIHPSA_project_outputs_phase2_minimalplusPrEP_flows.csv"
     output_file_stocks = "MIHPSA_project_outputs_phase2_minimalplusPrEP_stocks.csv"
-#mihpsafiledir = "params/testing_output/"
+elif(MIHPSA_SCENARIO==99):
+    print("Phase 2 minimal + PrEP scenario")
+    mihpsafiledir = "params_testing24aug2024/Output/"
+    output_file_flows = "TESTING_FLOWS.csv"
+    output_file_stocks = "TESTING_STOCKS.csv"
+    
+    #mihpsafiledir = "params/testing_output/"
 
 
 

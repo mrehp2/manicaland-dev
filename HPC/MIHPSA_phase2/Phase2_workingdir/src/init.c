@@ -450,10 +450,11 @@ void set_up_population(int p, patch_struct *patch, population *pop, int scenario
     person_template.next_PrEP_event = PREP_NOEVENT;
     person_template.idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     person_template.idx_PrEP_event[1] = -1;
+    person_template.reason_for_starting_PrEP = REASON_START_PREP_DUMMYVALUE; /* Dummy value that never started PrEP. */
     person_template.date_most_recent_oralPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     person_template.date_most_recent_oralPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
-    person_template.date_most_recent_dapiverinePrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
-    person_template.date_most_recent_dapiverinePrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
+    person_template.date_most_recent_dapivirineringPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
+    person_template.date_most_recent_dapivirineringPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     person_template.date_most_recent_CABLAPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     person_template.date_most_recent_CABLAPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
 
@@ -731,8 +732,11 @@ void init_cumulative_counters(cumulative_outputs_struct *cumulative_outputs){
     cumulative_outputs->cumulative_outputs_MIHPSA->N_ARTreinitiations_15plus = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_VMMC_15to49 = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15to24F = 0;
-    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapiverinePrEPinitiations_15to24F = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15to24F = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15to24F = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_oralPrEPinitiations_15plus_sdpartner = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_dapivirineringPrEPinitiations_15plus_sdpartner = 0;
+    cumulative_outputs->cumulative_outputs_MIHPSA->N_firsttime_CABLAPrEPinitiations_15plus_sdpartner = 0;
 
     cumulative_outputs->cumulative_outputs_MIHPSA->N_newHIVdiagnoses_15to24F = 0;
     cumulative_outputs->cumulative_outputs_MIHPSA->N_HIVtests_15to24F = 0;

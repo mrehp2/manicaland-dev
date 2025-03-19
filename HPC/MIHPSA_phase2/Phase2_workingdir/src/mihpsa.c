@@ -101,14 +101,23 @@ void MIHPSA_determine_PrEP_scenario(double t, patch_struct *patch, int p, debug_
 	sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug);
     }
     else{
-	if(patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP){
+	if(patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP_AGYW || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDDAPIVIRINERINGPREP_AGYW || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDCABLAPREP_AGYW){
 	    /* Run a version of the code that fixes PrEP coverage to be 37,144 AGYW 15-24 at risk (FSW or non-regular partner) from 2023 onwards. */
-	    if(t==2024)
-		printf("running MIHPSA scenario where oral PrEP is available for 15-24 at risk women, but capped, from 2023 onwards\n");
+	    if(t==2023)
+		printf("running MIHPSA scenario where oral PrEP/Dapivirine ring/CAB-LA is available for 15-24 at risk women, but capped, from 2023 onwards\n");
+	    /* Function that runs the capped MIHPSA scenario: */
 	    MIHPSA_sweep_pop_for_PrEP_per_timestep(t, patch, p, debug);
 	}
 
+	else if(patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP_SD || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDDAPIVIRINERINGPREP_SD || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDCABLAPREP_SD){
+	    /* Run a version of the code that fixes PrEP coverage to be 10,149 men and women in serodiscordant partnerships, where the positve partner if off ART or on ART but not suppressed - from 2023 onwards. */
+	    if(t==2024)
+		printf("running MIHPSA scenario where oral PrEP/Dapivirine ring (*for women only*)/CAB-LA is available for individuals in SD partnerships, but capped, from 2023 onwards\n");
+	    /* Function that runs the capped MIHPSA scenario: */
+	    MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD(t, patch, p, debug);
+	}
 	else if((patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CURRENTORALPREP)){
+	    /* This is the current default (i.e. what is called in simul.c pre-2023 for MIHPSA): */
 	    sweep_pop_for_PrEP_per_timestep_given_barriers(t, patch, p, debug);
 	}
 	else if((patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_NOORALPREP)){
@@ -325,7 +334,12 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP)
 	patch[p].param->MIHPSA_params.FLAGS.remove_SBCC=1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
 	    MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -342,7 +356,12 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP)
 	patch[p].param->MIHPSA_params.FLAGS.remove_CUPP=1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
 	    MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -359,9 +378,13 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP
-       )
+       MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP)
 	patch[p].param->MIHPSA_params.FLAGS.remove_VMMC_from2023 = 1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
@@ -377,7 +400,12 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP ||
-       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP ||
+       MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP)
 	patch[p].param->MIHPSA_params.FLAGS.only_ANC_PD_symptomatic_testing_from2023 = 1;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO ||
        MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO ||
@@ -389,12 +417,22 @@ void initialise_MIHPSA_flags(patch_struct *patch, int p){
 	exit(1);
     }
     
-    /* Under essential, and all minimal, scenarios no oral PrEP from 2023 (unless specified): */
+    /* Under essential, and all minimal, scenarios no PrEP from 2023 (unless specified): */
     if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SBCC || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_CUPP || MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_VMMC)
 	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_NOORALPREP;
     /* Under MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP scenario, oral PrEP coverage is fixed to be 37,144 AGYW 15-24 at risk (FSW or non-regular partner) from 2023 onwards. */
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP || MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_ORALPREP)
-	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDORALPREP;
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDORALPREP_AGYW;
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_ORALPREP)
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDORALPREP_SD;
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_DAPIVIRINERINGPREP)
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDDAPIVIRINERINGPREP_AGYW;
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_DAPIVIRINERINGPREP)
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDDAPIVIRINERINGPREP_SD;
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_AGYW_CABLAPREP)
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDCABLAPREP_AGYW;
+    else if(MIHPSA_SCENARIO_FLAG==MIHPSA_MINIMAL_SCENARIO_PLUS_SD_CABLAPREP)
+	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CAPPEDCABLAPREP_SD;
     else if(MIHPSA_SCENARIO_FLAG==MIHPSA_STATUSQUO_SCENARIO)
 	patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023 = MIHPSA_CURRENTORALPREP;
     else{
@@ -432,3 +470,16 @@ void fix_MIHPSA_parameters(patch_struct *patch, int p){
 }
 
 
+void MIHPSA_hack_set_PrEP_parameters(parameters *allrunparameters, int n_runs){
+    int i_run;
+    // Temp variable to avoid having to write allparameters+i_run 
+    //(or equivalently &allparameters[i_run]).
+    parameters *param_local;
+
+    for(i_run = 0; i_run < n_runs; i_run++){
+        param_local = allrunparameters + i_run;
+	
+	param_local->eff_CABLA_prep = 0.8;
+	param_local->eff_dapivirinering_prep = 0.35;
+    }
+}

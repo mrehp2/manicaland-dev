@@ -410,7 +410,7 @@ int main(int argc,char *argv[]){
     /*   Remember C convention that start at 0 so index runs                    */
     /*   from (i_startrun-1)...(i_startrun-1 + n_startrun)                      */
     /****************************************************************************/
-
+    
     /* SIMPLE_PARTNERSHIP_CHECK allows to either (=0) run the whole model normally or (=1) run a
     very simple partnership formation / dissolution which we used initially when designing
     partnership formation to check thigs work ok */
@@ -421,6 +421,7 @@ int main(int argc,char *argv[]){
             /* (re)initialise debug variables to be zero at the start of each run */
             initialise_debug_variables(debug);
 
+	    
             
             /* Reset PC cohort data to null. */
             for (pc_enrolment_round=0; pc_enrolment_round<NPC_ENROLMENTS;pc_enrolment_round++){

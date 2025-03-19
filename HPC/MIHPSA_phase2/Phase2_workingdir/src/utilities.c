@@ -3431,9 +3431,21 @@ void check_if_popart_parameters_plausible(parameters *param){
 	    }
 	}
     }
+}
 
 
 
-
-
+/* For multiple PrEP modalities, we need to set the correct stoppage variable when an individual stops a given PrEP modality: */
+void set_PrEP_stop_time(individual *indiv, double t){
+    if((indiv->PrEP_cascade_status==ONPREP_ADHERENT) || (indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT))
+	indiv->date_most_recent_oralPrEP_stoppage = t;
+    else if(indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP){
+	indiv->date_most_recent_dapivirineringPrEP_stoppage = t;
+    }
+    else if(indiv->PrEP_cascade_status==ONCABLA_PREP)
+	indiv->date_most_recent_CABLAPrEP_stoppage = t;
+    else{
+	printf("Unknown PrEP state %i in set_PrEP_stop_time(). Exiting\n",indiv->PrEP_cascade_status);
+	exit(1);
+    }
 }

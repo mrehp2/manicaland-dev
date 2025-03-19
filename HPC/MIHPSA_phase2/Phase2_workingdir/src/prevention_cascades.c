@@ -292,7 +292,7 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 			x = gsl_rng_uniform (rng);
 
 			if(x <= p_will_use_PrEP_per_timestep){
-			    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+			    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PREPTYPE_DAILYORALPREP, REASON_START_PREP_BACKGROUND);
 			// PrEP status is set in start_PrEP_for_person(). Use below if we want to force all individuals to be adherent. 
 			//indiv->PrEP_cascade_status = ONPREP_ADHERENT;
 			}
@@ -308,8 +308,9 @@ void sweep_pop_for_PrEP_per_timestep_given_barriers(double t, patch_struct *patc
 
 /////////////////////////////
 /* Version of sweep_pop_for_PrEP_per_timestep_given_barriers()  that at each timestep (or multiple of a timestep) goes through the population (up to age X_M, X_F) to decide who gets PrEP.  For older individuals, this remains given their individual probabilities (determined implicitly by cascade barriers).
-   Function is called in simul.c when MANICALAND_CASCADE==1 and 
-   MIHPSA_SCENARIO_FLAG==MIHPSA_ESSENTIAL_SCENARIO_PLUS_AGYW_ORALPREP (MIHPSA "Oral TDF/FTC PrEP in AGYW" scenario).
+   Function is called in mihpsa.c by MIHPSA_determine_PrEP_scenario() when MANICALAND_CASCADE==1 and one of the following:
+    - patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP_AGYW || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDDAPIVIRINERINGPREP_AGYW || patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDCABLAPREP_AGYW 
+   (i.e. MIHPSA scenarios where PrEP is only available for AGYW, and only for a capped number. Only specified type of PrEP now available).
    Original intention was to have a coverage of 37,144 in 15-24 year old women. Based on the call 2 Aug 2023 (MIHPSA Zimbabwe call 2Aug2023_withNotes.pptx) we decided to reduce coverage so that the number of 15-24 y.o. women using PrEP in the past quarter is ~50,000 (it is ~125,000 with a coverage of 37,144 - so divide original coverage by 2.5).
    16 June 2024: Adding in HIV test as part of starting PrEP. */
 void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p, debug_struct *debug){
@@ -321,6 +322,21 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
     individual *indiv;
     double x;
     double p_will_use_PrEP_per_timestep;
+
+
+    int PrEP_type;
+    if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP_AGYW)
+	PrEP_type = PREPTYPE_DAILYORALPREP;
+    else if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDDAPIVIRINERINGPREP_AGYW)
+	PrEP_type = PREPTYPE_DAPIVIRINERINGPREP;
+    else if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDCABLAPREP_AGYW)
+	PrEP_type = PREPTYPE_CABLAPREP;
+    else{
+	printf("Error: unknown PrEP scenario in MIHPSA_sweep_pop_for_PrEP_per_timestep(). Exiting\n");
+	fflush(stdout);
+	exit(1);
+    }
+    
     //printf("Using MIHPSA_sweep_pop_for_PrEP_per_timestep_given_barriers() to determine PrEP initiation at t=%6.4lf\n",t);
     /* No reason why we would ever expect PrEP to be offered to very old people. */
     if (PREP_MAX_AGE_PREVENTION_CASCADE>79)
@@ -331,10 +347,6 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
     double scale_factor = patch[p].param->mihpsa_population_scale/population_15plus_in2021;
 
     /* When HIV_TEST_WHEN_ON_PrEP==1 we make people test before starting ART. In that case we would include some HIV+ unaware as potential PrEP initates (i.e. they get put in the MIHPSA_intervention_sample samples) - though in the case of a positive test they do not start ART, which is sorted in start_PrEP_for_person(). scale_factor_accountingfor_recruitmentofHIVposunware is the adjustment to make sure we start the right number of people on PrEP. Basically this means we keep trying to put people on PrEP until we reach our target of people on PrEP (so it's not really god-mode - though the way it is implemented in the code might seem that way - in reality we are just making an adjustment for knowledge that will be accrued by the time the person starts PrEP). */
-    int temp_n_HIVposunware_primarypop;
-    int temp_n_HIVposunware_othereligibles;
-    double scale_factor_accountingfor_recruitmentofHIVposunware_primarypop;
-    double scale_factor_accountingfor_recruitmentofHIVposunware_othereligibles;
     
     double fudge_factor_lower_coverage = 0.4; /* Factor introduced post 2 Aug 2023 to reduce PrEP to match other models (I previously hit new initiations and active PrEP in the past quarter, but was much higher on number of 15-24 who used PrEP in the past quarter - ie turnover too high). */
     int TARGET_n_AGYW_onPrEP;
@@ -344,7 +356,8 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
     double able_to_go_to_start_PrEP_for_person_function;
     
     int i_temp;
-    printf("Calling MIHPSA_sweep_pop_for_PrEP_per_timestep at t=%lf\n",t);
+    if(t-floor(t)<0.001)
+	printf("Calling MIHPSA_sweep_pop_for_PrEP_per_timestep at t=%lf\n",t);
     /* Fudge factor to adjust for the fact that what we want is the number of people continuously on PrEP, not the total number of people on PrEP. */
     //temp_n_target = temp_n_target * 3.0;
 
@@ -383,6 +396,7 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
     TARGET_n_AGYW_onPrEP = (int) floor(temp_n_target*scale_factor*fudge_factor_lower_coverage);
 
     //printf("Scale factor=%lf target=%i\n",scale_factor, TARGET_n_AGYW_onPrEP);
+    /* Count number of AGYW already on (any type of) PrEP: */
     int n_AGYW_already_onPrEP = 0;
 
 
@@ -450,7 +464,7 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
 		    /* 	} */
 		    /* 	i_partner++; */
 		    /* } */
-		}else if(indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT)
+		}else if(indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT || indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP || indiv->PrEP_cascade_status==ONCABLA_PREP)
 		    n_AGYW_already_onPrEP += 1;
 		
 	    }
@@ -477,16 +491,17 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
 	    n_AGYW_to_initiate_PrEP_primarypop = (int) floor(i_potential_prep_initiates_primarypop*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP);
 
 	//printf("Initiating %i out of %i in primary pop\n",n_AGYW_to_initiate_PrEP_primarypop,i_potential_prep_initiates_primarypop);
-	gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_primarypop,
-		       n_AGYW_to_initiate_PrEP_primarypop,
-		       patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop,
-		       i_potential_prep_initiates_primarypop, sizeof(individual *));
+	if(n_AGYW_to_initiate_PrEP_primarypop>0)
+	    gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_primarypop,
+			   n_AGYW_to_initiate_PrEP_primarypop,
+			   patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop,
+			   i_potential_prep_initiates_primarypop, sizeof(individual *));
 	for(i_temp=0; i_temp<n_AGYW_to_initiate_PrEP_primarypop; i_temp++){
 	    indiv = patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_primarypop[i_temp];
 	    if(indiv->id==FOLLOW_INDIVIDUAL  && p==FOLLOW_PATCH)
 		printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep() at t=%lf indiv=%li is a primary pop PrEP initiate with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
 	    
-	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type, REASON_START_PREP_AGYWINTERVENTION);
 	}
 
 
@@ -500,15 +515,16 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
 	    /* Cap the number of new initates if needed: */
 	    n_AGYW_to_initiate_PrEP_othereligiblepop = (int) floor(i_potential_prep_initiates_othereligible*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP);
 
-	gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_othereligibles, n_AGYW_to_initiate_PrEP_othereligiblepop,
-		       patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_othereligible,
-		       i_potential_prep_initiates_othereligible, sizeof(individual *));
+	if(n_AGYW_to_initiate_PrEP_othereligiblepop>0)
+	    gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_othereligibles, n_AGYW_to_initiate_PrEP_othereligiblepop,
+			   patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_othereligible,
+			   i_potential_prep_initiates_othereligible, sizeof(individual *));
     
 	for(i_temp=0; i_temp<n_AGYW_to_initiate_PrEP_othereligiblepop; i_temp++){
 	    indiv = patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_othereligibles[i_temp];
 	    if(indiv->id==FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH)
 		printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep() at t=%lf indiv=%li is a other eligible pop PrEP initiate (step 2) with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
-	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type, REASON_START_PREP_AGYWINTERVENTION);
 	}
     }
 	    //printf("Age = %i sex=%i\n",(int) floor(t-new_prep_initiates_pointers[i_temp]->DoB), new_prep_initiates_pointers[i_temp]->gender);
@@ -565,7 +581,7 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
 				    if((indiv->id==FOLLOW_INDIVIDUAL  && p==FOLLOW_PATCH))
 					printf("***Initiating PrEP in MIHPSA_sweep_pop_for_PrEP_per_timestep() v3 for %li at t=%6.4lf\n",indiv->id,t);
 				
-				    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug);
+				    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type, REASON_START_PREP_BACKGROUND);
 				    // PrEP status is set in start_PrEP_for_person(). Use below if we want to force all individuals to be adherent. 
 				    //indiv->PrEP_cascade_status = ONPREP_ADHERENT;
 				}
@@ -624,6 +640,316 @@ void MIHPSA_sweep_pop_for_PrEP_per_timestep(double t, patch_struct *patch, int p
 
 
     ////////////////////////////////////////////////////////////////////
+
+}
+
+
+/*  */
+void MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD(double t, patch_struct *patch, int p, debug_struct *debug){
+    int aa, ai, g, i;
+    int number_per_age_group;
+    int i_partner;
+    // Pointer to the individual (so no need to malloc as pointing at pre-allocated memory), and any partner:
+    individual *indiv, *partner;
+
+
+    int PrEP_type;
+    if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDORALPREP_SD)
+	PrEP_type = PREPTYPE_DAILYORALPREP;
+    else if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDDAPIVIRINERINGPREP_SD)
+	PrEP_type = PREPTYPE_DAPIVIRINERINGPREP;
+    else if (patch[p].param->MIHPSA_params.FLAGS.MIHPSA_oralPrEP_from2023==MIHPSA_CAPPEDCABLAPREP_SD)
+	PrEP_type = PREPTYPE_CABLAPREP;
+    else{
+	printf("Error: unknown PrEP scenario in MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD(). Exiting\n");
+	fflush(stdout);
+	exit(1);
+    }
+    
+    //printf("Using MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD_forcapped_SD() to determine PrEP initiation at t=%6.4lf\n",t);
+    /* No reason why we would ever expect PrEP to be offered to very old people. */
+    if (PREP_MAX_AGE_PREVENTION_CASCADE>79)
+	printf("Need to modify this function to include oldest age group.\n");
+
+    /* I calculate this from UNPD WPP. Output comes from get_mihpsa_project_outputs_phase2_v1.py. */
+    double population_15plus_in2021 = 8773997.323;
+    double scale_factor = patch[p].param->mihpsa_population_scale/population_15plus_in2021;
+
+    /* When HIV_TEST_WHEN_ON_PrEP==1 we make people test before starting ART. In that case we would include some HIV+ unaware as potential PrEP initates (i.e. they get put in the MIHPSA_intervention_sample samples) - though in the case of a positive test they do not start ART, which is sorted in start_PrEP_for_person(). scale_factor_accountingfor_recruitmentofHIVposunware is the adjustment to make sure we start the right number of people on PrEP. Basically this means we keep trying to put people on PrEP until we reach our target of people on PrEP (so it's not really god-mode - though the way it is implemented in the code might seem that way - in reality we are just making an adjustment for knowledge that will be accrued by the time the person starts PrEP). */
+    //int temp_n_HIVposunware_primarypop;
+    //int temp_n_HIVposunware_othereligibles;
+    //double scale_factor_accountingfor_recruitmentofHIVposunware_primarypop;
+    //double scale_factor_accountingfor_recruitmentofHIVposunware_othereligibles;
+    
+    double fudge_factor_lower_coverage = 1.0; /* Factor introduced post 2 Aug 2023 to reduce PrEP to match other models (I previously hit new initiations and active PrEP in the past quarter, but was much higher on number of 15-24 who used PrEP in the past quarter - ie turnover too high). 
+					       was 0.4 */
+    int TARGET_n_onPrEP;
+    double temp_n_target;
+
+    /* This is deterined by HIV_TEST_WHEN_ON_PrEP. If HIV_TEST_WHEN_ON_PrEP=0 or HIV_TEST_WHEN_ON_PrEP=2, then we assume everyone starting PrEP has already been filtered out (so no HIV testing). If HIV_TEST_WHEN_ON_PrEP=1 then we make them all do a screenign test. In that case we only exclude KNOWN HIV+. */
+    int able_to_go_to_start_PrEP_for_person_function;
+
+    /* Fudge factor to adjust for the fact that what we want is the number of people continuously on PrEP, not the total number of people on PrEP. */
+    //temp_n_target = temp_n_target * 3.0;
+
+    for(i=0; i<MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE; i++)
+	patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop[i] = NULL;
+
+    
+    if(t<2024)
+	/* Arbitrarily chosen baseline (~ population already on PrEP in 2023). */
+	temp_n_target = (t-2023)*3000 + (2024-t)*1000;
+    else if(t<2025)
+	temp_n_target = (t-2024)*500 + (2025-t)*3000;
+    else if(t<2026)
+	//temp_n_target = (t-2025)*88000 + (2026-t)*47000;
+	temp_n_target = (t-2025)*500 + (2026-t)*7000;
+    else
+	temp_n_target = 7000;
+
+    /* This is the number of people (scaled to the IBM population) to start PrEP (assuming we have enough eligibles). 
+       Note that we cap the % of eligibles we can reach at MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP (currently 90%). */
+    TARGET_n_onPrEP = (int) floor(temp_n_target*scale_factor*fudge_factor_lower_coverage);
+
+    //printf("Scale factor=%lf target=%i\n",scale_factor, TARGET_n_onPrEP);
+    /* Count number already on (any type of) PrEP: */
+    int n_already_onPrEP = 0;
+
+    int i_potential_prep_initiates_primarypop = 0;
+
+    
+    ////////////////
+    /* PrEP for individuals in a serodiscordant partnership, where the (known) positive partner if off ART or on ART but not suppressed.
+       NOTE - we start with the HIV+ partner (of the opposite gender) as we assume that we are contact-tracing HIV-negative partners.
+       Create a list of all their HIV-negative or not known HIV+ partners (ie has some HIV+ partners). 
+       Make list unique (sort)
+       Rearrange list randomly
+       Go through list sequentially until reach coverage (assuming some won't test - so stop at say 90% of the list length if only 90% test)
+       For simplicity, cap age of HIV+ partner at age 64:  */
+
+
+    /* for(aa = 0; aa < (64 - AGE_ADULT); aa++){ */
+    /* 	ai = patch[p].age_list->age_list_by_gender[1-g]->youngest_age_group_index + aa; */
+    /* 	while(ai > (MAX_AGE - AGE_ADULT - 1)) */
+    /* 	    ai = ai - (MAX_AGE - AGE_ADULT); */
+	
+    /* 	number_per_age_group = patch[p].age_list->age_list_by_gender[1-g]->number_per_age_group[ai]; */
+    /* 	for(i = 0; i < number_per_age_group; i++){ */
+    /* 	    indiv = patch[p].age_list->age_list_by_gender[1-g]->age_group[ai][i]; */
+    /* 	    /\* Check if they have any SD partners: *\/ */
+    /* 	    if(indiv->n_partners>0){ */
+    /* 		/\* Check if the HIV+ partner meets criteria: *\/ */
+    /* 		for(i_partner=0; i_partner<(indiv->n_partners); i_partner++){ */
+    /* 		    if(indiv->partner_pairs[i_partner]->ptr[g]->ART_status==ARTNEG){ */
+    /* 			/\* Store this person as a potential PrEP initiate (subject to HIV testing). Note that we deal with duplicates later on. *\/ */
+    /* 			patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop[i_potential_prep_initiates_primarypop] = indiv; */
+    /* 			i_potential_prep_initiates_primarypop++; */
+    /* 			if(i_potential_prep_initiates_primarypop>=MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE){ */
+    /* 			    printf("Error - need to adjust MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE in MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() as run out of memory. aa=%i Exiting\n", aa); */
+    /* 			    fflush(stdout); */
+    /* 			    exit(1); */
+    /* 			} */
+    /* 		    } */
+    /* 		} */
+    /* 	    } */
+    /* 	} */
+    /* } */
+
+
+    /* Age 15+ adults (women only for dapivirine ring, both men and women otherwise). */
+
+    /* This bit allows us to loop over only the necessary genders for the given PrEP type: */
+    int start_g;
+    if(PrEP_type==PREPTYPE_DAPIVIRINERINGPREP)
+	start_g = FEMALE;
+    else if(PrEP_type==PREPTYPE_DAILYORALPREP || PrEP_type==PREPTYPE_CABLAPREP)
+	start_g = MALE;
+    else{
+	printf("Unknown PrEP type in MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD(). Exiting\n");
+	fflush(stdout);
+	exit(1);
+    }
+
+    /* Check if this person has a partner living with HIV who meets the criteria: */
+    int has_eligible_positive_partner;
+
+    /* Aged 15+ */
+    for(g=start_g; g<=FEMALE; g++){
+	for(aa = (15-AGE_ADULT); aa < (MAX_AGE-AGE_ADULT); aa++){
+	    ai = patch[p].age_list->age_list_by_gender[g]->youngest_age_group_index + aa;
+	    while(ai > (MAX_AGE - AGE_ADULT - 1))
+		ai = ai - (MAX_AGE - AGE_ADULT);
+	
+	    number_per_age_group = patch[p].age_list->age_list_by_gender[g]->number_per_age_group[ai];
+	    for(i = 0; i < number_per_age_group; i++){
+		indiv = patch[p].age_list->age_list_by_gender[g]->age_group[ai][i];
+		/* Either HIV- or unaware HIV+: */
+		if(indiv->ART_status==ARTNEG){
+		    /* Check if they have any partners as follows:
+		       If HIV- then they need to have at least one HIV+ partner (and then we check if that partner meets criteria of not being VS)
+		       If HIV+ (note we already checked they're unaware of status) then we just go through their partners to see if any meets the criteria because for HIV+ people n_HIVpos_partners is not properly tracked. */
+		    has_eligible_positive_partner = 0;
+		    if(((indiv->HIV_status==UNINFECTED) && (indiv->n_HIVpos_partners>0)) || (indiv->HIV_status>UNINFECTED)){
+			/* Check if they have any HIV+ partner meeting criteria: */
+			for(i_partner=0; i_partner<(indiv->n_partners); i_partner++){
+			    partner = indiv->partner_pairs[i_partner]->ptr[1-g];
+			    if(partner->ART_status==ARTNAIVE || partner->ART_status==EARLYART || partner->ART_status==LTART_VU || partner->ART_status==ARTDROPOUT || partner->ART_status==CASCADEDROPOUT){
+
+				has_eligible_positive_partner = 1;
+				break;
+			    }
+			}
+
+			if(has_eligible_positive_partner==1){
+			    if(HIV_TEST_WHEN_ON_PrEP==1)
+				/* Assume never tested HIV+ (so both HIV- and unaware HIV+ can go to start_PrEP_for_person() where they will be tested): */
+				able_to_go_to_start_PrEP_for_person_function = (indiv->PrEP_cascade_status==NOTONPREP && indiv->ART_status==ARTNEG)?1:0;
+			    else
+				/* Assume HIV testing happens elsewhere or is badly applied somehow. */
+				able_to_go_to_start_PrEP_for_person_function = (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED)?1:0;
+			
+			    if(able_to_go_to_start_PrEP_for_person_function==1){
+				if(indiv->id==FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH)
+				    printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is able to start PrEP with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
+			    
+				/* Store this person (indiv) as a potential PrEP initiate (subject to HIV testing). Note that we deal with duplicates later on. */
+				patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop[i_potential_prep_initiates_primarypop] = indiv;
+				i_potential_prep_initiates_primarypop++;
+				if(i_potential_prep_initiates_primarypop>=MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE){
+				    printf("Error - need to adjust MIHPSA_INTERVENTION_SAMPLE_MAX_ARRAY_SIZE in MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() as run out of memory. aa=%i Exiting\n", aa);
+				    fflush(stdout);
+				    exit(1);
+				}
+			    }
+			    /* If not able to go on PrEP (but meets other criteria) check if already on ART: */
+			    else if(indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT || indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP || indiv->PrEP_cascade_status==ONCABLA_PREP){
+				n_already_onPrEP++;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    if(t-floor(t)<0.001){
+	printf("Calling MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD at t=%lf\n",t);
+	printf("Number of potential initates = %i Number already on PrEP = %i\n", i_potential_prep_initiates_primarypop,n_already_onPrEP);
+    }
+
+    if(i_potential_prep_initiates_primarypop>0)
+	gsl_ran_shuffle(rng, patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop, i_potential_prep_initiates_primarypop, sizeof(individual *));
+
+    int n_to_initiate_PrEP = TARGET_n_onPrEP-n_already_onPrEP;
+    if (n_to_initiate_PrEP>0){
+	if(n_to_initiate_PrEP>i_potential_prep_initiates_primarypop*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP)
+	    n_to_initiate_PrEP = (int) floor(i_potential_prep_initiates_primarypop*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP);
+    }
+
+    /* printf("n_to_initiate_PrEP=%i\n",n_to_initiate_PrEP); */
+    /* fflush(stdout); */
+    
+    for(i=0; i<n_to_initiate_PrEP; i++){
+	indiv = patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop[i];
+	if(indiv->id==FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH)
+	    printf("$$$$$$$$$$$$$$In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is a other eligible pop PrEP initiate (step 2) with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status);
+	start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type, REASON_START_PREP_SDPARTNERINTERVENTION);
+    }
+
+
+    
+    /* 		if(HIV_TEST_WHEN_ON_PrEP==1) */
+    /* 		    /\* Assume never tested HIV+ (so both HIV- and unaware HIV+ can go to start_PrEP_for_person() where they will be tested): *\/ */
+    /* 		    able_to_go_to_start_PrEP_for_person_function = (indiv->PrEP_cascade_status==NOTONPREP && indiv->ART_status==ARTNEG)?1:0; */
+    /* 		else */
+    /* 		    /\* Assume HIV testing happens elsewhere or is badly applied somehow. *\/ */
+    /* 		    able_to_go_to_start_PrEP_for_person_function = (indiv->PrEP_cascade_status==NOTONPREP && indiv->HIV_status==UNINFECTED)?1:0; */
+		
+    /* 		if (able_to_go_to_start_PrEP_for_person_function){	     */
+    /* 		    in_primarypop = 0; */
+    /* 		    /\* Primary population = at least 1 non-reg partner. *\/ */
+    /* 		    for(i_partner=0; i_partner<(indiv->n_partners); i_partner++){ */
+    /* 			if((indiv->partner_pairs[i_partner]->duration_in_time_steps)<N_TIME_STEP_PER_YEAR){ */
+    /* 			    in_primarypop = 1; */
+    /* 			    break; */
+    /* 			} */
+    /* 		    } */
+    /* 		    if(in_primarypop==1){ */
+    /* 			patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop[i_potential_prep_initiates_primarypop] = indiv; */
+    /* 			i_potential_prep_initiates_primarypop++; */
+    /* 			if((indiv->id)==FOLLOW_INDIVIDUAL  && p==FOLLOW_PATCH) */
+    /* 			    printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is a potential primary PrEP initiate (step 1) with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status); */
+    /* 		    } */
+    /* 		    else if((indiv->n_partners)>1){ */
+    /* 			/\* Not in primary pop but has multiple partners: *\/ */
+    /* 			patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_othereligible[i_potential_prep_initiates_othereligible] = indiv; */
+    /* 			i_potential_prep_initiates_othereligible++; */
+    /* 			if((indiv->id)==FOLLOW_INDIVIDUAL  && p==FOLLOW_PATCH) */
+    /* 			    printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is a potential other PrEP initiate (step 1) with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status); */
+    /* 		    } */
+
+    /* 		}else if(indiv->PrEP_cascade_status==ONPREP_SEMIADHERENT || indiv->PrEP_cascade_status==ONPREP_ADHERENT || indiv->PrEP_cascade_status==ONDAPIVIRINERING_PREP || indiv->PrEP_cascade_status==ONCABLA_PREP) */
+    /* 		    n_already_onPrEP += 1; */
+		
+    /* 	    } */
+    /* 	} */
+    /* } */
+    /* /\* if(t>2048){ *\/ */
+    /* /\* 	printf(">>>t=%6.4lf samplepop=%i otherpop sample IDs: ",t,i_potential_prep_initiates_othereligible); *\/ */
+    /* /\* 	for(int z_temp=0; z_temp<i_potential_prep_initiates_othereligible; z_temp++) *\/ */
+    /* /\* 	    printf("%li ",patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_othereligible[z_temp]->id); *\/ */
+    /* /\* 	printf("\n"); *\/ */
+    /* /\* } *\/ */
+    
+    
+    /* int n_to_initiate_PrEP = TARGET_n_onPrEP-n_already_onPrEP; */
+    /* int n_to_initiate_PrEP_othereligiblepop; */
+    
+    /* /\* We prioritise the "target" population (currently 15-24 with non-regular partner). Only MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP proportion of the target pop can be initated on PrEP (so we're not perfect). */
+    /*  Remainder comes from the other pops:*\/ */
+    /* int n_to_initiate_PrEP_primarypop; */
+    /* if (n_to_initiate_PrEP>0){ */
+    /* 	if(n_to_initiate_PrEP<=i_potential_prep_initiates_primarypop*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP) */
+    /* 	    n_to_initiate_PrEP_primarypop = n_to_initiate_PrEP; */
+    /* 	else */
+    /* 	    n_to_initiate_PrEP_primarypop = (int) floor(i_potential_prep_initiates_primarypop*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP); */
+
+    /* 	//printf("Initiating %i out of %i in primary pop\n",n_to_initiate_PrEP_primarypop,i_potential_prep_initiates_primarypop); */
+    /* 	gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_primarypop, */
+    /* 		       n_to_initiate_PrEP_primarypop, */
+    /* 		       patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_primarypop, */
+    /* 		       i_potential_prep_initiates_primarypop, sizeof(individual *)); */
+    /* 	for(i_temp=0; i_temp<n_to_initiate_PrEP_primarypop; i_temp++){ */
+    /* 	    indiv = patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_primarypop[i_temp]; */
+    /* 	    if(indiv->id==FOLLOW_INDIVIDUAL  && p==FOLLOW_PATCH) */
+    /* 		printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is a primary pop PrEP initiate with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status); */
+	    
+    /* 	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type); */
+    /* 	} */
+
+
+    /* 	/\* Now look for remainder: *\/ */
+    /* 	n_to_initiate_PrEP_othereligiblepop = n_to_initiate_PrEP - n_to_initiate_PrEP_primarypop; */
+
+    /* 	//printf("At t=%6.4lf, primary population left=%i n_added=%i Remainder n=%i\n",t,i_potential_prep_initiates_primarypop,n_to_initiate_PrEP_primarypop,n_to_initiate_PrEP_othereligiblepop); */
+
+
+    /* 	if(n_to_initiate_PrEP_othereligiblepop>(i_potential_prep_initiates_othereligible*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP)) */
+    /* 	    /\* Cap the number of new initates if needed: *\/ */
+    /* 	    n_to_initiate_PrEP_othereligiblepop = (int) floor(i_potential_prep_initiates_othereligible*MIHPSA_PREP_TARGET_COVERAGE_PRIMARY_POP); */
+
+    /* 	gsl_ran_choose(rng, patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_othereligibles, n_to_initiate_PrEP_othereligiblepop, */
+    /* 		       patch[p].MIHPSA_intervention_sample->potential_prep_initiates_pointers_othereligible, */
+    /* 		       i_potential_prep_initiates_othereligible, sizeof(individual *)); */
+    
+    /* 	for(i_temp=0; i_temp<n_to_initiate_PrEP_othereligiblepop; i_temp++){ */
+    /* 	    indiv = patch[p].MIHPSA_intervention_sample->new_prep_initiates_pointers_othereligibles[i_temp]; */
+    /* 	    if(indiv->id==FOLLOW_INDIVIDUAL && p==FOLLOW_PATCH) */
+    /* 		printf("In MIHPSA_sweep_pop_for_PrEP_per_timestep_forcapped_SD() at t=%lf indiv=%li is a other eligible pop PrEP initiate (step 2) with HIV=%i PrEP=%i\n",t,indiv->id,indiv->HIV_status,indiv->PrEP_cascade_status); */
+    /* 	    start_PrEP_for_person(indiv, patch, p, patch[p].param, patch[p].PrEP_events, patch[p].n_PrEP_events, patch[p].size_PrEP_events, patch[p].cumulative_outputs, t, debug, PrEP_type); */
+    /* 	} */
+    /* } */
+
 
 }
 

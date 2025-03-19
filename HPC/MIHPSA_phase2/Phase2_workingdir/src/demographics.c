@@ -672,10 +672,11 @@ void create_new_individual(individual *new_adult, double t, int t_step, paramete
     new_adult->next_PrEP_event = PREP_NOEVENT;
     new_adult->idx_PrEP_event[0] = -1;   /* Initialize at dummy value. */
     new_adult->idx_PrEP_event[1] = -1;
+    new_adult->reason_for_starting_PrEP = REASON_START_PREP_DUMMYVALUE; /* Dummy value that never started PrEP. */
     new_adult->date_most_recent_oralPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     new_adult->date_most_recent_oralPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
-    new_adult->date_most_recent_dapiverinePrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
-    new_adult->date_most_recent_dapiverinePrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
+    new_adult->date_most_recent_dapivirineringPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
+    new_adult->date_most_recent_dapivirineringPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     new_adult->date_most_recent_CABLAPrEP_initiation = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     new_adult->date_most_recent_CABLAPrEP_stoppage = PREP_DUMMY_DATEMOSTRECENTPREPINIT; /* Dummy value. */
     
@@ -2265,10 +2266,13 @@ void remove_from_PrEP_events(individual *indiv, individual ***PrEP_events, long 
     /* We have removed one person: */
     n_PrEP_events[i]--; 
 
+    /* Set the correct PrEP stop time variable (e.g. indiv->date_most_recent_oralPrEP_stoppage) for the PrEP modality they are stopping. Note - this needs to be done before we set their PrEP status to nothing. */
+    set_PrEP_stop_time(indiv, t);
     /* Set their PrEP status and next event to nothing: */
     indiv->PrEP_cascade_status=NOTONPREP;
     indiv->next_PrEP_event=PREP_NOEVENT;
-    indiv->date_most_recent_oralPrEP_stoppage=t;
+    // We don't reset this now - this is the reason for most recently starting PrEP. We need to keep track of the reason in people who stopped PrEP so we can count those who have ever been on a given PrEP type for a given reason.
+    //indiv->reason_for_starting_PrEP = REASON_START_PREP_DUMMYVALUE;
 }
 
 
